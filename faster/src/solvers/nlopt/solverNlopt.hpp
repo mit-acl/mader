@@ -5,7 +5,7 @@
 
 #include <iomanip>
 #include <nlopt.hpp>
-
+#include "./../../faster_types.hpp"
 #include <sstream>
 /*#include <Eigen/Dense>
 #include <type_traits>
@@ -31,6 +31,10 @@ public:
   void setTminAndTmax(double t_min, double t_max);
 
   void setMaxValues(double v_max, double a_max);
+
+  void setDC(double dc);
+
+  std::vector<state> X_temp_;
 
 protected:
 private:
@@ -83,6 +87,7 @@ private:
   int num_of_variables_;
   int num_of_normals_;
   int num_of_constraints_;
+  double dc_;
 
   double t_min_;
   double t_max_;

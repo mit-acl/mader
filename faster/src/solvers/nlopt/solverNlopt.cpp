@@ -61,18 +61,7 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol_)
   std::vector<double> d;
   toEigen(x, q, n, d);
   printQND(q, n, d);
-  // Handcode this here for now
-  // Matrix containing the control points (see script test_to_create_splines.m)
 
-  /*  R_ = Eigen::MatrixXd::Zero(3, 20);
-    R_
-    << 1.3784, 1.9082, 2.2617, 2.4963, 2.4963, 2.7309, 2.8467, 2.9011, 2.9011, 2.9554, 2.9484, 3.1676, 3.1676, 3.3869,
-        3.8326, 4.4580, 4.4580, 5.0833, 5.8885, 6.8267,  /////////////////////////
-        0.3048, 2.0841, 2.5280, 2.6516, 2.6516, 2.7752, 2.5786, 3.0767, 3.0767, 3.5748, 4.7678, 4.9923, 4.9923, 5.2168,
-        4.4728, 4.1564, 4.1564, 3.8399, 3.9509, 5.8854,  /////////////////////////
-        0.2133, 2.9102, 3.2191, 2.9238, 2.9238, 2.6285, 1.7290, 2.0093, 2.0093, 2.2895, 3.7495, 4.5498, 4.5498, 5.3502,
-        5.4909, 5.6346, 5.6346, 5.7783, 5.9250, 6.7374;  /////////////////////////
-  */
   opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
   local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);
   local_opt_->set_xtol_rel(1e-4);
@@ -90,6 +79,11 @@ void SolverNlopt::setTminAndTmax(double t_min, double t_max)
   t_max_ = t_max;
 
   deltaT_ = (t_max_ - t_min_) / (1.0 * (M_ - 2 * p_ - 1 + 1));
+}
+
+void SolverNlopt::setDC(double dc)
+{
+  dc_ = dc;
 }
 
 void SolverNlopt::setMaxValues(double v_max, double a_max)
@@ -568,7 +562,7 @@ void SolverNlopt::optimize()
   // guesses for the normals
   for (int i = j_min_; i <= j_max_; i++)
   {
-    x[i] = (((double)rand() / (RAND_MAX)) + 1);
+    x[i] = (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
   }
 
   x[0] = initial_point_(0);
@@ -598,24 +592,24 @@ void SolverNlopt::optimize()
     toEigen(x, q, n, d);
     printQND(q, n, d);
 
-    std::cout << "Checking if these constraints are satisfied" << std::endl;
-    for (int i = 0; i <= N_ - 3; i++)  // i  is the interval (\equiv segment)
-    {
-      // impose that all the vertexes are on one side of the plane
-      for (int vertex_index = 0; vertex_index < hulls_[i].size(); vertex_index++)
-      {
-        Eigen::Vector3d vertex = hulls_[i][vertex_index];
-        // std::cout << vertex.transpose() << std::endl;
-        std::cout << -(n[i].dot(vertex) + d[i]) << std::endl;
-        ;
-      }
+    /*    std::cout << "Checking if these constraints are satisfied" << std::endl;
+        for (int i = 0; i <= N_ - 3; i++)  // i  is the interval (\equiv segment)
+        {
+          // impose that all the vertexes are on one side of the plane
+          for (int vertex_index = 0; vertex_index < hulls_[i].size(); vertex_index++)
+          {
+            Eigen::Vector3d vertex = hulls_[i][vertex_index];
+            // std::cout << vertex.transpose() << std::endl;
+            std::cout << -(n[i].dot(vertex) + d[i]) << std::endl;
+            ;
+          }
 
-      // and the control points on the other
-      for (int u = 0; u <= 3; u++)
-      {
-        std::cout << n[i].dot(q[i + u]) + d[i] << std::endl;
-      }
-    }
+          // and the control points on the other
+          for (int u = 0; u <= 3; u++)
+          {
+            std::cout << n[i].dot(q[i + u]) + d[i] << std::endl;
+          }
+        }*/
 
     // Construct now the B-Spline
     // See example at https://github.com/libigl/eigen/blob/master/unsupported/test/splines.cpp#L37
@@ -646,15 +640,23 @@ void SolverNlopt::optimize()
     Eigen::Spline<double, 3, Eigen::Dynamic> spline(knots, control_points);
 
     std::cout << "Knots= " << knots << std::endl;
+    std::cout << "dc_= " << dc_ << std::endl;
 
-    std::cout << "spline(0.2)= " << spline(0.2) << std::endl;
+    X_temp_.clear();
 
-    Eigen::MatrixXd derivatives =
-        spline.derivatives(t_max_, 4);  // it computes all the derivatives up to order 4, evaluated at t_max_. First
-                                        // column is pos, then vel,... spline.derivatives(t, 3);
-                                        // // accel spline.derivatives(t, 4);  // jerk
+    for (double t = t_min_; t <= t_max_; t = t + dc_)
+    {
+      // std::cout << "t= " << t << std::endl;
+      Eigen::MatrixXd derivatives = spline.derivatives(t, 4);  // Compute all the derivatives up to order 4
 
-    std::cout << "derivatives=\n" << derivatives << std::endl;
+      state state_i;
+
+      state_i.setPos(derivatives.col(0));  // First column
+      state_i.setVel(derivatives.col(1));
+      state_i.setAccel(derivatives.col(2));
+      state_i.setJerk(derivatives.col(3));
+      X_temp_.push_back(state_i);
+    }
   }
 
   // AVAILABLE ALGORITHMS:

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 struct polytope
 {
   Eigen::MatrixXd A;

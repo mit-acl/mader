@@ -209,7 +209,12 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     std::vector<state> X_safe;
     std::vector<state> X_whole;
 
+    std::cout << "Calling replanCB" << X_whole.size() << std::endl;
+
     faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole);
+
+    std::cout << "replanCB done" << X_whole.size() << std::endl;
+
     clearJPSPathVisualization(2);
     publishJPSPath(JPS_safe, JPS_SAFE);
     publishJPSPath(JPS_whole, JPS_WHOLE);
@@ -217,6 +222,9 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     publishPoly(poly_safe, SAFE);
     publishPoly(poly_whole, WHOLE);
     pubTraj(X_safe, SAFE_COLORED);
+
+    std::cout << "[faster_ros] X_whole.size()=" << X_whole.size() << std::endl;
+
     pubTraj(X_whole, WHOLE_COLORED);
   }
 }

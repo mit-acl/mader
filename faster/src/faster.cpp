@@ -72,26 +72,6 @@ Faster::Faster(parameters par) : par_(par)
 
   changeDroneStatus(DroneStatus::GOAL_REACHED);
   resetInitialization();
-
-  // Tests for the NLOPT solver:
-  int n_pol = 5;
-  int deg = 3;
-
-  std::vector<std::vector<Eigen::Vector3d>> hulls = convexHullsOfCurve(0, 10, n_pol, 0.1);
-  SolverNlopt snlopt(n_pol, deg);  // snlopt(a,g) a polynomials of degree 3
-  snlopt.setTminAndTmax(0, 10);
-  snlopt.setMaxValues(10, 10);  // v_max and a_max
-
-  snlopt.setHulls(hulls);
-  Eigen::Vector3d initial_point, final_point;
-  initial_point << 0, 0, 0;
-  final_point << 10, 0, 0;
-
-  std::cout << "Setting Points\n";
-  snlopt.setInitAndFinalPoints(initial_point, final_point);
-
-  std::cout << "Optimizing\n";
-  snlopt.optimize();
 }
 
 std::vector<Eigen::Vector3d> Faster::convexHullOfInterval(double t_start, double t_end, double inc)
@@ -111,7 +91,7 @@ std::vector<Eigen::Vector3d> Faster::convexHullOfInterval(double t_start, double
 
     double r = int_random * distribution(generator);
 
-    std::cout << "r= " << r << std::endl;
+    //  std::cout << "r= " << r << std::endl;
 
     /*    boost::geometry::append(mpt, point(sin(t), cos(t), sin(t)));*/
     boost::geometry::append(mpt, point(5 + r, r, r));
@@ -120,7 +100,7 @@ std::vector<Eigen::Vector3d> Faster::convexHullOfInterval(double t_start, double
   polygon hull;
   MyTimer timer(true);
   boost::geometry::convex_hull(mpt, hull);
-  std::cout << "ConvexHull time = " << timer << std::endl;
+  // std::cout << "ConvexHull time = " << timer << std::endl;
 
   using boost::geometry::dsv;
   std::cout << "hull: " << dsv(hull) << std::endl;
@@ -547,10 +527,10 @@ bool Faster::initializedAllExceptPlanner()
 {
   if (!state_initialized_ || !kdtree_map_initialized_ || !kdtree_unk_initialized_ || !terminal_goal_initialized_)
   {
-    std::cout << "state_initialized_= " << state_initialized_ << std::endl;
-    std::cout << "kdtree_map_initialized_= " << kdtree_map_initialized_ << std::endl;
-    std::cout << "kdtree_unk_initialized_= " << kdtree_unk_initialized_ << std::endl;
-    std::cout << "terminal_goal_initialized_= " << terminal_goal_initialized_ << std::endl;
+    /*    std::cout << "state_initialized_= " << state_initialized_ << std::endl;
+        std::cout << "kdtree_map_initialized_= " << kdtree_map_initialized_ << std::endl;
+        std::cout << "kdtree_unk_initialized_= " << kdtree_unk_initialized_ << std::endl;
+        std::cout << "terminal_goal_initialized_= " << terminal_goal_initialized_ << std::endl;*/
     return false;
   }
   return true;
@@ -561,11 +541,11 @@ bool Faster::initialized()
   if (!state_initialized_ || !kdtree_map_initialized_ || !kdtree_unk_initialized_ || !terminal_goal_initialized_ ||
       !planner_initialized_)
   {
-    std::cout << "state_initialized_= " << state_initialized_ << std::endl;
-    std::cout << "kdtree_map_initialized_= " << kdtree_map_initialized_ << std::endl;
-    std::cout << "kdtree_unk_initialized_= " << kdtree_unk_initialized_ << std::endl;
-    std::cout << "terminal_goal_initialized_= " << terminal_goal_initialized_ << std::endl;
-    std::cout << "planner_initialized_= " << planner_initialized_ << std::endl;
+    /*    std::cout << "state_initialized_= " << state_initialized_ << std::endl;
+        std::cout << "kdtree_map_initialized_= " << kdtree_map_initialized_ << std::endl;
+        std::cout << "kdtree_unk_initialized_= " << kdtree_unk_initialized_ << std::endl;
+        std::cout << "terminal_goal_initialized_= " << terminal_goal_initialized_ << std::endl;
+        std::cout << "planner_initialized_= " << planner_initialized_ << std::endl;*/
     return false;
   }
   return true;
@@ -575,6 +555,38 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
                     vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out,
                     std::vector<state>& X_whole_out)
 {
+  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Tests for the NLOPT solver://///////////////////
+  //////////////////////////////////////////////////////////////////////////
+  //
+
+  std::cout << "In replanCB!!";
+  int n_pol = 5;
+  int deg = 3;
+
+  std::vector<std::vector<Eigen::Vector3d>> hulls = convexHullsOfCurve(0, 10, n_pol, 0.1);
+  SolverNlopt snlopt(n_pol, deg);  // snlopt(a,g) a polynomials of degree 3
+  snlopt.setTminAndTmax(0, 10);
+  snlopt.setMaxValues(10, 10);  // v_max and a_max
+  snlopt.setDC(par_.dc);        // dc
+
+  snlopt.setHulls(hulls);
+  Eigen::Vector3d initial_point, final_point;
+  initial_point << 0, 0, 0;
+  final_point << 10, 0, 0;
+
+  std::cout << "Setting Points\n";
+  snlopt.setInitAndFinalPoints(initial_point, final_point);
+
+  std::cout << "Optimizing\n";
+  snlopt.optimize();
+
+  X_whole_out = snlopt.X_temp_;
+  return;
+  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+
   MyTimer replanCB_t(true);
 
   if (initializedAllExceptPlanner() == false)
