@@ -13,6 +13,8 @@ add_definitions(${PCL_DEFINITIONS})
 #In the ws/ directory there must be the file FindGUROBI.cmake (available https://github.com/joschu/trajopt/blob/master/cmake/modules/FindGUROBI.cmake ). I had to modify it a little bit. 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 find_package(GUROBI REQUIRED)
+find_package(NLOPT REQUIRED)
+
 
 if(GUROBI_FOUND)
   message(STATUS "GUROBI FOUND")
@@ -54,13 +56,16 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;$ENV{GUROBI_HOME}/lib/libgurobi81.so;$ENV{GUROBI_HOME}/lib/" )
 
-add_executable(${PROJECT_NAME}_node src/main.cpp src/faster.cpp src/faster_ros.cpp src/utils.cpp  src/jps_manager.cpp src/solvers/solverGurobi.cpp)
+add_executable(${PROJECT_NAME}_node src/main.cpp src/faster.cpp src/faster_ros.cpp src/utils.cpp  src/jps_manager.cpp src/solvers/solverGurobi.cpp src/solvers/nlopt/solverNlopt.cpp)
 
 #IF CVXGEN and GUROBI are required:
 #target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/libcvx_vel.so ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/libcvx_accel.so ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/libcvx_jerk.so ${GUROBI_LIBRARIES})
 
 #IF only GUROBI is required:
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${GUROBI_LIBRARIES})
+#target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${GUROBI_LIBRARIES} )
+
+#If GUROBI and NLOPT are required
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${GUROBI_LIBRARIES} ${NLOPT_LIBRARIES})
 
 
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
@@ -76,8 +81,7 @@ add_executable(gurobi_continuous_exec gurobi_continuous.cpp)
 target_link_libraries(gurobi_continuous_exec ${GUROBI_LIBRARIES})
 
 add_executable(gurobi_discrete_exec gurobi_discrete.cpp)
-
-target_link_libraries(gurobi_discrete_exec ${GUROBI_LIBRARIES})
+target_link_libraries(gurobi_discrete_exec ${GUROBI_LIBRARIES} )
 
 #add_executable(solverGurobi_exec src/solvers/solverGurobi.cpp)
 

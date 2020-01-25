@@ -20,6 +20,7 @@
 // Solvers includes
 //#include "solvers/solvers.hpp" CVXGEN solver interface
 #include "solvers/solverGurobi.hpp"
+#include "solvers/nlopt/solverNlopt.hpp"
 
 #include "jps_manager.hpp"
 
@@ -74,6 +75,9 @@ private:
   SolverGurobi sg_safe_;   // solver gurobi whole trajectory
 
   JPS_Manager jps_manager_;  // Manager of JPS
+
+  std::vector<Eigen::Vector3d> convexHullOfInterval(double t_start, double t_end, double inc);
+  std::vector<std::vector<Eigen::Vector3d>> convexHullsOfCurve(double t_start, double t_end, int intervals, double inc);
 
   void yaw(double diff, state& next_goal);
 
