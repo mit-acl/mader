@@ -561,22 +561,21 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   //
 
   std::cout << "In replanCB!!";
-  int n_pol = 5;
+  int n_pol = 8;
   int deg = 3;
 
   std::vector<std::vector<Eigen::Vector3d>> hulls = convexHullsOfCurve(0, 10, n_pol, 0.1);
-  SolverNlopt snlopt(n_pol, deg);  // snlopt(a,g) a polynomials of degree 3
+  SolverNlopt snlopt(n_pol, deg);  // snlopt(a,g) a polynomials of degree g
   snlopt.setTminAndTmax(0, 10);
   snlopt.setMaxValues(10, 10);  // v_max and a_max
   snlopt.setDC(par_.dc);        // dc
 
   snlopt.setHulls(hulls);
-  Eigen::Vector3d initial_point, final_point;
-  initial_point << 0, 0, 0;
-  final_point << 10, 0, 0;
 
-  std::cout << "Setting Points\n";
-  snlopt.setInitAndFinalPoints(initial_point, final_point);
+  state initial_state, final_state;
+  initial_state.setPos(0, 0, 0);
+  final_state.setPos(10, 0, 0);
+  snlopt.setInitAndFinalStates(initial_state, final_state);
 
   std::cout << "Optimizing\n";
   snlopt.optimize();

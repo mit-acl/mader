@@ -38,7 +38,7 @@ std::vector<Eigen::Vector3d> convexHullOfInterval(double t_start, double t_end, 
 
     double r = int_random * distribution(generator);
 
-    std::cout << "r= " << r << std::endl;
+    //  std::cout << "r= " << r << std::endl;
 
     /*    boost::geometry::append(mpt, point(sin(t), cos(t), sin(t)));*/
     boost::geometry::append(mpt, point(5 + r, r, r));
@@ -47,7 +47,7 @@ std::vector<Eigen::Vector3d> convexHullOfInterval(double t_start, double t_end, 
   polygon hull;
   MyTimer timer(true);
   boost::geometry::convex_hull(mpt, hull);
-  std::cout << "ConvexHull time = " << timer << std::endl;
+  // std::cout << "ConvexHull time = " << timer << std::endl;
 
   using boost::geometry::dsv;
   std::cout << "hull: " << dsv(hull) << std::endl;
@@ -85,19 +85,25 @@ int main()
 
   std::vector<std::vector<Eigen::Vector3d>> hulls = convexHullsOfCurve(0, 10, n_pol, 0.1);
   SolverNlopt snlopt(n_pol, deg);  // snlopt(a,g) a polynomials of degree 3
-  snlopt.setTminAndTmax(0, 10);
-  snlopt.setMaxValues(10, 10);  // v_max and a_max
+  snlopt.setTminAndTmax(0, 1);
+  snlopt.setMaxValues(100, 100);  // v_max and a_max
+  snlopt.setDC(0.1);              // dc
 
   snlopt.setHulls(hulls);
-  Eigen::Vector3d initial_point, final_point;
-  initial_point << 0, 0, 0;
-  final_point << 10, 0, 0;
 
-  std::cout << "Setting Points\n";
-  snlopt.setInitAndFinalPoints(initial_point, final_point);
+  state initial_state, final_state;
+  initial_state.setPos(0, 0, 0);
+  initial_state.setVel(1, 2, 3);
+  initial_state.setAccel(4, 5, 6);
+  final_state.setPos(10, 0, 0);
+  final_state.setVel(7, 8, 9);
+  final_state.setAccel(10, 11, 12);
+  snlopt.setInitAndFinalStates(initial_state, final_state);
 
   std::cout << "Optimizing\n";
   snlopt.optimize();
+
+  // X_whole_out = snlopt.X_temp_;
 
   /*  polygon poly;
     boost::geometry::read_wkt("polygon((    4.1 3.0"

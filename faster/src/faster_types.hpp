@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-
+#include <iomanip>  // std::setprecision
 struct polytope
 {
   Eigen::MatrixXd A;
@@ -141,14 +141,14 @@ struct state
 
   void print()
   {
-    std::cout << "Pos= " << pos.transpose() << std::endl;
-    std::cout << "Vel= " << vel.transpose() << std::endl;
-    std::cout << "Accel= " << accel.transpose() << std::endl;
+    std::cout << std::setprecision(3) << "Pos= " << pos.transpose() << std::endl;
+    std::cout << std::setprecision(3) << "Vel= " << vel.transpose() << std::endl;
+    std::cout << std::setprecision(3) << "Accel= " << accel.transpose() << std::endl;
   }
 
   void printHorizontal()
   {
-    std::cout << "Pos, Vel, Accel, Jerk= " << pos.transpose() << " " << vel.transpose() << " " << accel.transpose()
-              << " " << jerk.transpose() << std::endl;
+    std::cout << std::setprecision(3) << "Pos, Vel, Accel, Jerk= " << pos.transpose() << " " << vel.transpose() << " "
+              << accel.transpose() << " " << jerk.transpose() << std::endl;
   }
 };

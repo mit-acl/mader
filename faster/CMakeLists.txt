@@ -77,16 +77,22 @@ add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 #target_link_libraries(${PROJECT_NAME}_node_novale ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 
+
+add_executable(${PROJECT_NAME}_sample src/solvers/nlopt/main.cpp src/solvers/nlopt/solverNlopt.cpp)
+target_link_libraries(${PROJECT_NAME}_sample  ${NLOPT_LIBRARIES})
+add_dependencies(${PROJECT_NAME}_sample ${catkin_EXPORTED_TARGETS} )
+
+
 add_executable(gurobi_continuous_exec gurobi_continuous.cpp)
 target_link_libraries(gurobi_continuous_exec ${GUROBI_LIBRARIES})
 
 add_executable(gurobi_discrete_exec gurobi_discrete.cpp)
 target_link_libraries(gurobi_discrete_exec ${GUROBI_LIBRARIES} )
 
+
+
 #add_executable(solverGurobi_exec src/solvers/solverGurobi.cpp)
-
 #target_link_libraries(solverGurobi_exec ${GUROBI_LIBRARIES})
-
 #add_executable(${PROJECT_NAME}_deubg_node src/debug.cpp)
 #target_link_libraries(${PROJECT_NAME}_deubg_node ${catkin_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/libcvx.so)
 #add_dependencies(${PROJECT_NAME}_deubg_node ${catkin_EXPORTED_TARGETS})

@@ -20,12 +20,11 @@ using namespace termcolor;*/
 class SolverNlopt
 {
 public:
-  SolverNlopt(int num_pol, int deg_pol_);
-  void setDegAndNumPol(int deg_pol_, int num_pol_);
+  SolverNlopt(int num_pol, int deg_pol);
 
   void optimize();
 
-  void setInitAndFinalPoints(Eigen::Vector3d &initial_point, Eigen::Vector3d &final_point);
+  void setInitAndFinalStates(state &initial_state, state &final_state);
 
   void setHulls(std::vector<std::vector<Eigen::Vector3d>> hulls);
   void setTminAndTmax(double t_min, double t_max);
@@ -38,13 +37,12 @@ public:
 
 protected:
 private:
+  bool isADecisionCP(int i);
+
   void assignEigenToVector(double *grad, int index, const Eigen::Vector3d &tmp);
 
-  void toEigen(const double *x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-               std::vector<double> &d);
-
-  void toEigen(const std::vector<double> &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-               std::vector<double> &d);
+  template <class T>
+  void toEigen(T x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
   int gIndexQ(int i);  // Element jth of control point ith
   int gIndexN(int i);  // Element jth of normal ith
@@ -88,17 +86,19 @@ private:
   int num_of_normals_;
   int num_of_constraints_;
   double dc_;
-
+  Eigen::RowVectorXd knots_;
   double t_min_;
   double t_max_;
   double deltaT_;
   Eigen::Vector3d v_max_;
   Eigen::Vector3d a_max_;
 
+  Eigen::Vector3d q0_, q1_, q2_, qNm2_, qNm1_, qN_;
+
   std::vector<std::vector<Eigen::Vector3d>> hulls_;
 
-  Eigen::Vector3d initial_point_;
-  Eigen::Vector3d final_point_;
+  // Eigen::Vector3d initial_point_;
+  // Eigen::Vector3d final_point_;
   nlopt::opt *opt_;
   nlopt::opt *local_opt_;
 

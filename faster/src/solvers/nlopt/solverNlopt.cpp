@@ -10,21 +10,31 @@
 
 typedef Timer MyTimer;
 
-SolverNlopt::SolverNlopt(int num_pol, int deg_pol_)
+SolverNlopt::SolverNlopt(int num_pol, int deg_pol)
 {
   std::cout << "In the SolverNlopt Constructor\n";
+
+  deg_pol_ = deg_pol_;
+  num_pol_ = num_pol;
 
   p_ = deg_pol_;
   M_ = num_pol_ + 2 * p_;
   N_ = M_ - p_ - 1;
-  num_of_variables_ = 3 * (N_ + 1) + 3 * (M_ - 2 * p_) + (M_ - 2 * p_);  // total number of variables
+  // num_of_variables_ = (3 * (N_ + 1) - 18) + (3 * (M_ - 2 * p_)) + (M_ - 2 * p_);  // total number of variables
 
   i_min_ = 0;
-  i_max_ = 3 * (N_ + 1) - 1;
+  i_max_ =
+      3 * (N_ + 1) - 1 - 18;  // 18 is because pos, vel and accel at t_min_ and t_max_ are fixed (not dec variables)
   j_min_ = i_max_ + 1;
   j_max_ = j_min_ + 3 * (M_ - 2 * p_) - 1;
   k_min_ = j_max_ + 1;
   k_max_ = k_min_ + (M_ - 2 * p_) - 1;
+
+  num_of_variables_ = k_max_ + 1;
+
+  std::cout << "deg_pol_= " << deg_pol_ << std::endl;
+  std::cout << "num_pol= " << num_pol << std::endl;
+  std::cout << "p_= " << p_ << std::endl;
 
   std::cout << "M_= " << M_ << std::endl;
   std::cout << "N_= " << N_ << std::endl;
@@ -79,6 +89,24 @@ void SolverNlopt::setTminAndTmax(double t_min, double t_max)
   t_max_ = t_max;
 
   deltaT_ = (t_max_ - t_min_) / (1.0 * (M_ - 2 * p_ - 1 + 1));
+
+  Eigen::RowVectorXd knots(M_ + 1);
+  for (int i = 0; i <= p_; i++)
+  {
+    knots[i] = t_min_;
+  }
+
+  for (int i = (p_ + 1); i <= M_ - p_ - 1; i++)
+  {
+    knots[i] = knots[i - 1] + deltaT_;  // Assumming a uniform b-spline (internal knots are equally spaced)
+  }
+
+  for (int i = (M_ - p_); i <= M_; i++)
+  {
+    knots[i] = t_max_;
+  }
+
+  knots_ = knots;
 }
 
 void SolverNlopt::setDC(double dc)
@@ -142,34 +170,66 @@ void SolverNlopt::setHulls(std::vector<std::vector<Eigen::Vector3d>> hulls)
   }
 }
 
-void SolverNlopt::setInitAndFinalPoints(Eigen::Vector3d &initial_point, Eigen::Vector3d &final_point)
+void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state)
 {
-  initial_point_ = initial_point;
-  final_point_ = final_point;
+  std::cout << "deltaT_=" << deltaT_ << std::endl;
+  std::cout << "p_=" << p_ << std::endl;
+  std::cout << "initial_state.accel=" << initial_state.accel.transpose() << std::endl;
+
+  // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
+  // Note that equation (7) of the paper "Robust and Efficent quadrotor..." has a typo, p_ is missing there (compare
+  // with equation 15 of that paper)
+
+  Eigen::Vector3d p0 = initial_state.pos;
+  Eigen::Vector3d v0 = initial_state.vel;
+  Eigen::Vector3d a0 = initial_state.accel;
+
+  Eigen::Vector3d pf = final_state.pos;
+  Eigen::Vector3d vf = final_state.vel;
+  Eigen::Vector3d af = final_state.accel;
+
+  double t1 = knots_(1);
+  double t2 = knots_(2);
+  double tpP1 = knots_(p_ + 1);
+  double t1PpP1 = knots_(1 + p_ + 1);
+
+  double tN = knots_(N_);
+  double tNm1 = knots_(N_ - 1);
+  double tNPp = knots_(N_ + p_);
+  double tNm1Pp = knots_(N_ - 1 + p_);
+
+  // See Mathematica Notebook
+  q0_ = p0;
+  q1_ = p0 + (-t1 + tpP1) * v0 / p_;
+  q2_ = (p_ * p_ * q1_ - (t1PpP1 - t2) * (a0 * (t2 - tpP1) + v0) - p_ * (q1_ + (-t1PpP1 + t2) * v0)) / ((-1 + p_) * p_);
+
+  qN_ = pf;
+  qNm1_ = pf + ((tN - tNPp) * vf) / p_;
+  qNm2_ = (p_ * p_ * qNm1_ - (tNm1 - tNm1Pp) * (af * (-tN + tNm1Pp) + vf) - p_ * (qNm1_ + (-tNm1 + tNm1Pp) * vf)) /
+          ((-1 + p_) * p_);
 }
 
-void SolverNlopt::toEigen(const double *x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-                          std::vector<double> &d)
+template <class T>
+void SolverNlopt::toEigen(T x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
 {
   // std::cout << "Entering toEigen" << std::endl;
   q.clear();
   n.clear();
   d.clear();
 
-  /*  std::cout << "k_min_=" << k_min_ << std::endl;
-
-    std::cout << "j_min_=" << j_min_ << std::endl;
-
-    std::cout << "cleared" << std::endl;
-    std::cout << "i_min_=" << i_min_ << std::endl;*/
+  q.push_back(q0_);  // Not a decision variable
+  q.push_back(q1_);  // Not a decision variable
+  q.push_back(q2_);  // Not a decision variable
 
   // Control points (3x1)
   for (int i = i_min_; i <= i_max_ - 2; i = i + 3)
   {
-    // std::cout << "i= " << i << std::endl;
-
     q.push_back(Eigen::Vector3d(x[i], x[i + 1], x[i + 2]));
   }
+
+  q.push_back(qNm2_);  // Not a decision variable
+  q.push_back(qNm1_);  // Not a decision variable
+  q.push_back(qN_);    // Not a decision variable
 
   // Normals vectors (3x1)
   for (int j = j_min_; j <= j_max_ - 2; j = j + 3)
@@ -189,35 +249,14 @@ void SolverNlopt::toEigen(const double *x, std::vector<Eigen::Vector3d> &q, std:
   // std::cout << "done with toEigen" << std::endl;
 }
 
-void SolverNlopt::toEigen(const std::vector<double> &x, std::vector<Eigen::Vector3d> &q,
-                          std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
-{
-  q.clear();
-  n.clear();
-  d.clear();
-  // Control points (3x1)
-  for (int i = i_min_; i <= i_max_ - 2; i = i + 3)
-  {
-    q.push_back(Eigen::Vector3d(x[i], x[i + 1], x[i + 2]));
-  }
-
-  // Normals vectors (3x1)
-  for (int j = j_min_; j <= j_max_ - 2; j = j + 3)
-  {
-    n.push_back(Eigen::Vector3d(x[j], x[j + 1], x[j + 2]));
-  }
-
-  // d values (1x1)
-  for (int k = k_min_; k <= k_max_; k = k + 1)
-  {
-    d.push_back(x[k]);
-  }
-}
-
 // global index of the first element of the control point i
 int SolverNlopt::gIndexQ(int i)
 {
-  return 3 * i;
+  /*  if (i <= 2)  // Q0, Q1, Q2 are fixed (not decision variables)
+    {
+      std::cout << "ERROR!!" << std::endl;
+    }*/
+  return 3 * i - 9;
 }
 
 // global index of the first element of the norml i
@@ -264,23 +303,14 @@ double SolverNlopt::myObjFunc(unsigned nn, const double *x, double *grad, void *
       grad[i] = 0.0;
     }
 
-    // Gradient for the control points 0 ,..., N
-    for (int i = 0; i <= opt->N_; i++)  // i = 0,...,N (q.size()==N+1)
+    // Gradient for the control points 3 ,..., N-3
+    for (int i = 3; i <= (opt->N_ - 3); i++)  // i = 0,...,N (q.size()==N+1)
     {
       Eigen::Vector3d gradient = Eigen::Vector3d::Zero();
 
-      if (i != 0 && i != 1)
-      {
-        gradient += 2 * (q[i] - 2 * q[i - 1] + q[i - 2]);
-      }
-      if (i != 0 && i != opt->N_)
-      {
-        gradient += -4 * (q[i + 1] - 2 * q[i] + q[i - 1]);
-      }
-      if (i != opt->N_ && i != (opt->N_ - 1))
-      {
-        gradient += 2 * (q[i + 2] - 2 * q[i + 1] + q[i]);
-      }
+      gradient += 2 * (q[i] - 2 * q[i - 1] + q[i - 2])    /////////////////
+                  - 4 * (q[i + 1] - 2 * q[i] + q[i - 1])  ///////////////////
+                  + 2 * (q[i + 2] - 2 * q[i + 1] + q[i]);
 
       // std::cout << "gradient= " << gradient.transpose() << std::endl;
 
@@ -309,6 +339,11 @@ double SolverNlopt::myObjFunc(unsigned nn, const double *x, double *grad, void *
   // std::cout << "*******************" << std::endl;
 
   return cost;
+}
+
+bool SolverNlopt::isADecisionCP(int i)
+{  // If Q[i] is a decision variable
+  return (i >= 4 && i <= (N_ - 3));
 }
 
 void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned nn, double *grad,
@@ -351,55 +386,56 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
       if (grad)
       {
         toGradSameConstraintDiffVariables(gIndexN(i), q[i + u], grad, r, nn);
-        toGradSameConstraintDiffVariables(gIndexQ(i + u), n[i], grad, r, nn);
+        if (isADecisionCP(i))  // If Q[i] is a decision variable
+        {
+          toGradSameConstraintDiffVariables(gIndexQ(i + u), n[i], grad, r, nn);
+        }
         assignValueToGradConstraints(gIndexD(i), 1, grad, r, nn);
       }
       r++;
     }
   }
 
-  // std::cout << "r before the equality constraints= " << r << std::endl;
+  /*  // Now add the "equality" constraints using inequalities with an epsilon:
 
-  // Now add the "equality" constraints using inequalities with an epsilon:
+    double epsilon = 0.1;
+    Eigen::Vector3d eps_vector(epsilon, epsilon, epsilon);
 
-  double epsilon = 0.1;
-  Eigen::Vector3d eps_vector(epsilon, epsilon, epsilon);
+    // Initial position
+    assignEigenToVector(constraints, r, q[0] - initial_point_ - eps_vector);  // f<=0
+    if (grad)
+    {
+      toGradDiffConstraintsDiffVariables(gIndexQ(0), ones, grad, r, nn);
+    }
+    r = r + 3;
 
-  // Initial position
-  assignEigenToVector(constraints, r, q[0] - initial_point_ - eps_vector);  // f<=0
-  if (grad)
-  {
-    toGradDiffConstraintsDiffVariables(gIndexQ(0), ones, grad, r, nn);
-  }
-  r = r + 3;
+    assignEigenToVector(constraints, r, initial_point_ - q[0] - eps_vector);  // f<=0
+    if (grad)
+    {
+      toGradDiffConstraintsDiffVariables(gIndexQ(0), -ones, grad, r, nn);
+    }
+    r = r + 3;
 
-  assignEigenToVector(constraints, r, initial_point_ - q[0] - eps_vector);  // f<=0
-  if (grad)
-  {
-    toGradDiffConstraintsDiffVariables(gIndexQ(0), -ones, grad, r, nn);
-  }
-  r = r + 3;
+    // Final position
+    // std::cout << "N_= " << N_ << std::endl;
+    assignEigenToVector(constraints, r, q[N_] - final_point_ - eps_vector);  // f<=0
+    if (grad)
+    {
+      toGradDiffConstraintsDiffVariables(gIndexQ(N_), ones, grad, r, nn);
+    }
+    r = r + 3;
 
-  // Final position
-  // std::cout << "N_= " << N_ << std::endl;
-  assignEigenToVector(constraints, r, q[N_] - final_point_ - eps_vector);  // f<=0
-  if (grad)
-  {
-    toGradDiffConstraintsDiffVariables(gIndexQ(N_), ones, grad, r, nn);
-  }
-  r = r + 3;
+    // std::cout << "N_=" << N_ << std::endl;
 
-  // std::cout << "N_=" << N_ << std::endl;
-
-  assignEigenToVector(constraints, r, final_point_ - q[N_] - eps_vector);  // f<=0
-  if (grad)
-  {
-    toGradDiffConstraintsDiffVariables(gIndexQ(N_), -ones, grad, r, nn);
-  }
-  r = r + 3;
+    assignEigenToVector(constraints, r, final_point_ - q[N_] - eps_vector);  // f<=0
+    if (grad)
+    {
+      toGradDiffConstraintsDiffVariables(gIndexQ(N_), -ones, grad, r, nn);
+    }
+    r = r + 3;*/
 
   // VELOCITY CONSTRAINTS:
-  for (int i = 0; i <= N_ - 1; i++)
+  for (int i = 2; i <= (N_ - 3); i++)
   {
     double inv_deltaT = (1 / deltaT_);
 
@@ -409,8 +445,14 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     assignEigenToVector(constraints, r, v_i - v_max_);  // f<=0
     if (grad)
     {
-      toGradDiffConstraintsDiffVariables(gIndexQ(i), -inv_deltaT * ones, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), inv_deltaT * ones, grad, r, nn);
+      if (isADecisionCP(i))  // If Q[i] is a decision variable
+      {
+        toGradDiffConstraintsDiffVariables(gIndexQ(i), -inv_deltaT * ones, grad, r, nn);
+      }
+      if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+      {
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), inv_deltaT * ones, grad, r, nn);
+      }
     }
     r = r + 3;
 
@@ -418,14 +460,20 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     assignEigenToVector(constraints, r, -v_i - v_max_);  // f<=0
     if (grad)
     {
-      toGradDiffConstraintsDiffVariables(gIndexQ(i), -inv_deltaT * ones, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), inv_deltaT * ones, grad, r, nn);
+      if (isADecisionCP(i))  // If Q[i] is a decision variable
+      {
+        toGradDiffConstraintsDiffVariables(gIndexQ(i), -inv_deltaT * ones, grad, r, nn);
+      }
+      if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+      {
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), inv_deltaT * ones, grad, r, nn);
+      }
     }
     r = r + 3;
   }
 
   // ACCELERATION CONSTRAINTS:
-  for (int i = 0; i <= N_ - 2; i++)
+  for (int i = 1; i <= (N_ - 3); i++)
   {
     double inv_deltaT2 = 1 / (deltaT_ * deltaT_);
 
@@ -435,9 +483,18 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     assignEigenToVector(constraints, r, a_i - a_max_);  // f<=0
     if (grad)
     {
-      toGradDiffConstraintsDiffVariables(gIndexQ(i), inv_deltaT2 * ones, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -2 * inv_deltaT2 * ones, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), inv_deltaT2 * ones, grad, r, nn);
+      if (isADecisionCP(i))  // If Q[i] is a decision variable
+      {
+        toGradDiffConstraintsDiffVariables(gIndexQ(i), inv_deltaT2 * ones, grad, r, nn);
+      }
+      if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+      {
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -2 * inv_deltaT2 * ones, grad, r, nn);
+      }
+      if (isADecisionCP(i + 2))  // If Q[i+2] is a decision variable
+      {
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), inv_deltaT2 * ones, grad, r, nn);
+      }
     }
     r = r + 3;
 
@@ -445,9 +502,18 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     assignEigenToVector(constraints, r, -a_i - a_max_);  // f<=0
     if (grad)
     {
-      toGradDiffConstraintsDiffVariables(gIndexQ(i), -inv_deltaT2 * ones, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), 2 * inv_deltaT2 * ones, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), -inv_deltaT2 * ones, grad, r, nn);
+      if (isADecisionCP(i))  // If Q[i] is a decision variable
+      {
+        toGradDiffConstraintsDiffVariables(gIndexQ(i), -inv_deltaT2 * ones, grad, r, nn);
+      }
+      if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+      {
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), 2 * inv_deltaT2 * ones, grad, r, nn);
+      }
+      if (isADecisionCP(i + 2))  // If Q[i+2] is a decision variable
+      {
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), -inv_deltaT2 * ones, grad, r, nn);
+      }
     }
     r = r + 3;
   }
@@ -494,6 +560,7 @@ void SolverNlopt::multi_ineq_constraint(unsigned m, double *constraints, unsigne
 
 void SolverNlopt::printQND(std::vector<Eigen::Vector3d> q, std::vector<Eigen::Vector3d> n, std::vector<double> d)
 {
+  std::cout << "Going to print, q_size= " << q.size() << std::endl;
   std::cout << "   control points:" << std::endl;
   for (Eigen::Vector3d q_i : q)
   {
@@ -565,12 +632,6 @@ void SolverNlopt::optimize()
     x[i] = (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
   }
 
-  x[0] = initial_point_(0);
-  x[1] = initial_point_(1);
-  x[2] = initial_point_(2);
-  x[gIndexQ(N_)] = final_point_(0);
-  x[gIndexQ(N_) + 1] = final_point_(1);
-  x[gIndexQ(N_) + 2] = final_point_(2);
   double minf;
 
   MyTimer opt_timer(true);
@@ -590,6 +651,8 @@ void SolverNlopt::optimize()
     std::vector<Eigen::Vector3d> n;
     std::vector<double> d;
     toEigen(x, q, n, d);
+    std::cout << "Calling to print, q_size= " << q.size() << std::endl;
+
     printQND(q, n, d);
 
     /*    std::cout << "Checking if these constraints are satisfied" << std::endl;
@@ -613,21 +676,6 @@ void SolverNlopt::optimize()
 
     // Construct now the B-Spline
     // See example at https://github.com/libigl/eigen/blob/master/unsupported/test/splines.cpp#L37
-    Eigen::RowVectorXd knots(M_ + 1);
-    for (int i = 0; i <= p_; i++)
-    {
-      knots[i] = t_min_;
-    }
-
-    for (int i = (p_ + 1); i <= M_ - p_ - 1; i++)
-    {
-      knots[i] = knots[i - 1] + deltaT_;  // Assumming a uniform b-spline (internal knots are equally spaced)
-    }
-
-    for (int i = (M_ - p_); i <= M_; i++)
-    {
-      knots[i] = t_max_;
-    }
 
     Eigen::MatrixXd control_points(q.size(), 3);
 
@@ -637,9 +685,12 @@ void SolverNlopt::optimize()
     }
     control_points.transposeInPlace();
 
-    Eigen::Spline<double, 3, Eigen::Dynamic> spline(knots, control_points);
+    std::cout << "Control Points used are\n" << control_points << std::endl;
+    std::cout << "====================" << std::endl;
 
-    std::cout << "Knots= " << knots << std::endl;
+    Eigen::Spline<double, 3, Eigen::Dynamic> spline(knots_, control_points);
+
+    std::cout << "Knots= " << knots_ << std::endl;
     std::cout << "dc_= " << dc_ << std::endl;
 
     X_temp_.clear();
@@ -656,6 +707,11 @@ void SolverNlopt::optimize()
       state_i.setAccel(derivatives.col(2));
       state_i.setJerk(derivatives.col(3));
       X_temp_.push_back(state_i);
+
+      std::cout << "Vel, Accel=" << derivatives.col(1).transpose() << "   " << derivatives.col(2).transpose()
+                << std::endl;
+
+      // state_i.printHorizontal();
     }
   }
 
