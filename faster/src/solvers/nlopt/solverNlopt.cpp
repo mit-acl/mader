@@ -364,8 +364,7 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
 
   for (int i = 0; i <= N_ - 3; i++)  // i  is the interval (\equiv segment)
   {
-    // impose that all the vertexes are on one side of the plane
-
+    // impose that all the vertexes of the obstacle are on one side of the plane
     for (int vertex_index = 0; vertex_index < hulls_[i].size(); vertex_index++)  // opt->hulls_[i].size()
     {
       Eigen::Vector3d vertex = hulls_[i][vertex_index];
@@ -386,7 +385,7 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
       if (grad)
       {
         toGradSameConstraintDiffVariables(gIndexN(i), q[i + u], grad, r, nn);
-        if (isADecisionCP(i))  // If Q[i] is a decision variable
+        if (isADecisionCP(i + u))  // If Q[i] is a decision variable
         {
           toGradSameConstraintDiffVariables(gIndexQ(i + u), n[i], grad, r, nn);
         }
@@ -437,36 +436,35 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
   // VELOCITY CONSTRAINTS:
   for (int i = 2; i <= (N_ - 3); i++)
   {
-    double inv_deltaT = (1 / deltaT_);
+    double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
+    Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
 
-    Eigen::Vector3d v_i = inv_deltaT * (q[i + 1] - q[i]);
-
-    // v<=vmax
+    // v<=vmax  \equiv  v_i - vmax <= 0
     assignEigenToVector(constraints, r, v_i - v_max_);  // f<=0
     if (grad)
     {
       if (isADecisionCP(i))  // If Q[i] is a decision variable
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i), -inv_deltaT * ones, grad, r, nn);
+        toGradDiffConstraintsDiffVariables(gIndexQ(i), -c1 * ones, grad, r, nn);
       }
       if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), inv_deltaT * ones, grad, r, nn);
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), c1 * ones, grad, r, nn);
       }
     }
     r = r + 3;
 
-    // v>=-vmax
+    // v>=-vmax  \equiv  -v_i - vmax <= 0
     assignEigenToVector(constraints, r, -v_i - v_max_);  // f<=0
     if (grad)
     {
       if (isADecisionCP(i))  // If Q[i] is a decision variable
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i), -inv_deltaT * ones, grad, r, nn);
+        toGradDiffConstraintsDiffVariables(gIndexQ(i), c1 * ones, grad, r, nn);
       }
       if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), inv_deltaT * ones, grad, r, nn);
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -c1 * ones, grad, r, nn);
       }
     }
     r = r + 3;
@@ -475,44 +473,49 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
   // ACCELERATION CONSTRAINTS:
   for (int i = 1; i <= (N_ - 3); i++)
   {
-    double inv_deltaT2 = 1 / (deltaT_ * deltaT_);
+    double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
+    double c2 = p_ / (knots_(i + p_ + 1 + 1) - knots_(i + 1 + 1));
+    double c3 = (p_ - 1) / (knots_(i + p_ + 1) - knots_(i + 2));
 
-    // a<=amax
-    Eigen::Vector3d a_i = inv_deltaT2 * (q[i + 2] - 2 * q[i + 1] + q[i]);
+    Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
+    Eigen::Vector3d v_iP1 = c2 * (q[i + 2] - q[i + 1]);
+    Eigen::Vector3d a_i = c3 * (v_iP1 - v_i);
 
+    // a<=amax  ==  a_i - amax <= 0  ==
+    // c3*c2 *q[i + 1 + 1] - c3*c2* q[i + 1]  -  c3*c1*q[i + 1] + c3*c1*q[i]   - amax <= 0
     assignEigenToVector(constraints, r, a_i - a_max_);  // f<=0
     if (grad)
     {
       if (isADecisionCP(i))  // If Q[i] is a decision variable
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i), inv_deltaT2 * ones, grad, r, nn);
+        toGradDiffConstraintsDiffVariables(gIndexQ(i), c3 * c1 * ones, grad, r, nn);
       }
       if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -2 * inv_deltaT2 * ones, grad, r, nn);
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), (-c3 * c2 - c3 * c1) * ones, grad, r, nn);
       }
       if (isADecisionCP(i + 2))  // If Q[i+2] is a decision variable
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), inv_deltaT2 * ones, grad, r, nn);
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), c3 * c2 * ones, grad, r, nn);
       }
     }
     r = r + 3;
 
-    // a>=-amax
+    // a>=-amax    \equiv  -a_i - amax <= 0
     assignEigenToVector(constraints, r, -a_i - a_max_);  // f<=0
     if (grad)
     {
       if (isADecisionCP(i))  // If Q[i] is a decision variable
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i), -inv_deltaT2 * ones, grad, r, nn);
+        toGradDiffConstraintsDiffVariables(gIndexQ(i), -c3 * c1 * ones, grad, r, nn);
       }
       if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), 2 * inv_deltaT2 * ones, grad, r, nn);
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -(-c3 * c2 - c3 * c1) * ones, grad, r, nn);
       }
       if (isADecisionCP(i + 2))  // If Q[i+2] is a decision variable
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), -inv_deltaT2 * ones, grad, r, nn);
+        toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), -c3 * c2 * ones, grad, r, nn);
       }
     }
     r = r + 3;
@@ -617,8 +620,8 @@ void SolverNlopt::optimize()
       ub.push_back(HUGE_VAL);
     }
     opt_->set_lower_bounds(lb);
-    opt_->set_upper_bounds(ub);*/
-
+    opt_->set_upper_bounds(ub);
+  */
   // set constraint and objective
   opt_->add_inequality_mconstraint(SolverNlopt::multi_ineq_constraint, this, tol_constraint);
   opt_->set_min_objective(SolverNlopt::myObjFunc,
@@ -631,6 +634,11 @@ void SolverNlopt::optimize()
   {
     x[i] = (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
   }
+
+  x[0] = -7;
+  x[3] = -2;
+  x[6] = 3;
+  x[9] = 7.9;
 
   double minf;
 
@@ -708,10 +716,7 @@ void SolverNlopt::optimize()
       state_i.setJerk(derivatives.col(3));
       X_temp_.push_back(state_i);
 
-      std::cout << "Vel, Accel=" << derivatives.col(1).transpose() << "   " << derivatives.col(2).transpose()
-                << std::endl;
-
-      // state_i.printHorizontal();
+      state_i.printHorizontal();
     }
   }
 
