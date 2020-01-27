@@ -7,6 +7,7 @@
 #include <nlopt.hpp>
 #include "./../../faster_types.hpp"
 #include <sstream>
+
 /*#include <Eigen/Dense>
 #include <type_traits>
 #include <fstream>
@@ -21,6 +22,8 @@ class SolverNlopt
 {
 public:
   SolverNlopt(int num_pol, int deg_pol);
+
+  ~SolverNlopt();
 
   void optimize();
 
@@ -93,14 +96,16 @@ private:
   Eigen::Vector3d v_max_;
   Eigen::Vector3d a_max_;
 
+  double constraints_[10000];  // this number should be very big!! (hack)
+
   Eigen::Vector3d q0_, q1_, q2_, qNm2_, qNm1_, qN_;
 
   std::vector<std::vector<Eigen::Vector3d>> hulls_;
 
   // Eigen::Vector3d initial_point_;
   // Eigen::Vector3d final_point_;
-  nlopt::opt *opt_;
-  nlopt::opt *local_opt_;
+  nlopt::opt *opt_ = NULL;
+  nlopt::opt *local_opt_ = NULL;
 
   Eigen::MatrixXd R_;  // This matrix is [r0, r1, r2, r3, r0, r1, r2, r3] (for two segments)
 };

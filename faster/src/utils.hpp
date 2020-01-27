@@ -16,15 +16,15 @@
 #include "faster_types.hpp"
 #include <deque>
 
-#define RED 1
+#define RED_NORMAL 1
 #define RED_TRANS 2
 #define RED_TRANS_TRANS 3
-#define GREEN 4
-#define BLUE 5
+#define GREEN_NORMAL 4
+#define BLUE_NORMAL 5
 #define BLUE_TRANS 6
 #define BLUE_TRANS_TRANS 7
 #define BLUE_LIGHT 8
-#define YELLOW 9
+#define YELLOW_NORMAL 9
 #define ORANGE_TRANS 10
 
 #define STATE 0

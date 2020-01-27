@@ -10,63 +10,99 @@
 #include "timer.hpp"
 #include "solverNlopt.hpp"
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
-#include <boost/geometry/geometries/adapted/boost_tuple.hpp>
-BOOST_GEOMETRY_REGISTER_BOOST_TUPLE_CS(cs::cartesian)
-namespace bg = boost::geometry;
+/*#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/Homogeneous.h>
+#include <CGAL/Polyhedron_traits_with_normals_3.h>*/
+
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/point_generators_3.h>
+#include <CGAL/algorithm.h>
+#include <CGAL/Convex_hull_traits_3.h>
+#include <CGAL/convex_hull_3.h>
+#include <vector>
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef CGAL::Convex_hull_traits_3<K> Traits;
+typedef Traits::Polyhedron_3 CGAL_Polyhedron_3;
+typedef K::Segment_3 Segment_3;
+typedef K::Plane_3 Plane_3;
+// define point creator
+typedef K::Point_3 Point_3;
+typedef CGAL::Creator_uniform_3<double, Point_3> PointCreator;
 
 #define DEG_POL 3
 #define NUM_POL 5
 
 typedef Timer MyTimer;
 
-std::vector<Eigen::Vector3d> convexHullOfInterval(double t_start, double t_end, double inc)
+struct Plane_equation
 {
-  typedef boost::tuple<double, double, double> point;
-  typedef boost::geometry::model::polygon<point> polygon;
-  typedef boost::geometry::model::multi_point<point> mpoint;  // multiple points
-  mpoint mpt;
+  template <class Facet>
+  typename Facet::Plane_3 operator()(Facet& f)
+  {
+    typename Facet::Halfedge_handle h = f.halfedge();
+    typedef typename Facet::Plane_3 Plane;
+    return Plane(h->vertex()->point(), h->next()->vertex()->point(), h->next()->next()->vertex()->point());
+  }
+};
 
-  std::default_random_engine generator;
+// See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
+
+CGAL_Polyhedron_3 convexHullOfInterval(double t_start, double t_end, double inc)
+{
+  /*  std::default_random_engine generator;
   generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
   std::uniform_real_distribution<double> distribution(-1, 1);  // doubles from -1 to 1
+
+  std::vector<Point_3> points;
 
   for (double t = t_start; t <= t_end; t = t + inc)
   {
     double int_random = 1;
-
     double r = int_random * distribution(generator);
+    double r2 = int_random * distribution(generator);
+    double r3 = int_random * distribution(generator);
 
-    //  std::cout << "r= " << r << std::endl;
+    Point_3 p(5.0 + r, r, r2);
+    points.push_back(p);
+  }*/
 
-    /*    boost::geometry::append(mpt, point(sin(t), cos(t), sin(t)));*/
-    boost::geometry::append(mpt, point(5 + r, r, r));
-  }
+  CGAL::Random_points_in_sphere_3<Point_3, PointCreator> gen(1.0);
 
-  polygon hull;
-  MyTimer timer(true);
-  boost::geometry::convex_hull(mpt, hull);
-  // std::cout << "ConvexHull time = " << timer << std::endl;
+  // generate 20 points randomly on a sphere of radius 1.0
+  // and copy them to a vector
+  std::vector<Point_3> points;
+  CGAL::copy_n(gen, 20, std::back_inserter(points));
 
-  using boost::geometry::dsv;
-  std::cout << "hull: " << dsv(hull) << std::endl;
+  // define object to hold convex hull
+  CGAL::Object ch_object;
 
-  // convert to std::vector
-  std::vector<Eigen::Vector3d> result;
-  for (auto it = boost::begin(bg::exterior_ring(hull)); it != boost::end(bg::exterior_ring(hull)); ++it)
-  {
-    result.push_back(Eigen::Vector3d(bg::get<0>(*it), bg::get<1>(*it), bg::get<2>(*it)));
-  }
+  // compute convex hull
+  CGAL::convex_hull_3(points.begin(), points.end(), ch_object);
 
-  std::cout << "result.size()= " << result.size() << std::endl;
+  // determine what kind of object it is
+  if (CGAL::object_cast<Segment_3>(&ch_object))
+    std::cout << "convex hull is a segment " << std::endl;
+  else if (CGAL::object_cast<CGAL_Polyhedron_3>(&ch_object))
+    std::cout << "convex hull is a polyhedron " << std::endl;
+  else
+    std::cout << "convex hull error!" << std::endl;
 
-  return result;
+  CGAL_Polyhedron_3 poly = *CGAL::object_cast<CGAL_Polyhedron_3>(&ch_object);
+
+  std::transform(poly.facets_begin(), poly.facets_end(), poly.planes_begin(), Plane_equation());
+  CGAL::set_pretty_mode(std::cout);
+  std::copy(poly.planes_begin(), poly.planes_end(), std::ostream_iterator<Plane_3>(std::cout, "\n"));
+
+  return poly;
 }
 
-std::vector<std::vector<Eigen::Vector3d>> convexHullsOfCurve(double t_start, double t_end, int intervals, double inc)
+std::vector<CGAL_Polyhedron_3> convexHullsOfCurve(double t_start, double t_end, int intervals, double inc)
 {
-  std::vector<std::vector<Eigen::Vector3d>> convexHulls;
+  std::vector<CGAL_Polyhedron_3> convexHulls;
 
   double deltaT = (t_end - t_start) / (1.0 * intervals);
   std::cout << "deltaT= " << deltaT << std::endl;
@@ -78,31 +114,59 @@ std::vector<std::vector<Eigen::Vector3d>> convexHullsOfCurve(double t_start, dou
   return convexHulls;
 }
 
+std::vector<std::vector<Eigen::Vector3d>> vectorGCALPol2vectorStdEigen(std::vector<CGAL_Polyhedron_3> convexHulls)
+{
+  std::vector<std::vector<Eigen::Vector3d>> convexHulls_std;
+
+  for (int i = 0; i < convexHulls.size(); i++)
+  {
+    CGAL_Polyhedron_3 poly = convexHulls[i];
+    std::vector<Eigen::Vector3d> convexHull_std;
+    for (CGAL_Polyhedron_3::Vertex_iterator v = poly.vertices_begin(); v != poly.vertices_end(); ++v)
+    {
+      Eigen::Vector3d vertex(v->point().x(), v->point().y(), v->point().z());
+      convexHull_std.push_back(vertex);
+      // std::cout << v->point() << std::endl;
+    }
+    convexHulls_std.push_back(convexHull_std);
+  }
+
+  return convexHulls_std;
+}
+
 int main()
 {
   int n_pol = 7;
   int deg = 3;
 
-  std::vector<std::vector<Eigen::Vector3d>> hulls = convexHullsOfCurve(0, 10, n_pol, 0.1);
+  std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(0, 10, n_pol, 0.1);
+  std::vector<std::vector<Eigen::Vector3d>> hulls_std = vectorGCALPol2vectorStdEigen(hulls);
+
   SolverNlopt snlopt(n_pol, deg);  // snlopt(a,g) a polynomials of degree 3
-  snlopt.setTminAndTmax(0, 10);
-  snlopt.setMaxValues(3, 20);  // v_max and a_max
-  snlopt.setDC(0.1);           // dc
 
-  snlopt.setHulls(hulls);
+  for (int i = 0; i < 100; i++)
+  {
+    std::cout << "Optimizing, i=" << i << std::endl;
 
-  state initial_state, final_state;
-  initial_state.setPos(-10, 0, 0);
-  initial_state.setVel(0, 0, 0);
-  initial_state.setAccel(0, 0, 0);
-  final_state.setPos(10, 0, 0);
-  final_state.setVel(0, 0, 0);
-  final_state.setAccel(0, 0, 0);
-  snlopt.setInitAndFinalStates(initial_state, final_state);
+    snlopt.setTminAndTmax(0, 10);
+    snlopt.setMaxValues(3, 20);  // v_max and a_max
+    snlopt.setDC(0.1);           // dc
 
-  std::cout << "Optimizing\n";
-  snlopt.optimize();
+    snlopt.setHulls(hulls_std);
 
+    state initial_state, final_state;
+    initial_state.setPos(-10, -10, -10);
+    initial_state.setVel(0, 0, 0);
+    initial_state.setAccel(0, 0, 0);
+    final_state.setPos(10, 0, 0);
+    final_state.setVel(0, 0, 0);
+    final_state.setAccel(0, 0, 0);
+    snlopt.setInitAndFinalStates(initial_state, final_state);
+    std::cout << "Calling optimize" << std::endl;
+    snlopt.optimize();
+    std::cout << "Below of loop\n";
+  }
+  //}
   // X_whole_out = snlopt.X_temp_;
 
   /*  polygon poly;

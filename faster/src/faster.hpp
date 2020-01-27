@@ -24,11 +24,29 @@
 
 #include "jps_manager.hpp"
 
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/point_generators_3.h>
+#include <CGAL/algorithm.h>
+#include <CGAL/Convex_hull_traits_3.h>
+#include <CGAL/convex_hull_3.h>
+#include <vector>
+
 #define MAP 1          // MAP refers to the occupancy grid
 #define UNKNOWN_MAP 2  // UNKNOWN_MAP refers to the unkown grid
 
 #define RETURN_LAST_VERTEX 0
 #define RETURN_INTERSECTION 1
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef CGAL::Convex_hull_traits_3<K> Traits;
+typedef Traits::Polyhedron_3 CGAL_Polyhedron_3;
+typedef K::Segment_3 Segment_3;
+typedef K::Plane_3 Plane_3;
+// define point creator
+typedef K::Point_3 Point_3;
+typedef K::Vector_3 Vector_3;
+typedef CGAL::Creator_uniform_3<double, Point_3> PointCreator;
 
 // status_ : YAWING-->TRAVELING-->GOAL_SEEN-->GOAL_REACHED-->YAWING-->TRAVELING-->...
 
@@ -71,13 +89,21 @@ private:
 
   double previous_yaw_ = 0.0;
 
+  SolverNlopt* snlopt_;
+
   SolverGurobi sg_whole_;  // solver gurobi whole trajectory
   SolverGurobi sg_safe_;   // solver gurobi whole trajectory
 
   JPS_Manager jps_manager_;  // Manager of JPS
 
-  std::vector<Eigen::Vector3d> convexHullOfInterval(double t_start, double t_end, double inc);
-  std::vector<std::vector<Eigen::Vector3d>> convexHullsOfCurve(double t_start, double t_end, int intervals, double inc);
+  int n_pol_ = 7;
+  int deg_ = 3;
+
+  vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(std::vector<CGAL_Polyhedron_3> vector_of_polyhedrons);
+  std::vector<std::vector<Eigen::Vector3d>> vectorGCALPol2vectorStdEigen(std::vector<CGAL_Polyhedron_3> convexHulls);
+
+  CGAL_Polyhedron_3 convexHullOfInterval(double t_start, double t_end, double inc);
+  std::vector<CGAL_Polyhedron_3> convexHullsOfCurve(double t_start, double t_end, int intervals, double inc);
 
   void yaw(double diff, state& next_goal);
 

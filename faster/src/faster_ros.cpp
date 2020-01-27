@@ -1,6 +1,8 @@
 #include "faster_ros.hpp"
 #include <sensor_msgs/point_cloud_conversion.h>
 
+typedef Timer MyTimer;
+
 // this object is created in the faster_ros_node
 FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::NodeHandle nh_pub_CB)
   : nh_(nh), nh_replan_CB_(nh_replan_CB), nh_pub_CB_(nh_pub_CB)
@@ -141,17 +143,17 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   pub_traj_safe_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
 
   // Subscribers
-  occup_grid_sub_.subscribe(nh_, "occup_grid", 1);
-  unknown_grid_sub_.subscribe(nh_, "unknown_grid", 1);
-  sync_.reset(new Sync(MySyncPolicy(1), occup_grid_sub_, unknown_grid_sub_));
-  sync_->registerCallback(boost::bind(&FasterRos::mapCB, this, _1, _2));
-  sub_goal_ = nh_.subscribe("term_goal", 1, &FasterRos::terminalGoalCB, this);
-  sub_mode_ = nh_.subscribe("mode", 1, &FasterRos::modeCB, this);
-  sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);
+  /*  occup_grid_sub_.subscribe(nh_, "occup_grid", 1);
+    unknown_grid_sub_.subscribe(nh_, "unknown_grid", 1);
+    sync_.reset(new Sync(MySyncPolicy(1), occup_grid_sub_, unknown_grid_sub_));
+    sync_->registerCallback(boost::bind(&FasterRos::mapCB, this, _1, _2));
+    sub_goal_ = nh_.subscribe("term_goal", 1, &FasterRos::terminalGoalCB, this);
+    sub_mode_ = nh_.subscribe("mode", 1, &FasterRos::modeCB, this);
+    sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);*/
   // sub_odom_ = nh_.subscribe("odom", 1, &FasterRos::odomCB, this);
 
   // Timers
-  pubCBTimer_ = nh_pub_CB_.createTimer(ros::Duration(par_.dc), &FasterRos::pubCB, this);
+  // pubCBTimer_ = nh_pub_CB_.createTimer(ros::Duration(par_.dc), &FasterRos::pubCB, this);
   replanCBTimer_ = nh_.createTimer(ros::Duration(par_.dc), &FasterRos::replanCB, this);
 
   // For now stop all these subscribers/timers until we receive GO
@@ -159,16 +161,16 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   unknown_grid_sub_.unsubscribe();
   sub_state_.shutdown();
   pubCBTimer_.stop();
-  replanCBTimer_.stop();
+  // replanCBTimer_.stop();
 
   // Markers
   setpoint_ = getMarkerSphere(0.35, ORANGE_TRANS);
   R_ = getMarkerSphere(0.35, ORANGE_TRANS);
-  I_ = getMarkerSphere(0.35, YELLOW);
-  E_ = getMarkerSphere(0.35, RED);
-  M_ = getMarkerSphere(0.35, BLUE);
-  H_ = getMarkerSphere(0.35, GREEN);
-  A_ = getMarkerSphere(0.35, RED);
+  I_ = getMarkerSphere(0.35, YELLOW_NORMAL);
+  E_ = getMarkerSphere(0.35, RED_NORMAL);
+  M_ = getMarkerSphere(0.35, BLUE_NORMAL);
+  H_ = getMarkerSphere(0.35, GREEN_NORMAL);
+  A_ = getMarkerSphere(0.35, RED_NORMAL);
 
   // If you want another thread for the replanCB: replanCBTimer_ = nh_.createTimer(ros::Duration(par_.dc),
   // &FasterRos::replanCB, this);
@@ -178,19 +180,19 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   tfListener = new tf2_ros::TransformListener(tf_buffer_);
   // wait for body transform to be published before initializing
-  ROS_INFO("Waiting for world to camera transform...");
-  while (true)
-  {
-    try
+  /*  ROS_INFO("Waiting for world to camera transform...");
+    while (true)
     {
-      tf_buffer_.lookupTransform(world_name_, name_drone_ + "/camera", ros::Time::now(), ros::Duration(0.5));  //
-      break;
-    }
-    catch (tf2::TransformException& ex)
-    {
-      // nothing
-    }
-  }
+      try
+      {
+        tf_buffer_.lookupTransform(world_name_, name_drone_ + "/camera", ros::Time::now(), ros::Duration(0.5));  //
+        break;
+      }
+      catch (tf2::TransformException& ex)
+      {
+        // nothing
+      }
+    }*/
   clearMarkerActualTraj();
 
   faster_ptr_ = std::unique_ptr<Faster>(new Faster(par_));
@@ -362,20 +364,20 @@ void FasterRos::publishJPSPath(vec_Vecf<3>& path, int i)
   switch (i)
   {
     case JPSk_NORMAL:
-      vectorOfVectors2MarkerArray(path, &path_jps1_, color(BLUE));
+      vectorOfVectors2MarkerArray(path, &path_jps1_, color(BLUE_NORMAL));
       pub_path_jps1_.publish(path_jps1_);
       break;
 
     case JPS2_NORMAL:
-      vectorOfVectors2MarkerArray(path, &path_jps2_, color(RED));
+      vectorOfVectors2MarkerArray(path, &path_jps2_, color(RED_NORMAL));
       pub_path_jps2_.publish(path_jps2_);
       break;
     case JPS_WHOLE:
-      vectorOfVectors2MarkerArray(path, &path_jps_whole_, color(GREEN));
+      vectorOfVectors2MarkerArray(path, &path_jps_whole_, color(GREEN_NORMAL));
       pub_path_jps_whole_.publish(path_jps_whole_);
       break;
     case JPS_SAFE:
-      vectorOfVectors2MarkerArray(path, &path_jps_safe_, color(YELLOW));
+      vectorOfVectors2MarkerArray(path, &path_jps_safe_, color(YELLOW_NORMAL));
       pub_path_jps_safe_.publish(path_jps_safe_);
       break;
   }
@@ -469,7 +471,7 @@ void FasterRos::pubActualTraj()
   m.action = visualization_msgs::Marker::ADD;
   m.id = actual_trajID_ % 3000;  // Start the id again after 300 points published (if not RVIZ goes very slow)
   actual_trajID_++;
-  m.color = color(RED);
+  m.color = color(RED_NORMAL);
   m.scale.x = 0.15;
   m.scale.y = 0;
   m.scale.z = 0;

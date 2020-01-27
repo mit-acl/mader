@@ -175,7 +175,7 @@ std_msgs::ColorRGBA color(int id)
   orange_trans.a = 0.7;
   switch (id)
   {
-    case RED:
+    case RED_NORMAL:
       return red;
       break;
     case RED_TRANS:
@@ -184,7 +184,7 @@ std_msgs::ColorRGBA color(int id)
     case RED_TRANS_TRANS:
       return red_trans_trans;
       break;
-    case BLUE:
+    case BLUE_NORMAL:
       return blue;
       break;
     case BLUE_TRANS:
@@ -196,10 +196,10 @@ std_msgs::ColorRGBA color(int id)
     case BLUE_LIGHT:
       return blue_light;
       break;
-    case GREEN:
+    case GREEN_NORMAL:
       return green;
       break;
-    case YELLOW:
+    case YELLOW_NORMAL:
       return yellow;
       break;
     case ORANGE_TRANS:

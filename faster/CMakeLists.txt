@@ -14,7 +14,8 @@ add_definitions(${PCL_DEFINITIONS})
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 find_package(GUROBI REQUIRED)
 find_package(NLOPT REQUIRED)
-
+find_package(CGAL REQUIRED)
+include(${CGAL_USE_FILE})
 
 if(GUROBI_FOUND)
   message(STATUS "GUROBI FOUND")
@@ -65,7 +66,7 @@ add_executable(${PROJECT_NAME}_node src/main.cpp src/faster.cpp src/faster_ros.c
 #target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${GUROBI_LIBRARIES} )
 
 #If GUROBI and NLOPT are required
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${GUROBI_LIBRARIES} ${NLOPT_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${GUROBI_LIBRARIES} ${NLOPT_LIBRARIES} ${CGAL_LIBS})
 
 
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
@@ -79,7 +80,7 @@ add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
 
 add_executable(${PROJECT_NAME}_sample src/solvers/nlopt/main.cpp src/solvers/nlopt/solverNlopt.cpp)
-target_link_libraries(${PROJECT_NAME}_sample  ${NLOPT_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_sample  ${NLOPT_LIBRARIES}  ${CGAL_LIBS})
 add_dependencies(${PROJECT_NAME}_sample ${catkin_EXPORTED_TARGETS} )
 
 
