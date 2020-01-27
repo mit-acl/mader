@@ -96,6 +96,9 @@ private:
   Eigen::Vector3d v_max_;
   Eigen::Vector3d a_max_;
 
+  state initial_state_;
+  state final_state_;
+
   double constraints_[10000];  // this number should be very big!! (hack)
 
   Eigen::Vector3d q0_, q1_, q2_, qNm2_, qNm1_, qN_;

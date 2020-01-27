@@ -18,8 +18,8 @@ z_max: 2         #[m] JPS is not allowed to give a solution that goes higher tha
 inflation_jps: 0.35  #[m] The obstacles are inflated (to run JPS) by this amount
 factor_jps: 1  #[m] JPS is run with resolution=factor_jps*(resolution of the map)
 
-v_max: 5.0   #[m/s]  1.4
-a_max: 5.0   #[m/s2] 1.4
+v_max: 5   #[m/s]  1.4
+a_max: 8.0   #[m/s2] 1.4
 j_max: 8.0  #[m/s3] 35
 
 #Factors for time allocation
@@ -29,6 +29,9 @@ increment_whole: 1.0 #[-]
 gamma_safe: 20         #[-]
 gammap_safe: 20    #[-]
 increment_safe: 1.0   #[-]
+
+
+alpha: 5 #[-] DeltaT = alpha*States_took_previous_replan
 
 delta_a: 1.0
 delta_H: 1.0

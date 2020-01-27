@@ -23,6 +23,7 @@
 #include <snapstack_msgs/QuadGoal.h>
 //#include <nav_msgs/Odometry.h>
 #include <faster_msgs/Mode.h>
+#include <faster_msgs/StringArray.h>
 
 // TimeSynchronizer includes
 #include <message_filters/subscriber.h>
@@ -64,6 +65,7 @@ private:
   void modeCB(const faster_msgs::Mode& msg);
   void pubCB(const ros::TimerEvent& e);
   void replanCB(const ros::TimerEvent& e);
+  void trajCB(const faster_msgs::StringArray& msg);
 
   visualization_msgs::Marker createMarkerLineStrip(Eigen::MatrixXd X);
   // void clearMarkerSetOfArrows();
@@ -159,6 +161,7 @@ private:
   ros::Subscriber sub_odom_;
   ros::Subscriber sub_mode_;
   ros::Subscriber sub_vicon_;
+  ros::Subscriber sub_traj_;
 
   // Eigen::Vector3d accel_vicon_;
 
@@ -171,6 +174,8 @@ private:
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener* tfListener;
   std::string name_drone_;
+
+  std::vector<std::string> traj_;  // trajectory of the dynamic obstacle
 
   visualization_msgs::MarkerArray trajs_sphere_;  // all the trajectories generated in the sphere
   visualization_msgs::MarkerArray path_jps1_;

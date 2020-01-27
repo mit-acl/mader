@@ -88,35 +88,70 @@ Faster::Faster(parameters par) : par_(par)
   n_pol_ = 7;
   deg_ = 3;
   snlopt_ = new SolverNlopt(n_pol_, deg_);  // snlopt(a,g) a polynomials of degree 3
+
+  // SolverNlopt snlopt(n_pol_, deg_);  // snlopt(a,g) a polynomials of degree 3
+
+  snlopt_->setMaxValues(3000, 20000);  // v_max and a_max
+  snlopt_->setDC(par_.dc);             // dc
+}
+
+void Faster::updateTrajObstacles(std::vector<std::string> traj)
+{
+  typedef exprtk::symbol_table<double> symbol_table_t;
+  typedef exprtk::expression<double> expression_t;
+  typedef exprtk::parser<double> parser_t;
+
+  symbol_table_t symbol_table;
+  symbol_table.add_variable("t", t_);
+  symbol_table.add_constants();
+
+  for (auto traj_i : traj)
+  {
+    expression_t expression;
+    expression.register_symbol_table(symbol_table);
+
+    parser_t parser;
+    parser.compile(traj_i, expression);
+    traj_.push_back(expression);
+  }
+
+  /*  for (x = T(-5); x <= T(+5); x += T(0.001))
+    {
+      const T y = expression.value();
+      printf("%19.15f\t%19.15f\n", x, y);
+    }*/
 }
 
 // See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
-
 CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, double inc)
 {
   /*  std::default_random_engine generator;
-  generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
-  std::uniform_real_distribution<double> distribution(-1, 1);  // doubles from -1 to 1
+    generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+    std::uniform_real_distribution<double> distribution(-1, 1);  // doubles from -1 to 1
+        double int_random = 1;
+      double r = int_random * distribution(generator);
+      double r2 = int_random * distribution(generator);
+      double r3 = int_random * distribution(generator);*/
 
   std::vector<Point_3> points;
 
   for (double t = t_start; t <= t_end; t = t + inc)
   {
-    double int_random = 1;
-    double r = int_random * distribution(generator);
-    double r2 = int_random * distribution(generator);
-    double r3 = int_random * distribution(generator);
+    // Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
+    t_ = t;
+    double x = traj_[0].value();  //    sin(t) + 2 * sin(2 * t);
+    double y = traj_[1].value();  // cos(t) - 2 * cos(2 * t);
+    double z = traj_[2].value();  //-sin(3 * t);
 
-    Point_3 p(5.0 + r, r, r2);
+    Point_3 p(x, y, z);
     points.push_back(p);
-  }*/
-
-  CGAL::Random_points_in_sphere_3<Point_3, PointCreator> gen(2.0);
+  }
 
   // generate 3 points randomly on a sphere of radius 1.0
   // and copy them to a vector
-  std::vector<Point_3> points;
-  CGAL::copy_n(gen, 6, std::back_inserter(points));
+  /*  CGAL::Random_points_in_sphere_3<Point_3, PointCreator> gen(2.0);
+    std::vector<Point_3> points;
+    CGAL::copy_n(gen, 6, std::back_inserter(points));*/
 
   // define object to hold convex hull
   CGAL::Object ch_object;
@@ -147,7 +182,7 @@ vec_E<Polyhedron<3>> Faster::vectorGCALPol2vectorJPSPol(std::vector<CGAL_Polyhed
 {
   vec_E<Polyhedron<3>> vector_of_polyhedron_jps;
 
-  for (polyhedron_i : vector_of_polyhedrons)
+  for (auto polyhedron_i : vector_of_polyhedrons)
   {
     vec_E<Hyperplane<3>> hyperplanes;
     for (auto it = polyhedron_i.planes_begin(); it != polyhedron_i.planes_end(); it++)
@@ -621,36 +656,41 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
                     vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out,
                     std::vector<state>& X_whole_out)
 {
+  if (novale_already_done_ == true)
+  {
+    return;
+  }
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Tests for the NLOPT solver://///////////////////
   //////////////////////////////////////////////////////////////////////////
   //
 
-  SolverNlopt snlopt(n_pol_, deg_);  // snlopt(a,g) a polynomials of degree 3
+  /*
+   SolverNlopt snlopt(n_pol_, deg_);  // snlopt(a,g) a polynomials of degree 3
 
-  snlopt.setTminAndTmax(0, 10);
-  snlopt.setMaxValues(3000, 20000);  // v_max and a_max
-  snlopt.setDC(0.1);                 // dc
+    snlopt.setTminAndTmax(0, 10);
+    snlopt.setMaxValues(3000, 20000);  // v_max and a_max
+    snlopt.setDC(0.1);                 // dc
 
-  std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(0, 10, n_pol_, 0.1);
-  poly_whole_out = vectorGCALPol2vectorJPSPol(hulls);
-  std::vector<std::vector<Eigen::Vector3d>> hulls_std = vectorGCALPol2vectorStdEigen(hulls);
-  snlopt.setHulls(hulls_std);
+    std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(0, 10, n_pol_, 0.1);
+    poly_whole_out = vectorGCALPol2vectorJPSPol(hulls);
+    std::vector<std::vector<Eigen::Vector3d>> hulls_std = vectorGCALPol2vectorStdEigen(hulls);
+    snlopt.setHulls(hulls_std);
 
-  state initial_state, final_state;
-  initial_state.setPos(-10, 0, 0);
-  initial_state.setVel(0, 0, 0);
-  initial_state.setAccel(0, 0, 0);
-  final_state.setPos(10, 0, 0);
-  final_state.setVel(0, 0, 0);
-  final_state.setAccel(0, 0, 0);
-  snlopt.setInitAndFinalStates(initial_state, final_state);
-  std::cout << "Calling optimize" << std::endl;
-  snlopt.optimize();
-  X_whole_out = snlopt.X_temp_;
-  std::cout << "Below of loop\n";
+    state initial_state, final_state;
+    initial_state.setPos(-10, 0, 0);
+    initial_state.setVel(0, 0, 0);
+    initial_state.setAccel(0, 0, 0);
+    final_state.setPos(10, 0, 0);
+    final_state.setVel(0, 0, 0);
+    final_state.setAccel(0, 0, 0);
+    snlopt.setInitAndFinalStates(initial_state, final_state);
+    snlopt.optimize();
+    X_whole_out = snlopt.X_temp_;
 
-  return;
+    return;
+
+    */
 
   //////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
@@ -708,212 +748,250 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   // If k_end_whole=0, then A = plan_.back() = plan_[plan_.size() - 1]
   k_end_whole = std::max((int)plan_.size() - deltaT_, 0);
-  A = plan_[plan_.size() - 1 - k_end_whole];
+  A = plan_.get(plan_.size() - 1 - k_end_whole);
+  /*
+    //////////////////////////////////////////////////////////////////////////
+    ///////////////////////// Solve JPS //////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-  //////////////////////////////////////////////////////////////////////////
-  ///////////////////////// Solve JPS //////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////
+    bool solvedjps = false;
+    MyTimer timer_jps(true);
 
-  bool solvedjps = false;
-  MyTimer timer_jps(true);
+    vec_Vecf<3> JPSk = jps_manager_.solveJPS3D(A.pos, G.pos, &solvedjps, 1);
 
-  vec_Vecf<3> JPSk = jps_manager_.solveJPS3D(A.pos, G.pos, &solvedjps, 1);
-
-  if (solvedjps == false)
-  {
-    std::cout << bold << red << "JPS didn't find a solution" << std::endl;
-    return;
-  }
-
-  //////////////////////////////////////////////////////////////////////////
-  ///////////////////////// Find JPS_in ////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////
-
-  double ra = std::min((dist_to_goal - 0.001), par_.Ra);  // radius of the sphere S
-  bool noPointsOutsideS;
-  int li1;  // last index inside the sphere of JPSk
-  state E;
-  E.pos = getFirstIntersectionWithSphere(JPSk, ra, JPSk[0], &li1, &noPointsOutsideS);
-  vec_Vecf<3> JPS_in(JPSk.begin(), JPSk.begin() + li1 + 1);
-  if (noPointsOutsideS == false)
-  {
-    JPS_in.push_back(E.pos);
-  }
-  // createMoreVertexes in case dist between vertexes is too big
-  createMoreVertexes(JPS_in, par_.dist_max_vertexes);
-
-  //////////////////////////////////////////////////////////////////////////
-  ///////////////// Solve with GUROBI Whole trajectory /////////////////////
-  //////////////////////////////////////////////////////////////////////////
-
-  if (par_.use_faster == true)
-  {
-    vec_Vecf<3> JPS_whole = JPS_in;
-    deleteVertexes(JPS_whole, par_.max_poly_whole);
-    E.pos = JPS_whole[JPS_whole.size() - 1];
-
-    // Convex Decomp around JPS_whole
-    MyTimer cvx_ellip_decomp_t(true);
-    jps_manager_.cvxEllipsoidDecomp(JPS_whole, OCCUPIED_SPACE, l_constraints_whole_, poly_whole_out);
-    std::cout << "poly_whole_out= " << poly_whole_out.size() << std::endl;
-
-    // Check if G is inside poly_whole
-    bool isGinside_whole = l_constraints_whole_[l_constraints_whole_.size() - 1].inside(G.pos);
-    E.pos = (isGinside_whole == true) ? G.pos : E.pos;
-
-    // Set Initial cond, Final cond, and polytopes for the whole traj
-    sg_whole_.setX0(A);
-    sg_whole_.setXf(E);
-    sg_whole_.setPolytopes(l_constraints_whole_);
-
-    std::cout << "Initial Position is inside= " << l_constraints_whole_[l_constraints_whole_.size() - 1].inside(A.pos)
-              << std::endl;
-    std::cout << "Final Position is inside= " << l_constraints_whole_[l_constraints_whole_.size() - 1].inside(E.pos)
-              << std::endl;
-
-    // Solve with Gurobi
-    MyTimer whole_gurobi_t(true);
-    bool solved_whole = sg_whole_.genNewTraj();
-
-    if (solved_whole == false)
+    if (solvedjps == false)
     {
-      std::cout << bold << red << "No solution found for the whole trajectory" << reset << std::endl;
+      std::cout << bold << red << "JPS didn't find a solution" << std::endl;
       return;
     }
 
-    // Get Results
-    sg_whole_.fillX();
+    //////////////////////////////////////////////////////////////////////////
+    ///////////////////////// Find JPS_in ////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-    // Copy for visualization
-    X_whole_out = sg_whole_.X_temp_;
-    JPS_whole_out = JPS_whole;
-  }
-  else
-  {  // Dummy whole trajectory
-    state dummy;
-    std::vector<state> dummy_vector;
-    dummy_vector.push_back(dummy);
-    sg_whole_.X_temp_ = dummy_vector;
-  }
+    double ra = std::min((dist_to_goal - 0.001), par_.Ra);  // radius of the sphere S
+    bool noPointsOutsideS;
+    int li1;  // last index inside the sphere of JPSk
+    state E;
+    E.pos = getFirstIntersectionWithSphere(JPSk, ra, JPSk[0], &li1, &noPointsOutsideS);
+    vec_Vecf<3> JPS_in(JPSk.begin(), JPSk.begin() + li1 + 1);
+    if (noPointsOutsideS == false)
+    {
+      JPS_in.push_back(E.pos);
+    }
+    // createMoreVertexes in case dist between vertexes is too big
+    createMoreVertexes(JPS_in, par_.dist_max_vertexes);
 
-  /*  std::cout << "This is the WHOLE TRAJECTORY" << std::endl;
-    printStateVector(sg_whole_.X_temp_);
-    std::cout << "===========================" << std::endl;*/
+    //////////////////////////////////////////////////////////////////////////
+    ///////////////// Solve with GUROBI Whole trajectory /////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-  //////////////////////////////////////////////////////////////////////////
-  ///////////////// Solve with GUROBI Safe trajectory /////////////////////
-  //////////////////////////////////////////////////////////////////////////
+    if (par_.use_faster == true)
+    {
+      vec_Vecf<3> JPS_whole = JPS_in;
+      deleteVertexes(JPS_whole, par_.max_poly_whole);
+      E.pos = JPS_whole[JPS_whole.size() - 1];
 
-  vec_Vecf<3> JPSk_inside_sphere_tmp = JPS_in;
-  bool thereIsIntersection2;
-  // state M;
-  M_.pos = getFirstCollisionJPS(JPSk_inside_sphere_tmp, &thereIsIntersection2, UNKNOWN_MAP,
-                                RETURN_INTERSECTION);  // results saved in JPSk_inside_sphere_tmp
+      // Convex Decomp around JPS_whole
+      MyTimer cvx_ellip_decomp_t(true);
+      jps_manager_.cvxEllipsoidDecomp(JPS_whole, OCCUPIED_SPACE, l_constraints_whole_, poly_whole_out);
+      std::cout << "poly_whole_out= " << poly_whole_out.size() << std::endl;
 
-  bool needToComputeSafePath;
-  int indexH = findIndexH(needToComputeSafePath);
+      // Check if G is inside poly_whole
+      bool isGinside_whole = l_constraints_whole_[l_constraints_whole_.size() - 1].inside(G.pos);
+      E.pos = (isGinside_whole == true) ? G.pos : E.pos;
 
-  std::cout << "NeedToComputeSafePath=" << needToComputeSafePath << std::endl;
+      // Set Initial cond, Final cond, and polytopes for the whole traj
+      sg_whole_.setX0(A);
+      sg_whole_.setXf(E);
+      sg_whole_.setPolytopes(l_constraints_whole_);
 
-  if (par_.use_faster == false)
-  {
-    needToComputeSafePath = true;
-  }
+      std::cout << "Initial Position is inside= " << l_constraints_whole_[l_constraints_whole_.size() - 1].inside(A.pos)
+                << std::endl;
+      std::cout << "Final Position is inside= " << l_constraints_whole_[l_constraints_whole_.size() - 1].inside(E.pos)
+                << std::endl;
 
-  if (needToComputeSafePath == false)
-  {
-    k_safe = indexH;
-    sg_safe_.X_temp_ = std::vector<state>();  // 0 elements
-  }
-  else
-  {
-    mtx_X_U_temp.lock();
+      // Solve with Gurobi
+      MyTimer whole_gurobi_t(true);
+      bool solved_whole = sg_whole_.genNewTraj();
 
-    k_safe = findIndexR(indexH);
-    state R = sg_whole_.X_temp_[k_safe];
+      if (solved_whole == false)
+      {
+        std::cout << bold << red << "No solution found for the whole trajectory" << reset << std::endl;
+        return;
+      }
 
-    mtx_X_U_temp.unlock();
+      // Get Results
+      sg_whole_.fillX();
 
-    /*    if (ARisInFreeSpace(indexR_) == false and takeoff_done_ == true)
-        {
-          std::cout << red << bold << "The piece A-->R is not in Free Space" << std::endl;
-          return;
-        }*/
+      // Copy for visualization
+      X_whole_out = sg_whole_.X_temp_;
+      JPS_whole_out = JPS_whole;
+    }
+    else
+    {  // Dummy whole trajectory
+      state dummy;
+      std::vector<state> dummy_vector;
+      dummy_vector.push_back(dummy);
+      sg_whole_.X_temp_ = dummy_vector;
+    }
 
-    JPSk_inside_sphere_tmp[0] = R.pos;
+    // std::cout << "This is the WHOLE TRAJECTORY" << std::endl;
+    // printStateVector(sg_whole_.X_temp_);
+    // std::cout << "===========================" << std::endl;
+
+    //////////////////////////////////////////////////////////////////////////
+    ///////////////// Solve with GUROBI Safe trajectory /////////////////////
+    //////////////////////////////////////////////////////////////////////////
+
+    vec_Vecf<3> JPSk_inside_sphere_tmp = JPS_in;
+    bool thereIsIntersection2;
+    // state M;
+    M_.pos = getFirstCollisionJPS(JPSk_inside_sphere_tmp, &thereIsIntersection2, UNKNOWN_MAP,
+                                  RETURN_INTERSECTION);  // results saved in JPSk_inside_sphere_tmp
+
+    bool needToComputeSafePath;
+    int indexH = findIndexH(needToComputeSafePath);
+
+    std::cout << "NeedToComputeSafePath=" << needToComputeSafePath << std::endl;
 
     if (par_.use_faster == false)
     {
-      JPSk_inside_sphere_tmp[0] = A.pos;
+      needToComputeSafePath = true;
     }
 
-    vec_Vecf<3> JPS_safe = JPSk_inside_sphere_tmp;
-
-    // delete extra vertexes
-    deleteVertexes(JPS_safe, par_.max_poly_safe);
-    M_.pos = JPS_safe[JPS_safe.size() - 1];
-
-    // compute convex decomposition of JPS_safe
-    jps_manager_.cvxEllipsoidDecomp(JPS_safe, UNKOWN_AND_OCCUPIED_SPACE, l_constraints_safe_, poly_safe_out);
-
-    JPS_safe_out = JPS_safe;
-
-    bool isGinside = l_constraints_safe_[l_constraints_safe_.size() - 1].inside(G.pos);
-    M_.pos = (isGinside == true) ? G.pos : M_.pos;
-
-    state x0_safe;
-    x0_safe = R;
-
-    if (par_.use_faster == false)
+    if (needToComputeSafePath == false)
     {
-      x0_safe = stateA_;
+      k_safe = indexH;
+      sg_safe_.X_temp_ = std::vector<state>();  // 0 elements
     }
-
-    bool shouldForceFinalConstraint_for_Safe = (par_.use_faster == false) ? true : false;
-
-    if (l_constraints_safe_[0].inside(x0_safe.pos) == false)
+    else
     {
-      std::cout << red << "First point of safe traj is outside" << reset << std::endl;
+      mtx_X_U_temp.lock();
+
+      k_safe = findIndexR(indexH);
+      state R = sg_whole_.X_temp_[k_safe];
+
+      mtx_X_U_temp.unlock();
+
+      // if (ARisInFreeSpace(indexR_) == false and takeoff_done_ == true)
+      // {
+      //  std::cout << red << bold << "The piece A-->R is not in Free Space" << std::endl;
+      //  return;
+      //}
+
+      JPSk_inside_sphere_tmp[0] = R.pos;
+
+      if (par_.use_faster == false)
+      {
+        JPSk_inside_sphere_tmp[0] = A.pos;
+      }
+
+      vec_Vecf<3> JPS_safe = JPSk_inside_sphere_tmp;
+
+      // delete extra vertexes
+      deleteVertexes(JPS_safe, par_.max_poly_safe);
+      M_.pos = JPS_safe[JPS_safe.size() - 1];
+
+      // compute convex decomposition of JPS_safe
+      jps_manager_.cvxEllipsoidDecomp(JPS_safe, UNKOWN_AND_OCCUPIED_SPACE, l_constraints_safe_, poly_safe_out);
+
+      JPS_safe_out = JPS_safe;
+
+      bool isGinside = l_constraints_safe_[l_constraints_safe_.size() - 1].inside(G.pos);
+      M_.pos = (isGinside == true) ? G.pos : M_.pos;
+
+      state x0_safe;
+      x0_safe = R;
+
+      if (par_.use_faster == false)
+      {
+        x0_safe = stateA_;
+      }
+
+      bool shouldForceFinalConstraint_for_Safe = (par_.use_faster == false) ? true : false;
+
+      if (l_constraints_safe_[0].inside(x0_safe.pos) == false)
+      {
+        std::cout << red << "First point of safe traj is outside" << reset << std::endl;
+      }
+
+      sg_safe_.setX0(x0_safe);
+      sg_safe_.setXf(M_);  // only used to compute dt
+      sg_safe_.setPolytopes(l_constraints_safe_);
+      sg_safe_.setForceFinalConstraint(shouldForceFinalConstraint_for_Safe);
+      MyTimer safe_gurobi_t(true);
+      std::cout << "Calling to Gurobi" << std::endl;
+      bool solved_safe = sg_safe_.genNewTraj();
+
+      if (solved_safe == false)
+      {
+        std::cout << red << "No solution found for the safe path" << reset << std::endl;
+        return;
+      }
+
+      // Get the solution
+      sg_safe_.fillX();
+      X_safe_out = sg_safe_.X_temp_;
     }
 
-    sg_safe_.setX0(x0_safe);
-    sg_safe_.setXf(M_);  // only used to compute dt
-    sg_safe_.setPolytopes(l_constraints_safe_);
-    sg_safe_.setForceFinalConstraint(shouldForceFinalConstraint_for_Safe);
-    MyTimer safe_gurobi_t(true);
-    std::cout << "Calling to Gurobi" << std::endl;
-    bool solved_safe = sg_safe_.genNewTraj();
+     // std::cout << "This is the SAFE TRAJECTORY" << std::endl;
+      //printStateVector(sg_safe_.X_temp_);
+     // std::cout << "===========================" << std::endl;
 
-    if (solved_safe == false)
-    {
-      std::cout << red << "No solution found for the safe path" << reset << std::endl;
-      return;
-    }
+    ///////////////////////////////////////////////////////////
+    ///////////////       Append RESULTS    ////////////////////
+    ///////////////////////////////////////////////////////////
+    std::cout << "Going to append" << std::endl;
 
-    // Get the solution
-    sg_safe_.fillX();
-    X_safe_out = sg_safe_.X_temp_;
-  }
+      if (appendToPlan(k_end_whole, sg_whole_.X_temp_, k_safe, sg_safe_.X_temp_) != true)
+      {
+        return;
+      }
+    */
 
-  /*  std::cout << "This is the SAFE TRAJECTORY" << std::endl;
-    printStateVector(sg_safe_.X_temp_);
-    std::cout << "===========================" << std::endl;*/
+  //######################### Solve with the NLOPT solver: //#########################
 
-  ///////////////////////////////////////////////////////////
-  ///////////////       Append RESULTS    ////////////////////
-  ///////////////////////////////////////////////////////////
-  std::cout << "Going to append" << std::endl;
+  double secs = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+  std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(secs, secs + 10, n_pol_, 0.1);
+  poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
+  std::vector<std::vector<Eigen::Vector3d>> hulls_std = vectorGCALPol2vectorStdEigen(hulls);
+  snlopt_->setHulls(hulls_std);
 
-  if (appendToPlan(k_end_whole, sg_whole_.X_temp_, k_safe, sg_safe_.X_temp_) != true)
+  snlopt_->setTminAndTmax(0, (A.pos - G_term.pos).norm() / (0.6 * par_.v_max));
+  snlopt_->setInitAndFinalStates(A, G_term);
+  snlopt_->optimize();
+  // X_safe_out = snlopt_->X_temp_;
+
+  std::vector<state> dummy_vector;
+  dummy_vector.push_back(A);
+  sg_whole_.X_temp_ = dummy_vector;
+
+  M_ = G_term;
+
+  k_safe = 0;
+
+  if (appendToPlan(k_end_whole, sg_whole_.X_temp_, k_safe, snlopt_->X_temp_) != true)
   {
     return;
   }
 
-  /*  mtx_plan_.lock();
-    std::cout << "This is the COMMITED TRAJECTORY" << std::endl;
-    printStateDeque(plan_);
-    std::cout << "===========================" << std::endl;
-    mtx_plan_.unlock();*/
+  X_safe_out = plan_.toStdVector();
+  // novale_already_done_ = true;
+  //######################### End of solve with the NLOPT solver: //#########################
+
+  std::cout << "This is the Whole TRAJECTORY" << std::endl;
+  printStateVector(sg_whole_.X_temp_);
+
+  std::cout << "This is the Safe TRAJECTORY" << std::endl;
+  printStateVector(snlopt_->X_temp_);
+
+  mtx_plan_.lock();
+  std::cout << "This is the COMMITED TRAJECTORY" << std::endl;
+  plan_.print();
+  // printStateDeque(plan_);
+  std::cout << "===========================" << std::endl;
+  mtx_plan_.unlock();
 
   ///////////////////////////////////////////////////////////
   ///////////////       OTHER STUFF    //////////////////////
@@ -935,6 +1013,9 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000));  // Number of states that
                                                                              // would have been needed for
                                                                              // the last replan
+
+  deltaT_ = par_.alpha * states_last_replan;
+  // std::max(par_.alpha * states_last_replan,(double)par_.min_states_deltaT);  // Delta_t
   mtx_offsets.unlock();
 
   // Time allocation
@@ -976,24 +1057,21 @@ bool Faster::appendToPlan(int k_end_whole, const std::vector<state>& whole, int 
   }
   else
   {
-    std::cout << "(plan_.size() - k_end_whole)= " << (plan_.size() - k_end_whole) << std::endl;
-    std::cout << "plan_.size()= " << plan_.size() << std::endl;
-    std::cout << "k_end_whole)= " << k_end_whole << std::endl;
+    std::cout << "k_end_whole= " << k_end_whole << std::endl;
+    std::cout << "k_safe = " << k_safe << std::endl;
 
     plan_.erase(plan_.end() - k_end_whole - 1, plan_.end());
 
     std::cout << "Erased" << std::endl;
 
-    std::cout << "k_safe = " << k_safe << std::endl;
     std::cout << "whole.size() = " << whole.size() << std::endl;
+    std::cout << "safe.size() = " << safe.size() << std::endl;
     for (int i = 0; i <= k_safe; i++)
     {
       plan_.push_back(whole[i]);
     }
 
-    std::cout << "k_safe = " << k_safe << std::endl;
-    std::cout << "whole.size() = " << whole.size() << std::endl;
-    for (int i = 0; i < safe.size(); i++)
+    for (int i = 1; i < safe.size(); i++)
     {
       plan_.push_back(safe[i]);
     }

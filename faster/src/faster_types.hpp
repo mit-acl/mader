@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <iomanip>  // std::setprecision
+#include <deque>
+
 struct polytope
 {
   Eigen::MatrixXd A;
@@ -39,6 +41,8 @@ struct parameters
   double gamma_safe;
   double gammap_safe;
   double increment_safe;
+
+  double alpha;
 
   double delta_a;
   double delta_H;
@@ -150,5 +154,71 @@ struct state
   {
     std::cout << std::setprecision(3) << "Pos, Vel, Accel, Jerk= " << pos.transpose() << " " << vel.transpose() << " "
               << accel.transpose() << " " << jerk.transpose() << std::endl;
+  }
+};
+
+struct trajectory
+{
+  std::deque<state> content;
+
+  void print()
+  {
+    for (auto state_i : content)
+    {
+      state_i.printHorizontal();
+    }
+  }
+
+  // now define the functions operating on the member of this struct directly
+  int size()
+  {
+    return content.size();
+  }
+
+  void push_back(state tmp)
+  {
+    content.push_back(tmp);
+  }
+
+  void erase(std::deque<state>::iterator a, std::deque<state>::iterator b)
+  {
+    content.erase(a, b);
+  }
+
+  state front()
+  {
+    return content.front();
+  }
+
+  state back()
+  {
+    return content.back();
+  }
+
+  void pop_front()
+  {
+    content.pop_front();
+  }
+
+  std::deque<state>::iterator end()
+  {
+    return content.end();
+  }
+
+  std::deque<state>::iterator begin()
+  {
+    return content.begin();
+  }
+
+  state get(int i)
+  {
+    return content[i];
+  }
+
+  std::vector<state> toStdVector()
+  {
+    std::vector<state> my_vector;
+    std::copy(content.begin(), content.end(), std::back_inserter(my_vector));
+    return my_vector;
   }
 };

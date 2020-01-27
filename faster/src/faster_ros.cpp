@@ -37,6 +37,8 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "increment_whole", par_.increment_whole);
   safeGetParam(nh_, "gamma_safe", par_.gamma_safe);
   safeGetParam(nh_, "gammap_safe", par_.gammap_safe);
+  safeGetParam(nh_, "alpha", par_.alpha);
+
   safeGetParam(nh_, "increment_safe", par_.increment_safe);
 
   safeGetParam(nh_, "delta_a", par_.delta_a);
@@ -143,17 +145,18 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   pub_traj_safe_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
 
   // Subscribers
-  /*  occup_grid_sub_.subscribe(nh_, "occup_grid", 1);
-    unknown_grid_sub_.subscribe(nh_, "unknown_grid", 1);
-    sync_.reset(new Sync(MySyncPolicy(1), occup_grid_sub_, unknown_grid_sub_));
-    sync_->registerCallback(boost::bind(&FasterRos::mapCB, this, _1, _2));
-    sub_goal_ = nh_.subscribe("term_goal", 1, &FasterRos::terminalGoalCB, this);
-    sub_mode_ = nh_.subscribe("mode", 1, &FasterRos::modeCB, this);
-    sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);*/
+  occup_grid_sub_.subscribe(nh_, "occup_grid", 1);
+  unknown_grid_sub_.subscribe(nh_, "unknown_grid", 1);
+  sync_.reset(new Sync(MySyncPolicy(1), occup_grid_sub_, unknown_grid_sub_));
+  sync_->registerCallback(boost::bind(&FasterRos::mapCB, this, _1, _2));
+  sub_goal_ = nh_.subscribe("term_goal", 1, &FasterRos::terminalGoalCB, this);
+  sub_mode_ = nh_.subscribe("mode", 1, &FasterRos::modeCB, this);
+  sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);
+  sub_traj_ = nh_.subscribe("/SQ02/traj", 1, &FasterRos::trajCB, this);
   // sub_odom_ = nh_.subscribe("odom", 1, &FasterRos::odomCB, this);
 
   // Timers
-  // pubCBTimer_ = nh_pub_CB_.createTimer(ros::Duration(par_.dc), &FasterRos::pubCB, this);
+  pubCBTimer_ = nh_pub_CB_.createTimer(ros::Duration(par_.dc), &FasterRos::pubCB, this);
   replanCBTimer_ = nh_.createTimer(ros::Duration(par_.dc), &FasterRos::replanCB, this);
 
   // For now stop all these subscribers/timers until we receive GO
@@ -161,7 +164,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   unknown_grid_sub_.unsubscribe();
   sub_state_.shutdown();
   pubCBTimer_.stop();
-  // replanCBTimer_.stop();
+  replanCBTimer_.stop();
 
   // Markers
   setpoint_ = getMarkerSphere(0.35, ORANGE_TRANS);
@@ -180,24 +183,33 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   tfListener = new tf2_ros::TransformListener(tf_buffer_);
   // wait for body transform to be published before initializing
-  /*  ROS_INFO("Waiting for world to camera transform...");
-    while (true)
+  ROS_INFO("Waiting for world to camera transform...");
+  while (true)
+  {
+    try
     {
-      try
-      {
-        tf_buffer_.lookupTransform(world_name_, name_drone_ + "/camera", ros::Time::now(), ros::Duration(0.5));  //
-        break;
-      }
-      catch (tf2::TransformException& ex)
-      {
-        // nothing
-      }
-    }*/
+      tf_buffer_.lookupTransform(world_name_, name_drone_ + "/camera", ros::Time::now(), ros::Duration(0.5));  //
+      break;
+    }
+    catch (tf2::TransformException& ex)
+    {
+      // nothing
+    }
+  }
   clearMarkerActualTraj();
 
   faster_ptr_ = std::unique_ptr<Faster>(new Faster(par_));
 
   ROS_INFO("Planner initialized");
+}
+
+void FasterRos::trajCB(const faster_msgs::StringArray& msg)
+{
+  std::vector<std::string> traj;
+  traj.push_back(msg.data[0]);
+  traj.push_back(msg.data[1]);
+  traj.push_back(msg.data[2]);
+  faster_ptr_->updateTrajObstacles(traj);
 }
 
 void FasterRos::replanCB(const ros::TimerEvent& e)
@@ -393,7 +405,7 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
 
   geometry_msgs::PoseStamped temp_path;
 
-  for (int i = 0; i < data.size(); i = i + 8)
+  for (int i = 0; i < data.size(); i = i + 30)
   {
     temp_path.pose.position.x = data[i].pos(0);
     temp_path.pose.position.y = data[i].pos(0);
