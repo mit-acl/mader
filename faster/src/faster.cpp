@@ -113,10 +113,10 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, dou
 
   CGAL::Random_points_in_sphere_3<Point_3, PointCreator> gen(2.0);
 
-  // generate 20 points randomly on a sphere of radius 1.0
+  // generate 3 points randomly on a sphere of radius 1.0
   // and copy them to a vector
   std::vector<Point_3> points;
-  CGAL::copy_n(gen, 20, std::back_inserter(points));
+  CGAL::copy_n(gen, 6, std::back_inserter(points));
 
   // define object to hold convex hull
   CGAL::Object ch_object;

@@ -35,40 +35,48 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol)
   int num_of_segments = M_ - 2 * p_;
   int num_of_cpoints = N_ + 1;
 
+  q0_ << 0, 0, 0;
+  q1_ << 0, 0, 0;
+  q2_ << 0, 0, 0;
+  qNm2_ << 0, 0, 0;
+  qNm1_ << 0, 0, 0;
+  qN_ << 0, 0, 0;
+
   /*  opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
     local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);*/
 
   // Debugging stuff
-  /*  std::cout << "deg_pol_= " << deg_pol_ << std::endl;
-    std::cout << "num_pol= " << num_pol << std::endl;
-    std::cout << "p_= " << p_ << std::endl;
-    std::cout << "M_= " << M_ << std::endl;
-    std::cout << "N_= " << N_ << std::endl;
-    std::cout << "i_min_= " << i_min_ << std::endl;
-    std::cout << "i_max_= " << i_max_ << std::endl;
-    std::cout << "j_min_= " << j_min_ << std::endl;
-    std::cout << "j_max_= " << j_max_ << std::endl;
-    std::cout << "k_min_= " << k_min_ << std::endl;
-    std::cout << "k_max_= " << k_max_ << std::endl;
-    std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
-    std::cout << "gIndexQ(0)=" << gIndexQ(0) << std::endl;
-    std::cout << "gIndexQ(num_of_segments-1)=" << gIndexQ(num_of_cpoints - 1) << std::endl;
-    std::cout << "gIndexN(0)=" << gIndexN(0) << std::endl;
-    std::cout << "gIndexN(num_of_segments-1)=" << gIndexN(num_of_segments - 1) << std::endl;
-    std::cout << "gIndexD(0)=" << gIndexD(0) << std::endl;
-    std::cout << "gIndexD(num_of_segments-1)=" << gIndexD(num_of_segments - 1) << std::endl;*/
+  std::cout << "deg_pol_= " << deg_pol_ << std::endl;
+  std::cout << "num_pol= " << num_pol << std::endl;
+  std::cout << "p_= " << p_ << std::endl;
+  std::cout << "M_= " << M_ << std::endl;
+  std::cout << "N_= " << N_ << std::endl;
+  std::cout << "num_of_cpoints= " << num_of_cpoints << std::endl;
+  std::cout << "i_min_= " << i_min_ << std::endl;
+  std::cout << "i_max_= " << i_max_ << std::endl;
+  std::cout << "j_min_= " << j_min_ << std::endl;
+  std::cout << "j_max_= " << j_max_ << std::endl;
+  std::cout << "k_min_= " << k_min_ << std::endl;
+  std::cout << "k_max_= " << k_max_ << std::endl;
+  std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
+  std::cout << "gIndexQ(3)=" << gIndexQ(3) << std::endl;
+  std::cout << "gIndexQ(num_of_cpoints-3)=" << gIndexQ(num_of_cpoints - 3 - 1) << std::endl;
+  std::cout << "gIndexN(0)=" << gIndexN(0) << std::endl;
+  std::cout << "gIndexN(num_of_segments-1)=" << gIndexN(num_of_segments - 1) << std::endl;
+  std::cout << "gIndexD(0)=" << gIndexD(0) << std::endl;
+  std::cout << "gIndexD(num_of_segments-1)=" << gIndexD(num_of_segments - 1) << std::endl;
 
-  /*  std::vector<double> x;
-    for (int i = 0; i < num_of_variables_; i++)
-    {
-      x.push_back(i);
-    }
+  std::vector<double> x;
+  for (int i = 0; i < num_of_variables_; i++)
+  {
+    x.push_back(i);
+  }
 
-    std::vector<Eigen::Vector3d> q;
-    std::vector<Eigen::Vector3d> n;
-    std::vector<double> d;
-    toEigen(x, q, n, d);
-    printQND(q, n, d);*/
+  std::vector<Eigen::Vector3d> q;
+  std::vector<Eigen::Vector3d> n;
+  std::vector<double> d;
+  toEigen(x, q, n, d);
+  printQND(q, n, d);
 }
 
 SolverNlopt::~SolverNlopt()
@@ -341,10 +349,16 @@ bool SolverNlopt::isADecisionCP(int i)
   return (i >= 4 && i <= (N_ - 3));
 }
 
+// m is the number of constraints, nn is the number of variables
 void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned nn, double *grad,
                                        std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                                        std::vector<double> &d)
 {
+  /*  std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
+    std::cout << "num_of_constraints_= " << num_of_constraints_ << std::endl;
+    std::cout << "m= " << m << std::endl;
+    std::cout << "nn= " << nn << std::endl;*/
+
   Eigen::Vector3d ones = Eigen::Vector3d::Ones();
   int r = 0;
   // grad is a vector with nn*m elements
@@ -360,11 +374,9 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
   for (int i = 0; i <= N_ - 3; i++)  // i  is the interval (\equiv segment)
   {
     // impose that all the vertexes of the obstacle are on one side of the plane
-    for (int vertex_index = 0; vertex_index < hulls_[i].size(); vertex_index++)  // opt->hulls_[i].size()
+    for (Eigen::Vector3d vertex : hulls_[i])  // opt->hulls_[i].size()
     {
-      Eigen::Vector3d vertex = hulls_[i][vertex_index];
-
-      constraints[r] = -(n[i].dot(vertex) + d[i]);
+      constraints[r] = -(n[i].dot(vertex) + d[i]);  // f<=0
       if (grad)
       {
         toGradSameConstraintDiffVariables(gIndexN(i), -vertex, grad, r, nn);
@@ -376,7 +388,7 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     // and the control points on the other
     for (int u = 0; u <= 3; u++)
     {
-      constraints[r] = n[i].dot(q[i + u]) + d[i];  //<= 0
+      constraints[r] = n[i].dot(q[i + u]) + d[i];  // f<=0
       if (grad)
       {
         toGradSameConstraintDiffVariables(gIndexN(i), q[i + u], grad, r, nn);
@@ -429,107 +441,107 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     r = r + 3;*/
 
   // VELOCITY CONSTRAINTS:
-  for (int i = 2; i <= (N_ - 3); i++)
-  {
-    double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
-    Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
-
-    // v<=vmax  \equiv  v_i - vmax <= 0
-    assignEigenToVector(constraints, r, v_i - v_max_);  // f<=0
-    if (grad)
+  /*  for (int i = 2; i <= (N_ - 3); i++)
     {
-      if (isADecisionCP(i))  // If Q[i] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i), -c1 * ones, grad, r, nn);
-      }
-      if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), c1 * ones, grad, r, nn);
-      }
-    }
-    r = r + 3;
+      double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
+      Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
 
-    // v>=-vmax  \equiv  -v_i - vmax <= 0
-    assignEigenToVector(constraints, r, -v_i - v_max_);  // f<=0
-    if (grad)
-    {
-      if (isADecisionCP(i))  // If Q[i] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i), c1 * ones, grad, r, nn);
-      }
-      if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -c1 * ones, grad, r, nn);
-      }
-    }
-    r = r + 3;
-  }
-
-  // ACCELERATION CONSTRAINTS:
-  for (int i = 1; i <= (N_ - 3); i++)
-  {
-    double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
-    double c2 = p_ / (knots_(i + p_ + 1 + 1) - knots_(i + 1 + 1));
-    double c3 = (p_ - 1) / (knots_(i + p_ + 1) - knots_(i + 2));
-
-    Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
-    Eigen::Vector3d v_iP1 = c2 * (q[i + 2] - q[i + 1]);
-    Eigen::Vector3d a_i = c3 * (v_iP1 - v_i);
-
-    // a<=amax  ==  a_i - amax <= 0  ==
-    // c3*c2 *q[i + 1 + 1] - c3*c2* q[i + 1]  -  c3*c1*q[i + 1] + c3*c1*q[i]   - amax <= 0
-    assignEigenToVector(constraints, r, a_i - a_max_);  // f<=0
-    if (grad)
-    {
-      if (isADecisionCP(i))  // If Q[i] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i), c3 * c1 * ones, grad, r, nn);
-      }
-      if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), (-c3 * c2 - c3 * c1) * ones, grad, r, nn);
-      }
-      if (isADecisionCP(i + 2))  // If Q[i+2] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), c3 * c2 * ones, grad, r, nn);
-      }
-    }
-    r = r + 3;
-
-    // a>=-amax    \equiv  -a_i - amax <= 0
-    assignEigenToVector(constraints, r, -a_i - a_max_);  // f<=0
-    if (grad)
-    {
-      if (isADecisionCP(i))  // If Q[i] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i), -c3 * c1 * ones, grad, r, nn);
-      }
-      if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -(-c3 * c2 - c3 * c1) * ones, grad, r, nn);
-      }
-      if (isADecisionCP(i + 2))  // If Q[i+2] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), -c3 * c2 * ones, grad, r, nn);
-      }
-    }
-    r = r + 3;
-  }
-
-  // Impose that the normals are not [0 0 0]
-  /*  for (int i = 0; i < n.size(); i++)
-    {
-      double epsilon_normals = 1;
-
-      std::cout << "n[i]= " << n[i].transpose() << std::endl;
-      result[r] = epsilon_normals - n[i].dot(n[i]);  // f<=0
+      // v<=vmax  \equiv  v_i - vmax <= 0
+      assignEigenToVector(constraints, r, v_i - v_max_);  // f<=0
       if (grad)
       {
-        toGradSameConstraintDiffVariables(gIndexN(i), -2 * n[i], grad, r, nn);
+        if (isADecisionCP(i))  // If Q[i] is a decision variable
+        {
+          toGradDiffConstraintsDiffVariables(gIndexQ(i), -c1 * ones, grad, r, nn);
+        }
+        if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+        {
+          toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), c1 * ones, grad, r, nn);
+        }
       }
-      r++;
+      r = r + 3;
+
+      // v>=-vmax  \equiv  -v_i - vmax <= 0
+      assignEigenToVector(constraints, r, -v_i - v_max_);  // f<=0
+      if (grad)
+      {
+        if (isADecisionCP(i))  // If Q[i] is a decision variable
+        {
+          toGradDiffConstraintsDiffVariables(gIndexQ(i), c1 * ones, grad, r, nn);
+        }
+        if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+        {
+          toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -c1 * ones, grad, r, nn);
+        }
+      }
+      r = r + 3;
     }
-  */
+
+    // ACCELERATION CONSTRAINTS:
+    for (int i = 1; i <= (N_ - 3); i++)
+    {
+      double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
+      double c2 = p_ / (knots_(i + p_ + 1 + 1) - knots_(i + 1 + 1));
+      double c3 = (p_ - 1) / (knots_(i + p_ + 1) - knots_(i + 2));
+
+      Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
+      Eigen::Vector3d v_iP1 = c2 * (q[i + 2] - q[i + 1]);
+      Eigen::Vector3d a_i = c3 * (v_iP1 - v_i);
+
+      // a<=amax  ==  a_i - amax <= 0  ==
+      // c3*c2 *q[i + 1 + 1] - c3*c2* q[i + 1]  -  c3*c1*q[i + 1] + c3*c1*q[i]   - amax <= 0
+      assignEigenToVector(constraints, r, a_i - a_max_);  // f<=0
+      if (grad)
+      {
+        if (isADecisionCP(i))  // If Q[i] is a decision variable
+        {
+          toGradDiffConstraintsDiffVariables(gIndexQ(i), c3 * c1 * ones, grad, r, nn);
+        }
+        if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+        {
+          toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), (-c3 * c2 - c3 * c1) * ones, grad, r, nn);
+        }
+        if (isADecisionCP(i + 2))  // If Q[i+2] is a decision variable
+        {
+          toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), c3 * c2 * ones, grad, r, nn);
+        }
+      }
+      r = r + 3;
+
+      // a>=-amax    \equiv  -a_i - amax <= 0
+      assignEigenToVector(constraints, r, -a_i - a_max_);  // f<=0
+      if (grad)
+      {
+        if (isADecisionCP(i))  // If Q[i] is a decision variable
+        {
+          toGradDiffConstraintsDiffVariables(gIndexQ(i), -c3 * c1 * ones, grad, r, nn);
+        }
+        if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+        {
+          toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -(-c3 * c2 - c3 * c1) * ones, grad, r, nn);
+        }
+        if (isADecisionCP(i + 2))  // If Q[i+2] is a decision variable
+        {
+          toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), -c3 * c2 * ones, grad, r, nn);
+        }
+      }
+      r = r + 3;
+    }*/
+
+  // Impose that the normals are not [0 0 0]
+  for (int i = 0; i < n.size(); i++)
+  {
+    double epsilon_normals = 1;  // normals should have at least module 1
+
+    // std::cout << "n[i]= " << n[i].transpose() << std::endl;
+    constraints[r] = epsilon_normals - n[i].dot(n[i]);  // f<=0
+    if (grad)
+    {
+      toGradSameConstraintDiffVariables(gIndexN(i), -2 * n[i], grad, r, nn);
+    }
+    r++;
+  }
+
   num_of_constraints_ = r + 1;
 
   /*  std::cout << "There are =" << num_of_constraints_ << " constraints in total" << std::endl;
@@ -550,6 +562,7 @@ void SolverNlopt::multi_ineq_constraint(unsigned m, double *constraints, unsigne
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
   opt->toEigen(x, q, n, d);
+  // opt->printQND(q, n, d);
   opt->add_ineq_constraints(m, constraints, nn, grad, q, n, d);
 
   /**/
@@ -558,7 +571,7 @@ void SolverNlopt::multi_ineq_constraint(unsigned m, double *constraints, unsigne
 
 void SolverNlopt::printQND(std::vector<Eigen::Vector3d> q, std::vector<Eigen::Vector3d> n, std::vector<double> d)
 {
-  // std::cout << "Going to print, q_size= " << q.size() << std::endl;
+  std::cout << "Going to print, q_size= " << q.size() << std::endl;
   std::cout << "   control points:" << std::endl;
   for (Eigen::Vector3d q_i : q)
   {
@@ -599,7 +612,7 @@ void SolverNlopt::optimize()
   opt_->set_xtol_rel(1e-4);  // Stopping criteria
 
   opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
-  opt_->set_maxtime(5);    // maximum time in seconds. Negative --> don't use this criterion
+  opt_->set_maxtime(0.3);  // maximum time in seconds. Negative --> don't use this criterion
 
   std::cout << "in optimize2" << std::endl;
   // Hack to get the number of constraints in the problem
@@ -621,9 +634,9 @@ void SolverNlopt::optimize()
 
   // see https://github.com/stevengj/nlopt/issues/168
   std::vector<double> tol_constraint(num_of_constraints_);  // This number should be the num of constraints I think
-  for (int i = 0; i < tol_constraint.size(); i++)
+  for (tol_constraint_i : tol_constraint)
   {
-    tol_constraint[i] = 1e-4;
+    tol_constraint_i = 1e-1;
   }
   std::cout << "computed tolerance" << std::endl;
 
@@ -651,16 +664,16 @@ void SolverNlopt::optimize()
     x[i] = 0.0;  // TODO Change this
   }
   // guesses for the normals
-  /*  for (int i = j_min_; i <= j_max_; i++)
-    {
-      x[i] = (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
-    }
-
-    x[0] = -7;
-    x[3] = -2;
-    x[6] = 3;
-    x[9] = 7.9;
-  */
+  for (int i = j_min_; i <= j_max_; i++)
+  {
+    x[i] = (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
+  }
+  /*
+      x[0] = -7;
+      x[3] = -2;
+      x[6] = 3;
+      x[9] = 7.9;
+    */
   double minf;
 
   MyTimer opt_timer(true);
