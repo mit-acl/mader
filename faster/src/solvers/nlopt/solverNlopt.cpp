@@ -885,13 +885,12 @@ bool SolverNlopt::optimize()
     // Construct now the B-Spline
     // See example at https://github.com/libigl/eigen/blob/master/unsupported/test/splines.cpp#L37
 
-    Eigen::MatrixXd control_points(q.size(), 3);
+    Eigen::MatrixXd control_points(3, q.size());
 
     for (int i = 0; i < q.size(); i++)
     {
-      control_points.row(i) = q[i].transpose();
+      control_points.col(i) = q[i];
     }
-    control_points.transposeInPlace();
 
     // std::cout << "Control Points used are\n" << control_points << std::endl;
     // std::cout << "====================" << std::endl;

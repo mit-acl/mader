@@ -106,8 +106,9 @@ private:
   vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(std::vector<CGAL_Polyhedron_3> vector_of_polyhedrons);
   std::vector<std::vector<Eigen::Vector3d>> vectorGCALPol2vectorStdEigen(std::vector<CGAL_Polyhedron_3> convexHulls);
 
-  CGAL_Polyhedron_3 convexHullOfInterval(double t_start, double t_end, double inc);
-  std::vector<CGAL_Polyhedron_3> convexHullsOfCurve(double t_start, double t_end, int intervals, double inc);
+  CGAL_Polyhedron_3 convexHullOfInterval(double t_start, double t_end, int samples_per_interval);
+  std::vector<CGAL_Polyhedron_3> convexHullsOfCurve(double t_start, double t_end, int intervals,
+                                                    int samples_per_interval);
 
   void yaw(double diff, state& next_goal);
 

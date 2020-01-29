@@ -119,8 +119,28 @@ void Faster::updateTrajObstacles(std::vector<std::string> traj)
     }*/
 }
 
+vec_E<Polyhedron<3>> Faster::vectorGCALPol2vectorJPSPol(std::vector<CGAL_Polyhedron_3> vector_of_polyhedrons)
+{
+  vec_E<Polyhedron<3>> vector_of_polyhedron_jps;
+
+  for (auto polyhedron_i : vector_of_polyhedrons)
+  {
+    vec_E<Hyperplane<3>> hyperplanes;
+    for (auto it = polyhedron_i.planes_begin(); it != polyhedron_i.planes_end(); it++)
+    {
+      Vector_3 n = it->orthogonal_vector();
+      Point_3 p = it->point();
+      hyperplanes.push_back(Hyperplane<3>(Eigen::Vector3d(p.x(), p.y(), p.z()), Eigen::Vector3d(n.x(), n.y(), n.z())));
+    }
+    Polyhedron<3> polyhedron_jps(hyperplanes);
+    vector_of_polyhedron_jps.push_back(polyhedron_jps);
+    // std::cout << red << bold << "Size=" << vector_of_polyhedron_jps.size() << reset << std::endl;
+  }
+  return vector_of_polyhedron_jps;
+}
+
 // See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
-CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, double inc)
+CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, int samples_per_interval)
 {
   /*  std::default_random_engine generator;
     generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
@@ -130,13 +150,17 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, dou
       double r2 = int_random * distribution(generator);
       double r3 = int_random * distribution(generator);*/
 
+  samples_per_interval = std::max(samples_per_interval, 4);  // at least 4 samples per interval
+  double inc = (t_end - t_start) / (1.0 * samples_per_interval);
+
   std::vector<Point_3> points;
 
   mtx_traj_.lock();
-  for (double t = t_start; t <= t_end; t = t + inc)
+
+  for (int i = 0; i < samples_per_interval; i++)
   {
     // Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
-    t_ = t;
+    t_ = t_start + i * inc;
     double x = traj_[0].value();  //    sin(t) + 2 * sin(2 * t);
     double y = traj_[1].value();  // cos(t) - 2 * cos(2 * t);
     double z = traj_[2].value();  //-sin(3 * t);
@@ -177,27 +201,8 @@ CGAL::set_pretty_mode(std::cout);
   return poly;
 }
 
-vec_E<Polyhedron<3>> Faster::vectorGCALPol2vectorJPSPol(std::vector<CGAL_Polyhedron_3> vector_of_polyhedrons)
-{
-  vec_E<Polyhedron<3>> vector_of_polyhedron_jps;
-
-  for (auto polyhedron_i : vector_of_polyhedrons)
-  {
-    vec_E<Hyperplane<3>> hyperplanes;
-    for (auto it = polyhedron_i.planes_begin(); it != polyhedron_i.planes_end(); it++)
-    {
-      Vector_3 n = it->orthogonal_vector();
-      Point_3 p = it->point();
-      hyperplanes.push_back(Hyperplane<3>(Eigen::Vector3d(p.x(), p.y(), p.z()), Eigen::Vector3d(n.x(), n.y(), n.z())));
-    }
-    Polyhedron<3> polyhedron_jps(hyperplanes);
-    vector_of_polyhedron_jps.push_back(polyhedron_jps);
-    // std::cout << red << bold << "Size=" << vector_of_polyhedron_jps.size() << reset << std::endl;
-  }
-  return vector_of_polyhedron_jps;
-}
-
-std::vector<CGAL_Polyhedron_3> Faster::convexHullsOfCurve(double t_start, double t_end, int intervals, double inc)
+std::vector<CGAL_Polyhedron_3> Faster::convexHullsOfCurve(double t_start, double t_end, int intervals,
+                                                          int samples_per_interval)
 {
   std::vector<CGAL_Polyhedron_3> convexHulls;
 
@@ -206,7 +211,7 @@ std::vector<CGAL_Polyhedron_3> Faster::convexHullsOfCurve(double t_start, double
   for (int i = 0; i < intervals; i++)
   {
     std::cout << "i= " << i << std::endl;
-    convexHulls.push_back(convexHullOfInterval(t_start + i * deltaT, t_start + (i + 1) * deltaT, inc));
+    convexHulls.push_back(convexHullOfInterval(t_start + i * deltaT, t_start + (i + 1) * deltaT, samples_per_interval));
   }
 
   std::cout << "Done with convexHullsOfCurve" << std::endl;
@@ -962,8 +967,12 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   int n_pol = 7;
   int deg = 3;
+  int samples_per_interval = 5;
 
-  std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(0, 10, n_pol, 0.1);
+  double t_min = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+  double t_max = t_min + (A.pos - G_term.pos).norm() / (0.4 * par_.v_max);
+
+  std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(t_min, t_max, n_pol, samples_per_interval);
   std::cout << "hulls size=" << hulls.size() << std::endl;
   std::vector<std::vector<Eigen::Vector3d>> hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
@@ -977,7 +986,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc
-  snlopt.setTminAndTmax(0, (A.pos - G_term.pos).norm() / (0.4 * par_.v_max));
+  snlopt.setTminAndTmax(t_min, t_max);
   snlopt.setInitAndFinalStates(A, G_term);
 
   std::cout << "Calling optimize" << std::endl;
