@@ -3,6 +3,19 @@
 #include <iostream>
 #include <iomanip>  // std::setprecision
 #include <deque>
+#include "exprtk.hpp"
+
+struct dynTraj
+{
+  std::vector<std::string> function;
+  std::vector<double> bbox;
+};
+
+struct dynTrajCompiled
+{
+  std::vector<exprtk::expression<double>> function;
+  std::vector<double> bbox;
+};
 
 struct polytope
 {

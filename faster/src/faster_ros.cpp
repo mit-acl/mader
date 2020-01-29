@@ -212,13 +212,19 @@ FasterRos::~FasterRos()
   replanCBTimer_.stop();
 }
 
-void FasterRos::trajCB(const faster_msgs::StringArray& msg)
+void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 {
   std::vector<std::string> traj;
-  traj.push_back(msg.data[0]);
-  traj.push_back(msg.data[1]);
-  traj.push_back(msg.data[2]);
-  faster_ptr_->updateTrajObstacles(traj);
+  dynTraj tmp;
+  tmp.function.push_back(msg.function[0]);
+  tmp.function.push_back(msg.function[1]);
+  tmp.function.push_back(msg.function[2]);
+
+  tmp.bbox.push_back(msg.bbox[0]);
+  tmp.bbox.push_back(msg.bbox[1]);
+  tmp.bbox.push_back(msg.bbox[2]);
+
+  faster_ptr_->updateTrajObstacles(tmp);
 }
 
 void FasterRos::replanCB(const ros::TimerEvent& e)

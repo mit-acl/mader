@@ -89,7 +89,7 @@ Faster::Faster(parameters par) : par_(par)
   deg_ = 3;
 }
 
-void Faster::updateTrajObstacles(std::vector<std::string> traj)
+void Faster::updateTrajObstacles(dynTraj traj)
 {
   typedef exprtk::symbol_table<double> symbol_table_t;
   typedef exprtk::expression<double> expression_t;
@@ -101,15 +101,18 @@ void Faster::updateTrajObstacles(std::vector<std::string> traj)
 
   mtx_traj_.lock();
 
-  for (auto traj_i : traj)
+  for (auto function_i : traj.function)
   {
     expression_t expression;
     expression.register_symbol_table(symbol_table);
 
     parser_t parser;
-    parser.compile(traj_i, expression);
-    traj_.push_back(expression);
+    parser.compile(function_i, expression);
+    traj_.function.push_back(expression);
   }
+
+  traj_.bbox = traj.bbox;
+
   mtx_traj_.unlock();
 
   /*  for (x = T(-5); x <= T(+5); x += T(0.001))
@@ -161,23 +164,23 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, int
   {
     // Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
     t_ = t_start + i * inc;
-    double x = traj_[0].value();  //    sin(t) + 2 * sin(2 * t);
-    double y = traj_[1].value();  // cos(t) - 2 * cos(2 * t);
-    double z = traj_[2].value();  //-sin(3 * t);
+    double x = traj_.function[0].value();  //    sin(t) + 2 * sin(2 * t);
+    double y = traj_.function[1].value();  // cos(t) - 2 * cos(2 * t);
+    double z = traj_.function[2].value();  //-sin(3 * t);
 
     double half_side = par_.drone_radius / 2.0;
 
     //"Minkowski sum along the trajectory: box centered on the trajectory"
 
-    Point_3 p0(x + half_side, y + half_side, z + half_side);
-    Point_3 p1(x + half_side, y - half_side, z - half_side);
-    Point_3 p2(x + half_side, y + half_side, z - half_side);
-    Point_3 p3(x + half_side, y - half_side, z + half_side);
+    Point_3 p0(x + traj_.bbox[0], y + traj_.bbox[1], z + traj_.bbox[2]);
+    Point_3 p1(x + traj_.bbox[0], y - traj_.bbox[1], z - traj_.bbox[2]);
+    Point_3 p2(x + traj_.bbox[0], y + traj_.bbox[1], z - traj_.bbox[2]);
+    Point_3 p3(x + traj_.bbox[0], y - traj_.bbox[1], z + traj_.bbox[2]);
 
-    Point_3 p4(x - half_side, y - half_side, z - half_side);
-    Point_3 p5(x - half_side, y + half_side, z + half_side);
-    Point_3 p6(x - half_side, y + half_side, z - half_side);
-    Point_3 p7(x - half_side, y - half_side, z + half_side);
+    Point_3 p4(x - traj_.bbox[0], y - traj_.bbox[1], z - traj_.bbox[2]);
+    Point_3 p5(x - traj_.bbox[0], y + traj_.bbox[1], z + traj_.bbox[2]);
+    Point_3 p6(x - traj_.bbox[0], y + traj_.bbox[1], z - traj_.bbox[2]);
+    Point_3 p7(x - traj_.bbox[0], y - traj_.bbox[1], z + traj_.bbox[2]);
 
     points.push_back(p0);
     points.push_back(p1);

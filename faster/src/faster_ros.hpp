@@ -23,7 +23,7 @@
 #include <snapstack_msgs/QuadGoal.h>
 //#include <nav_msgs/Odometry.h>
 #include <faster_msgs/Mode.h>
-#include <faster_msgs/StringArray.h>
+#include <faster_msgs/DynTraj.h>
 
 // TimeSynchronizer includes
 #include <message_filters/subscriber.h>
@@ -66,7 +66,7 @@ private:
   void modeCB(const faster_msgs::Mode& msg);
   void pubCB(const ros::TimerEvent& e);
   void replanCB(const ros::TimerEvent& e);
-  void trajCB(const faster_msgs::StringArray& msg);
+  void trajCB(const faster_msgs::DynTraj& msg);
 
   visualization_msgs::Marker createMarkerLineStrip(Eigen::MatrixXd X);
   // void clearMarkerSetOfArrows();

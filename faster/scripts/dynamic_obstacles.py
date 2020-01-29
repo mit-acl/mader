@@ -7,7 +7,7 @@
 import roslib
 import rospy
 import math
-from faster_msgs.msg import StringArray
+from faster_msgs.msg import DynTraj
 from snapstack_msgs.msg import QuadGoal, State
 from gazebo_msgs.msg import ModelState
 import numpy as np
@@ -31,7 +31,7 @@ class FakeSim:
         name = rospy.get_namespace()
         self.name = name[1:-1]
 
-        self.pubTraj = rospy.Publisher('traj', StringArray, queue_size=1, latch=True)
+        self.pubTraj = rospy.Publisher('traj', DynTraj, queue_size=1, latch=True)
         self.timer = rospy.Timer(rospy.Duration(0.01), self.pubTF)
 
         # self.state.quat.x = 0
@@ -51,16 +51,17 @@ class FakeSim:
         # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
         t_ros=rospy.Time.now()
         t=rospy.get_time(); #Same as before, but it's float
-        x_string='(sin(t) + 2 * sin(2 * t))/3.0 -5';
-        y_string='(cos(t) - 2 * cos(2 * t))/3.0';
+        x_string='(sin(t) + 2 * sin(2 * t))/1.0 -5';
+        y_string='(cos(t) - 2 * cos(2 * t))/1.0';
         z_string='-sin(3 * t) +1';
         x = eval(x_string)
         y = eval(y_string)
         z = eval(z_string)
-        array_of_strings=StringArray();
-        array_of_strings.header.stamp= t_ros;
-        array_of_strings.data = [x_string, y_string, z_string]
-        self.pubTraj.publish(array_of_strings)
+        dynamic_trajectory_msg=DynTraj();
+        dynamic_trajectory_msg.header.stamp= t_ros;
+        dynamic_trajectory_msg.function = [x_string, y_string, z_string]
+        dynamic_trajectory_msg.bbox = [0.1, 0.1, 0.1]
+        self.pubTraj.publish(dynamic_trajectory_msg)
         br.sendTransform((x, y, z), (0,0,0,1), t_ros, self.name, "vicon")
 
 

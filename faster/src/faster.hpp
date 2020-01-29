@@ -32,8 +32,6 @@
 #include <CGAL/convex_hull_3.h>
 #include <vector>
 
-#include "exprtk.hpp"
-
 #define MAP 1          // MAP refers to the occupancy grid
 #define UNKNOWN_MAP 2  // UNKNOWN_MAP refers to the unkown grid
 
@@ -85,7 +83,7 @@ public:
   void setTerminalGoal(state& term_goal);
   void resetInitialization();
 
-  void updateTrajObstacles(std::vector<std::string> traj);
+  void updateTrajObstacles(dynTraj traj);
 
 private:
   state M_;
@@ -153,7 +151,7 @@ private:
   double t_;  // variable where the expressions of the trajs of the dyn obs are evaluated
 
   std::mutex mtx_traj_;
-  std::vector<exprtk::expression<double>> traj_;
+  dynTrajCompiled traj_;
 
   // SeedDecomp3D seed_decomp_util_;
 
