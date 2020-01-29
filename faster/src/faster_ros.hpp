@@ -52,6 +52,7 @@ class FasterRos
 {
 public:
   FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::NodeHandle nh_pub_CB);
+  ~FasterRos();
 
 private:
   std::unique_ptr<Faster> faster_ptr_;

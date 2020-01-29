@@ -155,8 +155,6 @@ private:
   std::mutex mtx_traj_;
   std::vector<exprtk::expression<double>> traj_;
 
-  bool novale_already_done_ = false;
-
   // SeedDecomp3D seed_decomp_util_;
 
   bool state_initialized_ = false;

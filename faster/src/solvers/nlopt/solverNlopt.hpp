@@ -101,7 +101,7 @@ private:
   Eigen::Vector3d v_max_;
   Eigen::Vector3d a_max_;
 
-  double weight_ = 1000;
+  double weight_ = 10000;
 
   bool force_final_state_ = true;
 

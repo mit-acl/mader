@@ -203,6 +203,15 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   ROS_INFO("Planner initialized");
 }
 
+FasterRos::~FasterRos()
+{
+  occup_grid_sub_.unsubscribe();
+  unknown_grid_sub_.unsubscribe();
+  sub_state_.shutdown();
+  pubCBTimer_.stop();
+  replanCBTimer_.stop();
+}
+
 void FasterRos::trajCB(const faster_msgs::StringArray& msg)
 {
   std::vector<std::string> traj;
@@ -409,9 +418,9 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
 
   geometry_msgs::PoseStamped temp_path;
 
-  std::cout << "data.size()=" << data.size() << std::endl;
+  int increm = (int)std::max(data.size() / 10.0, 1.0);  // this is to speed up rviz
 
-  for (int i = 0; i < data.size(); i = i + 30)
+  for (int i = 0; i < data.size(); i = i + increm)
   {
     temp_path.pose.position.x = data[i].pos(0);
     temp_path.pose.position.y = data[i].pos(0);
@@ -444,19 +453,19 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
 
   if (type == COMMITTED_COLORED)
   {
-    traj_committed_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max);
+    traj_committed_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm);
     pub_traj_committed_colored_.publish(traj_committed_colored_);
   }
 
   if (type == WHOLE_COLORED)
   {
-    traj_whole_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max);
+    traj_whole_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm);
     pub_traj_whole_colored_.publish(traj_whole_colored_);
   }
 
   if (type == SAFE_COLORED)
   {
-    traj_safe_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max);
+    traj_safe_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm);
     pub_traj_safe_colored_.publish(traj_safe_colored_);
   }
 

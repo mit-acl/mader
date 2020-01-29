@@ -1015,7 +1015,7 @@ vec_Vecf<3> copyJPS(vec_Vecf<3> path)
 }
 
 visualization_msgs::MarkerArray stateVector2ColoredMarkerArray(const std::vector<state>& data, int type,
-                                                               double max_value)
+                                                               double max_value, int increm)
 {
   visualization_msgs::MarkerArray marker_array;
 
@@ -1029,7 +1029,7 @@ visualization_msgs::MarkerArray stateVector2ColoredMarkerArray(const std::vector
   p_last.z = data[0].pos(2);
 
   int j = type * 9000;
-  for (int i = 0; i < data.size(); i = i + 1)
+  for (int i = 0; i < data.size(); i = i + increm)
   {
     j = j + 1;
     double vel = data[i].vel.norm();

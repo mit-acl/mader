@@ -8,6 +8,8 @@
 
 #include <unsupported/Eigen/Splines>
 
+//#define DEBUG_MODE_NLOPT 1  // any value will make the debug output appear (comment line if you don't want debug)
+
 typedef Timer MyTimer;
 
 SolverNlopt::SolverNlopt(int num_pol, int deg_pol, bool force_final_state)
@@ -46,7 +48,7 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, bool force_final_state)
 
   /*  opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
     local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);*/
-
+#ifdef DEBUG_MODE_NLOPT
   // Debugging stuff
   std::cout << "deg_pol_= " << deg_pol_ << std::endl;
   std::cout << "num_pol= " << num_pol << std::endl;
@@ -79,6 +81,7 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, bool force_final_state)
   std::vector<double> d;
   toEigen(x, q, n, d);
   printQND(q, n, d);
+#endif
 }
 
 SolverNlopt::~SolverNlopt()
@@ -92,7 +95,12 @@ void SolverNlopt::setTminAndTmax(double t_min, double t_max)
   t_min_ = t_min;
   t_max_ = t_max;
 
+  std::cout << "t_min_= " << t_min_ << std::endl;
+  std::cout << "t_max_= " << t_max_ << std::endl;
+
   deltaT_ = (t_max_ - t_min_) / (1.0 * (M_ - 2 * p_ - 1 + 1));
+
+  std::cout << "deltaT_" << deltaT_ << std::endl;
 
   Eigen::RowVectorXd knots(M_ + 1);
   for (int i = 0; i <= p_; i++)
@@ -142,10 +150,12 @@ void SolverNlopt::toGradDiffConstraintsDiffVariables(int var_gindex, const Eigen
                                                      int nn)
 
 {
+#ifdef DEBUG_MODE_NLOPT
   if (var_gindex >= nn)
   {
     std::cout << "Something is wrong!!" << std::endl;
   }
+#endif
   grad[r * nn + var_gindex] = tmp(0);
   grad[(r + 1) * nn + var_gindex + 1] = tmp(1);
   grad[(r + 2) * nn + var_gindex + 2] = tmp(2);
@@ -155,10 +165,12 @@ void SolverNlopt::toGradSameConstraintDiffVariables(int var_gindex, const Eigen:
                                                     int nn)
 
 {
+#ifdef DEBUG_MODE_NLOPT
   if (var_gindex >= nn)
   {
     std::cout << "Something is wrong!!" << std::endl;
   }
+#endif
   grad[r * nn + var_gindex] = tmp(0);
   grad[r * nn + var_gindex + 1] = tmp(1);
   grad[r * nn + var_gindex + 2] = tmp(2);
@@ -167,6 +179,7 @@ void SolverNlopt::toGradSameConstraintDiffVariables(int var_gindex, const Eigen:
 void SolverNlopt::setHulls(std::vector<std::vector<Eigen::Vector3d>> &hulls)
 
 {
+#ifdef DEBUG_MODE_NLOPT
   if (hulls.size() != num_of_segments_)
   {
     std::cout << "There should be as many hulls as segments" << std::endl;
@@ -174,6 +187,7 @@ void SolverNlopt::setHulls(std::vector<std::vector<Eigen::Vector3d>> &hulls)
     std::cout << "num_of_segments_=" << num_of_segments_ << std::endl;
     abort();
   }
+#endif
 
   hulls_.clear();
   hulls_ = hulls;
@@ -284,34 +298,40 @@ void SolverNlopt::toEigen(T x, std::vector<Eigen::Vector3d> &q, std::vector<Eige
 // global index of the first element of the control point i
 int SolverNlopt::gIndexQ(int i)
 {
+#ifdef DEBUG_MODE_NLOPT
   if (i <= 2 || i > i_max_)  // Q0, Q1, Q2 are fixed (not decision variables)
   {
     std::cout << "ERROR in gIndexQ!!" << std::endl;
   }
+#endif
   return 3 * i - 9;  // Q0, Q1, Q2 are always fixed (not decision variables)
 }
 
 // global index of the first element of the norml i
 int SolverNlopt::gIndexN(int i)
 {
+#ifdef DEBUG_MODE_NLOPT
   if ((i < 0) || (i >= num_of_segments_))  // Q0, Q1, Q2 are fixed (not decision variables)
   {
     std::cout << "ERROR in gIndexN!!" << std::endl;
     std::cout << "asked for " << i << std::endl;
     std::cout << "But num_of_segments_= " << num_of_segments_ << std::endl;
   }
+#endif
 
   return 3 * i + j_min_;
 }
 
 int SolverNlopt::gIndexD(int i)
 {
+#ifdef DEBUG_MODE_NLOPT
   if ((i < 0) || (i >= num_of_segments_))  // Q0, Q1, Q2 are fixed (not decision variables)
   {
     std::cout << "ERROR in gIndexD!!" << std::endl;
     std::cout << "asked for " << i << std::endl;
     std::cout << "But num_of_segments_= " << num_of_segments_ << std::endl;
   }
+#endif
 
   return i + k_min_;
 }
@@ -367,11 +387,12 @@ double SolverNlopt::myObjFunc(unsigned nn, const double *x, double *grad, void *
         gradient += 2 * opt->weight_ * (q[opt->N_] - opt->final_state_.pos);
       }
 
+#ifdef DEBUG_MODE_NLOPT
       if (opt->isADecisionCP(i) == false)
       {
         std::cout << "There is something wrong, this shouldn't be a dec var" << std::endl;
       }
-
+#endif
       opt->assignEigenToVector(grad, opt->gIndexQ(i), gradient);
     }
   }
@@ -388,13 +409,13 @@ double SolverNlopt::myObjFunc(unsigned nn, const double *x, double *grad, void *
 bool SolverNlopt::isADecisionCP(int i)
 
 {  // If Q[i] is a decision variable
-
+#ifdef DEBUG_MODE_NLOPT
   if (i > N_)  // N_ is the last cpoint
   {
     std::cout << "There is sth wrong, i=" << i << std::endl;
     std::cout << "But N_=" << N_ << std::endl;
   }
-
+#endif
   return (force_final_state_ == true) ? (i >= 3 && i <= (N_ - 3)) : (i >= 3);
 }
 
@@ -425,8 +446,10 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
       grad[i] = 0.0;
     }
   }
-
+#ifdef DEBUG_MODE_NLOPT
   // std::cout << "here1" << std::endl;
+  std::cout << "Going to add plane constraints, r= " << r << std::endl;
+#endif
 
   for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
   {
@@ -445,10 +468,12 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     // and the control points on the other side
     for (int u = 0; u <= 3; u++)
     {
+#ifdef DEBUG_MODE_NLOPT
       if ((i + u) > N_)
       {
         std::cout << "There is sth wrong here" << std::endl;
       }
+#endif
 
       constraints[r] = n[i].dot(q[i + u]) + d[i];  // f<=0
       if (grad)
@@ -469,11 +494,13 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
 
   if (force_final_state_ == false)
   {
+#ifdef DEBUG_MODE_NLOPT
     if ((N_ + p_) >= knots_.size())
     {
       std::cout << "There is something wrong here, (N_+p)=" << (N_ + p_) << std::endl;
       std::cout << "but knots_.size()=" << knots_.size() << std::endl;
     }
+#endif
     double tN = knots_(N_);
     double tNm1 = knots_(N_ - 1);
     double tNPp = knots_(N_ + p_);
@@ -489,9 +516,11 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     Eigen::Vector3d vNm2 = (p_ * (qNm1 - qNm2)) / (tNm1Pp - tNm1);
     Eigen::Vector3d af = ((p_ - 1) * (vf - vNm2)) / (tNm1Pp - tN);
 
-    double epsilon = 0.1;
+    double epsilon = 0.01;
     Eigen::Vector3d eps_vector(epsilon, epsilon, epsilon);
-
+#ifdef DEBUG_MODE_NLOPT
+    std::cout << "Going to add vf constraints, r= " << r << std::endl;
+#endif
     // For vf
     assignEigenToVector(constraints, r, vf - final_state_.vel - eps_vector);  // f<=0
     double tmp5 = p_ / (-tN + tNPp);
@@ -511,7 +540,9 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
       toGradDiffConstraintsDiffVariables(gIndexQ(N_ - 1), -ones * tmp6, grad, r, nn);
     }
     r = r + 3;
-
+#ifdef DEBUG_MODE_NLOPT
+    std::cout << "Going to add af constraints, r= " << r << std::endl;
+#endif
     // For af
     assignEigenToVector(constraints, r, af - final_state_.accel - eps_vector);  // f<=0
 
@@ -536,52 +567,26 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     }
     r = r + 3;
   }
-  // std::cout << "here3" << std::endl;
 
-  /*  // Now add the "equality" constraints using inequalities with an epsilon:
+#ifdef DEBUG_MODE_NLOPT
 
-    double epsilon = 0.1;
-    Eigen::Vector3d eps_vector(epsilon, epsilon, epsilon);
-
-    // Initial position
-    assignEigenToVector(constraints, r, q[0] - initial_point_ - eps_vector);  // f<=0
-    if (grad)
-    {
-      toGradDiffConstraintsDiffVariables(gIndexQ(0), ones, grad, r, nn);
-    }
-    r = r + 3;
-
-    assignEigenToVector(constraints, r, initial_point_ - q[0] - eps_vector);  // f<=0
-    if (grad)
-    {
-      toGradDiffConstraintsDiffVariables(gIndexQ(0), -ones, grad, r, nn);
-    }
-    r = r + 3;
-
-    // Final position
-    // std::cout << "N_= " << N_ << std::endl;
-    assignEigenToVector(constraints, r, q[N_] - final_point_ - eps_vector);  // f<=0
-    if (grad)
-    {
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_), ones, grad, r, nn);
-    }
-    r = r + 3;
-
-    // std::cout << "N_=" << N_ << std::endl;
-
-    assignEigenToVector(constraints, r, final_point_ - q[N_] - eps_vector);  // f<=0
-    if (grad)
-    {
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_), -ones, grad, r, nn);
-    }
-    r = r + 3;*/
-
+  std::cout << "Going to add velocity constraints, r= " << r << std::endl;
+#endif
   // VELOCITY CONSTRAINTS:
   for (int i = 0; i <= N_ - 1; i++)
   {
     double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
     Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
 
+/*    std::cout << "knots_= " << knots_.transpose() << std::endl;
+    std::cout << "v_i= " << v_i.transpose() << std::endl;
+    std::cout << "(q[i + 1])= " << (q[i + 1]).transpose() << std::endl;
+    std::cout << "q[i]= " << q[i].transpose() << std::endl;
+    std::cout << "c1= " << c1 << std::endl;*/
+#ifdef DEBUG_MODE_NLOPT
+
+    std::cout << "constraint " << r << " = " << (v_i - v_max_).transpose() << std::endl;
+#endif
     // v<=vmax  \equiv  v_i - vmax <= 0
     assignEigenToVector(constraints, r, v_i - v_max_);  // f<=0
     if (grad)
@@ -596,6 +601,10 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
       }
     }
     r = r + 3;
+#ifdef DEBUG_MODE_NLOPT
+
+    std::cout << "constraint " << r << " = " << (-v_i - v_max_).transpose() << std::endl;
+#endif
 
     // v>=-vmax  \equiv  -v_i - vmax <= 0
     assignEigenToVector(constraints, r, -v_i - v_max_);  // f<=0
@@ -612,7 +621,9 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     }
     r = r + 3;
   }
-
+#ifdef DEBUG_MODE_NLOPT
+  std::cout << "Going to add acceleration constraints, r= " << r << std::endl;
+#endif
   // ACCELERATION CONSTRAINTS:
   for (int i = 0; i <= N_ - 2; i++)
   {
@@ -680,9 +691,19 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
     r++;
   }
 
-  // std::cout << "here5" << std::endl;
+#ifdef DEBUG_MODE_NLOPT
 
-  num_of_constraints_ = r + 1;
+  for (int i = 0; i < m; i++)
+  {
+    std::cout << "Constraint " << i << " = " << constraints[i] << std::endl;
+  }
+  std::cout << "num_of_constraints_= " << num_of_constraints_ << std::endl;
+  std::cout << "m= " << m << std::endl;
+  std::cout << "r+1 = " << r + 1 << std::endl;
+
+#endif
+
+  num_of_constraints_ = r;  // + 1 has already been added in the last loop of the previous for loop;
 
   // std::cout << "here6" << std::endl;
 
@@ -758,9 +779,9 @@ bool SolverNlopt::optimize()
   // std::cout << "in optimize3" << std::endl;
   opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
   local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);  // LD_SLSQP //LD_MMA
-  local_opt_->set_xtol_rel(1e-4);  // stopping criteria. If >=1e-1, it leads to weird trajectories
+  local_opt_->set_xtol_rel(1e-8);  // stopping criteria. If >=1e-1, it leads to weird trajectories
   opt_->set_local_optimizer(*local_opt_);
-  opt_->set_xtol_rel(1e-4);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
+  opt_->set_xtol_rel(1e-8);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
   opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
   opt_->set_maxtime(0.2);  // maximum time in seconds. Negative --> don't use this criterion
@@ -810,19 +831,19 @@ bool SolverNlopt::optimize()
   std::cout << "num_of_variables_=" << num_of_variables_ << std::endl;
   for (int i = 0; i < num_of_variables_; i++)
   {
-    x[i] = 0.0;  // TODO Change this
+    x[i] = (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
   }
   // guesses for the normals
-  for (int i = j_min_; i <= j_max_; i++)
-  {
-    x[i] = 1;  // (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
-  }
+  /*  for (int i = j_min_; i <= j_max_; i++)
+    {
+      x[i] = 1;  // (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
+    }
 
-  for (int i = k_min_; i <= k_max_; i++)
-  {
-    x[i] = 1;  // (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
-  }
-
+    for (int i = k_min_; i <= k_max_; i++)
+    {
+      x[i] = 1;  // (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
+    }*/
+#ifdef DEBUG_MODE_NLOPT
   std::cout << "This is the initial guess:" << std::endl;
 
   std::vector<Eigen::Vector3d> q_novale;
@@ -830,6 +851,7 @@ bool SolverNlopt::optimize()
   std::vector<double> d_novale;
   toEigen(x, q_novale, n_novale, d_novale);
   printQND(q_novale, n_novale, d_novale);
+#endif
 
   /*
       x[0] = -7;
@@ -860,8 +882,9 @@ bool SolverNlopt::optimize()
     std::vector<Eigen::Vector3d> n;
     std::vector<double> d;
     toEigen(x, q, n, d);
-
+#ifdef DEBUG_MODE_NLOPT
     printQND(q, n, d);
+#endif
 
     /*    std::cout << "Checking if these constraints are satisfied" << std::endl;
         for (int i = 0; i <= N_ - 3; i++)  // i  is the interval (\equiv segment)
@@ -916,7 +939,9 @@ bool SolverNlopt::optimize()
       state_i.setAccel(derivatives.col(2));
       state_i.setJerk(derivatives.col(3));
       X_temp_.push_back(state_i);
+#ifdef DEBUG_MODE_NLOPT
       state_i.printHorizontal();
+#endif
     }
 
     // Force the last position to be the final_state_ (it's not guaranteed to be because of the discretization with dc_)

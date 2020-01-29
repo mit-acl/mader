@@ -27,12 +27,12 @@ int main(int argc, char **argv)
   spinner1.start();  // start spinner of the custom queue 1
   spinner2.start();  // start spinner of the custom queue 2
 
-  ros::spin();  // spin the normal queue
+  // ros::spin();  // spin the normal queue
 
-  /*  while (ros::ok())
-    {
-      custom_queue.callAvailable(ros::WallDuration());
-    }*/
+  while (ros::ok())
+  {
+    ros::spinOnce();  // spin the normal queue
+  }
 
   // with this the callbacks can be executed in parallel. If not, the replanning and pub callbacks will be executed in
   // series, and if the replanning callback takes a lot of time, the pub callback will not be executed

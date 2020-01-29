@@ -165,21 +165,19 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, int
     double y = traj_[1].value();  // cos(t) - 2 * cos(2 * t);
     double z = traj_[2].value();  //-sin(3 * t);
 
-    double side = par_.drone_radius / 2.0;
+    double half_side = par_.drone_radius / 2.0;
 
-    //"Minkowski sum along the trajectory"
+    //"Minkowski sum along the trajectory: box centered on the trajectory"
 
-    Point_3 p0(x, y, z);
+    Point_3 p0(x + half_side, y + half_side, z + half_side);
+    Point_3 p1(x + half_side, y - half_side, z - half_side);
+    Point_3 p2(x + half_side, y + half_side, z - half_side);
+    Point_3 p3(x + half_side, y - half_side, z + half_side);
 
-    Point_3 p1(x + side, y, z);
-    Point_3 p2(x, y + side, z);
-    Point_3 p3(x, y, z + side);
-
-    Point_3 p4(x + side, y + side, z);
-    Point_3 p5(x, y + side, z + side);
-    Point_3 p6(x + side, y, z + side);
-
-    Point_3 p7(x + side, y + side, z + side);
+    Point_3 p4(x - half_side, y - half_side, z - half_side);
+    Point_3 p5(x - half_side, y + half_side, z + half_side);
+    Point_3 p6(x - half_side, y + half_side, z - half_side);
+    Point_3 p7(x - half_side, y - half_side, z + half_side);
 
     points.push_back(p0);
     points.push_back(p1);
@@ -686,45 +684,6 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
                     std::vector<state>& X_whole_out)
 {
   std::cout << "here1" << std::endl;
-  if (novale_already_done_ == true)
-  {
-    return;
-  }
-  //////////////////////////////////////////////////////////////////////////
-  ///////////////////////// Tests for the NLOPT solver://///////////////////
-  //////////////////////////////////////////////////////////////////////////
-  //
-
-  /*
-   SolverNlopt snlopt(n_pol_, deg_);  // snlopt(a,g) a polynomials of degree 3
-
-    snlopt.setTminAndTmax(0, 10);
-    snlopt.setMaxValues(3000, 20000);  // v_max and a_max
-    snlopt.setDC(0.1);                 // dc
-
-    std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(0, 10, n_pol_, 0.1);
-    poly_whole_out = vectorGCALPol2vectorJPSPol(hulls);
-    std::vector<std::vector<Eigen::Vector3d>> hulls_std = vectorGCALPol2vectorStdEigen(hulls);
-    snlopt.setHulls(hulls_std);
-
-    state initial_state, final_state;
-    initial_state.setPos(-10, 0, 0);
-    initial_state.setVel(0, 0, 0);
-    initial_state.setAccel(0, 0, 0);
-    final_state.setPos(10, 0, 0);
-    final_state.setVel(0, 0, 0);
-    final_state.setAccel(0, 0, 0);
-    snlopt.setInitAndFinalStates(initial_state, final_state);
-    snlopt.optimize();
-    X_whole_out = snlopt.X_temp_;
-
-    return;
-
-    */
-
-  //////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////
 
   MyTimer replanCB_t(true);
 
@@ -1000,7 +959,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
   std::cout << "hulls_std size=" << hulls_std.size() << std::endl;
 
-  SolverNlopt snlopt(n_pol, deg, true);  // snlopt(a,g) a polynomials of degree 3
+  SolverNlopt snlopt(n_pol, deg, false);  // snlopt(a,g) a polynomials of degree 3
 
   snlopt.setHulls(hulls_std);
 
