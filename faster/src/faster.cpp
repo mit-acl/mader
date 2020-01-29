@@ -165,8 +165,30 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, int
     double y = traj_[1].value();  // cos(t) - 2 * cos(2 * t);
     double z = traj_[2].value();  //-sin(3 * t);
 
-    Point_3 p(x, y, z);
-    points.push_back(p);
+    double side = par_.drone_radius / 2.0;
+
+    //"Minkowski sum along the trajectory"
+
+    Point_3 p0(x, y, z);
+
+    Point_3 p1(x + side, y, z);
+    Point_3 p2(x, y + side, z);
+    Point_3 p3(x, y, z + side);
+
+    Point_3 p4(x + side, y + side, z);
+    Point_3 p5(x, y + side, z + side);
+    Point_3 p6(x + side, y, z + side);
+
+    Point_3 p7(x + side, y + side, z + side);
+
+    points.push_back(p0);
+    points.push_back(p1);
+    points.push_back(p2);
+    points.push_back(p3);
+    points.push_back(p4);
+    points.push_back(p5);
+    points.push_back(p6);
+    points.push_back(p7);
   }
   mtx_traj_.unlock();
 
