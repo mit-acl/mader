@@ -51,8 +51,8 @@ class FakeSim:
         # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
         t_ros=rospy.Time.now()
         t=rospy.get_time(); #Same as before, but it's float
-        x_string='sin(t) + 2 * sin(2 * t) -5';
-        y_string='cos(t) - 2 * cos(2 * t)';
+        x_string='(sin(t) + 2 * sin(2 * t))/3.0 -5';
+        y_string='(cos(t) - 2 * cos(2 * t))/3.0';
         z_string='-sin(3 * t) +1';
         x = eval(x_string)
         y = eval(y_string)

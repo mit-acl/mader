@@ -21,15 +21,15 @@ using namespace termcolor;*/
 class SolverNlopt
 {
 public:
-  SolverNlopt(int num_pol, int deg_pol);
+  SolverNlopt(int num_pol, int deg_pol, bool force_final_state);
 
   ~SolverNlopt();
 
-  void optimize();
+  bool optimize();
 
   void setInitAndFinalStates(state &initial_state, state &final_state);
 
-  void setHulls(std::vector<std::vector<Eigen::Vector3d>> hulls);
+  void setHulls(std::vector<std::vector<Eigen::Vector3d>> &hulls);
   void setTminAndTmax(double t_min, double t_max);
 
   void setMaxValues(double v_max, double a_max);
@@ -51,7 +51,7 @@ private:
   int gIndexN(int i);  // Element jth of normal ith
   int gIndexD(int i);
 
-  void printQND(std::vector<Eigen::Vector3d> q, std::vector<Eigen::Vector3d> n, std::vector<double> d);
+  void printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
   // r is the constraint index
   // nn is the number of variables
@@ -74,6 +74,8 @@ private:
   void add_ineq_constraints(unsigned m, double *constraints, unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
                             std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
+  int lastDecCP();
+
   int deg_pol_ = 3;
   int num_pol_ = 5;
   int p_ = 5;
@@ -88,6 +90,9 @@ private:
   int num_of_variables_;
   int num_of_normals_;
   int num_of_constraints_;
+
+  int num_of_segments_;
+
   double dc_;
   Eigen::RowVectorXd knots_;
   double t_min_;
@@ -95,6 +100,10 @@ private:
   double deltaT_;
   Eigen::Vector3d v_max_;
   Eigen::Vector3d a_max_;
+
+  double weight_ = 1000;
+
+  bool force_final_state_ = true;
 
   state initial_state_;
   state final_state_;

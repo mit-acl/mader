@@ -24,7 +24,7 @@ else(GUROBI_FOUND)
 endif(GUROBI_FOUND)
 
 
-set(CMAKE_BUILD_TYPE Release) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo)
+set(CMAKE_BUILD_TYPE RelWithDebInfo) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo)
 
 include_directories(${GUROBI_INCLUDE_DIRS})
 #set(GUROBI_LIBRARIES "${GUROBI_CXX_LIBRARY};${GUROBI_LIBRARY}" )
@@ -87,8 +87,8 @@ add_dependencies(${PROJECT_NAME}_sample ${catkin_EXPORTED_TARGETS} )
 add_executable(gurobi_continuous_exec gurobi_continuous.cpp)
 target_link_libraries(gurobi_continuous_exec ${GUROBI_LIBRARIES})
 
-add_executable(gurobi_discrete_exec gurobi_discrete.cpp)
-target_link_libraries(gurobi_discrete_exec ${GUROBI_LIBRARIES} )
+#add_executable(gurobi_discrete_exec gurobi_discrete.cpp)
+#target_link_libraries(gurobi_discrete_exec ${GUROBI_LIBRARIES} )
 
 
 

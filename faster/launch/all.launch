@@ -1,0 +1,22 @@
+<launch>
+
+  <include file="$(find acl_sim)/launch/start_world.launch">
+  </include>
+
+
+
+  <include file="$(find acl_sim)/launch/perfect_tracker_and_sim.launch">
+  </include>
+
+
+
+  <include file="$(find global_mapper_ros)/launch/global_mapper_node.launch">
+  </include>
+
+
+  <include file="$(find faster)/launch/faster_interface.launch">
+  </include>
+
+</launch>
+
+<!-- launch-prefix="xterm -e gdb -ex run args -->

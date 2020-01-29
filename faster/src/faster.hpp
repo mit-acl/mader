@@ -150,6 +150,8 @@ private:
   parameters par_;
 
   double t_;  // variable where the expressions of the trajs of the dyn obs are evaluated
+
+  std::mutex mtx_traj_;
   std::vector<exprtk::expression<double>> traj_;
 
   bool novale_already_done_ = false;

@@ -157,7 +157,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   // Timers
   pubCBTimer_ = nh_pub_CB_.createTimer(ros::Duration(par_.dc), &FasterRos::pubCB, this);
-  replanCBTimer_ = nh_.createTimer(ros::Duration(par_.dc), &FasterRos::replanCB, this);
+  replanCBTimer_ = nh_replan_CB_.createTimer(ros::Duration(par_.dc), &FasterRos::replanCB, this);
 
   // For now stop all these subscribers/timers until we receive GO
   occup_grid_sub_.unsubscribe();
@@ -188,12 +188,12 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   {
     try
     {
-      tf_buffer_.lookupTransform(world_name_, name_drone_ + "/camera", ros::Time::now(), ros::Duration(0.5));  //
+      tf_buffer_.lookupTransform(world_name_, name_drone_ + "/camera", ros::Time::now(), ros::Duration(3.0));  //
       break;
     }
     catch (tf2::TransformException& ex)
     {
-      // nothing
+      ROS_WARN("%s", ex.what());
     }
   }
   clearMarkerActualTraj();
@@ -214,6 +214,7 @@ void FasterRos::trajCB(const faster_msgs::StringArray& msg)
 
 void FasterRos::replanCB(const ros::TimerEvent& e)
 {
+  std::cout << "In replanCB" << std::endl;
   if (ros::ok())
   {
     vec_Vecf<3> JPS_safe;
@@ -240,7 +241,9 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     std::cout << "[faster_ros] X_whole.size()=" << X_whole.size() << std::endl;
 
     pubTraj(X_whole, WHOLE_COLORED);
+    std::cout << "traj published=" << std::endl;
   }
+  std::cout << "going out from replanCB" << std::endl;
 }
 
 void FasterRos::publishPoly(const vec_E<Polyhedron<3>>& poly, int type)
@@ -283,6 +286,7 @@ void FasterRos::modeCB(const faster_msgs::Mode& msg)
     sub_state_.shutdown();
     pubCBTimer_.stop();
     replanCBTimer_.stop();
+    std::cout << "stopping replanCBTimer" << std::endl;
     faster_ptr_->resetInitialization();
   }
   else
@@ -405,6 +409,8 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
 
   geometry_msgs::PoseStamped temp_path;
 
+  std::cout << "data.size()=" << data.size() << std::endl;
+
   for (int i = 0; i < data.size(); i = i + 30)
   {
     temp_path.pose.position.x = data[i].pos(0);
@@ -416,6 +422,8 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
     temp_path.pose.orientation.z = 0;
     traj.poses.push_back(temp_path);
   }
+
+  std::cout << "here4" << std::endl;
 
   if (type == WHOLE)
   {
@@ -431,6 +439,8 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
   clearMarkerArray(&traj_committed_colored_, &pub_traj_committed_colored_);
   clearMarkerArray(&traj_whole_colored_, &pub_traj_whole_colored_);
   clearMarkerArray(&traj_safe_colored_, &pub_traj_safe_colored_);
+
+  std::cout << "here5" << std::endl;
 
   if (type == COMMITTED_COLORED)
   {
@@ -449,6 +459,8 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
     traj_safe_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max);
     pub_traj_safe_colored_.publish(traj_safe_colored_);
   }
+
+  std::cout << "here6" << std::endl;
 }
 
 void FasterRos::pubJPSIntersection(Eigen::Vector3d& inters)

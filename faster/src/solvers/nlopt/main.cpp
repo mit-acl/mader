@@ -50,32 +50,34 @@ struct Plane_equation
 };
 
 // See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
-
 CGAL_Polyhedron_3 convexHullOfInterval(double t_start, double t_end, double inc)
 {
   /*  std::default_random_engine generator;
-  generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
-  std::uniform_real_distribution<double> distribution(-1, 1);  // doubles from -1 to 1
+    generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+    std::uniform_real_distribution<double> distribution(-1, 1);  // doubles from -1 to 1
+        double int_random = 1;
+      double r = int_random * distribution(generator);
+      double r2 = int_random * distribution(generator);
+      double r3 = int_random * distribution(generator);*/
 
   std::vector<Point_3> points;
 
   for (double t = t_start; t <= t_end; t = t + inc)
   {
-    double int_random = 1;
-    double r = int_random * distribution(generator);
-    double r2 = int_random * distribution(generator);
-    double r3 = int_random * distribution(generator);
+    // Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
+    double x = sin(t) + 2 * sin(2 * t);
+    double y = cos(t) - 2 * cos(2 * t);
+    double z = -sin(3 * t);
 
-    Point_3 p(5.0 + r, r, r2);
+    Point_3 p(x, y, z);
     points.push_back(p);
-  }*/
+  }
 
-  CGAL::Random_points_in_sphere_3<Point_3, PointCreator> gen(1.0);
-
-  // generate 20 points randomly on a sphere of radius 1.0
+  // generate 3 points randomly on a sphere of radius 1.0
   // and copy them to a vector
-  std::vector<Point_3> points;
-  CGAL::copy_n(gen, 20, std::back_inserter(points));
+  /*  CGAL::Random_points_in_sphere_3<Point_3, PointCreator> gen(2.0);
+    std::vector<Point_3> points;
+    CGAL::copy_n(gen, 6, std::back_inserter(points));*/
 
   // define object to hold convex hull
   CGAL::Object ch_object;
@@ -93,10 +95,12 @@ CGAL_Polyhedron_3 convexHullOfInterval(double t_start, double t_end, double inc)
 
   CGAL_Polyhedron_3 poly = *CGAL::object_cast<CGAL_Polyhedron_3>(&ch_object);
 
-  std::transform(poly.facets_begin(), poly.facets_end(), poly.planes_begin(), Plane_equation());
-  CGAL::set_pretty_mode(std::cout);
-  std::copy(poly.planes_begin(), poly.planes_end(), std::ostream_iterator<Plane_3>(std::cout, "\n"));
+  std::transform(poly.facets_begin(), poly.facets_end(), poly.planes_begin(), Plane_equation());  // Compute the planes
 
+  /*
+CGAL::set_pretty_mode(std::cout);
+// std::copy(poly.planes_begin(), poly.planes_end(), std::ostream_iterator<Plane_3>(std::cout, "\n"));
+*/
   return poly;
 }
 
@@ -140,32 +144,40 @@ int main()
   int deg = 3;
 
   std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(0, 10, n_pol, 0.1);
+  std::cout << "hulls size=" << hulls.size() << std::endl;
   std::vector<std::vector<Eigen::Vector3d>> hulls_std = vectorGCALPol2vectorStdEigen(hulls);
 
-  SolverNlopt snlopt(n_pol, deg);  // snlopt(a,g) a polynomials of degree 3
+  std::cout << "hulls_std size=" << hulls_std.size() << std::endl;
 
-  for (int i = 0; i < 100; i++)
-  {
-    std::cout << "Optimizing, i=" << i << std::endl;
+  SolverNlopt snlopt(n_pol, deg, true);  // snlopt(a,g) a polynomials of degree 3
 
-    snlopt.setTminAndTmax(0, 10);
-    snlopt.setMaxValues(3, 20);  // v_max and a_max
-    snlopt.setDC(0.1);           // dc
+  snlopt.setHulls(hulls_std);
+  /*
+    for (int i = 0; i < 100; i++)
+    {*/
+  // std::cout << "Optimizing, i=" << i << std::endl;
 
-    snlopt.setHulls(hulls_std);
+  double v_max = 10;
+  double a_max = 10;
 
-    state initial_state, final_state;
-    initial_state.setPos(-10, -10, -10);
-    initial_state.setVel(0, 0, 0);
-    initial_state.setAccel(0, 0, 0);
-    final_state.setPos(10, 0, 0);
-    final_state.setVel(0, 0, 0);
-    final_state.setAccel(0, 0, 0);
-    snlopt.setInitAndFinalStates(initial_state, final_state);
-    std::cout << "Calling optimize" << std::endl;
-    snlopt.optimize();
-    std::cout << "Below of loop\n";
-  }
+  snlopt.setMaxValues(300, 200);  // v_max and a_max
+  snlopt.setDC(0.1);              // dc
+
+  snlopt.setTminAndTmax(0, 30);
+
+  state initial_state, final_state;
+  initial_state.setPos(-10, -10, -10);
+  initial_state.setVel(1, 0, 0);
+  initial_state.setAccel(0, 0, 0);
+  final_state.setPos(10, 0, 0);
+  final_state.setVel(0, 0, 0);
+  final_state.setAccel(0, 0, 0);
+  snlopt.setInitAndFinalStates(initial_state, final_state);
+
+  std::cout << "Calling optimize" << std::endl;
+  snlopt.optimize();
+  std::cout << "Below of loop\n";
+
   //}
   // X_whole_out = snlopt.X_temp_;
 
