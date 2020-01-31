@@ -205,6 +205,85 @@ void SolverNlopt::setHulls(std::vector<std::vector<Eigen::Vector3d>> &hulls)
     }*/
 }
 
+template <class T>
+void SolverNlopt::printInfeasibleConstraints(const T x)
+{
+  std::vector<Eigen::Vector3d> q;
+  std::vector<Eigen::Vector3d> n;
+  std::vector<double> d;
+  toEigen(x, q, n, d);
+  add_ineq_constraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+
+  std::cout << "The Infeasible Constraints are these ones:\n";
+  for (int i = 0; i < num_of_constraints_; i++)
+  {
+    if (constraints_[i] > 0.0)  // constraint is not satisfied yet
+    {
+      std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints_[i] << std::endl;
+    }
+  }
+}
+
+void SolverNlopt::printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
+                                             std::vector<double> &d)
+{
+  add_ineq_constraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+
+  std::cout << "The Infeasible Constraints are these ones:\n";
+  for (int i = 0; i < num_of_constraints_; i++)
+  {
+    if (constraints_[i] > 0.0)  // constraint is not satisfied yet
+    {
+      std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints_[i] << std::endl;
+    }
+  }
+}
+
+void SolverNlopt::qndtoX(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
+                         const std::vector<double> &d, std::vector<double> &x)
+{
+  int j = 0;
+  for (int i = 3; i <= N_; i++)
+  {
+    x[j] = q[i](0);
+    x[j + 1] = q[i](1);
+    x[j + 2] = q[i](2);
+    j = j + 3;
+  }
+
+  for (auto n_i : n)
+  {
+    x[j] = n_i(0);
+    x[j + 1] = n_i(1);
+    x[j + 2] = n_i(2);
+    j = j + 3;
+  }
+
+  for (auto d_i : d)
+  {
+    x[j] = d_i;
+    j = j + 1;
+  }
+  std::cout << "qndtoX, j=" << j << std::endl;
+}
+
+void SolverNlopt::initializeNumOfConstraints()
+{
+  // hack to get the number of constraints, calling once add_ineq_constraints(...)
+  double xx[num_of_variables_];
+
+  for (int i = 0; i < num_of_variables_; i++)
+  {
+    xx[i] = 0.0;
+  }
+  std::vector<Eigen::Vector3d> q;
+  std::vector<Eigen::Vector3d> n;
+  std::vector<double> d;
+  toEigen(xx, q, n, d);
+  add_ineq_constraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+  // end of hack
+}
+
 void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state)
 {
   /*  std::cout << "deltaT_=" << deltaT_ << std::endl;
@@ -787,19 +866,7 @@ bool SolverNlopt::optimize()
   opt_->set_maxtime(0.2);  // maximum time in seconds. Negative --> don't use this criterion
 
   // std::cout << "in optimize2" << std::endl;
-  // Hack to get the number of constraints in the problem
-  double xx[num_of_variables_];
-
-  for (int i = 0; i < num_of_variables_; i++)
-  {
-    xx[i] = 0.0;
-  }
-  std::vector<Eigen::Vector3d> q;
-  std::vector<Eigen::Vector3d> n;
-  std::vector<double> d;
-  toEigen(xx, q, n, d);
-  add_ineq_constraints(0, constraints_, num_of_variables_, NULL, q, n, d);
-  // end of hack
+  initializeNumOfConstraints();
 
   // see https://github.com/stevengj/nlopt/issues/168
   std::vector<double> tol_constraint(num_of_constraints_);  // This number should be the num of constraints I think

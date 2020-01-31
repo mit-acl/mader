@@ -74,6 +74,17 @@ private:
   void add_ineq_constraints(unsigned m, double *constraints, unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
                             std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
+  void initializeNumOfConstraints();
+
+  void qndtoX(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
+              const std::vector<double> &d, std::vector<double> &x);
+
+  void printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
+                                  std::vector<double> &d);
+
+  template <class T>
+  void printInfeasibleConstraints(const T x);
+
   int lastDecCP();
 
   int deg_pol_ = 3;
