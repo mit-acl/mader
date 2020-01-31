@@ -869,28 +869,39 @@ bool SolverNlopt::optimize()
   initializeNumOfConstraints();
 
   // see https://github.com/stevengj/nlopt/issues/168
-  std::vector<double> tol_constraint(num_of_constraints_);  // This number should be the num of constraints I think
-  for (auto tol_constraint_i : tol_constraint)
+  std::vector<double> tol_constraints;
+  for (int i = 0; i < num_of_constraints_; i++)
   {
-    tol_constraint_i = 1e-1;
+    tol_constraints.push_back(1e-1);
   }
+
   // std::cout << "computed tolerance" << std::endl;
 
   // std::cout << "The size of tol_constraint= " << tol_constraint.size() << std::endl;
 
   // andd lower and upper bounds
-  /*  std::vector<double> lb;
-    std::vector<double> ub;
-    for (int i = 0; i < num_of_variables_; i++)
-    {
-      lb.push_back(-HUGE_VAL);
-      ub.push_back(HUGE_VAL);
-    }
-    opt_->set_lower_bounds(lb);
-    opt_->set_upper_bounds(ub);
-  */
+  std::vector<double> lb;
+  std::vector<double> ub;
+  for (int i = 0; i <= i_max_; i++)
+  {
+    lb.push_back(-HUGE_VAL);
+    ub.push_back(HUGE_VAL);
+  }
+  for (int j = j_min_; j <= j_max_; j++)
+  {
+    lb.push_back(-1);
+    ub.push_back(1);
+  }
+  for (int k = k_min_; k <= k_max_; k++)
+  {
+    lb.push_back(-HUGE_VAL);
+    ub.push_back(HUGE_VAL);
+  }
+  opt_->set_lower_bounds(lb);
+  opt_->set_upper_bounds(ub);
+
   // set constraint and objective
-  opt_->add_inequality_mconstraint(SolverNlopt::multi_ineq_constraint, this, tol_constraint);
+  opt_->add_inequality_mconstraint(SolverNlopt::multi_ineq_constraint, this, tol_constraints);
   opt_->set_min_objective(SolverNlopt::myObjFunc,
                           this);  // this is passed as a parameter (the obj function has to be static)
 
@@ -898,7 +909,7 @@ bool SolverNlopt::optimize()
   std::cout << "num_of_variables_=" << num_of_variables_ << std::endl;
   for (int i = 0; i < num_of_variables_; i++)
   {
-    x[i] = (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
+    x[i] = (((double)rand() / (RAND_MAX)));  // TODO Change this
   }
   // guesses for the normals
   /*  for (int i = j_min_; i <= j_max_; i++)
