@@ -949,9 +949,9 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   // DEBUGGING
 
-  int n_pol = 7;
+  int n_pol = 6;
   int deg = 3;
-  int samples_per_interval = 5;
+  int samples_per_interval = 2;
 
   double t_min = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
   double t_max = t_min + (A.pos - G_term.pos).norm() / (0.4 * par_.v_max);

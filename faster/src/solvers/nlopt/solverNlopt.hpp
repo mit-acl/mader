@@ -121,7 +121,7 @@ private:
 
   double constraints_[10000];  // this number should be very big!! (hack)
 
-  Eigen::Vector3d q0_, q1_, q2_, qNm2_, qNm1_, qN_;
+  Eigen::Vector3d q0_, q1_, q2_;  //, qNm2_, qNm1_, qN_;
 
   std::vector<std::vector<Eigen::Vector3d>> hulls_;
 

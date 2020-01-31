@@ -168,23 +168,31 @@ int main()
 {
   /////////////////////////////////////
 
-  double v_max = 3;
-  double a_max = 10;
+  double v_max = 3000;
+  double a_max = 1000;
   state A;
   state G_term;
-  A.pos = Eigen::Vector3d(2.75, -0.222, 0.866);
-  A.vel = Eigen::Vector3d(1.41, 0.422, -0.0466);
-  A.accel = Eigen::Vector3d(0.305, 0.702, 0.243);
-  G_term.pos = Eigen::Vector3d(4, 0.319, 1);
+  /*  A.pos = Eigen::Vector3d(2.75, -0.222, 0.866);
+    A.vel = Eigen::Vector3d(1.41, 0.422, -0.0466);
+    A.accel = Eigen::Vector3d(0.305, 0.702, 0.243);
+    G_term.pos = Eigen::Vector3d(4, 0.319, 1);
+  */
+  A.pos = Eigen::Vector3d(0, 0, 1);
+  A.vel = Eigen::Vector3d(3, 3, 3);
+  A.accel = Eigen::Vector3d(4, 5, 6);
+  G_term.pos = Eigen::Vector3d(10, 0, 0);
+
+  G_term.vel = Eigen::Vector3d(0, 0, 0);
+  G_term.accel = Eigen::Vector3d(0, 0, 0);
   /////////////////////////////////////
 
   int n_pol = 7;  // was 7
   int deg = 3;
   int samples_per_interval = 5;
 
-  double t_min = 67.8;  // 0;  // TODO this ros dependency shouldn't be here
-  double t_max = 68.9;  // t_min + (G_term.pos - A.pos).norm() /
-                        //    (0.4 * v_max);  // 72.8861;  // t_min + (A.pos - G_term.pos).norm() / (v_max);
+  double t_min = 8;   // 0;  // TODO this ros dependency shouldn't be here
+  double t_max = 10;  // t_min + (G_term.pos - A.pos).norm() /
+                      //    (0.4 * v_max);  // 72.8861;  // t_min + (A.pos - G_term.pos).norm() / (v_max);
 
   std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(t_min, t_max, n_pol, samples_per_interval);
   std::cout << "hulls size=" << hulls.size() << std::endl;

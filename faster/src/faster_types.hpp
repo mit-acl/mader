@@ -4,6 +4,7 @@
 #include <iomanip>  // std::setprecision
 #include <deque>
 #include "exprtk.hpp"
+#include "termcolor.hpp"
 
 struct dynTraj
 {
@@ -165,8 +166,11 @@ struct state
 
   void printHorizontal()
   {
-    std::cout << std::setprecision(3) << "Pos, Vel, Accel, Jerk= " << pos.transpose() << " " << vel.transpose() << " "
-              << accel.transpose() << " " << jerk.transpose() << std::endl;
+    using namespace termcolor;
+    std::cout << std::setprecision(3) << "Pos, Vel, Accel, Jerk= " << red << pos.transpose() << reset;
+    std::cout << " " << blue << vel.transpose() << reset;
+    std::cout << " " << green << accel.transpose() << reset;
+    std::cout << " " << jerk.transpose() << std::endl;
   }
 };
 
