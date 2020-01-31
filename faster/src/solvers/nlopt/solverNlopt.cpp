@@ -573,7 +573,7 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
   std::cout << "Going to add velocity constraints, r= " << r << std::endl;
 #endif
   // VELOCITY CONSTRAINTS:
-  for (int i = 0; i <= N_ - 1; i++)
+  for (int i = 2; i <= N_ - 1; i++)  // v0 and v1 are already determined by initial_state
   {
     double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
     Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
@@ -625,7 +625,7 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
   std::cout << "Going to add acceleration constraints, r= " << r << std::endl;
 #endif
   // ACCELERATION CONSTRAINTS:
-  for (int i = 0; i <= N_ - 2; i++)
+  for (int i = 1; i <= N_ - 2; i++)  // a0 is already determined by the initial state
   {
     double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
     double c2 = p_ / (knots_(i + p_ + 1 + 1) - knots_(i + 1 + 1));
