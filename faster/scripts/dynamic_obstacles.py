@@ -32,7 +32,7 @@ class FakeSim:
         self.name = name[1:-1]
 
         self.pubTraj = rospy.Publisher('traj', DynTraj, queue_size=1, latch=True)
-        self.timer = rospy.Timer(rospy.Duration(0.01), self.pubTF)
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.pubTF)
 
         # self.state.quat.x = 0
         # self.state.quat.y = 0
@@ -41,7 +41,7 @@ class FakeSim:
 
         # self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
 
-        rospy.sleep(1.0)
+        rospy.sleep(0.5)
 
         # self.state.header.frame_id="world"
         # self.pubState.publish(self.state)  

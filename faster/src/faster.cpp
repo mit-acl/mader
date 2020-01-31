@@ -732,7 +732,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
     return;
   }
 
-  std::cout << bold << on_red << "************IN REPLAN CB*********" << reset << std::endl;
+  std::cout << bold << "************IN REPLAN CB*********" << reset << std::endl;
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Select state A /////////////////////////////////
@@ -977,8 +977,11 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   bool result = snlopt.optimize();
   if (result == false)
   {
+    std::cout << on_red << bold << "Solution not found" << reset << std::endl;
     return;
   }
+  std::cout << on_green << bold << "Solution found" << reset << std::endl;
+
   std::cout << "Below of loop\n";
 
   /////// END OF DEBUGGING
