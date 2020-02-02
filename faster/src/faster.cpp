@@ -949,12 +949,12 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   // DEBUGGING
 
-  int n_pol = 6;
-  int deg = 3;
-  int samples_per_interval = 2;
+  int n_pol = par_.n_pol;
+  int deg = par_.deg;
+  int samples_per_interval = par_.samples_per_interval;
 
   double t_min = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
-  double t_max = t_min + (A.pos - G_term.pos).norm() / (par_.v_max);
+  double t_max = t_min + (A.pos - G_term.pos).norm() / (0.6 * par_.v_max);
 
   std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(t_min, t_max, n_pol, samples_per_interval);
   std::cout << "hulls size=" << hulls.size() << std::endl;
@@ -962,7 +962,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
   std::cout << "hulls_std size=" << hulls_std.size() << std::endl;
 
-  SolverNlopt snlopt(n_pol, deg, false);  // snlopt(a,g) a polynomials of degree 3
+  SolverNlopt snlopt(n_pol, deg, par_.weight, false);  // snlopt(a,g) a polynomials of degree 3
 
   snlopt.setHulls(hulls_std);
 

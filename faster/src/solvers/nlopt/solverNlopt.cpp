@@ -12,12 +12,13 @@
 
 typedef Timer MyTimer;
 
-SolverNlopt::SolverNlopt(int num_pol, int deg_pol, bool force_final_state)
+SolverNlopt::SolverNlopt(int num_pol, int deg_pol, double weight, bool force_final_state)
 {
   std::cout << "In the SolverNlopt Constructor\n";
 
   force_final_state_ = force_final_state;
 
+  weight_ = weight;
   deg_pol_ = deg_pol_;
   num_pol_ = num_pol;
 
@@ -882,7 +883,7 @@ bool SolverNlopt::optimize()
   opt_->set_local_optimizer(*local_opt_);
   opt_->set_xtol_rel(1e-8);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
-  opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
+  // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
   opt_->set_maxtime(0.2);  // maximum time in seconds. Negative --> don't use this criterion
 
   // std::cout << "in optimize2" << std::endl;
@@ -951,12 +952,6 @@ bool SolverNlopt::optimize()
   printQND(q_novale, n_novale, d_novale);
 #endif
 
-  /*
-      x[0] = -7;
-      x[3] = -2;
-      x[6] = 3;
-      x[9] = 7.9;
-    */
   double minf;
 
   MyTimer opt_timer(true);

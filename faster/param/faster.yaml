@@ -44,6 +44,11 @@ gurobi_verbose: 0 #Verbosity of Gurobi. 0 or 1
 
 use_faster: true  #if false, it will plan only in free space
 
+n_pol: 6
+deg: 3
+samples_per_interval: 2
+weight: 10000.0 #The .0 is needed
+
 #Parameters for the ground robot (jackal):
 # kw: 1
 # kyaw: 1.5

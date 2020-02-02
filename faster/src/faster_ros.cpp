@@ -53,6 +53,11 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "use_faster", par_.use_faster);
 
+  safeGetParam(nh_, "n_pol", par_.n_pol);
+  safeGetParam(nh_, "deg", par_.deg);
+  safeGetParam(nh_, "samples_per_interval", par_.samples_per_interval);
+  safeGetParam(nh_, "weight", par_.weight);
+
   // Parameters for the ground robot (jackal):
   /*  safeGetParam(nh_,"kw", par_.kw);
     safeGetParam(nh_,"kyaw", par_.kyaw);

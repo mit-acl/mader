@@ -189,6 +189,7 @@ int main()
   int n_pol = 7;  // was 7
   int deg = 3;
   int samples_per_interval = 5;
+  double weight = 10000;
 
   double t_min = 8;   // 0;  // TODO this ros dependency shouldn't be here
   double t_max = 10;  // t_min + (G_term.pos - A.pos).norm() /
@@ -200,7 +201,7 @@ int main()
   // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
   std::cout << "hulls_std size=" << hulls_std.size() << std::endl;
 
-  SolverNlopt snlopt(n_pol, deg, false);  // snlopt(a,g) a polynomials of degree 3
+  SolverNlopt snlopt(n_pol, deg, weight, false);  // snlopt(a,g) a polynomials of degree 3
 
   snlopt.setHulls(hulls_std);
 

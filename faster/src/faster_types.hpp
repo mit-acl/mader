@@ -75,6 +75,11 @@ struct parameters
   double wdz;
   double res;
 
+  int n_pol;
+  int deg;
+  int samples_per_interval;
+  double weight;
+
   /*  double kw;
     double kyaw;
     double kdalpha;
