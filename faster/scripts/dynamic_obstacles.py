@@ -10,6 +10,7 @@ import math
 from faster_msgs.msg import DynTraj
 from snapstack_msgs.msg import QuadGoal, State
 from gazebo_msgs.msg import ModelState
+from geometry_msgs.msg import Vector3
 import numpy as np
 from numpy import linalg as LA
 
@@ -51,6 +52,7 @@ class FakeSim:
         # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
         t_ros=rospy.Time.now()
         t=rospy.get_time(); #Same as before, but it's float
+        [x_string, y_string, z_string] = self.trefoil(-5, 0, 1, 1.0, 1.0, 1.0)
         x_string='(sin(t) + 2 * sin(2 * t))/1.0 -5';
         y_string='(cos(t) - 2 * cos(2 * t))/1.0';
         z_string='-sin(3 * t) +1';
@@ -61,8 +63,18 @@ class FakeSim:
         dynamic_trajectory_msg.header.stamp= t_ros;
         dynamic_trajectory_msg.function = [x_string, y_string, z_string]
         dynamic_trajectory_msg.bbox = [0.1, 0.1, 0.1]
+        dynamic_trajectory_msg.position = [x, y, z] #Current position
         self.pubTraj.publish(dynamic_trajectory_msg)
         br.sendTransform((x, y, z), (0,0,0,1), t_ros, self.name, "vicon")
+
+
+    def trefoil(self,x,y,z,scale_x, scale_y, scale_z):
+
+        x_string='(sin(t) + 2 * sin(2 * t))/' + str(scale_x) +'+' + str(x);
+        y_string='(cos(t) - 2 * cos(2 * t))/' + str(scale_y) +'+' + str(y);
+        z_string='-sin(3 * t)/' +str(scale_z) + '+' + str(z);
+
+        return [x_string, y_string, z_string]
 
 
              
