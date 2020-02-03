@@ -39,14 +39,14 @@ class FakeSim:
         self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
 
 
-        self.num_of_objects = 20;
+        self.num_of_objects = 1;
 
         self.x_all=[];
         self.y_all=[];
         self.z_all=[];
         for i in range(self.num_of_objects):
-            self.x_all.append(random.randint(0, 50));
-            self.y_all.append(random.randint(0, 50));
+            self.x_all.append(random.randint(0, 2));
+            self.y_all.append(random.randint(0, 2));
             self.z_all.append(random.randint(0, 2));
         # self.state.quat.x = 0
         # self.state.quat.y = 0

@@ -5,12 +5,14 @@
 #include <iostream>
 #include <vector>
 #include "timer.hpp"
+#include "./../../termcolor.hpp"
 
 #include <unsupported/Eigen/Splines>
 
 //#define DEBUG_MODE_NLOPT 1  // any value will make the debug output appear (comment line if you don't want debug)
 
 typedef Timer MyTimer;
+using namespace termcolor;
 
 SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, bool force_final_state)
 {
@@ -561,7 +563,7 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
       // impose that all the vertexes of the obstacle are on one side of the plane
       for (Eigen::Vector3d vertex : hulls_[obst_index][i])  // opt->hulls_[i].size()
       {
-        constraints[r] = -(n[i].dot(vertex) + d[i]);  // f<=0
+        constraints[r] = -(n[ip].dot(vertex) + d[ip]);  // f<=0
         if (grad)
         {
           toGradSameConstraintDiffVariables(gIndexN(ip), -vertex, grad, r, nn);
@@ -969,18 +971,19 @@ bool SolverNlopt::optimize()
   MyTimer opt_timer(true);
   std::cout << "Optimizing now!= " << std::endl;
   int result = opt_->optimize(x, minf);
-  std::cout << "Solve time = " << opt_timer << std::endl;
+  // std::cout << "Solve time = " << opt_timer << std::endl;
 
   if (result < 0 || result == nlopt::MAXTIME_REACHED)
   {
     printf("nlopt failed or maximum time was reached!\n");
-    std::cout << "###########SOLUTION NOT FOUND###########" << std::endl;
+
+    std::cout << on_red << bold << "Solution not found" << opt_timer << reset << std::endl;
 
     return false;
   }
   else
   {
-    std::cout << "SOLUTION FOUND" << std::endl;
+    std::cout << on_green << bold << "Solution found" << opt_timer << reset << std::endl;
     // std::cout << "opt value= " << minf << std::endl;
 
     std::vector<Eigen::Vector3d> q;

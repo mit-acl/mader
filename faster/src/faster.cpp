@@ -998,14 +998,16 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   double t_min = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
   double t_max = t_min + (A.pos - G_term.pos).norm() / (0.6 * par_.v_max);
 
+  MyTimer convex_hulls_timer(true);
+
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_min, t_max);
-
   std::cout << "hulls.size()=" << hulls.size() << std::endl;
-
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
 
-  std::cout << bold << "hulls has size=" << hulls.size() << std::endl;
+  std::cout << cyan << "Convex Hull time = " << convex_hulls_timer << reset << std::endl;
+
+  std::cout << bold << "hulls has size=" << hulls.size() << reset << std::endl;
 
   int num_obst = hulls.size();
 
@@ -1020,10 +1022,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   bool result = snlopt.optimize();
   if (result == false)
   {
-    std::cout << on_red << bold << "Solution not found" << reset << std::endl;
     return;
   }
-  std::cout << on_green << bold << "Solution found" << reset << std::endl;
 
   std::cout << "Below of loop\n";
 

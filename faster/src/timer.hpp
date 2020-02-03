@@ -25,7 +25,7 @@ public:
   template <typename T, typename Traits>
   friend std::basic_ostream<T, Traits>& operator<<(std::basic_ostream<T, Traits>& out, const Timer& timer)
   {
-    return out << timer.ElapsedMs();
+    return out << " " << timer.ElapsedMs() << " ms ";
   }
 
 private:
