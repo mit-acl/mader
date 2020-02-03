@@ -27,8 +27,26 @@ public:
   {
   }
 
-  void readMap(pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr, int cells_x, int cells_y, int cells_z, double res,
-               const Vec3f &center_map, double z_ground, double z_max, double inflation)
+  void getMap(pcl::PointCloud<pcl::PointXYZ>::Ptr &result)
+  {
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr tmp(new pcl::PointCloud<pcl::PointXYZ>);
+    vec_Vecf<3> tmp = getCloud();
+
+    std::cout << "**********GetCloud*****=" << tmp.size() << std::endl;
+
+    for (auto temp_i : tmp)
+    {
+      pcl::PointXYZ p(temp_i(0), temp_i(1), temp_i(2));
+      result->points.push_back(p);
+    }
+
+    result->width = tmp.size();
+    result->height = 1;
+    result->points.resize(result->width * result->height);
+  }
+
+  void createNewMap(int cells_x, int cells_y, int cells_z, double res, const Vec3f &center_map, double z_ground,
+                    double z_max, double inflation)
   {
     // printf("reading_map\n");
     // **Box of the map --> it's the box with which the map moves.
@@ -128,16 +146,22 @@ public:
     // printf("reading_map3\n");
     res_ = res;
     map_.resize(dim(0) * dim(1) * dim(2), 0);
-    int total_size = dim(0) * dim(1) * dim(2);
+
+    total_size_ = dim(0) * dim(1) * dim(2);
+  }
+
+  // Add elements to the map
+  void addToMap(pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr, double inflation_x, double inflation_y, double inflation_z)
+  {
     // printf("In reader3, size=%f, %f, %f\n", dim[0], dim[1], dim[2]);
     // printf("reading_map4\n");
     for (size_t i = 0; i < pclptr->points.size(); ++i)
     {
       // Let's find the cell coordinates of the point expresed in a system of coordinates that has as origin the (minX,
       // minY, minZ) point of the map
-      int x = std::round((pclptr->points[i].x - origin_d_(0)) / res - 0.5);
-      int y = std::round((pclptr->points[i].y - origin_d_(1)) / res - 0.5);
-      int z = std::round((pclptr->points[i].z - origin_d_(2)) / res - 0.5);
+      int x = std::round((pclptr->points[i].x - origin_d_(0)) / res_ - 0.5);
+      int y = std::round((pclptr->points[i].y - origin_d_(1)) / res_ - 0.5);
+      int z = std::round((pclptr->points[i].z - origin_d_(2)) / res_ - 0.5);
 
       // Force them to be positive:
       x = (x > 0) ? x : 0;
@@ -157,23 +181,25 @@ public:
                 std::cout << "XYZ=" << pclptr->points[i].x << ", " << pclptr->points[i].y << ", " << pclptr->points[i].z
                           << std::endl;*/
       }
-      if (id >= 0 && id < total_size)
+      if (id >= 0 && id < total_size_)
       {
         map_[id] = 100;
       }
 
       // now let's inflate the voxels around that point
-      int m = (int)floor((inflation / res));
+      int m_x = (int)ceil((inflation_x / res_));
+      int m_y = (int)ceil((inflation_y / res_));
+      int m_z = (int)ceil((inflation_z / res_));
       // m is the amount of cells to inflate in each direction
 
-      for (int ix = x - m; ix <= x + m; ix++)
+      for (int ix = x - m_x; ix <= x + m_x; ix++)
       {
-        for (int iy = y - m; iy <= y + m; iy++)
+        for (int iy = y - m_y; iy <= y + m_y; iy++)
         {
-          for (int iz = z - m; iz <= z + m; iz++)
+          for (int iz = z - m_z; iz <= z + m_z; iz++)
           {
             int id_infl = ix + dim_(0) * iy + dim_(0) * dim_(1) * iz;
-            if (id_infl >= 0 && id_infl < total_size)  // Ensure we are inside the map
+            if (id_infl >= 0 && id_infl < total_size_)  // Ensure we are inside the map
             {
               map_[id_infl] = 100;
             }
@@ -570,13 +596,15 @@ protected:
   Vecf<Dim> origin_d_;
   /// Dimension, int type
   Veci<Dim> dim_;
+  /// Total number of voxels inside the map
+  int total_size_;
   /// Assume occupied cell has value 100
   int8_t val_occ = 100;
   /// Assume free cell has value 0
   int8_t val_free = 0;
   /// Assume unknown cell has value -1
   int8_t val_unknown = -1;
-};
+};  // namespace JPS
 
 typedef MapUtil<2> OccMapUtil;
 
