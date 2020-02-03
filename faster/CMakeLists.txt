@@ -79,9 +79,9 @@ add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
 
 
-add_executable(${PROJECT_NAME}_sample src/solvers/nlopt/main.cpp src/solvers/nlopt/solverNlopt.cpp)
-target_link_libraries(${PROJECT_NAME}_sample  ${NLOPT_LIBRARIES}  ${CGAL_LIBS})
-add_dependencies(${PROJECT_NAME}_sample ${catkin_EXPORTED_TARGETS} )
+#add_executable(${PROJECT_NAME}_sample src/solvers/nlopt/main.cpp src/solvers/nlopt/solverNlopt.cpp)
+#target_link_libraries(${PROJECT_NAME}_sample  ${NLOPT_LIBRARIES}  ${CGAL_LIBS})
+#add_dependencies(${PROJECT_NAME}_sample ${catkin_EXPORTED_TARGETS} )
 
 
 add_executable(gurobi_continuous_exec gurobi_continuous.cpp)

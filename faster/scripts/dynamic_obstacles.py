@@ -13,6 +13,7 @@ from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import Vector3
 import numpy as np
 from numpy import linalg as LA
+import random
 
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
@@ -32,9 +33,21 @@ class FakeSim:
         name = rospy.get_namespace()
         self.name = name[1:-1]
 
-        self.pubTraj = rospy.Publisher('traj', DynTraj, queue_size=1, latch=True)
-        self.timer = rospy.Timer(rospy.Duration(0.1), self.pubTF)
+        self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=1, latch=True)
+        self.timer = rospy.Timer(rospy.Duration(0.01), self.pubTF)
 
+        self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
+
+
+        self.num_of_objects = 20;
+
+        self.x_all=[];
+        self.y_all=[];
+        self.z_all=[];
+        for i in range(self.num_of_objects):
+            self.x_all.append(random.randint(0, 50));
+            self.y_all.append(random.randint(0, 50));
+            self.z_all.append(random.randint(0, 2));
         # self.state.quat.x = 0
         # self.state.quat.y = 0
         # self.state.quat.z = 0
@@ -49,30 +62,50 @@ class FakeSim:
 
     def pubTF(self, timer):
         br = tf.TransformBroadcaster()
-        # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
-        t_ros=rospy.Time.now()
-        t=rospy.get_time(); #Same as before, but it's float
-        [x_string, y_string, z_string] = self.trefoil(-5, 0, 1, 1.0, 1.0, 1.0)
-        x_string='(sin(t) + 2 * sin(2 * t))/1.0 -5';
-        y_string='(cos(t) - 2 * cos(2 * t))/1.0';
-        z_string='-sin(3 * t) +1';
-        x = eval(x_string)
-        y = eval(y_string)
-        z = eval(z_string)
-        dynamic_trajectory_msg=DynTraj();
-        dynamic_trajectory_msg.header.stamp= t_ros;
-        dynamic_trajectory_msg.function = [x_string, y_string, z_string]
-        dynamic_trajectory_msg.bbox = [0.1, 0.1, 0.1]
-        dynamic_trajectory_msg.position = [x, y, z] #Current position
-        self.pubTraj.publish(dynamic_trajectory_msg)
-        br.sendTransform((x, y, z), (0,0,0,1), t_ros, self.name, "vicon")
+
+        for i in range(self.num_of_objects):
+            t_ros=rospy.Time.now()
+            t=rospy.get_time(); #Same as before, but it's float
+            [x_string, y_string, z_string] = self.trefoil(self.x_all[i], self.y_all[i], self.z_all[i], 1.0, 1.0, 1.0, self.x_all[i]) #offset=x
+            x = eval(x_string)
+            y = eval(y_string)
+            z = eval(z_string)
+            dynamic_trajectory_msg=DynTraj(); 
+
+            dynamic_trajectory_msg.header.stamp= t_ros;
+            dynamic_trajectory_msg.function = [x_string, y_string, z_string]
+            dynamic_trajectory_msg.bbox = [0.1, 0.1, 0.1]
+            dynamic_trajectory_msg.pos.x=x #Current position
+            dynamic_trajectory_msg.pos.y=y #Current position
+            dynamic_trajectory_msg.pos.z=z #Current position
+
+            dynamic_trajectory_msg.id = i #Current id
+
+            self.pubTraj.publish(dynamic_trajectory_msg)
+            br.sendTransform((x, y, z), (0,0,0,1), t_ros, self.name+str(i), "vicon")
 
 
-    def trefoil(self,x,y,z,scale_x, scale_y, scale_z):
+            #If you want to move the objets in gazebo
+            # gazebo_state = ModelState()
+            # gazebo_state.model_name = str(i)
 
-        x_string='(sin(t) + 2 * sin(2 * t))/' + str(scale_x) +'+' + str(x);
-        y_string='(cos(t) - 2 * cos(2 * t))/' + str(scale_y) +'+' + str(y);
-        z_string='-sin(3 * t)/' +str(scale_z) + '+' + str(z);
+            # gazebo_state.pose.position.x = x
+            # gazebo_state.pose.position.y = y
+            # gazebo_state.pose.position.z = z
+
+            # gazebo_state.reference_frame = "world" 
+            # self.pubGazeboState.publish(gazebo_state)  
+
+
+
+
+
+    # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
+    def trefoil(self,x,y,z,scale_x, scale_y, scale_z, offset):
+
+        x_string='(sin(t +'+str(offset)+') + 2 * sin(2 * t +'+str(offset)+'))/' + str(scale_x) +'+' + str(x);
+        y_string='(cos(t +'+str(offset)+') - 2 * cos(2 * t +'+str(offset)+'))/' + str(scale_y) +'+' + str(y);
+        z_string='-sin(3 * t +'+str(offset)+')/' +str(scale_z) + '+' + str(z);
 
         return [x_string, y_string, z_string]
 

@@ -186,9 +186,9 @@ int main()
   G_term.accel = Eigen::Vector3d(0, 0, 0);
   /////////////////////////////////////
 
-  int n_pol = 7;  // was 7
+  int n_pol = 5;  // was 7
   int deg = 3;
-  int samples_per_interval = 5;
+  int samples_per_interval = 2;
   double weight = 10000;
 
   double t_min = 8;   // 0;  // TODO this ros dependency shouldn't be here

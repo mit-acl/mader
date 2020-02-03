@@ -89,61 +89,74 @@ Faster::Faster(parameters par) : par_(par)
   deg_ = 3;
 }
 
-void Faster::updateTrajObstacles(dynTraj traj)
+void Faster::updateTrajObstacles(std::vector<dynTraj> trajs)
 {
-  typedef exprtk::symbol_table<double> symbol_table_t;
-  typedef exprtk::expression<double> expression_t;
-  typedef exprtk::parser<double> parser_t;
+  mtx_trajs_.lock();
+  trajs_.clear();
 
-  symbol_table_t symbol_table;
-  symbol_table.add_variable("t", t_);
-  symbol_table.add_constants();
+  // std::cout << "init of updateTrajObstacles" << std::endl;
 
-  mtx_traj_.lock();
-
-  for (auto function_i : traj.function)
+  for (auto traj : trajs)
   {
-    expression_t expression;
-    expression.register_symbol_table(symbol_table);
+    dynTrajCompiled traj_compiled;
+    for (auto function_i : traj.function)
+    {
+      typedef exprtk::symbol_table<double> symbol_table_t;
+      typedef exprtk::expression<double> expression_t;
+      typedef exprtk::parser<double> parser_t;
 
-    parser_t parser;
-    parser.compile(function_i, expression);
-    traj_.function.push_back(expression);
+      symbol_table_t symbol_table;
+      symbol_table.add_variable("t", t_);
+      symbol_table.add_constants();
+      expression_t expression;
+      expression.register_symbol_table(symbol_table);
+
+      // std::cout << "function_i=" << function_i << std::endl;
+
+      parser_t parser;
+      parser.compile(function_i, expression);
+      traj_compiled.function.push_back(expression);
+    }
+
+    // std::cout << "traj_compiled.function.size()= " << traj_compiled.function.size() << std::endl;
+
+    traj_compiled.bbox = traj.bbox;
+    trajs_.push_back(traj_compiled);
   }
 
-  traj_.bbox = traj.bbox;
+  // std::cout << "end of updateTrajObstacles" << std::endl;
 
-  mtx_traj_.unlock();
+  mtx_trajs_.unlock();
 
-  /*  for (x = T(-5); x <= T(+5); x += T(0.001))
-    {
-      const T y = expression.value();
-      printf("%19.15f\t%19.15f\n", x, y);
-    }*/
+  // std::cout << "end of updateTrajObstacles" << std::endl;
 }
 
-vec_E<Polyhedron<3>> Faster::vectorGCALPol2vectorJPSPol(std::vector<CGAL_Polyhedron_3> vector_of_polyhedrons)
+vec_E<Polyhedron<3>> Faster::vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves)
 {
   vec_E<Polyhedron<3>> vector_of_polyhedron_jps;
 
-  for (auto polyhedron_i : vector_of_polyhedrons)
+  for (auto convex_hulls_of_curve : convex_hulls_of_curves)
   {
-    vec_E<Hyperplane<3>> hyperplanes;
-    for (auto it = polyhedron_i.planes_begin(); it != polyhedron_i.planes_end(); it++)
+    for (auto polyhedron_i : convex_hulls_of_curve)
     {
-      Vector_3 n = it->orthogonal_vector();
-      Point_3 p = it->point();
-      hyperplanes.push_back(Hyperplane<3>(Eigen::Vector3d(p.x(), p.y(), p.z()), Eigen::Vector3d(n.x(), n.y(), n.z())));
+      vec_E<Hyperplane<3>> hyperplanes;
+      for (auto it = polyhedron_i.planes_begin(); it != polyhedron_i.planes_end(); it++)
+      {
+        Vector_3 n = it->orthogonal_vector();
+        Point_3 p = it->point();
+        hyperplanes.push_back(
+            Hyperplane<3>(Eigen::Vector3d(p.x(), p.y(), p.z()), Eigen::Vector3d(n.x(), n.y(), n.z())));
+      }
+      Polyhedron<3> polyhedron_jps(hyperplanes);
+      vector_of_polyhedron_jps.push_back(polyhedron_jps);
+      // std::cout << red << bold << "Size=" << vector_of_polyhedron_jps.size() << reset << std::endl;
     }
-    Polyhedron<3> polyhedron_jps(hyperplanes);
-    vector_of_polyhedron_jps.push_back(polyhedron_jps);
-    // std::cout << red << bold << "Size=" << vector_of_polyhedron_jps.size() << reset << std::endl;
   }
   return vector_of_polyhedron_jps;
 }
 
 // See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
-CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, int samples_per_interval)
+CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_start, double t_end)
 {
   /*  std::default_random_engine generator;
     generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
@@ -153,34 +166,36 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, int
       double r2 = int_random * distribution(generator);
       double r3 = int_random * distribution(generator);*/
 
-  samples_per_interval = std::max(samples_per_interval, 4);  // at least 4 samples per interval
+  int samples_per_interval = std::max(par_.samples_per_interval, 4);  // at least 4 samples per interval
   double inc = (t_end - t_start) / (1.0 * samples_per_interval);
 
   std::vector<Point_3> points;
 
-  mtx_traj_.lock();
+  // mtx_trajs_.lock();
 
   for (int i = 0; i < samples_per_interval; i++)
   {
     // Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
     t_ = t_start + i * inc;
-    double x = traj_.function[0].value();  //    sin(t) + 2 * sin(2 * t);
-    double y = traj_.function[1].value();  // cos(t) - 2 * cos(2 * t);
-    double z = traj_.function[2].value();  //-sin(3 * t);
+    // std::cout << "calling value(), traj_compiled.function.size()= " << traj.function.size() << std::endl;
+
+    double x = traj.function[0].value();  //    sin(t) + 2 * sin(2 * t);
+    double y = traj.function[1].value();  // cos(t) - 2 * cos(2 * t);
+    double z = traj.function[2].value();  //-sin(3 * t);
 
     double half_side = par_.drone_radius / 2.0;
 
     //"Minkowski sum along the trajectory: box centered on the trajectory"
 
-    Point_3 p0(x + traj_.bbox[0], y + traj_.bbox[1], z + traj_.bbox[2]);
-    Point_3 p1(x + traj_.bbox[0], y - traj_.bbox[1], z - traj_.bbox[2]);
-    Point_3 p2(x + traj_.bbox[0], y + traj_.bbox[1], z - traj_.bbox[2]);
-    Point_3 p3(x + traj_.bbox[0], y - traj_.bbox[1], z + traj_.bbox[2]);
+    Point_3 p0(x + traj.bbox[0], y + traj.bbox[1], z + traj.bbox[2]);
+    Point_3 p1(x + traj.bbox[0], y - traj.bbox[1], z - traj.bbox[2]);
+    Point_3 p2(x + traj.bbox[0], y + traj.bbox[1], z - traj.bbox[2]);
+    Point_3 p3(x + traj.bbox[0], y - traj.bbox[1], z + traj.bbox[2]);
 
-    Point_3 p4(x - traj_.bbox[0], y - traj_.bbox[1], z - traj_.bbox[2]);
-    Point_3 p5(x - traj_.bbox[0], y + traj_.bbox[1], z + traj_.bbox[2]);
-    Point_3 p6(x - traj_.bbox[0], y + traj_.bbox[1], z - traj_.bbox[2]);
-    Point_3 p7(x - traj_.bbox[0], y - traj_.bbox[1], z + traj_.bbox[2]);
+    Point_3 p4(x - traj.bbox[0], y - traj.bbox[1], z - traj.bbox[2]);
+    Point_3 p5(x - traj.bbox[0], y + traj.bbox[1], z + traj.bbox[2]);
+    Point_3 p6(x - traj.bbox[0], y + traj.bbox[1], z - traj.bbox[2]);
+    Point_3 p7(x - traj.bbox[0], y - traj.bbox[1], z + traj.bbox[2]);
 
     points.push_back(p0);
     points.push_back(p1);
@@ -191,7 +206,7 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(double t_start, double t_end, int
     points.push_back(p6);
     points.push_back(p7);
   }
-  mtx_traj_.unlock();
+  // mtx_trajs_.unlock();
 
   // generate 3 points randomly on a sphere of radius 1.0
   // and copy them to a vector
@@ -224,43 +239,70 @@ CGAL::set_pretty_mode(std::cout);
   return poly;
 }
 
-std::vector<CGAL_Polyhedron_3> Faster::convexHullsOfCurve(double t_start, double t_end, int intervals,
-                                                          int samples_per_interval)
+ConvexHullsOfCurve Faster::convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end)
 {
-  std::vector<CGAL_Polyhedron_3> convexHulls;
+  ConvexHullsOfCurve convexHulls;
 
-  double deltaT = (t_end - t_start) / (1.0 * intervals);
-  std::cout << "deltaT= " << deltaT << std::endl;
-  for (int i = 0; i < intervals; i++)
+  double deltaT = (t_end - t_start) / (1.0 * par_.n_pol);  // n_pol is the number of intervals
+  // std::cout << "deltaT= " << deltaT << std::endl;
+  for (int i = 0; i < par_.n_pol; i++)
   {
-    std::cout << "i= " << i << std::endl;
-    convexHulls.push_back(convexHullOfInterval(t_start + i * deltaT, t_start + (i + 1) * deltaT, samples_per_interval));
+    // std::cout << "i= " << i << std::endl;
+    convexHulls.push_back(convexHullOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT));
   }
 
-  std::cout << "Done with convexHullsOfCurve" << std::endl;
+  // std::cout << "Done with convexHullsOfCurve" << std::endl;
 
   return convexHulls;
 }
 
-std::vector<std::vector<Eigen::Vector3d>>
-Faster::vectorGCALPol2vectorStdEigen(std::vector<CGAL_Polyhedron_3> convexHulls)
+ConvexHullsOfCurves Faster::convexHullsOfCurves(double t_start, double t_end)
 {
-  std::vector<std::vector<Eigen::Vector3d>> convexHulls_std;
-
-  for (int i = 0; i < convexHulls.size(); i++)
+  ConvexHullsOfCurves result;
+  mtx_trajs_.lock();
+  for (auto traj : trajs_)
   {
-    CGAL_Polyhedron_3 poly = convexHulls[i];
-    std::vector<Eigen::Vector3d> convexHull_std;
-    for (CGAL_Polyhedron_3::Vertex_iterator v = poly.vertices_begin(); v != poly.vertices_end(); ++v)
-    {
-      Eigen::Vector3d vertex(v->point().x(), v->point().y(), v->point().z());
-      convexHull_std.push_back(vertex);
-      // std::cout << v->point() << std::endl;
-    }
-    convexHulls_std.push_back(convexHull_std);
+    // std::cout << "above, traj.function.size()= " << traj.function.size() << std::endl;
+    // std::cout << "going to call convexHullsOfCurve" << std::endl;
+    result.push_back(convexHullsOfCurve(traj, t_start, t_end));
+    // std::cout << "called convexHullsOfCurve" << std::endl;
   }
+  mtx_trajs_.unlock();
 
-  return convexHulls_std;
+  // std::cout << "end of convexHullsOfCurves" << std::endl;
+
+  return result;
+}
+
+ConvexHullsOfCurves_Std Faster::vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls)
+{
+  ConvexHullsOfCurves_Std convexHulls_of_curves_std;
+
+  std::cout << "convexHulls.size()= " << convexHulls.size() << std::endl;
+
+  for (int index_curve = 0; index_curve < convexHulls.size(); index_curve++)
+  {
+    ConvexHullsOfCurve_Std convexHulls_of_curve_std;
+
+    for (int i = 0; i < convexHulls[index_curve].size(); i++)  // for each interval along the curve
+    {
+      CGAL_Polyhedron_3 poly = convexHulls[index_curve][i];
+      std::vector<Eigen::Vector3d> convexHull_std;
+      for (CGAL_Polyhedron_3::Vertex_iterator v = poly.vertices_begin(); v != poly.vertices_end(); ++v)
+      {
+        Eigen::Vector3d vertex(v->point().x(), v->point().y(), v->point().z());
+        convexHull_std.push_back(vertex);
+        // std::cout << v->point() << std::endl;
+      }
+
+      convexHulls_of_curve_std.push_back(convexHull_std);
+    }
+
+    convexHulls_of_curves_std.push_back(convexHulls_of_curve_std);
+  }
+  std::cout << "convexHulls_of_curves_std.size()= " << convexHulls_of_curves_std.size() << std::endl;
+
+  return convexHulls_of_curves_std;
 }
 
 void Faster::createMoreVertexes(vec_Vecf<3>& path, double d)
@@ -742,7 +784,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   int k_safe, k_end_whole;
 
   // If k_end_whole=0, then A = plan_.back() = plan_[plan_.size() - 1]
-  k_end_whole = std::max((int)plan_.size() - deltaT_, 0);
+  k_end_whole = std::max((int)(plan_.size() - deltaT_), 0);
   A = plan_.get(plan_.size() - 1 - k_end_whole);
   /*
     //////////////////////////////////////////////////////////////////////////
@@ -956,18 +998,19 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   double t_min = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
   double t_max = t_min + (A.pos - G_term.pos).norm() / (0.6 * par_.v_max);
 
-  std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(t_min, t_max, n_pol, samples_per_interval);
-  std::cout << "hulls size=" << hulls.size() << std::endl;
-  std::vector<std::vector<Eigen::Vector3d>> hulls_std = vectorGCALPol2vectorStdEigen(hulls);
+  ConvexHullsOfCurves hulls = convexHullsOfCurves(t_min, t_max);
+
+  std::cout << "hulls.size()=" << hulls.size() << std::endl;
+
+  ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
-  std::cout << "hulls_std size=" << hulls_std.size() << std::endl;
 
-  SolverNlopt snlopt(n_pol, deg, par_.weight, false);  // snlopt(a,g) a polynomials of degree 3
+  std::cout << bold << "hulls has size=" << hulls.size() << std::endl;
 
+  int num_obst = hulls.size();
+
+  SolverNlopt snlopt(n_pol, deg, num_obst, par_.weight, false);  // snlopt(a,g) a polynomials of degree 3
   snlopt.setHulls(hulls_std);
-
-  // std::cout << "Optimizing, i=" << i << std::endl;
-
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc
   snlopt.setTminAndTmax(t_min, t_max);
@@ -1060,7 +1103,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
                                                                              // would have been needed for
                                                                              // the last replan
 
-  deltaT_ = par_.alpha * states_last_replan;
+  deltaT_ = std::max(par_.alpha * states_last_replan, 1.0);
   // std::max(par_.alpha * states_last_replan,(double)par_.min_states_deltaT);  // Delta_t
   mtx_offsets.unlock();
 
@@ -1098,7 +1141,7 @@ bool Faster::appendToPlan(int k_end_whole, const std::vector<state>& whole, int 
   std::cout << "plan_size - k_end_whole = " << plan_size - k_end_whole << std::endl;
   if ((plan_size - 1 - k_end_whole) < 0)
   {
-    std::cout << bold << red << "Already publised the point A" << reset << std::endl;
+    std::cout << bold << red << "Already published the point A" << reset << std::endl;
     output = false;
   }
   else

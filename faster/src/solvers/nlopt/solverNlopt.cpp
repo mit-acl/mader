@@ -12,12 +12,13 @@
 
 typedef Timer MyTimer;
 
-SolverNlopt::SolverNlopt(int num_pol, int deg_pol, double weight, bool force_final_state)
+SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, bool force_final_state)
 {
   std::cout << "In the SolverNlopt Constructor\n";
 
   force_final_state_ = force_final_state;
 
+  num_obst_ = num_obst;
   weight_ = weight;
   deg_pol_ = deg_pol_;
   num_pol_ = num_pol;
@@ -32,13 +33,13 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, double weight, bool force_fin
       3 * (N_ + 1) - 1 - 9 - 6;  //(9 * (force_final_state_));  // 18 is because pos, vel and accel at t_min_ and t_max_
                                  // are fixed (not dec variables)
   j_min_ = i_max_ + 1;
-  j_max_ = j_min_ + 3 * (M_ - 2 * p_) - 1;
+  j_max_ = j_min_ + 3 * (M_ - 2 * p_) * num_obst_ - 1;
   k_min_ = j_max_ + 1;
-  k_max_ = k_min_ + (M_ - 2 * p_) - 1;
+  k_max_ = k_min_ + (M_ - 2 * p_) * num_obst_ - 1;
 
   num_of_variables_ = k_max_ + 1;
 
-  num_of_segments_ = M_ - 2 * p_;  // this is the same as num_pol_
+  num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
   int num_of_cpoints = N_ + 1;
 
   q0_ << 0, 0, 0;
@@ -54,10 +55,12 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, double weight, bool force_fin
   // Debugging stuff
   std::cout << "deg_pol_= " << deg_pol_ << std::endl;
   std::cout << "num_pol= " << num_pol << std::endl;
+  std::cout << "num_obst_= " << num_obst_ << std::endl;
   std::cout << "p_= " << p_ << std::endl;
   std::cout << "M_= " << M_ << std::endl;
   std::cout << "N_= " << N_ << std::endl;
   std::cout << "num_of_cpoints= " << num_of_cpoints << std::endl;
+  std::cout << "num_of_segments_= " << num_of_cpoints << std::endl;
   std::cout << "i_min_= " << i_min_ << std::endl;
   std::cout << "i_max_= " << i_max_ << std::endl;
   std::cout << "j_min_= " << j_min_ << std::endl;
@@ -178,18 +181,18 @@ void SolverNlopt::toGradSameConstraintDiffVariables(int var_gindex, const Eigen:
   grad[r * nn + var_gindex + 2] = tmp(2);
 }
 
-void SolverNlopt::setHulls(std::vector<std::vector<Eigen::Vector3d>> &hulls)
+void SolverNlopt::setHulls(ConvexHullsOfCurves_Std &hulls)
 
 {
-#ifdef DEBUG_MODE_NLOPT
-  if (hulls.size() != num_of_segments_)
-  {
-    std::cout << "There should be as many hulls as segments" << std::endl;
-    std::cout << "hulls_.size()=" << hulls_.size() << std::endl;
-    std::cout << "num_of_segments_=" << num_of_segments_ << std::endl;
-    abort();
-  }
-#endif
+  /*#ifdef DEBUG_MODE_NLOPT
+    if (hulls.size() != num_of_segments_)
+    {
+      std::cout << "There should be as many hulls as segments" << std::endl;
+      std::cout << "hulls_.size()=" << hulls_.size() << std::endl;
+      std::cout << "num_of_segments_=" << num_of_segments_ << std::endl;
+      abort();
+    }
+  #endif*/
 
   hulls_.clear();
   hulls_ = hulls;
@@ -548,39 +551,47 @@ void SolverNlopt::add_ineq_constraints(unsigned m, double *constraints, unsigned
 
   for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
   {
-    // impose that all the vertexes of the obstacle are on one side of the plane
-    for (Eigen::Vector3d vertex : hulls_[i])  // opt->hulls_[i].size()
+    for (int obst_index = 0; obst_index < num_obst_; obst_index++)
     {
-      constraints[r] = -(n[i].dot(vertex) + d[i]);  // f<=0
-      if (grad)
-      {
-        toGradSameConstraintDiffVariables(gIndexN(i), -vertex, grad, r, nn);
-        assignValueToGradConstraints(gIndexD(i), -1, grad, r, nn);
-      }
-      r++;
-    }
+      /*      std::cout << "num_obst_=" << num_obst_ << std::endl;
+            std::cout << "obst_index=" << obst_index << std::endl;
+            std::cout << "hulls_.size() =" << hulls_.size() << std::endl;*/
+      int ip = obst_index * num_of_segments_ + i;  // index plane
 
-    // and the control points on the other side
-    for (int u = 0; u <= 3; u++)
-    {
-#ifdef DEBUG_MODE_NLOPT
-      if ((i + u) > N_)
+      // impose that all the vertexes of the obstacle are on one side of the plane
+      for (Eigen::Vector3d vertex : hulls_[obst_index][i])  // opt->hulls_[i].size()
       {
-        std::cout << "There is sth wrong here" << std::endl;
+        constraints[r] = -(n[i].dot(vertex) + d[i]);  // f<=0
+        if (grad)
+        {
+          toGradSameConstraintDiffVariables(gIndexN(ip), -vertex, grad, r, nn);
+          assignValueToGradConstraints(gIndexD(ip), -1, grad, r, nn);
+        }
+        r++;
       }
+
+      // and the control points on the other side
+      for (int u = 0; u <= 3; u++)
+      {
+#ifdef DEBUG_MODE_NLOPT
+        if ((i + u) > N_)
+        {
+          std::cout << "There is sth wrong here" << std::endl;
+        }
 #endif
 
-      constraints[r] = n[i].dot(q[i + u]) + d[i];  // f<=0
-      if (grad)
-      {
-        toGradSameConstraintDiffVariables(gIndexN(i), q[i + u], grad, r, nn);
-        if (isADecisionCP(i + u))  // If Q[i] is a decision variable
+        constraints[r] = n[ip].dot(q[i + u]) + d[ip];  // f<=0
+        if (grad)
         {
-          toGradSameConstraintDiffVariables(gIndexQ(i + u), n[i], grad, r, nn);
+          toGradSameConstraintDiffVariables(gIndexN(ip), q[i + u], grad, r, nn);
+          if (isADecisionCP(i + u))  // If Q[i] is a decision variable
+          {
+            toGradSameConstraintDiffVariables(gIndexQ(i + u), n[ip], grad, r, nn);
+          }
+          assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
         }
-        assignValueToGradConstraints(gIndexD(i), 1, grad, r, nn);
+        r++;
       }
-      r++;
     }
   }
   // std::cout << "here2" << std::endl;
@@ -884,10 +895,11 @@ bool SolverNlopt::optimize()
   opt_->set_xtol_rel(1e-8);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
   // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
-  opt_->set_maxtime(0.2);  // maximum time in seconds. Negative --> don't use this criterion
+  opt_->set_maxtime(2);  // maximum time in seconds. Negative --> don't use this criterion
 
-  // std::cout << "in optimize2" << std::endl;
+  std::cout << "calling initializeNumOfConstraints" << std::endl;
   initializeNumOfConstraints();
+  std::cout << "initializedNumOfConstraints" << std::endl;
 
   // see https://github.com/stevengj/nlopt/issues/168
   std::vector<double> tol_constraints;

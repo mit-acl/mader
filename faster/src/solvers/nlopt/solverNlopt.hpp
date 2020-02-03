@@ -21,7 +21,7 @@ using namespace termcolor;*/
 class SolverNlopt
 {
 public:
-  SolverNlopt(int num_pol, int deg_pol, double weight, bool force_final_state);
+  SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, bool force_final_state);
 
   ~SolverNlopt();
 
@@ -29,7 +29,7 @@ public:
 
   void setInitAndFinalStates(state &initial_state, state &final_state);
 
-  void setHulls(std::vector<std::vector<Eigen::Vector3d>> &hulls);
+  void setHulls(ConvexHullsOfCurves_Std &hulls);
   void setTminAndTmax(double t_min, double t_max);
 
   void setMaxValues(double v_max, double a_max);
@@ -98,10 +98,11 @@ private:
   int k_max_;
   int M_;
   int N_;
+
   int num_of_variables_;
   int num_of_normals_;
   int num_of_constraints_;
-
+  int num_obst_;
   int num_of_segments_;
 
   double dc_;
@@ -123,7 +124,7 @@ private:
 
   Eigen::Vector3d q0_, q1_, q2_;  //, qNm2_, qNm1_, qN_;
 
-  std::vector<std::vector<Eigen::Vector3d>> hulls_;
+  ConvexHullsOfCurves_Std hulls_;
 
   // Eigen::Vector3d initial_point_;
   // Eigen::Vector3d final_point_;

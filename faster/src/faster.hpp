@@ -48,6 +48,10 @@ typedef K::Point_3 Point_3;
 typedef K::Vector_3 Vector_3;
 typedef CGAL::Creator_uniform_3<double, Point_3> PointCreator;
 
+// Custom typedefs
+typedef std::vector<CGAL_Polyhedron_3> ConvexHullsOfCurve;
+typedef std::vector<ConvexHullsOfCurve> ConvexHullsOfCurves;
+
 // status_ : YAWING-->TRAVELING-->GOAL_SEEN-->GOAL_REACHED-->YAWING-->TRAVELING-->...
 
 enum DroneStatus
@@ -83,7 +87,7 @@ public:
   void setTerminalGoal(state& term_goal);
   void resetInitialization();
 
-  void updateTrajObstacles(dynTraj traj);
+  void updateTrajObstacles(std::vector<dynTraj> trajs);
 
 private:
   state M_;
@@ -94,19 +98,19 @@ private:
   SolverNlopt* snlopt_;
 
   SolverGurobi sg_whole_;  // solver gurobi whole trajectory
-  SolverGurobi sg_safe_;   // solver gurobi whole trajectory
+  SolverGurobi sg_safe_;   // solver gurobi safe trajectory
 
   JPS_Manager jps_manager_;  // Manager of JPS
 
   int n_pol_ = 7;
   int deg_ = 3;
 
-  vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(std::vector<CGAL_Polyhedron_3> vector_of_polyhedrons);
-  std::vector<std::vector<Eigen::Vector3d>> vectorGCALPol2vectorStdEigen(std::vector<CGAL_Polyhedron_3> convexHulls);
+  vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves);
+  ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls);
+  ConvexHullsOfCurves convexHullsOfCurves(double t_start, double t_end);
+  ConvexHullsOfCurve convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end);
 
-  CGAL_Polyhedron_3 convexHullOfInterval(double t_start, double t_end, int samples_per_interval);
-  std::vector<CGAL_Polyhedron_3> convexHullsOfCurve(double t_start, double t_end, int intervals,
-                                                    int samples_per_interval);
+  CGAL_Polyhedron_3 convexHullOfInterval(dynTrajCompiled& traj, double t_start, double t_end);
 
   void yaw(double diff, state& next_goal);
 
@@ -150,8 +154,8 @@ private:
 
   double t_;  // variable where the expressions of the trajs of the dyn obs are evaluated
 
-  std::mutex mtx_traj_;
-  dynTrajCompiled traj_;
+  std::mutex mtx_trajs_;
+  std::vector<dynTrajCompiled> trajs_;
 
   // SeedDecomp3D seed_decomp_util_;
 

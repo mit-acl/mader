@@ -6,10 +6,15 @@
 #include "exprtk.hpp"
 #include "termcolor.hpp"
 
+typedef std::vector<Eigen::Vector3d> Polyhedron_Std;
+typedef std::vector<Polyhedron_Std> ConvexHullsOfCurve_Std;
+typedef std::vector<ConvexHullsOfCurve_Std> ConvexHullsOfCurves_Std;
+
 struct dynTraj
 {
   std::vector<std::string> function;
   std::vector<double> bbox;
+  int id;
 };
 
 struct dynTrajCompiled

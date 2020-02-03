@@ -157,7 +157,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   sub_goal_ = nh_.subscribe("term_goal", 1, &FasterRos::terminalGoalCB, this);
   sub_mode_ = nh_.subscribe("mode", 1, &FasterRos::modeCB, this);
   sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);
-  sub_traj_ = nh_.subscribe("/SQ02/traj", 1, &FasterRos::trajCB, this);
+  sub_traj_ = nh_.subscribe("/trajs", 1, &FasterRos::trajCB, this);
   // sub_odom_ = nh_.subscribe("odom", 1, &FasterRos::odomCB, this);
 
   // Timers
@@ -219,7 +219,14 @@ FasterRos::~FasterRos()
 
 void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 {
-  std::vector<std::string> traj;
+  std::vector<dynTraj>::iterator obs_ptr =
+      std::find_if(trajs_.begin(), trajs_.end(), [=](const dynTraj& traj) { return traj.id == msg.id; });
+  bool exists = (obs_ptr != std::end(trajs_));
+
+  Eigen::Vector3d pos(msg.pos.x, msg.pos.y, msg.pos.z);
+  bool near_me = ((state_.pos - pos).norm() < par_.Ra);
+  // std::cout << "dist= " << (state_.pos - pos).norm() << std::endl;
+
   dynTraj tmp;
   tmp.function.push_back(msg.function[0]);
   tmp.function.push_back(msg.function[1]);
@@ -229,7 +236,42 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   tmp.bbox.push_back(msg.bbox[1]);
   tmp.bbox.push_back(msg.bbox[2]);
 
-  faster_ptr_->updateTrajObstacles(tmp);
+  tmp.id = msg.id;
+
+  // First let's check if the object is near me:
+  if (near_me)
+  {
+    if (exists)
+    {  // if that object already exists, substitute its trajectory
+      *obs_ptr = tmp;
+    }
+    else
+    {  // if it doesn't exist, create it
+      trajs_.push_back(tmp);
+      std::cout << red << "Adding " << tmp.id << reset << std::endl;
+    }
+  }
+  else  // not near me
+  {
+    if (exists)  // remove if from the list if it exists
+    {
+      trajs_.erase(obs_ptr);
+      std::cout << red << "Erasing " << (*obs_ptr).id << reset << std::endl;
+    }
+  }
+
+  // print elements for debugging:
+  // std::cout << red << bold << "========================" << reset << std::endl;
+  // std::cout << "trajs_ has " << trajs_.size() << " obstacles:" << std::endl;
+  /*  for (auto traj : trajs_)
+    {
+      std::cout << traj.id << ", " << std::endl;
+    }*/
+  // std::cout << red << bold << "========================" << reset << std::endl;
+
+  faster_ptr_->updateTrajObstacles(trajs_);
+
+  // std::cout << "End of trajCB" << reset << std::endl;
 }
 
 void FasterRos::replanCB(const ros::TimerEvent& e)
@@ -292,6 +334,7 @@ void FasterRos::stateCB(const snapstack_msgs::State& msg)
   double roll, pitch, yaw;
   quaternion2Euler(msg.quat, roll, pitch, yaw);
   state_tmp.setYaw(yaw);
+  state_ = state_tmp;
   faster_ptr_->updateState(state_tmp);
 }
 
