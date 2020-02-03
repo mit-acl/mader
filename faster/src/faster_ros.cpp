@@ -148,6 +148,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   pub_traj_committed_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_committed_colored", 1);
   pub_traj_whole_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_whole_colored", 1);
   pub_traj_safe_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
+  pub_cloud_jps_ = nh_.advertise<sensor_msgs::PointCloud2>("cloud_jps", 1);
 
   // Subscribers
   occup_grid_sub_.subscribe(nh_, "occup_grid", 1);
@@ -285,12 +286,21 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     vec_E<Polyhedron<3>> poly_whole;
     std::vector<state> X_safe;
     std::vector<state> X_whole;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pcloud_jps(new pcl::PointCloud<pcl::PointXYZ>);
 
     std::cout << "Calling replanCB" << X_whole.size() << std::endl;
 
-    faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole);
+    faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole, pcloud_jps);
 
     std::cout << "replanCB done" << X_whole.size() << std::endl;
+
+    pcl::PCLPointCloud2 pcloud_jps2;
+    pcl::toPCLPointCloud2(*pcloud_jps.get(), pcloud_jps2);
+    sensor_msgs::PointCloud2 cloud_jps_msg;
+    pcl_conversions::fromPCL(pcloud_jps2, cloud_jps_msg);
+    // cloud_jps_msg.header = mesh_cloud_msg_->header;
+    cloud_jps_msg.header.frame_id = "world";
+    pub_cloud_jps_.publish(cloud_jps_msg);
 
     clearJPSPathVisualization(2);
     publishJPSPath(JPS_safe, JPS_SAFE);

@@ -37,8 +37,6 @@ class FakeSim:
         self.timer = rospy.Timer(rospy.Duration(0.01), self.pubTF)
 
         self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
-
-
         self.num_of_objects = 1;
 
         self.x_all=[];
@@ -103,9 +101,9 @@ class FakeSim:
     # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
     def trefoil(self,x,y,z,scale_x, scale_y, scale_z, offset):
 
-        x_string='(sin(t +'+str(offset)+') + 2 * sin(2 * t +'+str(offset)+'))/' + str(scale_x) +'+' + str(x);
-        y_string='(cos(t +'+str(offset)+') - 2 * cos(2 * t +'+str(offset)+'))/' + str(scale_y) +'+' + str(y);
-        z_string='-sin(3 * t +'+str(offset)+')/' +str(scale_z) + '+' + str(z);
+        x_string='2*sin(t)' #'(sin(t +'+str(offset)+') + 2 * sin(2 * t +'+str(offset)+'))/' + str(scale_x) +'+' + str(x);
+        y_string='2*cos(t)' #'(cos(t +'+str(offset)+') - 2 * cos(2 * t +'+str(offset)+'))/' + str(scale_y) +'+' + str(y);
+        z_string='1'        #'-sin(3 * t +'+str(offset)+')/' +str(scale_z) + '+' + str(z);
 
         return [x_string, y_string, z_string]
 

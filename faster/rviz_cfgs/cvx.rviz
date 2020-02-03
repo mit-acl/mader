@@ -7,7 +7,7 @@ Panels:
         - /TF1
         - /TF1/Frames1
         - /Goal1
-        - /UnkownGrid1
+        - /DynObstaclesGrid1
         - /Image1
         - /Image2
       Splitter Ratio: 0.514905155
@@ -30,7 +30,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: OccupacyGrid
+    SyncSource: DynObstaclesGrid
   - Class: rviz/Displays
     Help Height: 0
     Name: Displays
@@ -74,13 +74,15 @@ Visualization Manager:
           Value: true
         SQ01s/camera:
           Value: false
+        SQ020:
+          Value: true
         vicon:
           Value: false
         world:
           Value: false
       Marker Scale: 2
       Name: TF
-      Show Arrows: true
+      Show Arrows: false
       Show Axes: true
       Show Names: false
       Tree:
@@ -89,6 +91,8 @@ Visualization Manager:
             SQ01s:
               SQ01s/camera:
                 {}
+            SQ020:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -293,12 +297,42 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 165; 120
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: DynObstaclesGrid
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.150000006
+      Style: Boxes
+      Topic: /SQ01s/faster/cloud_jps
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /SQ01s/cvx/path_jps1
-      Name: PathJPS1
+      Marker Topic: /SQ01s/faster/path_jps_safe
+      Name: JPS_Safe
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -553,7 +587,6 @@ Visualization Manager:
         JPS_old Intersection: true
         MarkerArray: true
         OccupacyGrid: true
-        PathJPS1: true
         PathJPS2: true
         PointA: true
         PointCloud2: true
@@ -601,25 +634,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 16.7735958
+      Distance: 5.9936986
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 4.0664382
-        Y: -0.0956561044
-        Z: 0.25485447
+        X: 1.36038744
+        Y: 0.329990447
+        Z: 1.27324271
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.08479762
+      Pitch: 0.734796524
       Target Frame: LQ01s
       Value: Orbit (rviz)
-      Yaw: 4.38251114
+      Yaw: 3.80249548
     Saved: ~
 Window Geometry:
   Camera:
@@ -642,4 +675,4 @@ Window Geometry:
     collapsed: true
   Width: 2495
   X: 1985
-  Y: 62
+  Y: 24

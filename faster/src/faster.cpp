@@ -333,13 +333,16 @@ void Faster::updateMap(pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_map, pcl::Poin
   pclptr_map_ = pclptr_map;
   pclptr_unk_ = pclptr_unk;
 
-  jps_manager_.updateJPSMap(pclptr_map_, state_.pos);  // Update even where there are no points
+  // Update even when there are no points
+  jps_manager_.createNewMap(state_.pos);
+  jps_manager_.addToMap(pclptr_map_, par_.inflation_jps, par_.inflation_jps,
+                        par_.inflation_jps);  // same inflation in all directions
 
   if (pclptr_map_->width != 0 && pclptr_map_->height != 0)  // Point Cloud is not empty
   {
     kdtree_map_.setInputCloud(pclptr_map_);
     kdtree_map_initialized_ = 1;
-    jps_manager_.vec_o_ = pclptr_to_vec(pclptr_map_);
+    jps_manager_.vec_o_ = pclptr_to_vec(pclptr_map_);  // Needed for the ellipsoid decomp
   }
   else
   {
@@ -726,7 +729,7 @@ bool Faster::initialized()
 
 void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E<Polyhedron<3>>& poly_safe_out,
                     vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out,
-                    std::vector<state>& X_whole_out)
+                    std::vector<state>& X_whole_out, pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps)
 {
   std::cout << "here1" << std::endl;
 
@@ -989,6 +992,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   //######################### Solve with the NLOPT solver: //#########################
 
+  // Create a map with the moving obstacles as occupied space
+
   // DEBUGGING
 
   int n_pol = par_.n_pol;
@@ -997,6 +1002,29 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   double t_min = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
   double t_max = t_min + (A.pos - G_term.pos).norm() / (0.6 * par_.v_max);
+
+  // run JPS with the dynamic obstacles as static obstacles
+  mtx_map.lock();
+  mtx_unk.lock();
+
+  createObstacleMapFromTrajs(t_min, t_max);
+
+  bool solvedjps = false;
+
+  vec_Vecf<3> JPSk = jps_manager_.solveJPS3D(A.pos, G_term.pos, &solvedjps, 1);
+  JPS_safe_out = JPSk;
+
+  if (solvedjps == false)
+  {
+    std::cout << bold << red << "JPS didn't find a solution" << std::endl;
+    return;
+  }
+
+  jps_manager_.getMap(pcloud_jps);  // for visualization
+
+  mtx_map.unlock();
+  mtx_unk.unlock();
+  // end of running JPS
 
   MyTimer convex_hulls_timer(true);
 
@@ -1119,6 +1147,37 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   planner_initialized_ = true;
 
   return;
+}
+
+void Faster::createObstacleMapFromTrajs(double t_min, double t_max)
+{
+  mtx_trajs_.lock();
+
+  jps_manager_.createNewMap(state_.pos);
+
+  int number_of_samples = 10;
+
+  for (auto traj : trajs_)
+  {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr tmp(new pcl::PointCloud<pcl::PointXYZ>);
+    tmp->width = number_of_samples;  // number of samples
+    tmp->height = 1;
+    tmp->points.resize(tmp->width * tmp->height);
+
+    for (int j = 0; j < number_of_samples; j++)
+    {
+      t_ = t_min + j * (t_max - t_min) / (1.0 * number_of_samples);
+
+      tmp->points[j].x = traj.function[0].value();
+      tmp->points[j].y = traj.function[1].value();
+      tmp->points[j].z = traj.function[2].value();
+    }
+
+    jps_manager_.addToMap(tmp, traj.bbox[0] + par_.drone_radius, traj.bbox[1] + par_.drone_radius,
+                          traj.bbox[2] + par_.drone_radius);
+  }
+
+  mtx_trajs_.unlock();
 }
 
 void Faster::resetInitialization()

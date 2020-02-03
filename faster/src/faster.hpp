@@ -77,7 +77,8 @@ class Faster
 public:
   Faster(parameters par);
   void replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E<Polyhedron<3>>& poly_safe_out,
-              vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out, std::vector<state>& X_whole_out);
+              vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out, std::vector<state>& X_whole_out,
+              pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps);
   void updateState(state data);
   // void changeMode(int new_mode);
   void updateMap(pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_map, pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_unk);
@@ -125,6 +126,8 @@ private:
   bool ARisInFreeSpace(int index);
 
   void updateInitialCond(int i);
+
+  void createObstacleMapFromTrajs(double t_min, double t_max);
 
   void changeDroneStatus(int new_status);
 

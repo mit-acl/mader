@@ -43,6 +43,11 @@ void JPS_Manager::setFactorJPS(double factor_jps)
   factor_jps_ = factor_jps;
 }
 
+void JPS_Manager::getMap(pcl::PointCloud<pcl::PointXYZ>::Ptr& result)
+{
+  map_util_->getMap(result);
+}
+
 void JPS_Manager::setResolution(double res)
 {
   res_ = res;
@@ -119,15 +124,21 @@ void JPS_Manager::cvxEllipsoidDecomp(vec_Vecf<3>& path, int type_space, std::vec
   poly_out = ellip_decomp_util_.get_polyhedrons();
 }
 
-void JPS_Manager::updateJPSMap(pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr, Eigen::Vector3d& center)
+void JPS_Manager::createNewMap(Eigen::Vector3d& center)
 {
   Vec3f center_map = center;  // state_.pos;
 
   mtx_jps_map_util.lock();
+  map_util_->createNewMap(cells_x_, cells_y_, cells_z_, factor_jps_ * res_, center_map, z_ground_, z_max_,
+                          inflation_jps_);
+  mtx_jps_map_util.unlock();
+}
 
-  map_util_->readMap(pclptr, cells_x_, cells_y_, cells_z_, factor_jps_ * res_, center_map, z_ground_, z_max_,
-                     inflation_jps_);  // Map read
-
+void JPS_Manager::addToMap(pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr, double inflation_x, double inflation_y,
+                           double inflation_z)
+{
+  mtx_jps_map_util.lock();
+  map_util_->addToMap(pclptr, inflation_x, inflation_y, inflation_z);  // Map read
   mtx_jps_map_util.unlock();
 }
 
