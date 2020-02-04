@@ -1003,29 +1003,6 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   double t_min = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
   double t_max = t_min + (A.pos - G_term.pos).norm() / (0.6 * par_.v_max);
 
-  // run JPS with the dynamic obstacles as static obstacles
-  mtx_map.lock();
-  mtx_unk.lock();
-
-  createObstacleMapFromTrajs(t_min, t_max);
-
-  bool solvedjps = false;
-
-  vec_Vecf<3> JPSk = jps_manager_.solveJPS3D(A.pos, G_term.pos, &solvedjps, 1);
-  JPS_safe_out = JPSk;
-
-  if (solvedjps == false)
-  {
-    std::cout << bold << red << "JPS didn't find a solution" << std::endl;
-    return;
-  }
-
-  jps_manager_.getMap(pcloud_jps);  // for visualization
-
-  mtx_map.unlock();
-  mtx_unk.unlock();
-  // end of running JPS
-
   MyTimer convex_hulls_timer(true);
 
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_min, t_max);
@@ -1045,6 +1022,28 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   snlopt.setDC(par_.dc);                        // dc
   snlopt.setTminAndTmax(t_min, t_max);
   snlopt.setInitAndFinalStates(A, G_term);
+
+  // Initial GUESS: run JPS with the dynamic obstacles as static obstacles
+  mtx_map.lock();
+  mtx_unk.lock();
+
+  createObstacleMapFromTrajs(t_min, t_max);
+  bool solvedjps = false;
+
+  vec_Vecf<3> JPSk = jps_manager_.solveJPS3D(A.pos, G_term.pos, &solvedjps, 1);
+
+  if (solvedjps == false)
+  {
+    std::cout << bold << red << "JPS didn't find a solution, using straight line" << reset << std::endl;  // but
+  }
+
+  JPS_safe_out = JPSk;              // for visualization
+  jps_manager_.getMap(pcloud_jps);  // for visualization
+
+  mtx_map.unlock();
+  mtx_unk.unlock();
+  // end of Initial GUESSS
+  snlopt.setInitialGuess(JPSk);
 
   std::cout << "Calling optimize" << std::endl;
   bool result = snlopt.optimize();

@@ -192,6 +192,9 @@ vec_Vecf<3> JPS_Manager::solveJPS3D(Vec3f& start_sent, Vec3f& goal_sent, bool* s
   else
   {
     std::cout << "JPS didn't find a solution from" << start.transpose() << " to " << goal.transpose() << std::endl;
+    // return a straight line
+    path.push_back(start);
+    path.push_back(goal);
   }
   mtx_jps_map_util.unlock();
 

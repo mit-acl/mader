@@ -45,6 +45,8 @@ void printStateDeque(std::deque<state>& data);
 
 void printStateVector(std::vector<state>& data);
 
+vec_Vecf<3> sampleJPS(vec_Vecf<3>& path, int n);
+
 void vectorOfVectors2MarkerArray(vec_Vecf<3> traj, visualization_msgs::MarkerArray* m_array, std_msgs::ColorRGBA color,
                                  int type = visualization_msgs::Marker::ARROW,
                                  std::vector<double> radii = std::vector<double>());

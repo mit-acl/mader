@@ -21,6 +21,54 @@ void printStateVector(std::vector<state>& data)
   }
 }
 
+// Sample n points along the path
+vec_Vecf<3> sampleJPS(vec_Vecf<3>& path, int n)
+{
+  std::vector<double> distance;  // vector that contains the distance (going along the path) of each point in the path
+                                 // to the first point of the path
+  distance.push_back(0);
+  for (int i = 1; i < path.size(); i++)
+  {
+    double distance_so_far = distance[distance.size() - 1];
+    distance.push_back(distance_so_far + (path[i] - path[i - 1]).norm());
+  }
+
+  // note that distance and path have the same number of elements
+
+  double total_distance = getDistancePath(path);
+  double d = total_distance / n;  // distance between samples
+
+  vec_Vecf<3> samples;
+  samples.push_back(path[0]);
+  double dist_next_sample = 0;  // Distancia a la que quiero poner el next sample
+
+  Eigen::Vector3d next_peak, previous_peak;
+  double difference;
+  for (int n_samples = 1; n_samples < n; n_samples++)
+  {
+    dist_next_sample = dist_next_sample + d;
+
+    Eigen::Vector3d previous_peak;
+    for (int i = 1; i < distance.size(); i++)
+    {
+      if (distance[i] > dist_next_sample)
+      {
+        previous_peak = path[i - 1];
+        next_peak = path[i];
+        difference = dist_next_sample - distance[i - 1];
+        break;
+      }
+    }
+
+    Eigen::Vector3d v = (next_peak - previous_peak).normalized();
+
+    Eigen::Vector3d last_sample = samples[samples.size() - 1];
+    Eigen::Vector3d new_sample = previous_peak + difference * v;
+    samples.push_back(new_sample);
+  }
+  return samples;
+}
+
 void vectorOfVectors2MarkerArray(vec_Vecf<3> traj, visualization_msgs::MarkerArray* m_array, std_msgs::ColorRGBA color,
                                  int type, std::vector<double> radii)
 {

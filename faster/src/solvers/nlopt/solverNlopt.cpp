@@ -250,7 +250,7 @@ void SolverNlopt::qndtoX(const std::vector<Eigen::Vector3d> &q, const std::vecto
                          const std::vector<double> &d, std::vector<double> &x)
 {
   int j = 0;
-  for (int i = 3; i <= N_; i++)
+  for (int i = 3; i <= (N_ - 2); i++)
   {
     x[j] = q[i](0);
     x[j + 1] = q[i](1);
@@ -860,38 +860,85 @@ void SolverNlopt::printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::V
   }
 }
 
+void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
+{
+  std::vector<Eigen::Vector3d> q;
+  std::vector<Eigen::Vector3d> n;
+  std::vector<double> d;
+
+  // Guesses for the control points
+  int num_of_intermediate_cps = N_ + 1 - 6;
+  vec_Vecf<3> intermediate_cps = sampleJPS(jps_path, num_of_intermediate_cps);
+
+  q.push_back(q0_);
+  q.push_back(q1_);
+  q.push_back(q2_);
+
+  for (auto q_i : intermediate_cps)
+  {
+    q.push_back(q_i);
+  }
+
+  q.push_back(final_state_.pos);  // three last cps are the same because of the vel/accel final conditions
+  q.push_back(final_state_.pos);
+  q.push_back(final_state_.pos);
+
+  // Guesses for the planes
+  for (int obst_index = 0; obst_index < num_obst_; obst_index++)
+  {
+    for (int i = 0; i < num_of_segments_; i++)
+    {
+      Eigen::Vector3d point_in_hull = hulls_[obst_index][i][0];  // Take one vertex of the hull for example
+
+      Eigen::Vector3d n_i =
+          (point_in_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
+
+      Eigen::Vector3d point_in_middle = q[i] + (point_in_hull - q[i]) / 2.0;
+
+      double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
+
+      n.push_back(n_i);
+      d.push_back(d_i);
+    }
+  }
+
+  std::cout << "This is the initial guess: " << std::endl;
+  std::cout << "q.size()= " << q.size() << std::endl;
+  std::cout << "n.size()= " << n.size() << std::endl;
+  std::cout << "d.size()= " << d.size() << std::endl;
+  std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
+
+  printQND(q, n, d);
+
+  std::vector<double> x(num_of_variables_);  // initial guess
+  qndtoX(q, n, d, x);
+
+  x_ = x;
+}
+
 bool SolverNlopt::optimize()
 
 {
   std::cout << "knots= " << knots_ << std::endl;
-  //  std::cout << "in optimize1" << std::endl;
-  //  std::cout << "num_of_variables_=" << num_of_variables_ << std::endl;
+
   // the creations of the solvers should be done here, and NOT on the constructor (not sure why, but if you do it in the
   // construtor of this class, and use the same ones forever, it gets stuck very often)
   if (opt_)
   {
-    //(*opt_).destroy();  // nlopt_destroy(*opt_);
-    // opt_->destroy();
-    std::cout << "Deleting" << std::endl;
     (*opt_).~opt();  // Call the destructor
     delete opt_;
   }
   if (local_opt_)
   {
-    std::cout << "Deleting" << std::endl;
-    // local_opt_->destroy();
     (*local_opt_).~opt();  // Call the destructor
     delete local_opt_;
   }
 
-  // std::cout << "in optimize3" << std::endl;
   opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
   local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);  // LD_SLSQP //LD_MMA
-
   // work:  //LD_MMA // //LN_NELDERMEAD // LN_SBPLX(fastest) //LN_PRAXIS(fastest) //LD_AUGLAG //LD_AUGLAG_EQ
   // don't work: LN_BOBYQA // LD_SLSQP //LN_NEWUOA //LN_AUGLAG_EQ //LN_NEWUOA_BOUND //LN_COBYLA
   // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1 //LD_VAR2 //LD_LBFGS_NOCEDAL
-
   local_opt_->set_xtol_rel(1e-8);  // stopping criteria. If >=1e-1, it leads to weird trajectories
   opt_->set_local_optimizer(*local_opt_);
   opt_->set_xtol_rel(1e-8);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
@@ -909,10 +956,6 @@ bool SolverNlopt::optimize()
   {
     tol_constraints.push_back(1e-1);
   }
-
-  // std::cout << "computed tolerance" << std::endl;
-
-  // std::cout << "The size of tol_constraint= " << tol_constraint.size() << std::endl;
 
   // andd lower and upper bounds
   std::vector<double> lb;
@@ -940,38 +983,11 @@ bool SolverNlopt::optimize()
   opt_->set_min_objective(SolverNlopt::myObjFunc,
                           this);  // this is passed as a parameter (the obj function has to be static)
 
-  std::vector<double> x(num_of_variables_);  // initial guess
-  std::cout << "num_of_variables_=" << num_of_variables_ << std::endl;
-  for (int i = 0; i < num_of_variables_; i++)
-  {
-    x[i] = (((double)rand() / (RAND_MAX)));  // TODO Change this
-  }
-  // guesses for the normals
-  /*  for (int i = j_min_; i <= j_max_; i++)
-    {
-      x[i] = 1;  // (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
-    }
-
-    for (int i = k_min_; i <= k_max_; i++)
-    {
-      x[i] = 1;  // (((double)rand() / (RAND_MAX)) + 1);  // TODO Change this
-    }*/
-#ifdef DEBUG_MODE_NLOPT
-  std::cout << "This is the initial guess:" << std::endl;
-
-  std::vector<Eigen::Vector3d> q_novale;
-  std::vector<Eigen::Vector3d> n_novale;
-  std::vector<double> d_novale;
-  toEigen(x, q_novale, n_novale, d_novale);
-  printQND(q_novale, n_novale, d_novale);
-#endif
-
   double minf;
 
   MyTimer opt_timer(true);
   std::cout << "Optimizing now!= " << std::endl;
-  int result = opt_->optimize(x, minf);
-  // std::cout << "Solve time = " << opt_timer << std::endl;
+  int result = opt_->optimize(x_, minf);
 
   if (result < 0 || result == nlopt::MAXTIME_REACHED)
   {
@@ -989,7 +1005,7 @@ bool SolverNlopt::optimize()
     std::vector<Eigen::Vector3d> q;
     std::vector<Eigen::Vector3d> n;
     std::vector<double> d;
-    toEigen(x, q, n, d);
+    toEigen(x_, q, n, d);
 
 #ifdef DEBUG_MODE_NLOPT
     printQND(q, n, d);
@@ -1071,177 +1087,6 @@ bool SolverNlopt::optimize()
 
     return true;
   }
-
-  // AVAILABLE ALGORITHMS:
-  //   G/L denotes global/local optimization and N/D denotes derivative-free/gradient-based
-  /*%  GD_MLSL_LDS,  GD_MLSL,  GD_STOGO,  GD_STOGO_RAND,
-  %  GN_CRS2_LM,  GN_DIRECT_L,  GN_DIRECT_L_NOSCAL,
-  %  GN_DIRECT_L_RAND,  GN_DIRECT_L_RAND_NOSCAL,  GN_DIRECT,
-  %  GN_DIRECT_NOSCAL,  GN_ISRES,  GN_MLSL_LDS,  GN_MLSL,
-  %  GN_ORIG_DIRECT_L,  GN_ORIG_DIRECT,  LD_AUGLAG_EQ,
-  %  LD_AUGLAG,   LD_LBFGS_NOCEDAL,  LD_MMA,
-  %   LD_TNEWTON_PRECOND,
-  %  LD_TNEWTON_PRECOND_RESTART,  LD_TNEWTON_RESTART,
-  %  LD_VAR1,  LD_VAR2,  LN_AUGLAG_EQ,  LN_AUGLAG,
-  %  LN_BOBYQA,  LN_COBYLA,  ,
-  %  LN_NEWUOA_BOUND,  LN_NEWUOA,  LN_PRAXIS,  LN_SBPLX LD_SLSQP*/
-  // LD_MMA goes really fast
-  // LD_AUGLAG accepts equality constraints, but does not converge
-  // LD_LBFGS does NOT accept equality constraints
-  // LD_SLSQP supports equality constraints, see
-  // http://ab-initio.mit.edu/wiki/index.php?title=NLopt_Algorithms&printable=yes
-  // LD_LBFGS, LD_TNEWTON, LN_NELDERMEAD, LN_BOBYQA No ineq const
-  // Only some of the NLopt algorithms (AUGLAG, COBYLA, and ISRES) currently support nonlinear equality constraints
-  // LD_MMA doesn't work with equality constraints
-  // LN_BOBYQA
-
-  ////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////
-  // see https://github.com/stevengj/nlopt/issues/168
-  // Set constraints and objective
-
-  // AVAILABLE ALGORITHMS:
-  //   G/L denotes global/local optimization and N/D denotes derivative-free/gradient-based
-  /*%  GD_MLSL_LDS,  GD_MLSL,  GD_STOGO,  GD_STOGO_RAND,
-  %  GN_CRS2_LM,  GN_DIRECT_L,  GN_DIRECT_L_NOSCAL,
-  %  GN_DIRECT_L_RAND,  GN_DIRECT_L_RAND_NOSCAL,  GN_DIRECT,
-  %  GN_DIRECT_NOSCAL,  GN_ISRES,  GN_MLSL_LDS,  GN_MLSL,
-  %  GN_ORIG_DIRECT_L,  GN_ORIG_DIRECT,  LD_AUGLAG_EQ,
-  %  LD_AUGLAG,   LD_LBFGS_NOCEDAL,  LD_MMA,
-  %   LD_TNEWTON_PRECOND,
-  %  LD_TNEWTON_PRECOND_RESTART,  LD_TNEWTON_RESTART,
-  %  LD_VAR1,  LD_VAR2,  LN_AUGLAG_EQ,  LN_AUGLAG,
-  %  LN_BOBYQA,  LN_COBYLA,  ,
-  %  LN_NEWUOA_BOUND,  LN_NEWUOA,  LN_PRAXIS,  LN_SBPLX LD_SLSQP*/
-
-  // LD_MMA goes really fast
-  // LD_AUGLAG accepts equality constraints, but does not converge
-  // LD_LBFGS does NOT accept equality constraints
-  // LD_SLSQP supports equality constraints, see
-  // http://ab-initio.mit.edu/wiki/index.php?title=NLopt_Algorithms&printable=yes
-
-  // LD_LBFGS, LD_TNEWTON, LN_NELDERMEAD, LN_BOBYQA No ineq const
-
-  // Only some of the NLopt algorithms (AUGLAG, COBYLA, and ISRES) currently support nonlinear equality constraints
-
-  /*  opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);  // LD_MMA doesn't work with equality constraints
-                                                              // LN_BOBYQA
-
-    std::vector<double> lb;
-    std::vector<double> ub;
-    for (int i = 0; i < num_of_variables_; i++)
-    {
-      lb.push_back(-HUGE_VAL);
-      ub.push_back(HUGE_VAL);
-    }
-    opt_->set_lower_bounds(lb);
-    opt_->set_upper_bounds(ub);
-
-    opt_->set_xtol_rel(1e-4);  // Stopping criteria
-
-    nlopt::opt local_opt(nlopt::LD_MMA, num_of_variables_);
-    local_opt.set_xtol_rel(1e-4);
-    opt_->set_local_optimizer(local_opt);
-
-    std::vector<double> tol_constraint(8 * (N_ - 2) + 12);  // This number should be the num of constraints I think
-    for (int i = 0; i < tol_constraint.size(); i++)
-    {
-      tol_constraint[i] = 1e-4;
-    }
-
-    opt_->add_inequality_mconstraint(SolverNlopt::multi_ineq_constraint, this, tol_constraint);
-    opt_->set_min_objective(SolverNlopt::myObjFunc,
-                            this);  // this is passed as a parameter (the obj function has to be static)
-
-    std::cout << "here" << std::endl;
-
-    opt_->set_xtol_rel(1e-4);                  // Stopping criteria
-    std::vector<double> x(num_of_variables_);  // initial guess
-    x[0] = 0;
-    x[1] = 0;
-    x[2] = 0;
-    x[gIndexQ(N_)] = 10;
-    x[gIndexQ(N_) + 1] = 10;
-    x[gIndexQ(N_) + 2] = 10;
-    double minf;
-
-    if (opt_->optimize(x, minf) < 0)
-    {
-      printf("nlopt failed!\n");
-    }
-    else
-    {
-      std::cout << "SOLVED!" << std::endl;
-      std::cout << "gIndexQ(N)=" << gIndexQ(N_) << std::endl;
-      printf("found minimum at f(%g,%g) = %0.10g\n", x[0], x[1], minf);
-
-      std::cout << "Solution found, opt value= " << minf << std::endl;
-      std::cout << "   control points:" << std::endl;
-      for (int i = 0; i <= i_max_; i = i + 3)
-      {
-        std::cout << x[i] << ", " << x[i + 1] << ", " << x[i + 2] << std::endl;
-      }
-      std::cout << "   normals:" << std::endl;
-      for (int j = j_min_; j < j_max_; j = j + 3)
-      {
-        std::cout << x[j] << ", " << x[j + 1] << ", " << x[j + 2] << std::endl;
-      }
-      std::cout << "   d coeffs:" << std::endl;
-      for (int k = k_min_; k < k_max_; k = k + 1)
-      {
-        std::cout << x[k] << std::endl;
-      }
-    }*/
-
-  /*
-    local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);
-    local_opt_->set_xtol_rel(1e-4);
-    opt_->set_local_optimizer(*local_opt_);
-
-    // Set initial guess
-    std::vector<double> x(num_of_variables_);
-    x[0] = 0.2;
-    x[1] = 0.2;
-    x[2] = 0.2;
-    x[gIndexQ(N_)] = 9.8;
-    x[gIndexQ(N_) + 1] = 9.8;
-    x[gIndexQ(N_) + 2] = 9.8;
-
-    // run the optimization
-    double minf;
-    MyTimer opt_timer(true);
-    std::cout << "Calling optimize!!\n";
-    int result = opt_->optimize(x, minf);
-    std::cout << "Done with optimize!!\n";
-    std::cout << "Solve time = " << opt_timer << std::endl;
-
-    // print results
-    if (result < 0)
-    {
-      printf("nlopt failed!\n");
-    }
-    else
-    {
-      std::cout << "Solution found, opt value= " << minf << std::endl;
-      std::cout << "   control points:" << std::endl;
-      for (int i = 0; i <= i_max_; i = i + 3)
-      {
-        std::cout << x[i] << ", " << x[i + 1] << ", " << x[i + 2] << std::endl;
-      }
-      std::cout << "   normals:" << std::endl;
-      for (int j = j_min_; j < j_max_; j = j + 3)
-      {
-        std::cout << x[j] << ", " << x[j + 1] << ", " << x[j + 2] << std::endl;
-      }
-      std::cout << "   d coeffs:" << std::endl;
-      for (int k = k_min_; k < k_max_; k = k + 1)
-      {
-        std::cout << x[k] << std::endl;
-      }
-    }*/
 }
 
 /*void SolverNlopt::multi_eq_constraint(unsigned m, double *result, unsigned nn, const double *x, double *grad, void

@@ -7,6 +7,7 @@
 #include <nlopt.hpp>
 #include "./../../faster_types.hpp"
 #include <sstream>
+#include "./../../utils.hpp"
 
 /*#include <Eigen/Dense>
 #include <type_traits>
@@ -35,6 +36,7 @@ public:
   void setMaxValues(double v_max, double a_max);
 
   void setDC(double dc);
+  void setInitialGuess(vec_Vecf<3> &jps_path);
 
   std::vector<state> X_temp_;
 
@@ -104,6 +106,8 @@ private:
   int num_of_constraints_;
   int num_obst_;
   int num_of_segments_;
+
+  std::vector<double> x_;  // Here the initial guess, and the solution, are stored
 
   double dc_;
   Eigen::RowVectorXd knots_;
