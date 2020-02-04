@@ -55,6 +55,15 @@ Faster::Faster(parameters par) : par_(par)
   // jps_manager_.setVisual(par_.visual);
   jps_manager_.setDroneRadius(par_.drone_radius);
 
+  // Setup of jps_manager_dyn_
+  jps_manager_dyn_.setNumCells((int)par_.wdx / par_.res, (int)par_.wdy / par_.res, (int)par_.wdz / par_.res);
+  jps_manager_dyn_.setFactorJPS(par_.factor_jps);
+  jps_manager_dyn_.setResolution(par_.res);
+  jps_manager_dyn_.setInflationJPS(par_.inflation_jps);
+  jps_manager_dyn_.setZGroundAndZMax(par_.z_ground, par_.z_max);
+  // jps_manager_dyn_.setVisual(par_.visual);
+  jps_manager_dyn_.setDroneRadius(par_.drone_radius);
+
   double max_values[3] = { par_.v_max, par_.a_max, par_.j_max };
 
   // Setup of sg_whole_
@@ -789,39 +798,39 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   // If k_end_whole=0, then A = plan_.back() = plan_[plan_.size() - 1]
   k_end_whole = std::max((int)(plan_.size() - deltaT_), 0);
   A = plan_.get(plan_.size() - 1 - k_end_whole);
+
+  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Solve JPS //////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+
+  bool solvedjps = false;
+  MyTimer timer_jps(true);
+
+  vec_Vecf<3> JPSk = jps_manager_.solveJPS3D(A.pos, G.pos, &solvedjps, 1);
+
+  if (solvedjps == false)
+  {
+    std::cout << bold << red << "JPS didn't find a solution" << std::endl;
+    return;
+  }
+
+  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Find JPS_in ////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+
+  double ra = std::min((dist_to_goal - 0.001), par_.Ra);  // radius of the sphere S
+  bool noPointsOutsideS;
+  int li1;  // last index inside the sphere of JPSk
+  state E;
+  E.pos = getFirstIntersectionWithSphere(JPSk, ra, JPSk[0], &li1, &noPointsOutsideS);
+  vec_Vecf<3> JPS_in(JPSk.begin(), JPSk.begin() + li1 + 1);
+  if (noPointsOutsideS == false)
+  {
+    JPS_in.push_back(E.pos);
+  }
+  // createMoreVertexes in case dist between vertexes is too big
+  createMoreVertexes(JPS_in, par_.dist_max_vertexes);
   /*
-    //////////////////////////////////////////////////////////////////////////
-    ///////////////////////// Solve JPS //////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-
-    bool solvedjps = false;
-    MyTimer timer_jps(true);
-
-    vec_Vecf<3> JPSk = jps_manager_.solveJPS3D(A.pos, G.pos, &solvedjps, 1);
-
-    if (solvedjps == false)
-    {
-      std::cout << bold << red << "JPS didn't find a solution" << std::endl;
-      return;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    ///////////////////////// Find JPS_in ////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-
-    double ra = std::min((dist_to_goal - 0.001), par_.Ra);  // radius of the sphere S
-    bool noPointsOutsideS;
-    int li1;  // last index inside the sphere of JPSk
-    state E;
-    E.pos = getFirstIntersectionWithSphere(JPSk, ra, JPSk[0], &li1, &noPointsOutsideS);
-    vec_Vecf<3> JPS_in(JPSk.begin(), JPSk.begin() + li1 + 1);
-    if (noPointsOutsideS == false)
-    {
-      JPS_in.push_back(E.pos);
-    }
-    // createMoreVertexes in case dist between vertexes is too big
-    createMoreVertexes(JPS_in, par_.dist_max_vertexes);
-
     //////////////////////////////////////////////////////////////////////////
     ///////////////// Solve with GUROBI Whole trajectory /////////////////////
     //////////////////////////////////////////////////////////////////////////
@@ -1001,7 +1010,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   int samples_per_interval = par_.samples_per_interval;
 
   double t_min = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
-  double t_max = t_min + (A.pos - G_term.pos).norm() / (0.6 * par_.v_max);
+  double t_max = t_min + (A.pos - E.pos).norm() / (0.6 * par_.v_max);
 
   MyTimer convex_hulls_timer(true);
 
@@ -1028,29 +1037,34 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   mtx_unk.lock();
 
   createObstacleMapFromTrajs(t_min, t_max);
-  bool solvedjps = false;
+  bool solvedjps_dyn = false;
 
-  vec_Vecf<3> JPSk = jps_manager_.solveJPS3D(A.pos, G_term.pos, &solvedjps, 1);
+  vec_Vecf<3> JPSk_dyn = jps_manager_dyn_.solveJPS3D(A.pos, G_term.pos, &solvedjps_dyn, 1);
 
-  if (solvedjps == false)
+  if (solvedjps_dyn == false)
   {
     std::cout << bold << red << "JPS didn't find a solution, using straight line" << reset << std::endl;  // but
   }
 
-  JPS_safe_out = JPSk;              // for visualization
-  jps_manager_.getMap(pcloud_jps);  // for visualization
+  JPS_safe_out = JPSk_dyn;              // for visualization
+  jps_manager_dyn_.getMap(pcloud_jps);  // for visualization
 
   mtx_map.unlock();
   mtx_unk.unlock();
   // end of Initial GUESSS
-  snlopt.setInitialGuess(JPSk);
+  snlopt.setInitialGuess(JPSk_dyn);
 
   std::cout << "Calling optimize" << std::endl;
   bool result = snlopt.optimize();
+  std::cout << on_cyan << bold << "Solved " << solutions_found_ << "/" << total_replannings_ << reset << std::endl;
+
+  total_replannings_++;
   if (result == false)
   {
     return;
   }
+
+  solutions_found_++;
 
   std::cout << "Below of loop\n";
 
@@ -1152,7 +1166,7 @@ void Faster::createObstacleMapFromTrajs(double t_min, double t_max)
 {
   mtx_trajs_.lock();
 
-  jps_manager_.createNewMap(state_.pos);
+  jps_manager_dyn_.createNewMap(state_.pos);
 
   int number_of_samples = 10;
 
@@ -1172,8 +1186,7 @@ void Faster::createObstacleMapFromTrajs(double t_min, double t_max)
       tmp->points[j].z = traj.function[2].value();
     }
 
-    jps_manager_.addToMap(tmp, traj.bbox[0] + par_.drone_radius, traj.bbox[1] + par_.drone_radius,
-                          traj.bbox[2] + par_.drone_radius);
+    jps_manager_dyn_.addToMap(tmp, traj.bbox[0] + 0, traj.bbox[1] + 0, traj.bbox[2] + 0);
   }
 
   mtx_trajs_.unlock();

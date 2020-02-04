@@ -30,7 +30,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: DynObstaclesGrid
+    SyncSource: ""
   - Class: rviz/Displays
     Help Height: 0
     Name: Displays
@@ -76,6 +76,46 @@ Visualization Manager:
           Value: false
         SQ020:
           Value: true
+        SQ021:
+          Value: true
+        SQ0210:
+          Value: true
+        SQ0211:
+          Value: true
+        SQ0212:
+          Value: true
+        SQ0213:
+          Value: true
+        SQ0214:
+          Value: true
+        SQ0215:
+          Value: true
+        SQ0216:
+          Value: true
+        SQ0217:
+          Value: true
+        SQ0218:
+          Value: true
+        SQ0219:
+          Value: true
+        SQ022:
+          Value: true
+        SQ0220:
+          Value: true
+        SQ023:
+          Value: true
+        SQ024:
+          Value: true
+        SQ025:
+          Value: true
+        SQ026:
+          Value: true
+        SQ027:
+          Value: true
+        SQ028:
+          Value: true
+        SQ029:
+          Value: true
         vicon:
           Value: false
         world:
@@ -87,12 +127,52 @@ Visualization Manager:
       Show Names: false
       Tree:
         world:
+          SQ020:
+            {}
+          SQ021:
+            {}
+          SQ0210:
+            {}
+          SQ0211:
+            {}
+          SQ0212:
+            {}
+          SQ0213:
+            {}
+          SQ0214:
+            {}
+          SQ0215:
+            {}
+          SQ0216:
+            {}
+          SQ0217:
+            {}
+          SQ0218:
+            {}
+          SQ0219:
+            {}
+          SQ022:
+            {}
+          SQ0220:
+            {}
+          SQ023:
+            {}
+          SQ024:
+            {}
+          SQ025:
+            {}
+          SQ026:
+            {}
+          SQ027:
+            {}
+          SQ028:
+            {}
+          SQ029:
+            {}
           vicon:
             SQ01s:
               SQ01s/camera:
                 {}
-            SQ020:
-              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -120,7 +200,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/setpoint
       Name: Setpoint
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -190,7 +270,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -332,7 +412,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/path_jps_safe
       Name: JPS_Safe
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -574,7 +654,9 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
+        "": true
         Committed_Color: true
+        DynObstaclesGrid: true
         Frontier: true
         G: true
         Goal: true
@@ -609,6 +691,14 @@ Visualization Manager:
         icra: true
         iros: true
       Zoom Factor: 1
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /shapes
+      Name: Marker
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -634,7 +724,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.9936986
+      Distance: 16.3040619
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -649,10 +739,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.734796524
+      Pitch: 0.504796743
       Target Frame: LQ01s
       Value: Orbit (rviz)
-      Yaw: 3.80249548
+      Yaw: 3.90749669
     Saved: ~
 Window Geometry:
   Camera:

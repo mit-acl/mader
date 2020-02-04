@@ -868,7 +868,10 @@ void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
 
   // Guesses for the control points
   int num_of_intermediate_cps = N_ + 1 - 6;
-  vec_Vecf<3> intermediate_cps = sampleJPS(jps_path, num_of_intermediate_cps);
+  vec_Vecf<3> intermediate_cps =
+      sampleJPS(jps_path, num_of_intermediate_cps + 1);  //+1 because the first vertex is always returned
+
+  intermediate_cps.erase(intermediate_cps.begin());  // remove the first vertex
 
   q.push_back(q0_);
   q.push_back(q1_);
@@ -999,13 +1002,14 @@ bool SolverNlopt::optimize()
   }
   else
   {
-    std::cout << on_green << bold << "Solution found" << opt_timer << reset << std::endl;
+    std::cout << on_green << bold << "Solution found: " << opt_timer << reset << std::endl;
     // std::cout << "opt value= " << minf << std::endl;
 
     std::vector<Eigen::Vector3d> q;
     std::vector<Eigen::Vector3d> n;
     std::vector<double> d;
     toEigen(x_, q, n, d);
+    printQND(q, n, d);
 
 #ifdef DEBUG_MODE_NLOPT
     printQND(q, n, d);

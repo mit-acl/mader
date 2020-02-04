@@ -101,7 +101,8 @@ private:
   SolverGurobi sg_whole_;  // solver gurobi whole trajectory
   SolverGurobi sg_safe_;   // solver gurobi safe trajectory
 
-  JPS_Manager jps_manager_;  // Manager of JPS
+  JPS_Manager jps_manager_;      // Manager of JPS
+  JPS_Manager jps_manager_dyn_;  // Manager of JPS
 
   int n_pol_ = 7;
   int deg_ = 3;
@@ -253,4 +254,7 @@ private:
   state state_;
   state G_;       // This goal is always inside of the map
   state G_term_;  // This goal is the clicked goal
+
+  int solutions_found_ = 0;
+  int total_replannings_ = 0;
 };
