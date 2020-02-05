@@ -213,6 +213,19 @@ void SolverNlopt::setHulls(ConvexHullsOfCurves_Std &hulls)
 }
 
 template <class T>
+void SolverNlopt::printInfeasibleConstraints(const T &constraints)
+{
+  std::cout << "The Infeasible Constraints are these ones:\n";
+  for (int i = 0; i < num_of_constraints_; i++)
+  {
+    if (constraints_[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
+    {
+      std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints_[i] << std::endl;
+    }
+  }
+}
+
+template <class T>
 bool SolverNlopt::areTheseConstraintsFeasible(const T &constraints)
 {
   for (int i = 0; i < num_of_constraints_; i++)
@@ -241,7 +254,7 @@ int SolverNlopt::getNumberOfInfeasibleConstraints(const T &constraints)
   return result;
 }
 
-template <class T>
+/*template <class T>
 void SolverNlopt::printInfeasibleConstraints(const T x)
 {
   std::vector<Eigen::Vector3d> q;
@@ -258,7 +271,7 @@ void SolverNlopt::printInfeasibleConstraints(const T x)
       std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints_[i] << std::endl;
     }
   }
-}
+}*/
 
 void SolverNlopt::printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                                              std::vector<double> &d)
@@ -268,7 +281,7 @@ void SolverNlopt::printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, st
   std::cout << "The Infeasible Constraints are these ones:\n";
   for (int i = 0; i < num_of_constraints_; i++)
   {
-    if (constraints_[i] > 0.0)  // constraint is not satisfied yet
+    if (constraints_[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
     {
       std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints_[i] << std::endl;
     }
@@ -307,11 +320,9 @@ void SolverNlopt::initializeNumOfConstraints()
 {
   // hack to get the number of constraints, calling once computeConstraints(...)
   std::vector<double> xx;
-  // double xx[num_of_variables_];
   for (int i = 0; i < num_of_variables_; i++)
   {
     xx.push_back(0.0);
-    // xx[i] = 0.0;
   }
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
@@ -323,10 +334,6 @@ void SolverNlopt::initializeNumOfConstraints()
 
 void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state)
 {
-  /*  std::cout << "deltaT_=" << deltaT_ << std::endl;
-    std::cout << "p_=" << p_ << std::endl;
-    std::cout << "initial_state.accel=" << initial_state.accel.transpose() << std::endl;*/
-
   // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
   // Note that equation (7) of the paper "Robust and Efficent quadrotor..." has a typo, p_ is missing there (compare
   // with equation 15 of that paper)
@@ -335,10 +342,10 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
   Eigen::Vector3d v0 = initial_state.vel;
   Eigen::Vector3d a0 = initial_state.accel;
 
-  Eigen::Vector3d pf = final_state.pos;
-  Eigen::Vector3d vf = final_state.vel;
-  Eigen::Vector3d af = final_state.accel;
-
+  /*  Eigen::Vector3d pf = final_state.pos;
+    Eigen::Vector3d vf = final_state.vel;
+    Eigen::Vector3d af = final_state.accel;
+  */
   initial_state_ = initial_state;
   final_state_ = final_state;
 
@@ -353,10 +360,10 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
   double tpP1 = knots_(p_ + 1);
   double t1PpP1 = knots_(1 + p_ + 1);
 
-  double tN = knots_(N_);
-  double tNm1 = knots_(N_ - 1);
-  double tNPp = knots_(N_ + p_);
-  double tNm1Pp = knots_(N_ - 1 + p_);
+  /*  double tN = knots_(N_);
+    double tNm1 = knots_(N_ - 1);
+    double tNPp = knots_(N_ + p_);
+    double tNm1Pp = knots_(N_ - 1 + p_);*/
 
   // See Mathematica Notebook
   q0_ = p0;
@@ -373,7 +380,6 @@ template <class T>
 void SolverNlopt::toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                           std::vector<double> &d)
 {
-  // std::cout << "Entering toEigen" << std::endl;
   q.clear();
   n.clear();
   d.clear();
@@ -411,7 +417,6 @@ void SolverNlopt::toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eig
   for (int k = k_min_; k <= k_max_; k = k + 1)
   {
     // std::cout << "k= " << k << std::endl;
-
     d.push_back(x[k]);
   }
 
@@ -430,11 +435,11 @@ int SolverNlopt::gIndexQ(int i)
   return 3 * i - 9;  // Q0, Q1, Q2 are always fixed (not decision variables)
 }
 
-// global index of the first element of the norml i
+// global index of the first element of the normal i
 int SolverNlopt::gIndexN(int i)
 {
 #ifdef DEBUG_MODE_NLOPT
-  if ((i < 0) || (i >= num_of_segments_))  // Q0, Q1, Q2 are fixed (not decision variables)
+  if ((i < 0) || (i >= num_of_segments_))
   {
     std::cout << "ERROR in gIndexN!!" << std::endl;
     std::cout << "asked for " << i << std::endl;
@@ -563,12 +568,6 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
                                      std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                                      std::vector<double> &d)
 {
-  // std::cout << "adding ineq constraints" << std::endl;
-  /*  std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
-    std::cout << "num_of_constraints_= " << num_of_constraints_ << std::endl;
-    std::cout << "m= " << m << std::endl;
-    std::cout << "nn= " << nn << std::endl;*/
-
   Eigen::Vector3d ones = Eigen::Vector3d::Ones();
   int r = 0;
   // grad is a vector with nn*m elements
@@ -589,9 +588,6 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   {
     for (int obst_index = 0; obst_index < num_obst_; obst_index++)
     {
-      /*      std::cout << "num_obst_=" << num_obst_ << std::endl;
-            std::cout << "obst_index=" << obst_index << std::endl;
-            std::cout << "hulls_.size() =" << hulls_.size() << std::endl;*/
       int ip = obst_index * num_of_segments_ + i;  // index plane
 
       // impose that all the vertexes of the obstacle are on one side of the plane
@@ -630,37 +626,8 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
       }
     }
   }
-  // std::cout << "here2" << std::endl;
-
-  // Now add the "equality" constraints (for final velocity and acceleration) using inequalities with an epsilon:
-
-  if (force_final_state_ == false)
-  {
-#ifdef DEBUG_MODE_NLOPT
-    if ((N_ + p_) >= knots_.size())
-    {
-      std::cout << "There is something wrong here, (N_+p)=" << (N_ + p_) << std::endl;
-      std::cout << "but knots_.size()=" << knots_.size() << std::endl;
-    }
-#endif
-    double tN = knots_(N_);
-    double tNm1 = knots_(N_ - 1);
-    double tNPp = knots_(N_ + p_);
-    double tNm1Pp = knots_(N_ - 1 + p_);
-
-    // See Mathematica Notebook
-
-    Eigen::Vector3d qNm2 = q[N_ - 2];
-    Eigen::Vector3d qNm1 = q[N_ - 1];
-    Eigen::Vector3d qN = q[N_];
-
-    Eigen::Vector3d vf = p_ * (qN - qNm1) / (tNPp - tN);
-    Eigen::Vector3d vNm2 = (p_ * (qNm1 - qNm2)) / (tNm1Pp - tNm1);
-    Eigen::Vector3d af = ((p_ - 1) * (vf - vNm2)) / (tNm1Pp - tN);
-  }
 
 #ifdef DEBUG_MODE_NLOPT
-
   std::cout << "Going to add velocity constraints, r= " << r << std::endl;
 #endif
   // VELOCITY CONSTRAINTS:
@@ -669,15 +636,6 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
     double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
     Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
 
-/*    std::cout << "knots_= " << knots_.transpose() << std::endl;
-    std::cout << "v_i= " << v_i.transpose() << std::endl;
-    std::cout << "(q[i + 1])= " << (q[i + 1]).transpose() << std::endl;
-    std::cout << "q[i]= " << q[i].transpose() << std::endl;
-    std::cout << "c1= " << c1 << std::endl;*/
-#ifdef DEBUG_MODE_NLOPT
-
-    std::cout << "constraint " << r << " = " << (v_i - v_max_).transpose() << std::endl;
-#endif
     // v<=vmax  \equiv  v_i - vmax <= 0
     assignEigenToVector(constraints, r, v_i - v_max_);  // f<=0
     if (grad)
@@ -692,10 +650,6 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
       }
     }
     r = r + 3;
-#ifdef DEBUG_MODE_NLOPT
-
-    std::cout << "constraint " << r << " = " << (-v_i - v_max_).transpose() << std::endl;
-#endif
 
     // v>=-vmax  \equiv  -v_i - vmax <= 0
     assignEigenToVector(constraints, r, -v_i - v_max_);  // f<=0
@@ -766,8 +720,6 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
     r = r + 3;
   }
 
-  // std::cout << "here4" << std::endl;
-
   // Impose that the normals are not [0 0 0]
   for (int i = 0; i < n.size(); i++)
   {
@@ -790,13 +742,12 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   }
   std::cout << "num_of_constraints_= " << num_of_constraints_ << std::endl;
   std::cout << "m= " << m << std::endl;
-  std::cout << "r+1 = " << r + 1 << std::endl;
-
 #endif
 
   num_of_constraints_ = r;  // + 1 has already been added in the last loop of the previous for loop;
 
   // Be careful cause this adds more runtime...
+  // printInfeasibleConstraints(constraints);
   if (areTheseConstraintsFeasible(constraints))
   {
     if (got_a_feasible_solution_ == false)
@@ -917,6 +868,37 @@ void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
   x_ = x;
 }
 
+std::string SolverNlopt::getResultCode(int &result)
+{
+  switch (result)
+  {
+    case -5:
+      return "Forced_Stop";
+    case -4:
+      return "Roundoff_limited";
+    case -3:
+      return "Out_of_memory";
+    case -2:
+      return "Invalid_args";
+    case -1:
+      return "Failure";
+    case 1:
+      return "Success";
+    case 2:
+      return "Stopval_reached";
+    case 3:
+      return "Ftol_reached";
+    case 4:
+      return "Xtol_reached";
+    case 5:
+      return "Maxeval_reached";
+    case 6:
+      return "Maxtime_reached";
+    default:
+      return "Code_unknown";
+  }
+}
+
 bool SolverNlopt::optimize()
 
 {
@@ -992,15 +974,15 @@ bool SolverNlopt::optimize()
 
   // See codes in https://github.com/JuliaOpt/NLopt.jl/blob/master/src/NLopt.jl
   bool failed = (result != nlopt::SUCCESS) && (!got_a_feasible_solution_);
-  bool optimal = (result > 0) && (result != nlopt::MAXTIME_REACHED);
+  bool optimal = (result == nlopt::SUCCESS);
   bool feasible_but_not_optimal = (got_a_feasible_solution_) && (!optimal);
 
-  // Store the resuls here
+  // Store the results here
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
 
-  std::cout << "result= " << result << std::endl;
+  std::cout << "result= " << getResultCode(result) << std::endl;
 
   if (failed)
   {
@@ -1032,7 +1014,6 @@ bool SolverNlopt::optimize()
 
   // Construct now the B-Spline
   // See example at https://github.com/libigl/eigen/blob/master/unsupported/test/splines.cpp#L37
-
   Eigen::MatrixXd control_points(3, q.size());
 
   for (int i = 0; i < q.size(); i++)
@@ -1047,9 +1028,6 @@ bool SolverNlopt::optimize()
 
   std::cout << "Knots= " << knots_ << std::endl;
   std::cout << "t_min_= " << t_min_ << std::endl;
-  /*       std::cout << "dc_= " << dc_ << std::endl;
-
-     std::cout << "Going to fill the solution" << std::endl;*/
 
   X_temp_.clear();
 
@@ -1168,3 +1146,32 @@ bool SolverNlopt::optimize()
       toGradDiffConstraintsDiffVariables(gIndexQ(N_ - 2), -ones * tmp3, grad, r, nn);
     }
     r = r + 3;*/
+
+// std::cout << "here2" << std::endl;
+
+// Now add the "equality" constraints (for final velocity and acceleration) using inequalities with an epsilon:
+
+/*  if (force_final_state_ == false)
+  {
+#ifdef DEBUG_MODE_NLOPT
+    if ((N_ + p_) >= knots_.size())
+    {
+      std::cout << "There is something wrong here, (N_+p)=" << (N_ + p_) << std::endl;
+      std::cout << "but knots_.size()=" << knots_.size() << std::endl;
+    }
+#endif
+    double tN = knots_(N_);
+    double tNm1 = knots_(N_ - 1);
+    double tNPp = knots_(N_ + p_);
+    double tNm1Pp = knots_(N_ - 1 + p_);
+
+    // See Mathematica Notebook
+
+    Eigen::Vector3d qNm2 = q[N_ - 2];
+    Eigen::Vector3d qNm1 = q[N_ - 1];
+    Eigen::Vector3d qN = q[N_];
+
+    Eigen::Vector3d vf = p_ * (qN - qNm1) / (tNPp - tN);
+    Eigen::Vector3d vNm2 = (p_ * (qNm1 - qNm2)) / (tNm1Pp - tNm1);
+    Eigen::Vector3d af = ((p_ - 1) * (vf - vNm2)) / (tNm1Pp - tN);
+  }*/

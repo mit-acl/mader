@@ -91,14 +91,19 @@ private:
   void printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                                   std::vector<double> &d);
 
-  template <class T>
-  void printInfeasibleConstraints(const T x);
+  // template <class T>
+  // void printInfeasibleConstraints(const T x);
 
   template <class T>
   int getNumberOfInfeasibleConstraints(const T &constraints);
 
   template <class T>
   bool areTheseConstraintsFeasible(const T &constraints);
+
+  template <class T>
+  void printInfeasibleConstraints(const T &constraints);
+
+  std::string getResultCode(int &result);
 
   int lastDecCP();
 
