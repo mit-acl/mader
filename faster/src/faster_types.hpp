@@ -85,6 +85,7 @@ struct parameters
   int samples_per_interval;
   double weight;
   double epsilon_tol_constraints;
+  std::string solver;
 
   /*  double kw;
     double kyaw;

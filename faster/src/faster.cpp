@@ -1034,8 +1034,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   int num_obst = hulls.size();
 
-  SolverNlopt snlopt(n_pol, deg, num_obst, par_.weight, par_.epsilon_tol_constraints,
-                     false);  // snlopt(a,g) a polynomials of degree 3
+  SolverNlopt snlopt(n_pol, deg, num_obst, par_.weight, par_.epsilon_tol_constraints, false,
+                     par_.solver);  // snlopt(a,g) a polynomials of degree 3
   snlopt.setHulls(hulls_std);
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc

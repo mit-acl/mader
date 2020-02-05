@@ -26,7 +26,7 @@ class SolverNlopt
 {
 public:
   SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints,
-              bool force_final_state);
+              bool force_final_state, std::string &solver);
 
   ~SolverNlopt();
 
@@ -48,6 +48,8 @@ public:
 
 protected:
 private:
+  nlopt::algorithm getSolver(std::string &solver);
+
   bool isADecisionCP(int i);
 
   void assignEigenToVector(double *grad, int index, const Eigen::Vector3d &tmp);
@@ -122,6 +124,8 @@ private:
   int num_of_constraints_;
   int num_obst_;
   int num_of_segments_;
+
+  nlopt::algorithm solver_;
 
   bool got_a_feasible_solution_ = false;
   double time_first_feasible_solution_ = 0.0;

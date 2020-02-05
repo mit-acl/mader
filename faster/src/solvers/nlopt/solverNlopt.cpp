@@ -13,9 +13,11 @@
 using namespace termcolor;
 
 SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints,
-                         bool force_final_state)
+                         bool force_final_state, std::string &solver)
 {
   // std::cout << "In the SolverNlopt Constructor\n";
+
+  solver_ = getSolver(solver);
 
   force_final_state_ = force_final_state;
 
@@ -897,6 +899,83 @@ std::string SolverNlopt::getResultCode(int &result)
   }
 }
 
+nlopt::algorithm SolverNlopt::getSolver(std::string &solver)
+{
+  // nlopt::algorithm_from_string("LD_MMA"); //doesn't work in c++
+
+  if (solver == "LD_MMA")
+  {
+    return nlopt::LD_MMA;
+  }
+  else if (solver == "LN_NELDERMEAD")
+  {
+    return nlopt::LN_NELDERMEAD;
+  }
+  else if (solver == "LN_SBPLX")
+  {
+    return nlopt::LN_SBPLX;
+  }
+
+  else if (solver == "LN_PRAXIS")
+  {
+    return nlopt::LN_PRAXIS;
+  }
+
+  else if (solver == "LD_AUGLAG")
+  {
+    return nlopt::LD_AUGLAG;
+  }
+  else if (solver == "LD_AUGLAG_EQ")
+  {
+    return nlopt::LD_AUGLAG_EQ;
+  }
+  else if (solver == "LN_BOBYQA")
+  {
+    return nlopt::LN_BOBYQA;
+  }
+  else if (solver == "LD_SLSQP")
+  {
+    return nlopt::LD_SLSQP;
+  }
+  else if (solver == "LN_NEWUOA")
+  {
+    return nlopt::LN_NEWUOA;
+  }
+  else if (solver == "LN_NEWUOA_BOUND")
+  {
+    return nlopt::LN_NEWUOA_BOUND;
+  }
+  else if (solver == "LD_TNEWTON_PRECOND_RESTART")
+  {
+    return nlopt::LD_TNEWTON_PRECOND_RESTART;
+  }
+  else if (solver == "LD_TNEWTON_RESTART")
+  {
+    return nlopt::LD_TNEWTON_RESTART;
+  }
+  else if (solver == "LD_TNEWTON_PRECOND")
+  {
+    return nlopt::LD_TNEWTON_PRECOND;
+  }
+  else if (solver == "LD_VAR1")
+  {
+    return nlopt::LD_VAR1;
+  }
+  else if (solver == "LD_VAR2")
+  {
+    return nlopt::LD_VAR2;
+  }
+  else if (solver == "LD_LBFGS_NOCEDAL")
+  {
+    return nlopt::LD_LBFGS_NOCEDAL;
+  }
+  else
+  {
+    std::cout << "Are you sure this solver exists?" << std::endl;
+    abort();
+  }
+}
+
 bool SolverNlopt::optimize()
 
 {
@@ -917,9 +996,7 @@ bool SolverNlopt::optimize()
 
   opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
   local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);  // LD_SLSQP //LD_MMA
-  // work:  //LD_MMA // //LN_NELDERMEAD // LN_SBPLX(fastest) //LN_PRAXIS(fastest) //LD_AUGLAG //LD_AUGLAG_EQ
-  // don't work: LN_BOBYQA // LD_SLSQP //LN_NEWUOA //LN_AUGLAG_EQ //LN_NEWUOA_BOUND //LN_COBYLA
-  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1 //LD_VAR2 //LD_LBFGS_NOCEDAL
+
   local_opt_->set_xtol_rel(1e-8);  // stopping criteria. If >=1e-1, it leads to weird trajectories
   opt_->set_local_optimizer(*local_opt_);
   opt_->set_xtol_rel(1e-8);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
