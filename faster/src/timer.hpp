@@ -1,3 +1,6 @@
+#ifndef TIMER_HPP_
+#define TIMER_HPP_
+
 #include <chrono>
 
 namespace JPS
@@ -88,3 +91,5 @@ private:
   double _start;
 };*/
 }  // namespace JPS
+
+#endif  // TIMER_HPP_

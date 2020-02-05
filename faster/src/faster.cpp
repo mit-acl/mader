@@ -740,17 +740,17 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
                     vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out,
                     std::vector<state>& X_whole_out, pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps)
 {
-  std::cout << "here1" << std::endl;
+  // std::cout << "here1" << std::endl;
 
   MyTimer replanCB_t(true);
 
-  std::cout << "here2" << std::endl;
+  // std::cout << "here2" << std::endl;
 
   if (initializedAllExceptPlanner() == false)
   {
     return;
   }
-  std::cout << "here3" << std::endl;
+  // std::cout << "here3" << std::endl;
 
   sg_whole_.ResetToNormalState();
   sg_safe_.ResetToNormalState();
@@ -810,7 +810,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   if (solvedjps == false)
   {
-    std::cout << bold << red << "JPS didn't find a solution" << std::endl;
+    std::cout << bold << red << "JPS didn't find a solution" << reset << std::endl;
     return;
   }
 
@@ -1009,8 +1009,17 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   int deg = par_.deg;
   int samples_per_interval = par_.samples_per_interval;
 
-  double t_min = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
-  double t_max = t_min + (A.pos - E.pos).norm() / (0.6 * par_.v_max);
+  state initial = A;
+  state final = E;
+
+  double t_min = deltaT_ * par_.dc + ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+  double t_max = t_min + (initial.pos - final.pos).norm() / (0.6 * par_.v_max);  // time to execute the optimized path
+
+  std::cout << "Going to compute the convex hulls, t_min= " << t_min << std::endl;
+  std::cout << "Going to compute the convex hulls, t_max= " << t_max << std::endl;
+  std::cout << "ros::Time::now().toSec()= " << ros::Time::now().toSec() << std::endl;
+  std::cout << "deltaT_= " << deltaT_ << std::endl;
+  std::cout << "par_.dc= " << par_.dc << std::endl;
 
   MyTimer convex_hulls_timer(true);
 
@@ -1030,7 +1039,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc
   snlopt.setTminAndTmax(t_min, t_max);
-  snlopt.setInitAndFinalStates(A, G_term);
+  snlopt.setMaxRuntime(deltaT_ * par_.dc);
+  snlopt.setInitAndFinalStates(initial, final);
 
   // Initial GUESS: run JPS with the dynamic obstacles as static obstacles
   mtx_map.lock();
@@ -1039,7 +1049,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   createObstacleMapFromTrajs(t_min, t_max);
   bool solvedjps_dyn = false;
 
-  vec_Vecf<3> JPSk_dyn = jps_manager_dyn_.solveJPS3D(A.pos, G_term.pos, &solvedjps_dyn, 1);
+  vec_Vecf<3> JPSk_dyn = jps_manager_dyn_.solveJPS3D(initial.pos, final.pos, &solvedjps_dyn, 1);
 
   if (solvedjps_dyn == false)
   {
@@ -1061,6 +1071,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   total_replannings_++;
   if (result == false)
   {
+    deltaT_ = std::min(par_.alpha * deltaT_,
+                       2 / par_.dc);  // Increases deltaT_ (to increase the allowed runtime in the next iteration)
     return;
   }
 

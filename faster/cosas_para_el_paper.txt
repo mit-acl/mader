@@ -1,0 +1,5 @@
+--> Distintos origenes de tiempo (debo tener en cuenta delta_T)
+
+--> Tener en cuenta delta_T y ajustar el runtime de la optimization according to that
+
+--> Get last feasible solution if it fails

@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /TF1
-        - /TF1/Frames1
         - /Goal1
         - /DynObstaclesGrid1
         - /Image1
@@ -102,11 +101,89 @@ Visualization Manager:
           Value: true
         SQ0220:
           Value: true
+        SQ0221:
+          Value: true
+        SQ0222:
+          Value: true
+        SQ0223:
+          Value: true
+        SQ0224:
+          Value: true
+        SQ0225:
+          Value: true
+        SQ0226:
+          Value: true
+        SQ0227:
+          Value: true
+        SQ0228:
+          Value: true
+        SQ0229:
+          Value: true
         SQ023:
+          Value: true
+        SQ0230:
+          Value: true
+        SQ0231:
+          Value: true
+        SQ0232:
+          Value: true
+        SQ0233:
+          Value: true
+        SQ0234:
+          Value: true
+        SQ0235:
+          Value: true
+        SQ0236:
+          Value: true
+        SQ0237:
+          Value: true
+        SQ0238:
+          Value: true
+        SQ0239:
           Value: true
         SQ024:
           Value: true
+        SQ0240:
+          Value: true
+        SQ0241:
+          Value: true
+        SQ0242:
+          Value: true
+        SQ0243:
+          Value: true
+        SQ0244:
+          Value: true
+        SQ0245:
+          Value: true
+        SQ0246:
+          Value: true
+        SQ0247:
+          Value: true
+        SQ0248:
+          Value: true
+        SQ0249:
+          Value: true
         SQ025:
+          Value: true
+        SQ0250:
+          Value: true
+        SQ0251:
+          Value: true
+        SQ0252:
+          Value: true
+        SQ0253:
+          Value: true
+        SQ0254:
+          Value: true
+        SQ0255:
+          Value: true
+        SQ0256:
+          Value: true
+        SQ0257:
+          Value: true
+        SQ0258:
+          Value: true
+        SQ0259:
           Value: true
         SQ026:
           Value: true
@@ -155,11 +232,89 @@ Visualization Manager:
             {}
           SQ0220:
             {}
+          SQ0221:
+            {}
+          SQ0222:
+            {}
+          SQ0223:
+            {}
+          SQ0224:
+            {}
+          SQ0225:
+            {}
+          SQ0226:
+            {}
+          SQ0227:
+            {}
+          SQ0228:
+            {}
+          SQ0229:
+            {}
           SQ023:
+            {}
+          SQ0230:
+            {}
+          SQ0231:
+            {}
+          SQ0232:
+            {}
+          SQ0233:
+            {}
+          SQ0234:
+            {}
+          SQ0235:
+            {}
+          SQ0236:
+            {}
+          SQ0237:
+            {}
+          SQ0238:
+            {}
+          SQ0239:
             {}
           SQ024:
             {}
+          SQ0240:
+            {}
+          SQ0241:
+            {}
+          SQ0242:
+            {}
+          SQ0243:
+            {}
+          SQ0244:
+            {}
+          SQ0245:
+            {}
+          SQ0246:
+            {}
+          SQ0247:
+            {}
+          SQ0248:
+            {}
+          SQ0249:
+            {}
           SQ025:
+            {}
+          SQ0250:
+            {}
+          SQ0251:
+            {}
+          SQ0252:
+            {}
+          SQ0253:
+            {}
+          SQ0254:
+            {}
+          SQ0255:
+            {}
+          SQ0256:
+            {}
+          SQ0257:
+            {}
+          SQ0258:
+            {}
+          SQ0259:
             {}
           SQ026:
             {}
@@ -654,7 +809,6 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
-        "": true
         Committed_Color: true
         DynObstaclesGrid: true
         Frontier: true
@@ -667,6 +821,7 @@ Visualization Manager:
         JPS_Safe: true
         JPS_Whole: true
         JPS_old Intersection: true
+        Marker: true
         MarkerArray: true
         OccupacyGrid: true
         PathJPS2: true
@@ -724,7 +879,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 16.3040619
+      Distance: 26.5686111
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1

@@ -277,7 +277,6 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 
 void FasterRos::replanCB(const ros::TimerEvent& e)
 {
-  std::cout << "In replanCB" << std::endl;
   if (ros::ok())
   {
     vec_Vecf<3> JPS_safe;
@@ -288,11 +287,7 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     std::vector<state> X_whole;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pcloud_jps(new pcl::PointCloud<pcl::PointXYZ>);
 
-    std::cout << "Calling replanCB" << X_whole.size() << std::endl;
-
     faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole, pcloud_jps);
-
-    std::cout << "replanCB done" << X_whole.size() << std::endl;
 
     pcl::PCLPointCloud2 pcloud_jps2;
     pcl::toPCLPointCloud2(*pcloud_jps.get(), pcloud_jps2);
@@ -310,12 +305,8 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     publishPoly(poly_whole, WHOLE);
     pubTraj(X_safe, SAFE_COLORED);
 
-    std::cout << "[faster_ros] X_whole.size()=" << X_whole.size() << std::endl;
-
     pubTraj(X_whole, WHOLE_COLORED);
-    std::cout << "traj published=" << std::endl;
   }
-  std::cout << "going out from replanCB" << std::endl;
 }
 
 void FasterRos::publishPoly(const vec_E<Polyhedron<3>>& poly, int type)
@@ -496,7 +487,7 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
     traj.poses.push_back(temp_path);
   }
 
-  std::cout << "here4" << std::endl;
+  // std::cout << "here4" << std::endl;
 
   if (type == WHOLE)
   {
@@ -513,7 +504,7 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
   clearMarkerArray(&traj_whole_colored_, &pub_traj_whole_colored_);
   clearMarkerArray(&traj_safe_colored_, &pub_traj_safe_colored_);
 
-  std::cout << "here5" << std::endl;
+  // std::cout << "here5" << std::endl;
 
   if (type == COMMITTED_COLORED)
   {
@@ -533,7 +524,7 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
     pub_traj_safe_colored_.publish(traj_safe_colored_);
   }
 
-  std::cout << "here6" << std::endl;
+  // std::cout << "here6" << std::endl;
 }
 
 void FasterRos::pubJPSIntersection(Eigen::Vector3d& inters)

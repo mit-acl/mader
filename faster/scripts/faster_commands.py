@@ -39,6 +39,7 @@ class Behavior_Selector:
         if(self.initialized==False):
             self.pubFirstGoal()
             self.initialized=True
+            #self.takeOff() #hack to take off directly
 
     #Called when buttom pressed in the interface
     def srvCB(self,req):

@@ -46,14 +46,14 @@ class FakeSim:
         self.timer = rospy.Timer(rospy.Duration(0.001), self.pubTF)
 
         self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
-        self.num_of_objects = 21;
+        self.num_of_objects = 60;
 
         self.x_all=[];
         self.y_all=[];
         self.z_all=[];
         for i in range(self.num_of_objects):
-            self.x_all.append(10*random.random());
-            self.y_all.append(10*random.random());
+            self.x_all.append(50*random.random());
+            self.y_all.append(self.x_all[i]+2*random.random());
             self.z_all.append(2);
         # self.state.quat.x = 0
         # self.state.quat.y = 0
@@ -128,9 +128,12 @@ class FakeSim:
     # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
     def trefoil(self,x,y,z,scale_x, scale_y, scale_z, offset):
 
-        x_string='(sin(t +'+str(offset)+') + 2 * sin(2 * t +'+str(offset)+'))/' + str(scale_x) +'+' + str(x); #'2*sin(t)' 
-        y_string='(cos(t +'+str(offset)+') - 2 * cos(2 * t +'+str(offset)+'))/' + str(scale_y) +'+' + str(y); #'2*cos(t)' 
-        z_string='0.5'#'-sin(3 * t +'+str(offset)+')/' +str(scale_z) + '+' + str(z);                                #'1'        
+        slower=2; #The higher, the slower the obstacles move" 
+        tt='t/' + str(slower)+'+';
+
+        x_string='(sin('+tt +str(offset)+') + 2 * sin(2 * '+tt +str(offset)+'))/' + str(scale_x) +'+' + str(x); #'2*sin(t)' 
+        y_string='(cos('+tt +str(offset)+') - 2 * cos(2 * '+tt +str(offset)+'))/' + str(scale_y) +'+' + str(y); #'2*cos(t)' 
+        z_string='1.0'#'-sin(3 * t +'+str(offset)+')/' +str(scale_z) + '+' + str(z);                                #'1'        
 
         return [x_string, y_string, z_string]
 

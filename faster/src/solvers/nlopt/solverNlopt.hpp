@@ -8,6 +8,9 @@
 #include "./../../faster_types.hpp"
 #include <sstream>
 #include "./../../utils.hpp"
+#include "./../../timer.hpp"
+
+typedef JPS::Timer MyTimer;
 
 /*#include <Eigen/Dense>
 #include <type_traits>
@@ -40,6 +43,8 @@ public:
 
   std::vector<state> X_temp_;
 
+  void setMaxRuntime(double deltaT);
+
 protected:
 private:
   bool isADecisionCP(int i);
@@ -47,7 +52,7 @@ private:
   void assignEigenToVector(double *grad, int index, const Eigen::Vector3d &tmp);
 
   template <class T>
-  void toEigen(T x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
+  void toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
   int gIndexQ(int i);  // Element jth of control point ith
   int gIndexN(int i);  // Element jth of normal ith
@@ -70,11 +75,13 @@ private:
   static double myObjFunc(unsigned nn, const double *x, double *grad, void *my_func_data);
 
   // See example https://github.com/stevengj/nlopt/issues/168
-  static void multi_ineq_constraint(unsigned m, double *result, unsigned nn, const double *x, double *grad,
-                                    void *f_data);
+  static void myIneqConstraints(unsigned m, double *result, unsigned nn, const double *x, double *grad, void *f_data);
 
-  void add_ineq_constraints(unsigned m, double *constraints, unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
-                            std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
+  double computeObjFuction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
+                           std::vector<double> &d);
+
+  void computeConstraints(unsigned m, double *constraints, unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
+                          std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
   void initializeNumOfConstraints();
 
@@ -86,6 +93,12 @@ private:
 
   template <class T>
   void printInfeasibleConstraints(const T x);
+
+  template <class T>
+  int getNumberOfInfeasibleConstraints(const T &constraints);
+
+  template <class T>
+  bool areTheseConstraintsFeasible(const T &constraints);
 
   int lastDecCP();
 
@@ -106,6 +119,15 @@ private:
   int num_of_constraints_;
   int num_obst_;
   int num_of_segments_;
+
+  bool got_a_feasible_solution_ = false;
+  double time_first_feasible_solution_ = 0.0;
+
+  double best_cost_so_far_ = std::numeric_limits<double>::max();
+
+  std::vector<double> best_feasible_sol_so_far_;
+
+  double epsilon_tol_constraints_;
 
   std::vector<double> x_;  // Here the initial guess, and the solution, are stored
 
@@ -129,6 +151,10 @@ private:
   Eigen::Vector3d q0_, q1_, q2_;  //, qNm2_, qNm1_, qN_;
 
   ConvexHullsOfCurves_Std hulls_;
+
+  MyTimer opt_timer_;
+
+  double max_runtime_ = 2;  //[seconds]
 
   // Eigen::Vector3d initial_point_;
   // Eigen::Vector3d final_point_;
