@@ -54,7 +54,7 @@ class FakeSim:
         for i in range(self.num_of_objects):
             self.x_all.append(50*random.random());
             self.y_all.append(self.x_all[i]+2*random.random());
-            self.z_all.append(2);
+            self.z_all.append(1);
         # self.state.quat.x = 0
         # self.state.quat.y = 0
         # self.state.quat.z = 0
@@ -90,7 +90,7 @@ class FakeSim:
 
             dynamic_trajectory_msg.header.stamp= t_ros;
             dynamic_trajectory_msg.function = [x_string, y_string, z_string]
-            dynamic_trajectory_msg.bbox = [0.1, 0.1, 2]
+            dynamic_trajectory_msg.bbox = [0.3, 0.3, 0.3]
             dynamic_trajectory_msg.pos.x=x #Current position
             dynamic_trajectory_msg.pos.y=y #Current position
             dynamic_trajectory_msg.pos.z=z #Current position
@@ -133,7 +133,7 @@ class FakeSim:
 
         x_string='(sin('+tt +str(offset)+') + 2 * sin(2 * '+tt +str(offset)+'))/' + str(scale_x) +'+' + str(x); #'2*sin(t)' 
         y_string='(cos('+tt +str(offset)+') - 2 * cos(2 * '+tt +str(offset)+'))/' + str(scale_y) +'+' + str(y); #'2*cos(t)' 
-        z_string='1.0'#'-sin(3 * t +'+str(offset)+')/' +str(scale_z) + '+' + str(z);                                #'1'        
+        z_string='-sin(3 * '+tt +str(offset)+')/' +str(scale_z) + '+' + str(z);                               #'1.0'        
 
         return [x_string, y_string, z_string]
 

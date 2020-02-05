@@ -196,15 +196,15 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_s
 
     //"Minkowski sum along the trajectory: box centered on the trajectory"
 
-    Point_3 p0(x + traj.bbox[0], y + traj.bbox[1], z + traj.bbox[2]);
-    Point_3 p1(x + traj.bbox[0], y - traj.bbox[1], z - traj.bbox[2]);
-    Point_3 p2(x + traj.bbox[0], y + traj.bbox[1], z - traj.bbox[2]);
-    Point_3 p3(x + traj.bbox[0], y - traj.bbox[1], z + traj.bbox[2]);
+    Point_3 p0(x + traj.bbox[0] / 2.0, y + traj.bbox[1] / 2.0, z + traj.bbox[2] / 2.0);
+    Point_3 p1(x + traj.bbox[0] / 2.0, y - traj.bbox[1] / 2.0, z - traj.bbox[2] / 2.0);
+    Point_3 p2(x + traj.bbox[0] / 2.0, y + traj.bbox[1] / 2.0, z - traj.bbox[2] / 2.0);
+    Point_3 p3(x + traj.bbox[0] / 2.0, y - traj.bbox[1] / 2.0, z + traj.bbox[2] / 2.0);
 
-    Point_3 p4(x - traj.bbox[0], y - traj.bbox[1], z - traj.bbox[2]);
-    Point_3 p5(x - traj.bbox[0], y + traj.bbox[1], z + traj.bbox[2]);
-    Point_3 p6(x - traj.bbox[0], y + traj.bbox[1], z - traj.bbox[2]);
-    Point_3 p7(x - traj.bbox[0], y - traj.bbox[1], z + traj.bbox[2]);
+    Point_3 p4(x - traj.bbox[0] / 2.0, y - traj.bbox[1] / 2.0, z - traj.bbox[2] / 2.0);
+    Point_3 p5(x - traj.bbox[0] / 2.0, y + traj.bbox[1] / 2.0, z + traj.bbox[2] / 2.0);
+    Point_3 p6(x - traj.bbox[0] / 2.0, y + traj.bbox[1] / 2.0, z - traj.bbox[2] / 2.0);
+    Point_3 p7(x - traj.bbox[0] / 2.0, y - traj.bbox[1] / 2.0, z + traj.bbox[2] / 2.0);
 
     points.push_back(p0);
     points.push_back(p1);
@@ -806,7 +806,11 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   bool solvedjps = false;
   MyTimer timer_jps(true);
 
-  vec_Vecf<3> JPSk = jps_manager_.solveJPS3D(A.pos, G.pos, &solvedjps, 1);
+  vec_Vecf<3> JPSk;
+  // JPSk = jps_manager_.solveJPS3D(A.pos, G.pos, &solvedjps, 1);
+  JPSk.push_back(A.pos);  // hack to ignore the static obstacles for now
+  JPSk.push_back(G.pos);  // hack to ignore the static obstacles for now
+  solvedjps = true;       // hack to ignore the static obstacles for now
 
   if (solvedjps == false)
   {
@@ -1199,7 +1203,7 @@ void Faster::createObstacleMapFromTrajs(double t_min, double t_max)
       tmp->points[j].z = traj.function[2].value();
     }
 
-    jps_manager_dyn_.addToMap(tmp, traj.bbox[0] + 0, traj.bbox[1] + 0, traj.bbox[2] + 0);
+    jps_manager_dyn_.addToMap(tmp, traj.bbox[0] / 2.0 + 0, traj.bbox[1] / 2.0 + 0, traj.bbox[2] / 2.0 + 0);
   }
 
   mtx_trajs_.unlock();
