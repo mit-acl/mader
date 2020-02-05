@@ -37,10 +37,10 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
                                  // are fixed (not dec variables)
   j_min_ = i_max_ + 1;
   j_max_ = j_min_ + 3 * (M_ - 2 * p_) * num_obst_ - 1;
-  k_min_ = j_max_ + 1;
-  k_max_ = k_min_ + (M_ - 2 * p_) * num_obst_ - 1;
+  // k_min_ = j_max_ + 1;
+  // k_max_ = k_min_ + (M_ - 2 * p_) * num_obst_ - 1;
 
-  num_of_variables_ = k_max_ + 1;
+  num_of_variables_ = j_max_ + 1;  // k_max_ + 1;
 
   num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
   int num_of_cpoints = N_ + 1;
@@ -274,10 +274,9 @@ void SolverNlopt::printInfeasibleConstraints(const T x)
   }
 }*/
 
-void SolverNlopt::printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-                                             std::vector<double> &d)
+void SolverNlopt::printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n)
 {
-  computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+  computeConstraints(0, constraints_, num_of_variables_, NULL, q, n);
 
   std::cout << "The Infeasible Constraints are these ones:\n";
   for (int i = 0; i < num_of_constraints_; i++)
@@ -289,8 +288,8 @@ void SolverNlopt::printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, st
   }
 }
 
-void SolverNlopt::qndtoX(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
-                         const std::vector<double> &d, std::vector<double> &x)
+void SolverNlopt::qntoX(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
+                        std::vector<double> &x)
 {
   int j = 0;
   for (int i = 3; i <= (N_ - 2); i++)
@@ -309,11 +308,11 @@ void SolverNlopt::qndtoX(const std::vector<Eigen::Vector3d> &q, const std::vecto
     j = j + 3;
   }
 
-  for (auto d_i : d)
-  {
-    x[j] = d_i;
-    j = j + 1;
-  }
+  /*  for (auto d_i : d)
+    {
+      x[j] = d_i;
+      j = j + 1;
+    }*/
   std::cout << "qndtoX, j=" << j << std::endl;
 }
 
@@ -327,9 +326,9 @@ void SolverNlopt::initializeNumOfConstraints()
   }
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
-  std::vector<double> d;
-  toEigen(xx, q, n, d);
-  computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+  // std::vector<double> d;
+  toEigen(xx, q, n);
+  computeConstraints(0, constraints_, num_of_variables_, NULL, q, n);
   // end of hack
 }
 
@@ -378,12 +377,11 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
 }
 
 template <class T>
-void SolverNlopt::toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-                          std::vector<double> &d)
+void SolverNlopt::toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n)
 {
   q.clear();
   n.clear();
-  d.clear();
+  // d.clear();
 
   q.push_back(q0_);  // Not a decision variable
   q.push_back(q1_);  // Not a decision variable
@@ -414,12 +412,12 @@ void SolverNlopt::toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eig
     n.push_back(Eigen::Vector3d(x[j], x[j + 1], x[j + 2]));
   }
 
-  // d values (1x1)
-  for (int k = k_min_; k <= k_max_; k = k + 1)
-  {
-    // std::cout << "k= " << k << std::endl;
-    d.push_back(x[k]);
-  }
+  /*  // d values (1x1)
+    for (int k = k_min_; k <= k_max_; k = k + 1)
+    {
+      // std::cout << "k= " << k << std::endl;
+      d.push_back(x[k]);
+    }*/
 
   // std::cout << "done with toEigen" << std::endl;
 }
@@ -451,7 +449,7 @@ int SolverNlopt::gIndexN(int i)
   return 3 * i + j_min_;
 }
 
-int SolverNlopt::gIndexD(int i)
+/*int SolverNlopt::gIndexD(int i)
 {
 #ifdef DEBUG_MODE_NLOPT
   if ((i < 0) || (i >= num_of_segments_))  // Q0, Q1, Q2 are fixed (not decision variables)
@@ -463,7 +461,7 @@ int SolverNlopt::gIndexD(int i)
 #endif
 
   return i + k_min_;
-}
+}*/
 
 void SolverNlopt::assignValueToGradConstraints(int var_gindex, const double &tmp, double *grad, int r, int nn)
 
@@ -472,7 +470,7 @@ void SolverNlopt::assignValueToGradConstraints(int var_gindex, const double &tmp
 }
 
 double SolverNlopt::computeObjFuction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
-                                      std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
+                                      std::vector<Eigen::Vector3d> &n)
 {
   // Cost
   double cost = 0.0;
@@ -531,9 +529,9 @@ double SolverNlopt::myObjFunc(unsigned nn, const double *x, double *grad, void *
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
-  opt->toEigen(x, q, n, d);
+  opt->toEigen(x, q, n);
 
-  double cost = opt->computeObjFuction(nn, grad, q, n, d);
+  double cost = opt->computeObjFuction(nn, grad, q, n);
 
   return cost;
 }
@@ -566,8 +564,7 @@ int SolverNlopt::lastDecCP()
 
 // m is the number of constraints, nn is the number of variables
 void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned nn, double *grad,
-                                     std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-                                     std::vector<double> &d)
+                                     std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n)
 {
   Eigen::Vector3d ones = Eigen::Vector3d::Ones();
   int r = 0;
@@ -594,11 +591,11 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
       // impose that all the vertexes of the obstacle are on one side of the plane
       for (Eigen::Vector3d vertex : hulls_[obst_index][i])  // opt->hulls_[i].size()
       {
-        constraints[r] = -(n[ip].dot(vertex) + d[ip]);  // f<=0
+        constraints[r] = -(n[ip].dot(vertex) + 1);  //+d[ip] // f<=0
         if (grad)
         {
           toGradSameConstraintDiffVariables(gIndexN(ip), -vertex, grad, r, nn);
-          assignValueToGradConstraints(gIndexD(ip), -1, grad, r, nn);
+          // assignValueToGradConstraints(gIndexD(ip), -1, grad, r, nn);
         }
         r++;
       }
@@ -613,7 +610,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         }
 #endif
 
-        constraints[r] = n[ip].dot(q[i + u]) + d[ip];  // f<=0
+        constraints[r] = n[ip].dot(q[i + u]) + 1;  //+d[ip]  // f<=0
         if (grad)
         {
           toGradSameConstraintDiffVariables(gIndexN(ip), q[i + u], grad, r, nn);
@@ -621,7 +618,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
           {
             toGradSameConstraintDiffVariables(gIndexQ(i + u), n[ip], grad, r, nn);
           }
-          assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
+          // assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
         }
         r++;
       }
@@ -722,18 +719,18 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   }
 
   // Impose that the normals are not [0 0 0]
-  for (int i = 0; i < n.size(); i++)
-  {
-    double min_norm = 1;  // normals should have at least module min_norm
-
-    // std::cout << "n[i]= " << n[i].transpose() << std::endl;
-    constraints[r] = min_norm - n[i].dot(n[i]);  // f<=0
-    if (grad)
+  /*  for (int i = 0; i < n.size(); i++)
     {
-      toGradSameConstraintDiffVariables(gIndexN(i), -2 * n[i], grad, r, nn);
-    }
-    r++;
-  }
+      double min_norm = 1;  // normals should have at least module min_norm
+
+      // std::cout << "n[i]= " << n[i].transpose() << std::endl;
+      constraints[r] = min_norm - n[i].dot(n[i]);  // f<=0
+      if (grad)
+      {
+        toGradSameConstraintDiffVariables(gIndexN(i), -2 * n[i], grad, r, nn);
+      }
+      r++;
+    }*/
 
 #ifdef DEBUG_MODE_NLOPT
 
@@ -757,7 +754,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
     }
 
     got_a_feasible_solution_ = true;
-    double cost_now = computeObjFuction(nn, NULL, q, n, d);
+    double cost_now = computeObjFuction(nn, NULL, q, n);
     if (cost_now < best_cost_so_far_)
     {
       best_cost_so_far_ = cost_now;
@@ -783,15 +780,15 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
-  opt->toEigen(x, q, n, d);
+  opt->toEigen(x, q, n);
   // opt->printQND(q, n, d);
-  opt->computeConstraints(m, constraints, nn, grad, q, n, d);
+  opt->computeConstraints(m, constraints, nn, grad, q, n);
 
   /**/
   return;
 }
 
-void SolverNlopt::printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
+void SolverNlopt::printQN(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n)
 {
   std::cout << "   control points:" << std::endl;
   for (Eigen::Vector3d q_i : q)
@@ -803,11 +800,11 @@ void SolverNlopt::printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::V
   {
     std::cout << n_i.transpose() << std::endl;
   }
-  std::cout << "   d coeffs:" << std::endl;
-  for (double d_i : d)
-  {
-    std::cout << d_i << std::endl;
-  }
+  /*  std::cout << "   d coeffs:" << std::endl;
+    for (double d_i : d)
+    {
+      std::cout << d_i << std::endl;
+    }*/
 }
 
 void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
@@ -850,21 +847,21 @@ void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
 
       double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
 
-      n.push_back(n_i);
-      d.push_back(d_i);
+      n.push_back(n_i / d_i);
+      // d.push_back(d_i);
     }
   }
 
   std::cout << "This is the initial guess: " << std::endl;
   std::cout << "q.size()= " << q.size() << std::endl;
   std::cout << "n.size()= " << n.size() << std::endl;
-  std::cout << "d.size()= " << d.size() << std::endl;
+  // std::cout << "d.size()= " << d.size() << std::endl;
   std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
 
-  printQND(q, n, d);
+  printQN(q, n);
 
   std::vector<double> x(num_of_variables_);  // initial guess
-  qndtoX(q, n, d, x);
+  qntoX(q, n, x);
 
   x_ = x;
 }
@@ -940,25 +937,25 @@ bool SolverNlopt::optimize()
   }
 
   // andd lower and upper bounds
-  std::vector<double> lb;
-  std::vector<double> ub;
-  for (int i = 0; i <= i_max_; i++)
-  {
-    lb.push_back(-HUGE_VAL);
-    ub.push_back(HUGE_VAL);
-  }
-  for (int j = j_min_; j <= j_max_; j++)
-  {
-    lb.push_back(-1);
-    ub.push_back(1);
-  }
-  for (int k = k_min_; k <= k_max_; k++)
-  {
-    lb.push_back(-HUGE_VAL);
-    ub.push_back(HUGE_VAL);
-  }
-  opt_->set_lower_bounds(lb);
-  opt_->set_upper_bounds(ub);
+  /*  std::vector<double> lb;
+    std::vector<double> ub;
+    for (int i = 0; i <= i_max_; i++)
+    {
+      lb.push_back(-HUGE_VAL);
+      ub.push_back(HUGE_VAL);
+    }
+    for (int j = j_min_; j <= j_max_; j++)
+    {
+      lb.push_back(-1);
+      ub.push_back(1);
+    }*/
+  /*  for (int k = k_min_; k <= k_max_; k++)
+    {
+      lb.push_back(-HUGE_VAL);
+      ub.push_back(HUGE_VAL);
+    }*/
+  /*  opt_->set_lower_bounds(lb);
+    opt_->set_upper_bounds(ub);*/
 
   // set constraint and objective
   opt_->add_inequality_mconstraint(SolverNlopt::myIneqConstraints, this, tol_constraints);
@@ -981,7 +978,7 @@ bool SolverNlopt::optimize()
   // Store the results here
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
-  std::vector<double> d;
+  // std::vector<double> d;
 
   std::cout << "result= " << getResultCode(result) << std::endl;
 
@@ -991,20 +988,20 @@ bool SolverNlopt::optimize()
 
     std::cout << on_red << bold << "Solution not found" << opt_timer_ << reset << std::endl;
 
-    toEigen(x_, q, n, d);
-    printInfeasibleConstraints(q, n, d);
+    toEigen(x_, q, n);
+    printInfeasibleConstraints(q, n);
 
     return false;
   }
   else if (optimal)
   {
     std::cout << on_green << bold << "Optimal Solution found" << opt_timer_ << reset << std::endl;
-    toEigen(x_, q, n, d);
+    toEigen(x_, q, n);
   }
   else if (feasible_but_not_optimal)
   {
     std::cout << on_green << bold << "Feasible Solution found" << opt_timer_ << reset << std::endl;
-    toEigen(best_feasible_sol_so_far_, q, n, d);
+    toEigen(best_feasible_sol_so_far_, q, n);
   }
   else
   {
@@ -1012,7 +1009,7 @@ bool SolverNlopt::optimize()
     return false;
   }
 
-  printQND(q, n, d);
+  printQN(q, n);
 
   /*  std::cout << on_green << bold << "Solution found: " << time_first_feasible_solution_ << "/" << opt_timer_ << reset
               << std::endl;*/

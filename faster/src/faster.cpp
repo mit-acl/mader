@@ -1040,7 +1040,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc
   snlopt.setTminAndTmax(t_min, t_max);
-  snlopt.setMaxRuntime(deltaT_ * par_.dc);
+  snlopt.setMaxRuntime(0.8 * deltaT_ * par_.dc);  // 0.8 to take into account other computations
   snlopt.setInitAndFinalStates(initial, final);
 
   // Initial GUESS: run JPS with the dynamic obstacles as static obstacles

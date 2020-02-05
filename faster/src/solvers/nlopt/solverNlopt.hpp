@@ -53,13 +53,13 @@ private:
   void assignEigenToVector(double *grad, int index, const Eigen::Vector3d &tmp);
 
   template <class T>
-  void toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
+  void toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
 
   int gIndexQ(int i);  // Element jth of control point ith
   int gIndexN(int i);  // Element jth of normal ith
   int gIndexD(int i);
 
-  void printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
+  void printQN(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
 
   // r is the constraint index
   // nn is the number of variables
@@ -78,19 +78,16 @@ private:
   // See example https://github.com/stevengj/nlopt/issues/168
   static void myIneqConstraints(unsigned m, double *result, unsigned nn, const double *x, double *grad, void *f_data);
 
-  double computeObjFuction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-                           std::vector<double> &d);
+  double computeObjFuction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
 
   void computeConstraints(unsigned m, double *constraints, unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
-                          std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
+                          std::vector<Eigen::Vector3d> &n);
 
   void initializeNumOfConstraints();
 
-  void qndtoX(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
-              const std::vector<double> &d, std::vector<double> &x);
+  void qntoX(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n, std::vector<double> &x);
 
-  void printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-                                  std::vector<double> &d);
+  void printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
 
   // template <class T>
   // void printInfeasibleConstraints(const T x);
@@ -115,8 +112,8 @@ private:
   int i_max_;
   int j_min_;
   int j_max_;
-  int k_min_;
-  int k_max_;
+  // int k_min_;
+  // int k_max_;
   int M_;
   int N_;
 
