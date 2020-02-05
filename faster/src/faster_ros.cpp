@@ -57,6 +57,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "deg", par_.deg);
   safeGetParam(nh_, "samples_per_interval", par_.samples_per_interval);
   safeGetParam(nh_, "weight", par_.weight);
+  safeGetParam(nh_, "epsilon_tol_constraints", par_.epsilon_tol_constraints);
 
   // Parameters for the ground robot (jackal):
   /*  safeGetParam(nh_,"kw", par_.kw);

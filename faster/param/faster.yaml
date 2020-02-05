@@ -44,10 +44,12 @@ gurobi_verbose: 0 #Verbosity of Gurobi. 0 or 1
 
 use_faster: true  #if false, it will plan only in free space
 
+#Parameters for NLOPT
 n_pol: 7
 deg: 3
 samples_per_interval: 1
 weight: 10000.0 #The .0 is needed
+epsilon_tol_constraints: 0.001
 
 #Parameters for the ground robot (jackal):
 # kw: 1

@@ -25,7 +25,8 @@ using namespace termcolor;*/
 class SolverNlopt
 {
 public:
-  SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, bool force_final_state);
+  SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints,
+              bool force_final_state);
 
   ~SolverNlopt();
 

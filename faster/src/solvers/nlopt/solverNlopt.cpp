@@ -12,13 +12,14 @@
 
 using namespace termcolor;
 
-SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, bool force_final_state)
+SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints,
+                         bool force_final_state)
 {
   // std::cout << "In the SolverNlopt Constructor\n";
 
   force_final_state_ = force_final_state;
 
-  epsilon_tol_constraints_ = 1e-1;
+  epsilon_tol_constraints_ = epsilon_tol_constraints;  // 1e-1;
 
   num_obst_ = num_obst;
   weight_ = weight;
@@ -927,7 +928,7 @@ bool SolverNlopt::optimize()
   opt_->set_xtol_rel(1e-8);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
   // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
-  opt_->set_maxtime(3);  // maximum time in seconds. Negative --> don't use this criterion
+  opt_->set_maxtime(max_runtime_);  // maximum time in seconds. Negative --> don't use this criterion
 
   initializeNumOfConstraints();
 
@@ -989,6 +990,10 @@ bool SolverNlopt::optimize()
     printf("nlopt failed or maximum time was reached!\n");
 
     std::cout << on_red << bold << "Solution not found" << opt_timer_ << reset << std::endl;
+
+    toEigen(x_, q, n, d);
+    printInfeasibleConstraints(q, n, d);
+
     return false;
   }
   else if (optimal)

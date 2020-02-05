@@ -84,6 +84,7 @@ struct parameters
   int deg;
   int samples_per_interval;
   double weight;
+  double epsilon_tol_constraints;
 
   /*  double kw;
     double kyaw;
