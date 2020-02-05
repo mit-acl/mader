@@ -50,7 +50,7 @@ deg: 3
 samples_per_interval: 1
 weight: 10000.0 #The .0 is needed
 epsilon_tol_constraints: 0.1
-solver: "LD_MMA"
+solver: "LN_SBPLX"
 #  // work:  //LD_MMA // //LN_NELDERMEAD // LN_SBPLX(fastest) //LN_PRAXIS(fastest) //LD_AUGLAG //LD_AUGLAG_EQ
 #  // don't work: LN_BOBYQA // LD_SLSQP //LN_NEWUOA //LN_NEWUOA_BOUND //LN_COBYLA
 #  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1 //LD_VAR2 //LD_LBFGS_NOCEDAL

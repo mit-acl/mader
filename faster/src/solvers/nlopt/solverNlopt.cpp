@@ -868,114 +868,6 @@ void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
   x_ = x;
 }
 
-std::string SolverNlopt::getResultCode(int &result)
-{
-  switch (result)
-  {
-    case -5:
-      return "Forced_Stop";
-    case -4:
-      return "Roundoff_limited";
-    case -3:
-      return "Out_of_memory";
-    case -2:
-      return "Invalid_args";
-    case -1:
-      return "Failure";
-    case 1:
-      return "Success";
-    case 2:
-      return "Stopval_reached";
-    case 3:
-      return "Ftol_reached";
-    case 4:
-      return "Xtol_reached";
-    case 5:
-      return "Maxeval_reached";
-    case 6:
-      return "Maxtime_reached";
-    default:
-      return "Code_unknown";
-  }
-}
-
-nlopt::algorithm SolverNlopt::getSolver(std::string &solver)
-{
-  // nlopt::algorithm_from_string("LD_MMA"); //doesn't work in c++
-
-  if (solver == "LD_MMA")
-  {
-    return nlopt::LD_MMA;
-  }
-  else if (solver == "LN_NELDERMEAD")
-  {
-    return nlopt::LN_NELDERMEAD;
-  }
-  else if (solver == "LN_SBPLX")
-  {
-    return nlopt::LN_SBPLX;
-  }
-
-  else if (solver == "LN_PRAXIS")
-  {
-    return nlopt::LN_PRAXIS;
-  }
-
-  else if (solver == "LD_AUGLAG")
-  {
-    return nlopt::LD_AUGLAG;
-  }
-  else if (solver == "LD_AUGLAG_EQ")
-  {
-    return nlopt::LD_AUGLAG_EQ;
-  }
-  else if (solver == "LN_BOBYQA")
-  {
-    return nlopt::LN_BOBYQA;
-  }
-  else if (solver == "LD_SLSQP")
-  {
-    return nlopt::LD_SLSQP;
-  }
-  else if (solver == "LN_NEWUOA")
-  {
-    return nlopt::LN_NEWUOA;
-  }
-  else if (solver == "LN_NEWUOA_BOUND")
-  {
-    return nlopt::LN_NEWUOA_BOUND;
-  }
-  else if (solver == "LD_TNEWTON_PRECOND_RESTART")
-  {
-    return nlopt::LD_TNEWTON_PRECOND_RESTART;
-  }
-  else if (solver == "LD_TNEWTON_RESTART")
-  {
-    return nlopt::LD_TNEWTON_RESTART;
-  }
-  else if (solver == "LD_TNEWTON_PRECOND")
-  {
-    return nlopt::LD_TNEWTON_PRECOND;
-  }
-  else if (solver == "LD_VAR1")
-  {
-    return nlopt::LD_VAR1;
-  }
-  else if (solver == "LD_VAR2")
-  {
-    return nlopt::LD_VAR2;
-  }
-  else if (solver == "LD_LBFGS_NOCEDAL")
-  {
-    return nlopt::LD_LBFGS_NOCEDAL;
-  }
-  else
-  {
-    std::cout << "Are you sure this solver exists?" << std::endl;
-    abort();
-  }
-}
-
 bool SolverNlopt::optimize()
 
 {
@@ -1143,6 +1035,114 @@ bool SolverNlopt::optimize()
   // std::cout << "Done filling the solution" << std::endl;
 
   return true;
+}
+
+nlopt::algorithm SolverNlopt::getSolver(std::string &solver)
+{
+  // nlopt::algorithm_from_string("LD_MMA"); //doesn't work in c++
+
+  if (solver == "LD_MMA")
+  {
+    return nlopt::LD_MMA;
+  }
+  else if (solver == "LN_NELDERMEAD")
+  {
+    return nlopt::LN_NELDERMEAD;
+  }
+  else if (solver == "LN_SBPLX")
+  {
+    return nlopt::LN_SBPLX;
+  }
+
+  else if (solver == "LN_PRAXIS")
+  {
+    return nlopt::LN_PRAXIS;
+  }
+
+  else if (solver == "LD_AUGLAG")
+  {
+    return nlopt::LD_AUGLAG;
+  }
+  else if (solver == "LD_AUGLAG_EQ")
+  {
+    return nlopt::LD_AUGLAG_EQ;
+  }
+  else if (solver == "LN_BOBYQA")
+  {
+    return nlopt::LN_BOBYQA;
+  }
+  else if (solver == "LD_SLSQP")
+  {
+    return nlopt::LD_SLSQP;
+  }
+  else if (solver == "LN_NEWUOA")
+  {
+    return nlopt::LN_NEWUOA;
+  }
+  else if (solver == "LN_NEWUOA_BOUND")
+  {
+    return nlopt::LN_NEWUOA_BOUND;
+  }
+  else if (solver == "LD_TNEWTON_PRECOND_RESTART")
+  {
+    return nlopt::LD_TNEWTON_PRECOND_RESTART;
+  }
+  else if (solver == "LD_TNEWTON_RESTART")
+  {
+    return nlopt::LD_TNEWTON_RESTART;
+  }
+  else if (solver == "LD_TNEWTON_PRECOND")
+  {
+    return nlopt::LD_TNEWTON_PRECOND;
+  }
+  else if (solver == "LD_VAR1")
+  {
+    return nlopt::LD_VAR1;
+  }
+  else if (solver == "LD_VAR2")
+  {
+    return nlopt::LD_VAR2;
+  }
+  else if (solver == "LD_LBFGS_NOCEDAL")
+  {
+    return nlopt::LD_LBFGS_NOCEDAL;
+  }
+  else
+  {
+    std::cout << "Are you sure this solver exists?" << std::endl;
+    abort();
+  }
+}
+
+std::string SolverNlopt::getResultCode(int &result)
+{
+  switch (result)
+  {
+    case -5:
+      return "Forced_Stop";
+    case -4:
+      return "Roundoff_limited";
+    case -3:
+      return "Out_of_memory";
+    case -2:
+      return "Invalid_args";
+    case -1:
+      return "Failure";
+    case 1:
+      return "Success";
+    case 2:
+      return "Stopval_reached";
+    case 3:
+      return "Ftol_reached";
+    case 4:
+      return "Xtol_reached";
+    case 5:
+      return "Maxeval_reached";
+    case 6:
+      return "Maxtime_reached";
+    default:
+      return "Code_unknown";
+  }
 }
 
 /*void SolverNlopt::multi_eq_constraint(unsigned m, double *result, unsigned nn, const double *x, double *grad, void
