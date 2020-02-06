@@ -9,6 +9,7 @@
 #include <sstream>
 #include "./../../utils.hpp"
 #include "./../../timer.hpp"
+#include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
 
 typedef JPS::Timer MyTimer;
 
@@ -46,8 +47,12 @@ public:
 
   void setMaxRuntime(double deltaT);
 
+  void getGuessForCPs(vec_E<Polyhedron<3>> &polyhedra);
+
 protected:
 private:
+  void fillXTempFromCPs(std::vector<Eigen::Vector3d> &q);
+
   nlopt::algorithm getSolver(std::string &solver);
 
   bool isADecisionCP(int i);

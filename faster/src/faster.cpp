@@ -119,7 +119,6 @@ void Faster::updateTrajObstacles(std::vector<dynTraj> trajs)
       symbol_table.add_constants();
       expression_t expression;
       expression.register_symbol_table(symbol_table);
-
       // std::cout << "function_i=" << function_i << std::endl;
 
       parser_t parser;
@@ -1041,11 +1040,16 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   SolverNlopt snlopt(n_pol, deg, num_obst, par_.weight, par_.epsilon_tol_constraints, false,
                      par_.solver);  // snlopt(a,g) a polynomials of degree 3
   snlopt.setHulls(hulls_std);
+
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc
   snlopt.setTminAndTmax(t_min, t_max);
   snlopt.setMaxRuntime(0.8 * deltaT_ * par_.dc);  // 0.8 to take into account other computations
   snlopt.setInitAndFinalStates(initial, final);
+
+  snlopt.getGuessForCPs(poly_safe_out);  // in testing phase
+  X_safe_out = snlopt.X_temp_;           // in testing phase
+  return;                                // // in testing phase
 
   // Initial GUESS: run JPS with the dynamic obstacles as static obstacles
   mtx_map.lock();

@@ -3,3 +3,11 @@
 --> Tener en cuenta delta_T y ajustar el runtime de la optimization according to that
 
 --> Get last feasible solution if it fails
+
+
+--> Options para la initial guess:
+------> Run JPS con dynamic obstacle = static obstacle
+------> Run 
+------> My algorithm
+
+Should I optimize further the initial guess, or should I go with the last feasible solution?

@@ -1,5 +1,5 @@
 // Jesus Tordesillas Torres, jtorde@mit.edu, January 2020
-
+#include "./../../eigenmvn.hpp"
 #include "solverNlopt.hpp"
 
 #include <iostream>
@@ -98,6 +98,64 @@ SolverNlopt::~SolverNlopt()
 {
   delete opt_;
   delete local_opt_;
+}
+
+void SolverNlopt::getGuessForCPs(vec_E<Polyhedron<3>> &polyhedra)
+{
+  int num_of_intermediate_cps = N_ + 1 - 6;
+
+  Eigen::Vector3d qNm2 = final_state_.pos;
+
+  std::vector<Eigen::Vector3d> q;
+
+  q.push_back(q0_);
+  q.push_back(q1_);
+  q.push_back(q2_);
+
+  // sample next cp in a sphere (or spherical surface?) near q2_ (limited by v_max), and
+
+  for (int i = 3; i <= (N_ - 3); i++)  // all the intermediate control points of the trajectory
+  {
+    Eigen::Vector3d tmp;
+
+    Eigen::Matrix3d rot = Eigen::Matrix3d::Identity();
+
+    Eigen::Vector3d mean = q2_ + (qNm2 - q2_) * (i - 2) / num_of_intermediate_cps;
+    Eigen::Matrix3d covar = rot * Eigen::DiagonalMatrix<double, 3, 3>(0.005, 0.005, 0.001) * rot.transpose();
+
+    Eigen::EigenMultivariateNormal<double> normX_solver(mean, covar);  // or normX_cholesk(mean, covar, true);
+
+  initloop:
+    // loop over all the obstacles
+    for (int obst_index = 0; obst_index < num_obst_; obst_index++)
+    {
+      std::cout << "obst index=" << obst_index << std::endl;
+      tmp = normX_solver.samples(1).transpose();  // one sample
+
+      for (int j = i; j >= (i - 3); j--)  // Q3 needs to check against polyh0, polyh1 and polyh2 of all the obstacles
+      {
+        std::cout << "j=" << j << std::endl;
+
+        int ip = obst_index * num_of_segments_ + j;  // index poly
+
+        if (polyhedra[ip].inside(tmp) == true)
+        {
+          goto initloop;
+        }
+      }
+    }
+
+    std::cout << "Found intermediate cp " << i << std::endl;
+
+    q.push_back(tmp);
+  }
+  // sample last cp in a sphere near qNm2_
+
+  q.push_back(qNm2);
+  q.push_back(qNm2);
+  q.push_back(qNm2);
+
+  fillXTempFromCPs(q);
 }
 
 void SolverNlopt::setTminAndTmax(double t_min, double t_max)
@@ -985,7 +1043,27 @@ bool SolverNlopt::optimize()
 
   // Construct now the B-Spline
   // See example at https://github.com/libigl/eigen/blob/master/unsupported/test/splines.cpp#L37
-  Eigen::MatrixXd control_points(3, q.size());
+  fillXTempFromCPs(q);
+
+  // Force the last position to be the final_state_ (it's not guaranteed to be because of the discretization with dc_)
+  if (force_final_state_ == true)
+  {
+    X_temp_.back() = final_state_;
+  }
+  else
+  {
+    X_temp_.back().vel = final_state_.vel;
+    X_temp_.back().accel = final_state_.accel;
+  }
+
+  // std::cout << "Done filling the solution" << std::endl;
+
+  return true;
+}
+
+void SolverNlopt::fillXTempFromCPs(std::vector<Eigen::Vector3d> &q)
+{
+  Eigen::MatrixXd control_points(3, N_ + 1);
 
   for (int i = 0; i < q.size(); i++)
   {
@@ -1016,25 +1094,7 @@ bool SolverNlopt::optimize()
     X_temp_.push_back(state_i);
     // std::cout << "Aceleration= " << derivatives.col(2).transpose() << std::endl;
     // state_i.printHorizontal();
-#ifdef DEBUG_MODE_NLOPT
-    state_i.printHorizontal();
-#endif
   }
-
-  // Force the last position to be the final_state_ (it's not guaranteed to be because of the discretization with dc_)
-  if (force_final_state_ == true)
-  {
-    X_temp_.back() = final_state_;
-  }
-  else
-  {
-    X_temp_.back().vel = final_state_.vel;
-    X_temp_.back().accel = final_state_.accel;
-  }
-
-  // std::cout << "Done filling the solution" << std::endl;
-
-  return true;
 }
 
 nlopt::algorithm SolverNlopt::getSolver(std::string &solver)
