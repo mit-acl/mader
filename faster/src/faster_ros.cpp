@@ -432,6 +432,9 @@ void FasterRos::clearMarkerArray(visualization_msgs::MarkerArray* tmp, ros::Publ
     m.type = visualization_msgs::Marker::ARROW;
     m.action = visualization_msgs::Marker::DELETE;
     m.id = i + id_begin;
+    m.scale.x = 0.15;
+    m.scale.y = 0;
+    m.scale.z = 0;
     (*tmp).markers[i] = m;
   }
 

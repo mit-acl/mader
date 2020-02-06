@@ -15,8 +15,8 @@
 
 
  
-<!--  <include file="$(find faster)/launch/faster_interface.launch">
-  </include> -->
+ <include file="$(find faster)/launch/faster_interface.launch">
+  </include> 
 
 </launch>
 

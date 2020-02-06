@@ -276,6 +276,13 @@ void quaternion2Euler(geometry_msgs::Quaternion q, double& roll, double& pitch, 
   quaternion2Euler(tf_q, roll, pitch, yaw);
 }
 
+void saturate(Eigen::Vector3d& tmp, const Eigen::Vector3d& min, const Eigen::Vector3d& max)
+{
+  saturate(tmp(0), min(0), max(0));
+  saturate(tmp(1), min(1), max(1));
+  saturate(tmp(2), min(2), max(2));
+}
+
 void saturate(double& var, double min, double max)
 {
   // std::cout << "min=" << min << " max=" << max << std::endl;

@@ -64,6 +64,8 @@ void quaternion2Euler(geometry_msgs::Quaternion q, double& roll, double& pitch, 
 
 void saturate(double& var, double min, double max);
 
+void saturate(Eigen::Vector3d& tmp, const Eigen::Vector3d& min, const Eigen::Vector3d& max);
+
 visualization_msgs::Marker getMarkerSphere(double scale, int my_color);
 
 double angleBetVectors(const Eigen::Vector3d& a, const Eigen::Vector3d& b);

@@ -1,10 +1,11 @@
 // Jesus Tordesillas Torres, jtorde@mit.edu, January 2020
-#include "./../../eigenmvn.hpp"
 #include "solverNlopt.hpp"
 
 #include <iostream>
 #include <vector>
 #include "./../../termcolor.hpp"
+
+#include <random>
 
 #include <unsupported/Eigen/Splines>
 
@@ -102,11 +103,15 @@ SolverNlopt::~SolverNlopt()
 
 void SolverNlopt::getGuessForCPs(vec_E<Polyhedron<3>> &polyhedra)
 {
+  // sleep(1);
+
   int num_of_intermediate_cps = N_ + 1 - 6;
 
   Eigen::Vector3d qNm2 = final_state_.pos;
 
   std::vector<Eigen::Vector3d> q;
+
+  Eigen::Vector3d high_value = 4 * Eigen::Vector3d::Ones();  // to avoid very extreme values
 
   q.push_back(q0_);
   q.push_back(q1_);
@@ -118,19 +123,35 @@ void SolverNlopt::getGuessForCPs(vec_E<Polyhedron<3>> &polyhedra)
   {
     Eigen::Vector3d tmp;
 
-    Eigen::Matrix3d rot = Eigen::Matrix3d::Identity();
-
     Eigen::Vector3d mean = q2_ + (qNm2 - q2_) * (i - 2) / num_of_intermediate_cps;
-    Eigen::Matrix3d covar = rot * Eigen::DiagonalMatrix<double, 3, 3>(0.005, 0.005, 0.001) * rot.transpose();
+    /*
+    Correlated 3D Gaussian distribution
+    #include "./../../eigenmvn.hpp"
+    Eigen::Matrix3d rot = Eigen::Matrix3d::Identity();
+        Eigen::Matrix3d covar = rot * Eigen::DiagonalMatrix<double, 3, 3>(0.005, 0.005, 0.001) * rot.transpose();
+        Eigen::EigenMultivariateNormal<double> normX_solver(mean, covar);  // or normX_cholesk(mean, covar, true);
+        tmp = normX_solver.samples(1).transpose();*/
 
-    Eigen::EigenMultivariateNormal<double> normX_solver(mean, covar);  // or normX_cholesk(mean, covar, true);
+    Eigen::Vector3d max_value = mean + high_value;
+
+    std::default_random_engine generator;
+    generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+    std::normal_distribution<double> distribution_x(mean(0), 0.5);
+    std::normal_distribution<double> distribution_y(mean(1), 0.5);
+    std::normal_distribution<double> distribution_z(mean(2), 0.5);
 
   initloop:
-    // loop over all the obstacles
+
+    // take sample
+
+    tmp << distribution_x(generator), distribution_y(generator), distribution_z(generator);
+
+    saturate(tmp, -max_value, max_value);
+
+    // check that it doesn't collide with the  obstacles
     for (int obst_index = 0; obst_index < num_obst_; obst_index++)
     {
-      std::cout << "obst index=" << obst_index << std::endl;
-      tmp = normX_solver.samples(1).transpose();  // one sample
+      std::cout << "obst index=" << obst_index << "sample= " << tmp.transpose() << std::endl;
 
       for (int j = i; j >= (i - 3); j--)  // Q3 needs to check against polyh0, polyh1 and polyh2 of all the obstacles
       {
@@ -145,7 +166,7 @@ void SolverNlopt::getGuessForCPs(vec_E<Polyhedron<3>> &polyhedra)
       }
     }
 
-    std::cout << "Found intermediate cp " << i << std::endl;
+    std::cout << "Found intermediate cp " << i << "= " << tmp.transpose() << std::endl;
 
     q.push_back(tmp);
   }
