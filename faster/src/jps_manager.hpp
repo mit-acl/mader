@@ -1,7 +1,3 @@
-// Class JPS Manager
-#include "ros/ros.h"
-// Convex Decomposition includes
-#include <decomp_ros_utils/data_ros_utils.h>
 #include <decomp_util/ellipsoid_decomp.h>
 #include <decomp_util/seed_decomp.h>
 

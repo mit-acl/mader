@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 #include <stdlib.h>
+#include <CGAL/convex_hull_3.h>
 
 /*#include <CGAL/Simple_cartesian.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -62,7 +63,7 @@ Faster::Faster(parameters par) : par_(par)
   jps_manager_dyn_.setInflationJPS(par_.inflation_jps);
   jps_manager_dyn_.setZGroundAndZMax(par_.z_ground, par_.z_max);
   // jps_manager_dyn_.setVisual(par_.visual);
-  jps_manager_dyn_.setDroneRadius(par_.drone_radius);
+  jps_manager_dyn_.setDroneRadius(2 * par_.drone_radius);
 
   double max_values[3] = { par_.v_max, par_.a_max, par_.j_max };
 
@@ -276,7 +277,7 @@ void Faster::removeTrajsThatWillNotAffectMe(state A, double t_start, double t_en
 
     if (traj_affects_me == false)
     {
-      std::cout << red << bold << "Going to delete traj " << trajs_[index_traj].id << reset << std::endl;
+      std::cout << red << bold << "Going to  delete t raj " << trajs_[index_traj].id << reset << std::endl;
       ids_to_remove.push_back(trajs_[index_traj].id);
     }
     else
@@ -1127,8 +1128,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   mtx_map.unlock();
   mtx_unk.unlock();
   // end of Initial GUESSS
-  // snlopt.setInitialGuess(JPSk_dyn);
-  snlopt.useRandomInitialGuess();
+  snlopt.setInitialGuess(JPSk_dyn);
+  // snlopt.useRandomInitialGuess();
 
   mtx_trajs_.unlock();
 

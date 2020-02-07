@@ -1,7 +1,6 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 #include <iostream>
-#include "ros/ros.h"
 #include <std_msgs/ColorRGBA.h>
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Point.h>
@@ -182,16 +181,5 @@ visualization_msgs::MarkerArray stateVector2ColoredMarkerArray(const std::vector
 Eigen::Vector3d projectPointToBox(Eigen::Vector3d& P1, Eigen::Vector3d& P2, double wdx, double wdy, double wdz);
 
 void deleteVertexes(vec_Vecf<3>& JPS_path, int max_value);
-
-template <typename T>
-inline bool safeGetParam(ros::NodeHandle& nh, std::string const& param_name, T& param_value)
-{
-  if (!nh.getParam(param_name, param_value))
-  {
-    ROS_ERROR("Failed to find parameter: %s", nh.resolveName(param_name, true).c_str());
-    exit(1);
-  }
-  return true;
-}
 
 #endif

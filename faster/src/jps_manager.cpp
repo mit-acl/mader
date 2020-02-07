@@ -10,6 +10,11 @@
 #include <pcl/filters/passthrough.h>
 #include <Eigen/StdVector>
 
+// Class JPS Manager
+#include "ros/ros.h"
+// Convex Decomposition includes
+#include <decomp_ros_utils/data_ros_utils.h>
+
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 
 #include <stdio.h>

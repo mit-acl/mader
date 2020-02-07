@@ -1,9 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(faster)
 
+
+
 ## Add support for C++11, supported in ROS Kinetic and newer
 add_definitions(-std=c++11)
 #add_definitions(-std=c99)
+
+find_program(iwyu_path NAMES /home/jtorde/iwyu/build/include-what-you-use)
+
+if(NOT iwyu_path)
+  message(FATAL_ERROR "Could not find the program include-what-you-use")
+endif()
+
 
 find_package( Eigen3 REQUIRED )
 include_directories(${EIGEN3_INCLUDE_DIR} ${PCL_INCLUDE_DIRS})
@@ -24,7 +33,7 @@ else(GUROBI_FOUND)
 endif(GUROBI_FOUND)
 
 
-set(CMAKE_BUILD_TYPE RelWithDebInfo) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo)
+set(CMAKE_BUILD_TYPE Release) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo) or Degub
 
 include_directories(${GUROBI_INCLUDE_DIRS})
 #set(GUROBI_LIBRARIES "${GUROBI_CXX_LIBRARY};${GUROBI_LIBRARY}" )
@@ -57,7 +66,47 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;$ENV{GUROBI_HOME}/lib/libgurobi81.so;$ENV{GUROBI_HOME}/lib/" )
 
-add_executable(${PROJECT_NAME}_node src/main.cpp src/faster.cpp src/faster_ros.cpp src/utils.cpp  src/jps_manager.cpp src/solvers/solverGurobi.cpp src/solvers/nlopt/solverNlopt.cpp)
+
+add_library(utils STATIC src/utils.cpp src/utils.hpp)
+#set_property(TARGET utils PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(utils PUBLIC ${PCL_LIBRARIES})
+
+
+add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp)
+#set_property(TARGET solverNlopt PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} utils)
+
+
+add_library(jps_manager STATIC src/jps_manager.cpp src/jps_manager.hpp)
+target_include_directories (jps_manager PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(jps_manager PUBLIC ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES})
+
+add_library(solverGurobi STATIC src/solvers/solverGurobi.cpp src/solvers/solverGurobi.hpp)
+#set_property(TARGET solverGurobi PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+target_include_directories (solverGurobi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(solverGurobi PUBLIC ${GUROBI_LIBRARIES})
+
+
+add_library(faster_hpp STATIC src/faster.hpp)
+target_include_directories (faster_hpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(faster_hpp PUBLIC ${CGAL_LIBS} solverGurobi jps_manager solverNlopt)
+
+
+add_library(faster STATIC src/faster.cpp)
+#set_property(TARGET faster PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+target_include_directories (faster PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(faster PUBLIC faster_hpp)
+
+
+add_library(faster_ros STATIC src/faster_ros.cpp src/faster_ros.hpp)
+#set_property(TARGET faster_ros PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+target_include_directories (faster_ros PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(faster_ros PUBLIC ${catkin_LIBRARIES} faster)
+
+
+add_executable(${PROJECT_NAME}_node src/main.cpp)
 
 #IF CVXGEN and GUROBI are required:
 #target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/libcvx_vel.so ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/libcvx_accel.so ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/libcvx_jerk.so ${GUROBI_LIBRARIES})
@@ -65,8 +114,9 @@ add_executable(${PROJECT_NAME}_node src/main.cpp src/faster.cpp src/faster_ros.c
 #IF only GUROBI is required:
 #target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${GUROBI_LIBRARIES} )
 
+
 #If GUROBI and NLOPT are required
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${GUROBI_LIBRARIES} ${NLOPT_LIBRARIES} ${CGAL_LIBS})
+target_link_libraries(${PROJECT_NAME}_node PUBLIC faster_ros)
 
 
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
@@ -84,8 +134,8 @@ add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 #add_dependencies(${PROJECT_NAME}_sample ${catkin_EXPORTED_TARGETS} )
 
 
-add_executable(gurobi_continuous_exec gurobi_continuous.cpp)
-target_link_libraries(gurobi_continuous_exec ${GUROBI_LIBRARIES})
+#add_executable(gurobi_continuous_exec gurobi_continuous.cpp)
+#target_link_libraries(gurobi_continuous_exec ${GUROBI_LIBRARIES})
 
 #add_executable(gurobi_discrete_exec gurobi_discrete.cpp)
 #target_link_libraries(gurobi_discrete_exec ${GUROBI_LIBRARIES} )

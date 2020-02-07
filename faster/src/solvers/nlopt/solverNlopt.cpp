@@ -26,7 +26,7 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
 
   num_obst_ = num_obst;
   weight_ = weight;
-  deg_pol_ = deg_pol_;
+  deg_pol_ = deg_pol;
   num_pol_ = num_pol;
 
   p_ = deg_pol_;

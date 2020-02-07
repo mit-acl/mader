@@ -5,16 +5,16 @@
 /*#include <pcl/filters/filter.h>
 #include <pcl/filters/crop_box.h>
 #include <pcl/filters/passthrough.h>*/
-#include <Eigen/StdVector>
+//#include <Eigen/StdVector>
 
 #include "timer.hpp"
 #include "termcolor.hpp"
 
-#include <stdio.h>
-#include <math.h>
-#include <algorithm>
+//#include <stdio.h>
+//#include <math.h>
+//#include <algorithm>
 #include <vector>
-#include <stdlib.h>
+//#include <stdlib.h>
 
 #include "faster_types.hpp"
 // Solvers includes
@@ -26,11 +26,10 @@
 
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/point_generators_3.h>
+//#include <CGAL/point_generators_3.h>
 #include <CGAL/algorithm.h>
 #include <CGAL/Convex_hull_traits_3.h>
-#include <CGAL/convex_hull_3.h>
-#include <vector>
+//#include <vector>
 
 #define MAP 1          // MAP refers to the occupancy grid
 #define UNKNOWN_MAP 2  // UNKNOWN_MAP refers to the unkown grid

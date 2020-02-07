@@ -3,7 +3,7 @@
 #define SOLVER_NLOPT_HPP
 #include <Eigen/Dense>
 
-#include <iomanip>
+#include <iomanip>  //set precision
 #include <nlopt.hpp>
 #include "./../../faster_types.hpp"
 #include <sstream>

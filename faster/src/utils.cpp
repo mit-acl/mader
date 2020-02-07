@@ -254,7 +254,7 @@ std_msgs::ColorRGBA color(int id)
       return orange_trans;
       break;
     default:
-      ROS_ERROR("COLOR NOT DEFINED");
+      printf("COLOR NOT DEFINED");
   }
 }
 
@@ -1173,7 +1173,7 @@ Eigen::Vector3d projectPointToBox(Eigen::Vector3d& P1, Eigen::Vector3d& P2, doub
 
   if (intersections.size() == 0)
   {  // There is no intersection
-    ROS_ERROR("This is impossible, there should be an intersection");
+    printf("This is impossible, there should be an intersection");
   }
   std::vector<double> distances;
   // And now take the nearest intersection

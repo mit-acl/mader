@@ -11,3 +11,6 @@
 ------> My algorithm
 
 Should I optimize further the initial guess, or should I go with the last feasible solution?
+
+
+La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
