@@ -21,6 +21,7 @@ struct dynTrajCompiled
 {
   std::vector<exprtk::expression<double>> function;
   std::vector<double> bbox;
+  int id;
 };
 
 struct polytope

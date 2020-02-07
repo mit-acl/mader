@@ -47,10 +47,15 @@ public:
 
   void setMaxRuntime(double deltaT);
 
-  void getGuessForCPs(vec_E<Polyhedron<3>> &polyhedra);
+  void createGuess(vec_E<Polyhedron<3>> &polyhedra);
+
+  void generateGuessNFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
+
+  void useRandomInitialGuess();
 
 protected:
 private:
+  void generateRandomN(std::vector<Eigen::Vector3d> &n);
   void fillXTempFromCPs(std::vector<Eigen::Vector3d> &q);
 
   nlopt::algorithm getSolver(std::string &solver);

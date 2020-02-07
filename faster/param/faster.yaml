@@ -9,7 +9,7 @@ drone_radius: 0.3  #(m) Used for collision checking
 N_whole: 6 #[-] Number of discretization points in the whole trajectory
 N_safe: 6 #[-] Number of discretization points in the safe path
 
-Ra: 3.5            # [m] Radius of the sphere S
+Ra: 2.5            # [m] Radius of the sphere S
 w_max: 1          # [rd/s] Maximum angular velocity. 0.4 for Hardware
 alpha_filter_dyaw: 0 #was 0.92  #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
 
@@ -50,7 +50,7 @@ deg: 3
 samples_per_interval: 1
 weight: 10000.0 #The .0 is needed
 epsilon_tol_constraints: 0.1
-solver: "LN_SBPLX"
+solver: "LD_MMA"
 #  // work:  //LD_MMA // //LN_NELDERMEAD // LN_SBPLX(fastest) //LN_PRAXIS(fastest) //LD_AUGLAG //LD_AUGLAG_EQ
 #  // don't work: LN_BOBYQA // LD_SLSQP //LN_NEWUOA //LN_NEWUOA_BOUND //LN_COBYLA
 #  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1 //LD_VAR2 //LD_LBFGS_NOCEDAL

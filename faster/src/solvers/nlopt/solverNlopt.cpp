@@ -101,7 +101,7 @@ SolverNlopt::~SolverNlopt()
   delete local_opt_;
 }
 
-void SolverNlopt::getGuessForCPs(vec_E<Polyhedron<3>> &polyhedra)
+void SolverNlopt::createGuess(vec_E<Polyhedron<3>> &polyhedra)
 {
   // sleep(1);
 
@@ -109,74 +109,137 @@ void SolverNlopt::getGuessForCPs(vec_E<Polyhedron<3>> &polyhedra)
 
   Eigen::Vector3d qNm2 = final_state_.pos;
 
-  std::vector<Eigen::Vector3d> q;
+  Eigen::Vector3d high_value = 100 * Eigen::Vector3d::Ones();  // to avoid very extreme values
 
-  Eigen::Vector3d high_value = 4 * Eigen::Vector3d::Ones();  // to avoid very extreme values
+  double best_cost = std::numeric_limits<double>::max();
 
-  q.push_back(q0_);
-  q.push_back(q1_);
-  q.push_back(q2_);
+  std::vector<Eigen::Vector3d> q_best;
 
-  // sample next cp in a sphere (or spherical surface?) near q2_ (limited by v_max), and
-
-  for (int i = 3; i <= (N_ - 3); i++)  // all the intermediate control points of the trajectory
+  for (int trial = 0; trial < 300; trial++)
   {
-    Eigen::Vector3d tmp;
+    std::vector<Eigen::Vector3d> q;
+    q.push_back(q0_);
+    q.push_back(q1_);
+    q.push_back(q2_);
 
-    Eigen::Vector3d mean = q2_ + (qNm2 - q2_) * (i - 2) / num_of_intermediate_cps;
-    /*
-    Correlated 3D Gaussian distribution
-    #include "./../../eigenmvn.hpp"
-    Eigen::Matrix3d rot = Eigen::Matrix3d::Identity();
-        Eigen::Matrix3d covar = rot * Eigen::DiagonalMatrix<double, 3, 3>(0.005, 0.005, 0.001) * rot.transpose();
-        Eigen::EigenMultivariateNormal<double> normX_solver(mean, covar);  // or normX_cholesk(mean, covar, true);
-        tmp = normX_solver.samples(1).transpose();*/
+    // sample next cp in a sphere (or spherical surface?) near q2_ (limited by v_max), and
 
-    Eigen::Vector3d max_value = mean + high_value;
-
-    std::default_random_engine generator;
-    generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
-    std::normal_distribution<double> distribution_x(mean(0), 0.5);
-    std::normal_distribution<double> distribution_y(mean(1), 0.5);
-    std::normal_distribution<double> distribution_z(mean(2), 0.5);
-
-  initloop:
-
-    // take sample
-
-    tmp << distribution_x(generator), distribution_y(generator), distribution_z(generator);
-
-    saturate(tmp, -max_value, max_value);
-
-    // check that it doesn't collide with the  obstacles
-    for (int obst_index = 0; obst_index < num_obst_; obst_index++)
+    for (int i = 3; i <= (N_ - 3); i++)  // all the intermediate control points of the trajectory
     {
-      std::cout << "obst index=" << obst_index << "sample= " << tmp.transpose() << std::endl;
+      Eigen::Vector3d tmp;
 
-      for (int j = i; j >= (i - 3); j--)  // Q3 needs to check against polyh0, polyh1 and polyh2 of all the obstacles
+      Eigen::Vector3d mean = q2_ + (qNm2 - q2_) * (i - 2) / (1.0 * num_of_intermediate_cps);
+      /*
+      Correlated 3D Gaussian distribution
+      #include "./../../eigenmvn.hpp"
+      Eigen::Matrix3d rot = Eigen::Matrix3d::Identity();
+          Eigen::Matrix3d covar = rot * Eigen::DiagonalMatrix<double, 3, 3>(0.005, 0.005, 0.001) * rot.transpose();
+          Eigen::EigenMultivariateNormal<double> normX_solver(mean, covar);  // or normX_cholesk(mean, covar, true);
+          tmp = normX_solver.samples(1).transpose();*/
+
+      Eigen::Vector3d max_value = mean + high_value;
+
+      std::default_random_engine generator;
+      generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+      std::normal_distribution<double> distribution_x(mean(0), 0.5);
+      std::normal_distribution<double> distribution_y(mean(1), 0.5);
+      std::normal_distribution<double> distribution_z(mean(2), 0.5);
+
+    initloop:
+
+      // take sample
+
+      tmp << distribution_x(generator), distribution_y(generator), distribution_z(generator);
+
+      saturate(tmp, -max_value, max_value);
+
+      // check that it doesn't collide with the  obstacles
+      for (int obst_index = 0; obst_index < num_obst_; obst_index++)
       {
-        std::cout << "j=" << j << std::endl;
+        // std::cout << "obst index=" << obst_index << "sample= " << tmp.transpose() << std::endl;
 
-        int ip = obst_index * num_of_segments_ + j;  // index poly
-
-        if (polyhedra[ip].inside(tmp) == true)
+        for (int j = i; j >= (i - 3); j--)  // Q3 needs to check against polyh0, polyh1 and polyh2 of all the obstacles
         {
-          goto initloop;
+          // std::cout << "j=" << j << std::endl;
+
+          int ip = obst_index * num_of_segments_ + j;  // index poly
+
+          if (polyhedra[ip].inside(tmp) == true)
+          {
+            goto initloop;
+          }
         }
       }
+
+      //   std::cout << "Found intermediate cp " << i << "= " << tmp.transpose() << std::endl;
+
+      q.push_back(tmp);
     }
+    // sample last cp in a sphere near qNm2_
 
-    std::cout << "Found intermediate cp " << i << "= " << tmp.transpose() << std::endl;
+    q.push_back(qNm2);
+    q.push_back(qNm2);
+    q.push_back(qNm2);
 
-    q.push_back(tmp);
+    std::vector<Eigen::Vector3d> n_novale;
+
+    double cost = computeObjFuction(num_of_variables_, NULL, q, n_novale);
+    if (cost < best_cost)
+    {
+      best_cost = cost;
+      q_best = q;
+    }
   }
-  // sample last cp in a sphere near qNm2_
 
-  q.push_back(qNm2);
-  q.push_back(qNm2);
-  q.push_back(qNm2);
+  std::vector<Eigen::Vector3d> n;
 
-  fillXTempFromCPs(q);
+  // generateGuessNFromQ(q_best, n);
+  generateRandomN(n);
+
+  // fillXTempFromCPs(q_best);
+
+  std::cout << "This is the initial guess: " << std::endl;
+  std::cout << "q.size()= " << q_best.size() << std::endl;
+  std::cout << "n.size()= " << n.size() << std::endl;
+  printQN(q_best, n);
+
+  std::vector<double> x(num_of_variables_);  // initial guess
+  qntoX(q_best, n, x);
+  x_ = x;
+}
+
+void SolverNlopt::generateRandomN(std::vector<Eigen::Vector3d> &n)
+{
+  for (int j = j_min_; j <= j_max_; j = j + 3)
+  {
+    double r1 = ((double)rand() / (RAND_MAX));
+    double r2 = ((double)rand() / (RAND_MAX));
+    double r3 = ((double)rand() / (RAND_MAX));
+    n.push_back(Eigen::Vector3d(r1, r2, r3));
+  }
+}
+
+void SolverNlopt::generateGuessNFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n)
+{
+  n.clear();
+
+  for (int obst_index = 0; obst_index < num_obst_; obst_index++)
+  {
+    for (int i = 0; i < num_of_segments_; i++)
+    {
+      Eigen::Vector3d point_in_hull = hulls_[obst_index][i][0];  // Take one vertex of the hull for example
+
+      Eigen::Vector3d n_i =
+          (point_in_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
+
+      Eigen::Vector3d point_in_middle = q[i] + (point_in_hull - q[i]) / 2.0;
+
+      double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
+
+      n.push_back(n_i / d_i);
+      // d.push_back(d_i);
+    }
+  }
 }
 
 void SolverNlopt::setTminAndTmax(double t_min, double t_max)
@@ -416,7 +479,7 @@ void SolverNlopt::initializeNumOfConstraints()
 void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state)
 {
   // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
-  // Note that equation (7) of the paper "Robust and Efficent quadrotor..." has a typo, p_ is missing there (compare
+  // I think equation (7) of the paper "Robust and Efficent quadrotor..." has a typo, p_ is missing there (compare
   // with equation 15 of that paper)
 
   Eigen::Vector3d p0 = initial_state.pos;
@@ -599,6 +662,8 @@ double SolverNlopt::computeObjFuction(unsigned nn, double *grad, std::vector<Eig
       assignEigenToVector(grad, gIndexQ(i), gradient);
     }
   }
+
+  // std::cout << "cost= " << cost << std::endl;
 
   return cost;
 }
@@ -824,28 +889,6 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
 #endif
 
   num_of_constraints_ = r;  // + 1 has already been added in the last loop of the previous for loop;
-
-  // Be careful cause this adds more runtime...
-  // printInfeasibleConstraints(constraints);
-  if (areTheseConstraintsFeasible(constraints))
-  {
-    if (got_a_feasible_solution_ == false)
-    {
-      time_first_feasible_solution_ = opt_timer_.ElapsedMs();
-    }
-
-    got_a_feasible_solution_ = true;
-    double cost_now = computeObjFuction(nn, NULL, q, n);
-    if (cost_now < best_cost_so_far_)
-    {
-      best_cost_so_far_ = cost_now;
-      // Copy onto the std::vector)
-      for (int i = 0; i < nn; i++)
-      {
-        best_feasible_sol_so_far_[i] = x_[i];
-      }
-    }
-  }
 }
 
 // See example https://github.com/stevengj/nlopt/issues/168
@@ -864,6 +907,23 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
   opt->toEigen(x, q, n);
   // opt->printQND(q, n, d);
   opt->computeConstraints(m, constraints, nn, grad, q, n);
+
+  // Be careful cause this adds more runtime...
+  // printInfeasibleConstraints(constraints);
+  if (opt->areTheseConstraintsFeasible(constraints))
+  {
+    opt->got_a_feasible_solution_ = true;
+    double cost_now = opt->computeObjFuction(nn, NULL, q, n);
+    if (cost_now < opt->best_cost_so_far_)
+    {
+      opt->best_cost_so_far_ = cost_now;
+      // Copy onto the std::vector)
+      for (int i = 0; i < nn; i++)
+      {
+        opt->best_feasible_sol_so_far_[i] = x[i];
+      }
+    }
+  }
 
   /**/
   return;
@@ -892,7 +952,7 @@ void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
 {
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
-  std::vector<double> d;
+  // std::vector<double> d;
 
   // Guesses for the control points
   int num_of_intermediate_cps = N_ + 1 - 6;
@@ -914,24 +974,9 @@ void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
   q.push_back(final_state_.pos);
   q.push_back(final_state_.pos);
 
+  // generateGuessNFromQ(q, n);
+  generateRandomN(n);
   // Guesses for the planes
-  for (int obst_index = 0; obst_index < num_obst_; obst_index++)
-  {
-    for (int i = 0; i < num_of_segments_; i++)
-    {
-      Eigen::Vector3d point_in_hull = hulls_[obst_index][i][0];  // Take one vertex of the hull for example
-
-      Eigen::Vector3d n_i =
-          (point_in_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
-
-      Eigen::Vector3d point_in_middle = q[i] + (point_in_hull - q[i]) / 2.0;
-
-      double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
-
-      n.push_back(n_i / d_i);
-      // d.push_back(d_i);
-    }
-  }
 
   std::cout << "This is the initial guess: " << std::endl;
   std::cout << "q.size()= " << q.size() << std::endl;
@@ -943,7 +988,16 @@ void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
 
   std::vector<double> x(num_of_variables_);  // initial guess
   qntoX(q, n, x);
+  x_ = x;
+}
 
+void SolverNlopt::useRandomInitialGuess()
+{
+  std::vector<double> x(num_of_variables_);  // initial guess
+  for (int i = 0; i < x.size(); i++)
+  {
+    x[i] = ((double)rand() / (RAND_MAX));
+  }
   x_ = x;
 }
 
@@ -966,14 +1020,14 @@ bool SolverNlopt::optimize()
   }
 
   opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
-  local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);  // LD_SLSQP //LD_MMA
+  local_opt_ = new nlopt::opt(solver_, num_of_variables_);
 
   local_opt_->set_xtol_rel(1e-8);  // stopping criteria. If >=1e-1, it leads to weird trajectories
   opt_->set_local_optimizer(*local_opt_);
   opt_->set_xtol_rel(1e-8);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
   // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
-  opt_->set_maxtime(max_runtime_);  // maximum time in seconds. Negative --> don't use this criterion
+  opt_->set_maxtime(max_runtime_);  // max_runtime_  // maximum time in seconds. Negative --> don't use this criterion
 
   initializeNumOfConstraints();
 
@@ -1013,6 +1067,7 @@ bool SolverNlopt::optimize()
   double minf;
 
   best_feasible_sol_so_far_.resize(num_of_variables_);
+  got_a_feasible_solution_ = false;
 
   opt_timer_.Reset();
   std::cout << "Optimizing now, allowing time = " << max_runtime_ * 1000 << "ms" << std::endl;
@@ -1049,7 +1104,7 @@ bool SolverNlopt::optimize()
   else if (feasible_but_not_optimal)
   {
     std::cout << on_green << bold << "Feasible Solution found" << opt_timer_ << reset << std::endl;
-    toEigen(best_feasible_sol_so_far_, q, n);
+    toEigen(best_feasible_sol_so_far_, q, n);  //
   }
   else
   {

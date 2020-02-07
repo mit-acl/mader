@@ -258,6 +258,28 @@ std_msgs::ColorRGBA color(int id)
   }
 }
 
+// It assummes that the box is aligned with x, y, z
+// C1 is the corner with lowest x,y,z
+// C2 is the corner with highest x,y,z
+// center is the center of the sphere
+// r is the radiuos of the sphere
+bool boxIntersectsSphere(Eigen::Vector3d center, double r, Eigen::Vector3d c1, Eigen::Vector3d c2)
+{
+  // https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
+  //(Section Sphere vs AABB)
+
+  Eigen::Vector3d closest_point;  // closest point from the center of the sphere to the box
+
+  closest_point(0) = std::max(c1.x(), std::min(center.x(), c2.x()));
+  closest_point(1) = std::max(c1.y(), std::min(center.y(), c2.y()));
+  closest_point(2) = std::max(c1.z(), std::min(center.z(), c2.z()));
+
+  // this is the same as isPointInsideSphere
+  double distance_to_closest_point = (center - closest_point).norm();
+
+  return (distance_to_closest_point < r);  // true if the box intersects the sphere
+}
+
 //## From Wikipedia - http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 void quaternion2Euler(tf2::Quaternion q, double& roll, double& pitch, double& yaw)
 {
@@ -283,7 +305,7 @@ void saturate(Eigen::Vector3d& tmp, const Eigen::Vector3d& min, const Eigen::Vec
   saturate(tmp(2), min(2), max(2));
 }
 
-void saturate(double& var, double min, double max)
+void saturate(double& var, const double min, const double max)
 {
   // std::cout << "min=" << min << " max=" << max << std::endl;
   if (var < min)

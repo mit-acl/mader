@@ -29,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: DynObstaclesGrid
   - Class: rviz/Displays
     Help Height: 0
     Name: Displays
@@ -99,91 +99,11 @@ Visualization Manager:
           Value: true
         SQ022:
           Value: true
-        SQ0220:
-          Value: true
-        SQ0221:
-          Value: true
-        SQ0222:
-          Value: true
-        SQ0223:
-          Value: true
-        SQ0224:
-          Value: true
-        SQ0225:
-          Value: true
-        SQ0226:
-          Value: true
-        SQ0227:
-          Value: true
-        SQ0228:
-          Value: true
-        SQ0229:
-          Value: true
         SQ023:
-          Value: true
-        SQ0230:
-          Value: true
-        SQ0231:
-          Value: true
-        SQ0232:
-          Value: true
-        SQ0233:
-          Value: true
-        SQ0234:
-          Value: true
-        SQ0235:
-          Value: true
-        SQ0236:
-          Value: true
-        SQ0237:
-          Value: true
-        SQ0238:
-          Value: true
-        SQ0239:
           Value: true
         SQ024:
           Value: true
-        SQ0240:
-          Value: true
-        SQ0241:
-          Value: true
-        SQ0242:
-          Value: true
-        SQ0243:
-          Value: true
-        SQ0244:
-          Value: true
-        SQ0245:
-          Value: true
-        SQ0246:
-          Value: true
-        SQ0247:
-          Value: true
-        SQ0248:
-          Value: true
-        SQ0249:
-          Value: true
         SQ025:
-          Value: true
-        SQ0250:
-          Value: true
-        SQ0251:
-          Value: true
-        SQ0252:
-          Value: true
-        SQ0253:
-          Value: true
-        SQ0254:
-          Value: true
-        SQ0255:
-          Value: true
-        SQ0256:
-          Value: true
-        SQ0257:
-          Value: true
-        SQ0258:
-          Value: true
-        SQ0259:
           Value: true
         SQ026:
           Value: true
@@ -201,7 +121,7 @@ Visualization Manager:
       Name: TF
       Show Arrows: false
       Show Axes: true
-      Show Names: false
+      Show Names: true
       Tree:
         world:
           SQ020:
@@ -230,91 +150,11 @@ Visualization Manager:
             {}
           SQ022:
             {}
-          SQ0220:
-            {}
-          SQ0221:
-            {}
-          SQ0222:
-            {}
-          SQ0223:
-            {}
-          SQ0224:
-            {}
-          SQ0225:
-            {}
-          SQ0226:
-            {}
-          SQ0227:
-            {}
-          SQ0228:
-            {}
-          SQ0229:
-            {}
           SQ023:
-            {}
-          SQ0230:
-            {}
-          SQ0231:
-            {}
-          SQ0232:
-            {}
-          SQ0233:
-            {}
-          SQ0234:
-            {}
-          SQ0235:
-            {}
-          SQ0236:
-            {}
-          SQ0237:
-            {}
-          SQ0238:
-            {}
-          SQ0239:
             {}
           SQ024:
             {}
-          SQ0240:
-            {}
-          SQ0241:
-            {}
-          SQ0242:
-            {}
-          SQ0243:
-            {}
-          SQ0244:
-            {}
-          SQ0245:
-            {}
-          SQ0246:
-            {}
-          SQ0247:
-            {}
-          SQ0248:
-            {}
-          SQ0249:
-            {}
           SQ025:
-            {}
-          SQ0250:
-            {}
-          SQ0251:
-            {}
-          SQ0252:
-            {}
-          SQ0253:
-            {}
-          SQ0254:
-            {}
-          SQ0255:
-            {}
-          SQ0256:
-            {}
-          SQ0257:
-            {}
-          SQ0258:
-            {}
-          SQ0259:
             {}
           SQ026:
             {}
@@ -355,7 +195,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/setpoint
       Name: Setpoint
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -425,7 +265,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -452,14 +292,14 @@ Visualization Manager:
     - Alpha: 0.200000003
       BoundColor: 61; 255; 116
       Class: decomp_rviz_plugins/PolyhedronArray
-      Enabled: false
+      Enabled: true
       MeshColor: 255; 255; 0
       Name: PolySafe
       Scale: 0.00999999978
       State: Both
       Topic: /SQ01s/faster/poly_safe
       Unreliable: false
-      Value: false
+      Value: true
       VsColor: 0; 255; 0
       VsScale: 1
     - Class: rviz/Marker
@@ -544,7 +384,7 @@ Visualization Manager:
       Color: 255; 165; 120
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -561,13 +401,13 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /SQ01s/faster/path_jps_safe
       Name: JPS_Safe
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -847,13 +687,13 @@ Visualization Manager:
         iros: true
       Zoom Factor: 1
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /shapes
       Name: Marker
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -879,25 +719,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 26.5686111
+      Distance: 23.8812237
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.36038744
-        Y: 0.329990447
-        Z: 1.27324271
+        X: 3.49051881
+        Y: 2.75943017
+        Z: 6.93630028
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.504796743
+      Pitch: 0.724796712
       Target Frame: LQ01s
       Value: Orbit (rviz)
-      Yaw: 3.90749669
+      Yaw: 3.99249506
     Saved: ~
 Window Geometry:
   Camera:

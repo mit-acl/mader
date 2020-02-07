@@ -129,6 +129,7 @@ void Faster::updateTrajObstacles(std::vector<dynTraj> trajs)
     // std::cout << "traj_compiled.function.size()= " << traj_compiled.function.size() << std::endl;
 
     traj_compiled.bbox = traj.bbox;
+    traj_compiled.id = traj.id;
     trajs_.push_back(traj_compiled);
   }
 
@@ -166,20 +167,10 @@ vec_E<Polyhedron<3>> Faster::vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& con
 // See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
 CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_start, double t_end)
 {
-  /*  std::default_random_engine generator;
-    generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
-    std::uniform_real_distribution<double> distribution(-1, 1);  // doubles from -1 to 1
-        double int_random = 1;
-      double r = int_random * distribution(generator);
-      double r2 = int_random * distribution(generator);
-      double r3 = int_random * distribution(generator);*/
-
   int samples_per_interval = std::max(par_.samples_per_interval, 4);  // at least 4 samples per interval
   double inc = (t_end - t_start) / (1.0 * samples_per_interval);
 
   std::vector<Point_3> points;
-
-  // mtx_trajs_.lock();
 
   for (int i = 0; i < samples_per_interval; i++)
   {
@@ -247,6 +238,68 @@ CGAL::set_pretty_mode(std::cout);
   return poly;
 }
 
+void Faster::removeTrajsThatWillNotAffectMe(state A, double t_start, double t_end)
+{
+  int samples_per_traj = 10;
+  double inc = (t_end - t_start) / (1.0 * samples_per_traj);
+
+  std::vector<int> ids_to_remove;
+
+  for (int index_traj = 0; index_traj < trajs_.size(); index_traj++)
+  {
+    bool traj_affects_me = false;
+    for (int i = 0; i < samples_per_traj; i++)
+    {
+      t_ = t_start + i * inc;
+
+      Eigen::Vector3d center_obs;
+      center_obs << trajs_[index_traj].function[0].value(),  ////////////////////
+          trajs_[index_traj].function[1].value(),            ////////////////
+          trajs_[index_traj].function[2].value();            /////////////////
+
+      Eigen::Vector3d positive_half_diagonal;
+      positive_half_diagonal << trajs_[index_traj].bbox[0] / 2.0,  //////////////////
+          trajs_[index_traj].bbox[1] / 2.0,                        ////////////////
+          trajs_[index_traj].bbox[2] / 2.0;
+
+      Eigen::Vector3d c1 = center_obs - positive_half_diagonal;
+      Eigen::Vector3d c2 = center_obs + positive_half_diagonal;
+
+      //  std::cout << "Traj " << trajs_[index_traj].id << " is in " << center_obs.transpose() << std::endl;
+
+      if (boxIntersectsSphere(A.pos, par_.Ra, c1, c2) == true)
+      {
+        traj_affects_me = true;
+        break;  // go out from the inner-most loop
+      }
+    }
+
+    if (traj_affects_me == false)
+    {
+      std::cout << red << bold << "Going to delete traj " << trajs_[index_traj].id << reset << std::endl;
+      ids_to_remove.push_back(trajs_[index_traj].id);
+    }
+    else
+    {
+      std::cout << green << bold << "Going to delete traj " << trajs_[index_traj].id << reset << std::endl;
+    }
+  }
+
+  for (auto id : ids_to_remove)
+  {
+    trajs_.erase(
+        std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
+        trajs_.end());
+  }
+
+  std::cout << "After deleting the trajectory, we have that ids= " << std::endl;
+
+  for (auto traj : trajs_)
+  {
+    std::cout << traj.id << std::endl;
+  }
+}
+
 ConvexHullsOfCurve Faster::convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end)
 {
   ConvexHullsOfCurve convexHulls;
@@ -267,16 +320,15 @@ ConvexHullsOfCurve Faster::convexHullsOfCurve(dynTrajCompiled& traj, double t_st
 ConvexHullsOfCurves Faster::convexHullsOfCurves(double t_start, double t_end)
 {
   ConvexHullsOfCurves result;
-  mtx_trajs_.lock();
+
   for (auto traj : trajs_)
   {
+    std::cout << "Computing convex hull of curve " << traj.id << std::endl;
     // std::cout << "above, traj.function.size()= " << traj.function.size() << std::endl;
     // std::cout << "going to call convexHullsOfCurve" << std::endl;
     result.push_back(convexHullsOfCurve(traj, t_start, t_end));
     // std::cout << "called convexHullsOfCurve" << std::endl;
   }
-  mtx_trajs_.unlock();
-
   // std::cout << "end of convexHullsOfCurves" << std::endl;
 
   return result;
@@ -792,11 +844,12 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   //////////////////////////////////////////////////////////////////////////
 
   state A;
-  int k_safe, k_end_whole;
+  int k_safe, k_end_whole, k_whole;
 
   // If k_end_whole=0, then A = plan_.back() = plan_[plan_.size() - 1]
   k_end_whole = std::max((int)(plan_.size() - deltaT_), 0);
-  A = plan_.get(plan_.size() - 1 - k_end_whole);
+  k_whole = plan_.size() - 1 - k_end_whole;
+  A = plan_.get(k_whole);
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Solve JPS //////////////////////////////////////
@@ -1015,7 +1068,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   state initial = A;
   state final = E;
 
-  double t_min = deltaT_ * par_.dc + ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+  double t_min = k_whole * par_.dc + ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
   double t_max = t_min + (initial.pos - final.pos).norm() / (0.6 * par_.v_max);  // time to execute the optimized path
 
   std::cout << "Going to compute the convex hulls, t_min= " << t_min << std::endl;
@@ -1024,10 +1077,13 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   std::cout << "deltaT_= " << deltaT_ << std::endl;
   std::cout << "par_.dc= " << par_.dc << std::endl;
 
-  MyTimer convex_hulls_timer(true);
+  mtx_trajs_.lock();
 
+  MyTimer convex_hulls_timer(true);
+  // removeTrajsThatWillNotAffectMe(A, t_min, t_max);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_min, t_max);
   std::cout << "hulls.size()=" << hulls.size() << std::endl;
+
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
 
@@ -1047,9 +1103,9 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   snlopt.setMaxRuntime(0.8 * deltaT_ * par_.dc);  // 0.8 to take into account other computations
   snlopt.setInitAndFinalStates(initial, final);
 
-  snlopt.getGuessForCPs(poly_safe_out);  // in testing phase
-  X_safe_out = snlopt.X_temp_;           // in testing phase
-  return;                                // // in testing phase
+  /*  snlopt.getGuessForCPs(poly_safe_out);  // in testing phase
+    X_safe_out = snlopt.X_temp_;           // in testing phase
+    return;                                // // in testing phase*/
 
   // Initial GUESS: run JPS with the dynamic obstacles as static obstacles
   mtx_map.lock();
@@ -1071,7 +1127,12 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   mtx_map.unlock();
   mtx_unk.unlock();
   // end of Initial GUESSS
-  snlopt.setInitialGuess(JPSk_dyn);
+  // snlopt.setInitialGuess(JPSk_dyn);
+  snlopt.useRandomInitialGuess();
+
+  mtx_trajs_.unlock();
+
+  // snlopt.createGuess(poly_safe_out);
 
   std::cout << "Calling optimize" << std::endl;
   bool result = snlopt.optimize();
@@ -1080,8 +1141,11 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   total_replannings_++;
   if (result == false)
   {
-    deltaT_ = std::min(par_.alpha * deltaT_,
-                       2 / par_.dc);  // Increases deltaT_ (to increase the allowed runtime in the next iteration)
+    int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000));  // Number of states that
+                                                                               // would have been needed for
+                                                                               // the last replan
+    deltaT_ = std::max(par_.alpha * states_last_replan, 1.0);
+    deltaT_ = std::min(1.0 * deltaT_, 2.0 / par_.dc);
     return;
   }
 
@@ -1185,8 +1249,6 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
 void Faster::createObstacleMapFromTrajs(double t_min, double t_max)
 {
-  mtx_trajs_.lock();
-
   jps_manager_dyn_.createNewMap(state_.pos);
 
   int number_of_samples = 10;
@@ -1209,8 +1271,6 @@ void Faster::createObstacleMapFromTrajs(double t_min, double t_max)
 
     jps_manager_dyn_.addToMap(tmp, traj.bbox[0] / 2.0 + 0, traj.bbox[1] / 2.0 + 0, traj.bbox[2] / 2.0 + 0);
   }
-
-  mtx_trajs_.unlock();
 }
 
 void Faster::resetInitialization()

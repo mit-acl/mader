@@ -41,6 +41,8 @@
 #define OCCUPIED_SPACE 1
 #define UNKOWN_AND_OCCUPIED_SPACE 2
 
+bool boxIntersectsSphere(Eigen::Vector3d center, double r, Eigen::Vector3d c1, Eigen::Vector3d c2);
+
 void printStateDeque(std::deque<state>& data);
 
 void printStateVector(std::vector<state>& data);
@@ -62,7 +64,7 @@ void quaternion2Euler(Eigen::Quaterniond q, double& roll, double& pitch, double&
 
 void quaternion2Euler(geometry_msgs::Quaternion q, double& roll, double& pitch, double& yaw);
 
-void saturate(double& var, double min, double max);
+void saturate(double& var, const double min, const double max);
 
 void saturate(Eigen::Vector3d& tmp, const Eigen::Vector3d& min, const Eigen::Vector3d& max);
 

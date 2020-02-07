@@ -227,7 +227,7 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   bool exists = (obs_ptr != std::end(trajs_));
 
   Eigen::Vector3d pos(msg.pos.x, msg.pos.y, msg.pos.z);
-  bool near_me = ((state_.pos - pos).norm() < par_.Ra);
+  bool near_me = ((state_.pos - pos).norm() < 2 * par_.Ra);
   // std::cout << "dist= " << (state_.pos - pos).norm() << std::endl;
 
   dynTraj tmp;
@@ -483,8 +483,8 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
   for (int i = 0; i < data.size(); i = i + increm)
   {
     temp_path.pose.position.x = data[i].pos(0);
-    temp_path.pose.position.y = data[i].pos(0);
-    temp_path.pose.position.z = data[i].pos(0);
+    temp_path.pose.position.y = data[i].pos(1);
+    temp_path.pose.position.z = data[i].pos(2);
     temp_path.pose.orientation.w = 1;
     temp_path.pose.orientation.x = 0;
     temp_path.pose.orientation.y = 0;
