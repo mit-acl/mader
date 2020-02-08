@@ -792,12 +792,11 @@ bool Faster::initialized()
 
 void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E<Polyhedron<3>>& poly_safe_out,
                     vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out,
-                    std::vector<state>& X_whole_out, pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps)
+                    std::vector<state>& X_whole_out, pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps,
+                    std::vector<Hyperplane3D>& planes_guesses)
 {
   // std::cout << "here1" << std::endl;
-
   MyTimer replanCB_t(true);
-
   // std::cout << "here2" << std::endl;
 
   if (initializedAllExceptPlanner() == false)
@@ -1130,7 +1129,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   mtx_map.unlock();
   mtx_unk.unlock();
   // end of Initial GUESSS
-  snlopt.setInitialGuess(JPSk_dyn);
+  snlopt.useJPSGuess(JPSk_dyn);
+  // snlopt.setInitialGuess(JPSk_dyn);
   // snlopt.useRandomInitialGuess();
 
   mtx_trajs_.unlock();
@@ -1140,6 +1140,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   std::cout << "Calling optimize" << std::endl;
   bool result = snlopt.optimize();
   std::cout << on_cyan << bold << "Solved " << solutions_found_ << "/" << total_replannings_ << reset << std::endl;
+
+  snlopt.getGuessForPlanes(planes_guesses);
 
   total_replannings_++;
   if (result == false)

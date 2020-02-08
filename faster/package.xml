@@ -20,11 +20,15 @@
   <build_depend>roscpp</build_depend>
    <!--
   <build_depend>rospy</build_depend>
- 
+   -->
 
   <build_depend>snapstack_msgs</build_depend>
-  <build_depend>snapstack_msgs</build_depend>
-   -->
+  <build_depend>faster_msgs</build_depend>
+  <build_depend>rviz_visual_tools</build_depend>
+  <build_depend>decomp_util</build_depend>
+  <build_depend>decomp_ros_utils</build_depend>
+  <build_depend>jps3d</build_depend>
+
  <!--
   <build_depend>decomp_util</build_depend>
   <build_depend>decomp_ros_utils</build_depend>

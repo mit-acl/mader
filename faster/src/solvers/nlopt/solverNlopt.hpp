@@ -9,7 +9,8 @@
 //#include <sstream>
 #include "./../../utils.hpp"
 #include "./../../timer.hpp"
-#include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
+//#include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
+#include <decomp_geometry/polyhedron.h>  //For Polyhedron definition
 
 typedef JPS::Timer MyTimer;
 
@@ -31,20 +32,22 @@ public:
   void setMaxValues(double v_max, double a_max);
 
   void setDC(double dc);
-  void setInitialGuess(vec_Vecf<3> &jps_path);
 
   std::vector<state> X_temp_;
 
   void setMaxRuntime(double deltaT);
 
-  void createGuess(vec_E<Polyhedron<3>> &polyhedra);
-
-  void generateGuessNFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
-
+  // Guesses
+  void useJPSGuess(vec_Vecf<3> &jps_path);
+  void useRRTGuess(vec_E<Polyhedron<3>> &polyhedra);
   void useRandomInitialGuess();
+
+  void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
 
 protected:
 private:
+  void generateGuessNFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
+
   void generateRandomN(std::vector<Eigen::Vector3d> &n);
   void fillXTempFromCPs(std::vector<Eigen::Vector3d> &q);
 
@@ -59,7 +62,7 @@ private:
 
   int gIndexQ(int i);  // Element jth of control point ith
   int gIndexN(int i);  // Element jth of normal ith
-  int gIndexD(int i);
+  // int gIndexD(int i);
 
   void printQN(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
 
@@ -167,6 +170,10 @@ private:
   // Eigen::Vector3d final_point_;
   nlopt::opt *opt_ = NULL;
   nlopt::opt *local_opt_ = NULL;
+
+  // Guesses
+  std::vector<Eigen::Vector3d> n_guess_;  // Guesses for the normals
+  std::vector<Eigen::Vector3d> q_guess_;  // Guesses for the normals
 
   Eigen::MatrixXd R_;  // This matrix is [r0, r1, r2, r3, r0, r1, r2, r3] (for two segments)
 };

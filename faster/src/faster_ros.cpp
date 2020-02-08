@@ -5,6 +5,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <decomp_ros_msgs/PolyhedronArray.h>
 #include <decomp_ros_utils/data_ros_utils.h>  //For DecompROS::polyhedron_array_to_ros
+#include <decomp_geometry/polyhedron.h>       //For hyperplane
 
 typedef Timer MyTimer;
 
@@ -179,6 +180,13 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   pubCBTimer_.stop();
   replanCBTimer_.stop();
 
+  // Rviz_Visual_Tools
+  visual_tools_.reset(new rvt::RvizVisualTools("world", "/rviz_visual_tools"));
+  visual_tools_->loadMarkerPub();  // create publisher before waitin
+  ros::Duration(0.5).sleep();
+  visual_tools_->deleteAllMarkers();
+  visual_tools_->enableBatchPublishing();
+
   // Markers
   setpoint_ = getMarkerSphere(0.35, ORANGE_TRANS);
   R_ = getMarkerSphere(0.35, ORANGE_TRANS);
@@ -293,8 +301,13 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     std::vector<state> X_safe;
     std::vector<state> X_whole;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pcloud_jps(new pcl::PointCloud<pcl::PointXYZ>);
+    std::vector<Hyperplane3D> planes_guesses;
 
-    faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole, pcloud_jps);
+    faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole, pcloud_jps, planes_guesses);
+
+    // Delete markers to publish stuff
+    visual_tools_->deleteAllMarkers();
+    visual_tools_->enableBatchPublishing();
 
     pcl::PCLPointCloud2 pcloud_jps2;
     pcl::toPCLPointCloud2(*pcloud_jps.get(), pcloud_jps2);
@@ -313,6 +326,18 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     pubTraj(X_safe, SAFE_COLORED);
 
     pubTraj(X_whole, WHOLE_COLORED);
+    std::cout << "Plane Guesses has" << planes_guesses.size() << std::endl;
+    publishPlanes(planes_guesses);
+  }
+}
+
+void FasterRos::publishPlanes(std::vector<Hyperplane3D>& planes)
+{
+  for (auto plane_i : planes)
+  {
+    double d_i = -plane_i.n_.dot(plane_i.p_);
+    visual_tools_->publishABCDPlane(plane_i.n_.x(), plane_i.n_.y(), plane_i.n_.z(), d_i, rvt::MAGENTA, 2, 2);
+    visual_tools_->trigger();
   }
 }
 

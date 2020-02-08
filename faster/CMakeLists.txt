@@ -7,12 +7,11 @@ project(faster)
 add_definitions(-std=c++11)
 #add_definitions(-std=c99)
 
-find_program(iwyu_path NAMES /home/jtorde/iwyu/build/include-what-you-use)
+#find_program(iwyu_path NAMES /home/jtorde/iwyu/build/include-what-you-use)
 
-if(NOT iwyu_path)
-  message(FATAL_ERROR "Could not find the program include-what-you-use")
-endif()
-
+#if(NOT iwyu_path)
+#  message(FATAL_ERROR "Could not find the program include-what-you-use")
+#endif()
 
 find_package( Eigen3 REQUIRED )
 include_directories(${EIGEN3_INCLUDE_DIR} ${PCL_INCLUDE_DIRS})
@@ -33,7 +32,7 @@ else(GUROBI_FOUND)
 endif(GUROBI_FOUND)
 
 
-set(CMAKE_BUILD_TYPE Release) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo) or Degub
+set(CMAKE_BUILD_TYPE RelWithDebInfo) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo) or Degub
 
 include_directories(${GUROBI_INCLUDE_DIRS})
 #set(GUROBI_LIBRARIES "${GUROBI_CXX_LIBRARY};${GUROBI_LIBRARY}" )
@@ -48,6 +47,7 @@ find_package(catkin REQUIRED COMPONENTS
 	pcl_ros
 	decomp_util
 	decomp_ros_utils
+	rviz_visual_tools
 )
 find_package(decomp_util REQUIRED)
 include_directories(${DECOMP_UTIL_INCLUDE_DIRS})
@@ -75,8 +75,8 @@ target_link_libraries(utils PUBLIC ${PCL_LIBRARIES})
 
 add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp)
 #set_property(TARGET solverNlopt PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
-target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} utils)
+target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
+target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils)
 
 
 add_library(jps_manager STATIC src/jps_manager.cpp src/jps_manager.hpp)

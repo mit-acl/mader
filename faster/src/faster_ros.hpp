@@ -15,6 +15,7 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/exact_time.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include <rviz_visual_tools/rviz_visual_tools.h>
 
 #include <Eigen/Dense>
 
@@ -41,6 +42,8 @@
 #define JPS_WHOLE 3
 #define JPS_SAFE 4
 
+namespace rvt = rviz_visual_tools;
+
 template <typename T>
 inline bool safeGetParam(ros::NodeHandle& nh, std::string const& param_name, T& param_value)
 {
@@ -61,6 +64,8 @@ public:
 
 private:
   std::unique_ptr<Faster> faster_ptr_;
+
+  void publishPlanes(std::vector<Hyperplane3D>& planes);
 
   // class methods
   void pubTraj(const std::vector<state>& data, int type);
@@ -121,6 +126,8 @@ private:
   state state_;
 
   std::string world_name_ = "world";
+
+  rvt::RvizVisualToolsPtr visual_tools_;
 
   visualization_msgs::Marker R_;
   visualization_msgs::Marker I_;

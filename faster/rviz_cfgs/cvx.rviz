@@ -649,6 +649,7 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
+        "": true
         Committed_Color: true
         DynObstaclesGrid: true
         Frontier: true
@@ -694,6 +695,14 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /rviz_visual_tools
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -719,25 +728,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 23.8812237
+      Distance: 21.874094
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 3.49051881
-        Y: 2.75943017
-        Z: 6.93630028
+        X: 1.9205296
+        Y: 2.04175925
+        Z: 4.7494998
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.724796712
+      Pitch: 0.414796561
       Target Frame: LQ01s
       Value: Orbit (rviz)
-      Yaw: 3.99249506
+      Yaw: 3.93249393
     Saved: ~
 Window Geometry:
   Camera:

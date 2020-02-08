@@ -60,39 +60,36 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
     local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);*/
   //#ifdef DEBUG_MODE_NLOPT
   // Debugging stuff
-  /*  std::cout << "deg_pol_= " << deg_pol_ << std::endl;
-    std::cout << "num_pol= " << num_pol << std::endl;
-    std::cout << "num_obst_= " << num_obst_ << std::endl;
-    std::cout << "p_= " << p_ << std::endl;
-    std::cout << "M_= " << M_ << std::endl;
-    std::cout << "N_= " << N_ << std::endl;
-    std::cout << "num_of_cpoints= " << num_of_cpoints << std::endl;
-    std::cout << "num_of_segments_= " << num_of_cpoints << std::endl;
-    std::cout << "i_min_= " << i_min_ << std::endl;
-    std::cout << "i_max_= " << i_max_ << std::endl;
-    std::cout << "j_min_= " << j_min_ << std::endl;
-    std::cout << "j_max_= " << j_max_ << std::endl;
-    std::cout << "k_min_= " << k_min_ << std::endl;
-    std::cout << "k_max_= " << k_max_ << std::endl;
-    std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
-    std::cout << "gIndexQ(3)=" << gIndexQ(3) << std::endl;
-    std::cout << "gIndexQ(num_of_cpoints-3)=" << gIndexQ(num_of_cpoints - 3 - 1) << std::endl;
-    std::cout << "gIndexN(0)=" << gIndexN(0) << std::endl;
-    std::cout << "gIndexN(num_of_segments-1)=" << gIndexN(num_of_segments_ - 1) << std::endl;
-    std::cout << "gIndexD(0)=" << gIndexD(0) << std::endl;
-    std::cout << "gIndexD(num_of_segments-1)=" << gIndexD(num_of_segments_ - 1) << std::endl;*/
+  std::cout << "deg_pol_= " << deg_pol_ << std::endl;
+  std::cout << "num_pol= " << num_pol << std::endl;
+  std::cout << "num_obst_= " << num_obst_ << std::endl;
+  std::cout << "p_= " << p_ << std::endl;
+  std::cout << "M_= " << M_ << std::endl;
+  std::cout << "N_= " << N_ << std::endl;
+  std::cout << "num_of_cpoints= " << num_of_cpoints << std::endl;
+  std::cout << "num_of_segments_= " << num_of_cpoints << std::endl;
+  std::cout << "i_min_= " << i_min_ << std::endl;
+  std::cout << "i_max_= " << i_max_ << std::endl;
+  std::cout << "j_min_= " << j_min_ << std::endl;
+  std::cout << "j_max_= " << j_max_ << std::endl;
 
-  /*  std::vector<double> x;
+  std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
+  std::cout << "gIndexQ(3)=" << gIndexQ(3) << std::endl;
+  std::cout << "gIndexQ(num_of_cpoints-3)=" << gIndexQ(num_of_cpoints - 3 - 1) << std::endl;
+  std::cout << "gIndexN(0)=" << gIndexN(0) << std::endl;
+  std::cout << "gIndexN(num_of_segments-1)=" << gIndexN(num_of_segments_ - 1) << std::endl;
+
+  /*  x_.clear();
     for (int i = 0; i < num_of_variables_; i++)
     {
-      x.push_back(i);
-    }
+      x_.push_back(i);
+    }*/
 
-    std::vector<Eigen::Vector3d> q;
-    std::vector<Eigen::Vector3d> n;
-    std::vector<double> d;
-    toEigen(x, q, n, d);
-    printQND(q, n, d);*/
+  /*  std::vector<Eigen::Vector3d> q;
+  std::vector<Eigen::Vector3d> n;
+  std::vector<double> d;
+  toEigen(x, q, n, d);
+  printQND(q, n, d);*/
   //#endif
 }
 
@@ -102,9 +99,24 @@ SolverNlopt::~SolverNlopt()
   delete local_opt_;
 }
 
-void SolverNlopt::createGuess(vec_E<Polyhedron<3>> &polyhedra)
+void SolverNlopt::getGuessForPlanes(std::vector<Hyperplane3D> &planes)
+{
+  planes.clear();
+  std::cout << "GettingGuessesForPlanes= " << n_guess_.size() << std::endl;
+  for (auto n_i : n_guess_)
+  {
+    Eigen::Vector3d p_i;
+    p_i << 0.0, 0.0, -1.0 / n_i.z();  // TODO deal with n_i.z()=0
+    Hyperplane3D plane(p_i, n_i);
+    planes.push_back(plane);
+  }
+}
+
+void SolverNlopt::useRRTGuess(vec_E<Polyhedron<3>> &polyhedra)
 {
   // sleep(1);
+  n_guess_.clear();
+  q_guess_.clear();
 
   int num_of_intermediate_cps = N_ + 1 - 6;
 
@@ -114,7 +126,7 @@ void SolverNlopt::createGuess(vec_E<Polyhedron<3>> &polyhedra)
 
   double best_cost = std::numeric_limits<double>::max();
 
-  std::vector<Eigen::Vector3d> q_best;
+  std::vector<Eigen::Vector3d> q;
 
   for (int trial = 0; trial < 300; trial++)
   {
@@ -188,30 +200,20 @@ void SolverNlopt::createGuess(vec_E<Polyhedron<3>> &polyhedra)
     if (cost < best_cost)
     {
       best_cost = cost;
-      q_best = q;
+      q_guess_ = q;
     }
   }
 
-  std::vector<Eigen::Vector3d> n;
-
   // generateGuessNFromQ(q_best, n);
-  generateRandomN(n);
+  generateRandomN(n_guess_);
 
   // fillXTempFromCPs(q_best);
-
-  std::cout << "This is the initial guess: " << std::endl;
-  std::cout << "q.size()= " << q_best.size() << std::endl;
-  std::cout << "n.size()= " << n.size() << std::endl;
-  printQN(q_best, n);
-
-  std::vector<double> x(num_of_variables_);  // initial guess
-  qntoX(q_best, n, x);
-  x_ = x;
 }
 
 void SolverNlopt::generateRandomN(std::vector<Eigen::Vector3d> &n)
 {
-  for (int j = j_min_; j <= j_max_; j = j + 3)
+  n.clear();
+  for (int j = j_min_; j < j_max_; j = j + 3)
   {
     double r1 = ((double)rand() / (RAND_MAX));
     double r2 = ((double)rand() / (RAND_MAX));
@@ -436,29 +438,24 @@ void SolverNlopt::printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, st
 void SolverNlopt::qntoX(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
                         std::vector<double> &x)
 {
-  int j = 0;
+  x.clear();
+
+  std::cout << "q has size= " << q.size() << std::endl;
+  std::cout << "n has size= " << n.size() << std::endl;
+
   for (int i = 3; i <= (N_ - 2); i++)
   {
-    x[j] = q[i](0);
-    x[j + 1] = q[i](1);
-    x[j + 2] = q[i](2);
-    j = j + 3;
+    x.push_back(q[i](0));
+    x.push_back(q[i](1));
+    x.push_back(q[i](2));
   }
 
   for (auto n_i : n)
   {
-    x[j] = n_i(0);
-    x[j + 1] = n_i(1);
-    x[j + 2] = n_i(2);
-    j = j + 3;
+    x.push_back(n_i(0));
+    x.push_back(n_i(1));
+    x.push_back(n_i(2));
   }
-
-  /*  for (auto d_i : d)
-    {
-      x[j] = d_i;
-      j = j + 1;
-    }*/
-  std::cout << "qndtoX, j=" << j << std::endl;
 }
 
 void SolverNlopt::initializeNumOfConstraints()
@@ -949,10 +946,10 @@ void SolverNlopt::printQN(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Ve
     }*/
 }
 
-void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
+void SolverNlopt::useJPSGuess(vec_Vecf<3> &jps_path)
 {
-  std::vector<Eigen::Vector3d> q;
-  std::vector<Eigen::Vector3d> n;
+  q_guess_.clear();
+  n_guess_.clear();
   // std::vector<double> d;
 
   // Guesses for the control points
@@ -962,44 +959,56 @@ void SolverNlopt::setInitialGuess(vec_Vecf<3> &jps_path)
 
   intermediate_cps.erase(intermediate_cps.begin());  // remove the first vertex
 
-  q.push_back(q0_);
-  q.push_back(q1_);
-  q.push_back(q2_);
+  std::cout << "intermediate_cps has size= " << intermediate_cps.size() << std::endl;
+
+  q_guess_.push_back(q0_);  // Not a decision variable
+  q_guess_.push_back(q1_);  // Not a decision variable
+  q_guess_.push_back(q2_);  // Not a decision variable
 
   for (auto q_i : intermediate_cps)
   {
-    q.push_back(q_i);
+    q_guess_.push_back(q_i);
   }
 
-  q.push_back(final_state_.pos);  // three last cps are the same because of the vel/accel final conditions
-  q.push_back(final_state_.pos);
-  q.push_back(final_state_.pos);
+  q_guess_.push_back(final_state_.pos);  // three last cps are the same because of the vel/accel final conditions
+  q_guess_.push_back(final_state_.pos);
+  q_guess_.push_back(final_state_.pos);
 
-  // generateGuessNFromQ(q, n);
-  generateRandomN(n);
+  generateGuessNFromQ(q_guess_, n_guess_);
+  // generateRandomN(n_guess_);
   // Guesses for the planes
 
   std::cout << "This is the initial guess: " << std::endl;
-  std::cout << "q.size()= " << q.size() << std::endl;
-  std::cout << "n.size()= " << n.size() << std::endl;
-  // std::cout << "d.size()= " << d.size() << std::endl;
+  std::cout << "q.size()= " << q_guess_.size() << std::endl;
+  std::cout << "n.size()= " << n_guess_.size() << std::endl;
   std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
 
-  printQN(q, n);
-
-  std::vector<double> x(num_of_variables_);  // initial guess
-  qntoX(q, n, x);
-  x_ = x;
+  printQN(q_guess_, n_guess_);
 }
 
 void SolverNlopt::useRandomInitialGuess()
 {
-  std::vector<double> x(num_of_variables_);  // initial guess
-  for (int i = 0; i < x.size(); i++)
+  q_guess_.clear();
+  n_guess_.clear();
+  // d.clear();
+
+  q_guess_.push_back(q0_);  // Not a decision variable
+  q_guess_.push_back(q1_);  // Not a decision variable
+  q_guess_.push_back(q2_);  // Not a decision variable
+
+  // Control points (3x1)
+  for (int i = i_min_; i <= i_max_ - 2; i = i + 3)
   {
-    x[i] = ((double)rand() / (RAND_MAX));
+    double r1 = ((double)rand() / (RAND_MAX));
+    double r2 = ((double)rand() / (RAND_MAX));
+    double r3 = ((double)rand() / (RAND_MAX));
+    q_guess_.push_back(Eigen::Vector3d(r1, r2, r3));
   }
-  x_ = x;
+
+  q_guess_.push_back(q_guess_.back());  // Not a decision variable
+  q_guess_.push_back(q_guess_.back());  // Not a decision variable
+
+  generateRandomN(n_guess_);
 }
 
 bool SolverNlopt::optimize()
@@ -1069,6 +1078,14 @@ bool SolverNlopt::optimize()
 
   best_feasible_sol_so_far_.resize(num_of_variables_);
   got_a_feasible_solution_ = false;
+
+  qntoX(q_guess_, n_guess_, x_);
+
+  std::cout << "x_ has size= " << x_.size() << std::endl;
+  std::cout << "q_guess_ has size= " << q_guess_.size() << std::endl;
+  std::cout << "n_guess_ has size= " << n_guess_.size() << std::endl;
+
+  // toEigen(x_, q_guess_, n_guess_);
 
   opt_timer_.Reset();
   std::cout << "Optimizing now, allowing time = " << max_runtime_ * 1000 << "ms" << std::endl;
