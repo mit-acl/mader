@@ -1,20 +1,20 @@
 #pragma once
 
-#include "geometry_msgs/PointStamped.h"
-#include "geometry_msgs/PoseStamped.h"
-//#include "geometry_msgs/Twist.h"
-#include "visualization_msgs/MarkerArray.h"
-
-#include "ros/ros.h"
-
-#include "visualization_msgs/Marker.h"
-#include "visualization_msgs/MarkerArray.h"
-#include <sensor_msgs/point_cloud_conversion.h>
-#include <pcl_conversions/pcl_conversions.h>
+//#include "geometry_msgs/PointStamped.h"
+#include <geometry_msgs/PoseStamped.h>
+//#include "geometry_msgs/Twist.h>
+#include <visualization_msgs/MarkerArray.h>
+#include <ros/ros.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
-
-//#include <atomic>
+#include <sensor_msgs/PointCloud2.h>
+// TimeSynchronizer includes
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/exact_time.h>
+#include <message_filters/sync_policies/approximate_time.h>
 
 #include <Eigen/Dense>
 
@@ -24,12 +24,6 @@
 //#include <nav_msgs/Odometry.h>
 #include <faster_msgs/Mode.h>
 #include <faster_msgs/DynTraj.h>
-
-// TimeSynchronizer includes
-#include <message_filters/subscriber.h>
-#include <message_filters/synchronizer.h>
-#include <message_filters/sync_policies/exact_time.h>
-#include <message_filters/sync_policies/approximate_time.h>
 
 #include "utils.hpp"
 

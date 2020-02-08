@@ -8,7 +8,8 @@
 #include <pcl/filters/filter.h>
 #include <pcl/filters/crop_box.h>
 #include <pcl/filters/passthrough.h>
-#include <Eigen/StdVector>
+//#include <Eigen/StdVector>
+#include <jps_planner/jps_planner/jps_planner.h>
 
 // Class JPS Manager
 #include "ros/ros.h"
@@ -27,7 +28,7 @@
 #include <sensor_msgs/point_cloud_conversion.h>
 
 #include "termcolor.hpp"
-
+#include "utils.hpp"
 // using namespace JPS;
 
 JPS_Manager::JPS_Manager()

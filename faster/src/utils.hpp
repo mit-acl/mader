@@ -1,17 +1,16 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
-#include <iostream>
+//#include <iostream>
 #include <std_msgs/ColorRGBA.h>
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Point.h>
 #include <visualization_msgs/Marker.h>
 #include <jps_basis/data_utils.h>
-#include "termcolor.hpp"
+#include <pcl/point_types.h>
+#include <pcl/kdtree/kdtree_flann.h>
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "visualization_msgs/Marker.h"
 #include "visualization_msgs/MarkerArray.h"
-#include <pcl/point_types.h>
-#include <pcl/kdtree/kdtree_flann.h>
 #include "faster_types.hpp"
 #include <deque>
 

@@ -1,17 +1,17 @@
 #ifndef SOLVER_GUROBI_HPP
 #define SOLVER_GUROBI_HPP
 #include <Eigen/Dense>
-#include "gurobi_c++.h"
-#include <sstream>
-#include <Eigen/Dense>
-#include <type_traits>
-#include <fstream>
-#include "./../termcolor.hpp"
-
-#include <decomp_ros_utils/data_ros_utils.h>
 #include <unsupported/Eigen/Polynomials>
+#include <fstream>
+#include "gurobi_c++.h"
+#include "./../termcolor.hpp"
 #include "./../faster_types.hpp"
+#include <decomp_geometry/polyhedron.h>
 using namespace termcolor;
+
+//#include <sstream>
+//#include <type_traits>
+//#include <decomp_ros_utils/data_ros_utils.h>
 
 // TODO: This function is the same as solvePolyOrder2 but with other name (weird conflicts...)
 inline double solvePolynomialOrder2(Eigen::Vector3f& coeff)

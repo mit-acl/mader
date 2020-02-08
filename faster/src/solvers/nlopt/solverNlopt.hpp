@@ -6,22 +6,12 @@
 #include <iomanip>  //set precision
 #include <nlopt.hpp>
 #include "./../../faster_types.hpp"
-#include <sstream>
+//#include <sstream>
 #include "./../../utils.hpp"
 #include "./../../timer.hpp"
 #include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
 
 typedef JPS::Timer MyTimer;
-
-/*#include <Eigen/Dense>
-#include <type_traits>
-#include <fstream>
-#include "./../termcolor.hpp"
-
-#include <decomp_ros_utils/data_ros_utils.h>
-#include <unsupported/Eigen/Polynomials>
-#include "./../faster_types.hpp"
-using namespace termcolor;*/
 
 class SolverNlopt
 {

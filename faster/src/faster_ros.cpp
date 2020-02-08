@@ -1,5 +1,10 @@
 #include "faster_ros.hpp"
 #include <sensor_msgs/point_cloud_conversion.h>
+#include <sensor_msgs/point_cloud_conversion.h>
+#include <nav_msgs/Path.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <decomp_ros_msgs/PolyhedronArray.h>
+#include <decomp_ros_utils/data_ros_utils.h>  //For DecompROS::polyhedron_array_to_ros
 
 typedef Timer MyTimer;
 

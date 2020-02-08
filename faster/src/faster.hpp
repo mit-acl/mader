@@ -1,35 +1,33 @@
 #pragma once
-// replanCB(const ros::TimerEvent& e)
-//#include <pcl_conversions/pcl_conversions.h>
+#ifndef FASTER_HPP
+#define FASTER_HPP
+
 #include <pcl/kdtree/kdtree.h>
+#include <vector>
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+//#include <CGAL/algorithm.h>
+#include <CGAL/Convex_hull_traits_3.h>
+
+#include "faster_types.hpp"
+// Solvers includes
+#include "solvers/solverGurobi.hpp"
+#include "solvers/nlopt/solverNlopt.hpp"
+#include "jps_manager.hpp"
+
+//#include "solvers/solvers.hpp" CVXGEN solver interface
+//#include <CGAL/point_generators_3.h>
+//#include <vector>
 /*#include <pcl/filters/filter.h>
 #include <pcl/filters/crop_box.h>
 #include <pcl/filters/passthrough.h>*/
 //#include <Eigen/StdVector>
-
-#include "timer.hpp"
-#include "termcolor.hpp"
-
 //#include <stdio.h>
 //#include <math.h>
 //#include <algorithm>
-#include <vector>
+// replanCB(const ros::TimerEvent& e)
+//#include <pcl_conversions/pcl_conversions.h>
 //#include <stdlib.h>
-
-#include "faster_types.hpp"
-// Solvers includes
-//#include "solvers/solvers.hpp" CVXGEN solver interface
-#include "solvers/solverGurobi.hpp"
-#include "solvers/nlopt/solverNlopt.hpp"
-
-#include "jps_manager.hpp"
-
-#include <CGAL/Polyhedron_3.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-//#include <CGAL/point_generators_3.h>
-#include <CGAL/algorithm.h>
-#include <CGAL/Convex_hull_traits_3.h>
-//#include <vector>
 
 #define MAP 1          // MAP refers to the occupancy grid
 #define UNKNOWN_MAP 2  // UNKNOWN_MAP refers to the unkown grid
@@ -259,3 +257,5 @@ private:
   int solutions_found_ = 0;
   int total_replannings_ = 0;
 };
+
+#endif

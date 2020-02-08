@@ -1,5 +1,7 @@
 #include "utils.hpp"
 
+#include "termcolor.hpp"
+
 /*typedef struct
 {
   double r, g, b;

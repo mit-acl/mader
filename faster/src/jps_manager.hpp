@@ -1,13 +1,11 @@
 #include <decomp_util/ellipsoid_decomp.h>
-#include <decomp_util/seed_decomp.h>
-
+//#include <decomp_util/seed_decomp.h>
 //#include "read_map.hpp"
 #include <jps_basis/data_utils.h>
+#include <jps_basis/data_type.h>
 #include <jps_planner/jps_planner/jps_planner.h>
 
 #include <Eigen/Dense>
-
-#include "utils.hpp"
 
 #include <mutex>
 

@@ -1,6 +1,4 @@
-#include "faster.hpp"
 
-#include <pcl/kdtree/kdtree.h>
 #include <Eigen/StdVector>
 #include <stdio.h>
 #include <math.h>
@@ -8,6 +6,10 @@
 #include <vector>
 #include <stdlib.h>
 #include <CGAL/convex_hull_3.h>
+
+#include "faster.hpp"
+#include "timer.hpp"
+#include "termcolor.hpp"
 
 /*#include <CGAL/Simple_cartesian.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -47,7 +49,7 @@ Faster::Faster(parameters par) : par_(par)
   mtx_initial_cond.unlock();
 
   // Setup of jps_manager
-  std::cout << "par_.wdx / par_.res =" << par_.wdx / par_.res << std::endl;
+  std::cout << "par_.wdx /par_.res =" << par_.wdx / par_.res << std::endl;
   jps_manager_.setNumCells((int)par_.wdx / par_.res, (int)par_.wdy / par_.res, (int)par_.wdz / par_.res);
   jps_manager_.setFactorJPS(par_.factor_jps);
   jps_manager_.setResolution(par_.res);
