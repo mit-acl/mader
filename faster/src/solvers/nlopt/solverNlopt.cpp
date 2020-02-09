@@ -101,15 +101,16 @@ SolverNlopt::~SolverNlopt()
 
 void SolverNlopt::getGuessForPlanes(std::vector<Hyperplane3D> &planes)
 {
-  planes.clear();
-  std::cout << "GettingGuessesForPlanes= " << n_guess_.size() << std::endl;
-  for (auto n_i : n_guess_)
-  {
-    Eigen::Vector3d p_i;
-    p_i << 0.0, 0.0, -1.0 / n_i.z();  // TODO deal with n_i.z()=0
-    Hyperplane3D plane(p_i, n_i);
-    planes.push_back(plane);
-  }
+  planes = planes_;
+  /*  planes.clear();
+    std::cout << "GettingGuessesForPlanes= " << n_guess_.size() << std::endl;
+    for (auto n_i : n_guess_)
+    {
+      Eigen::Vector3d p_i;
+      p_i << 0.0, 0.0, -1.0 / n_i.z();  // TODO deal with n_i.z()=0
+      Hyperplane3D plane(p_i, n_i);
+      planes.push_back(plane);
+    }*/
 }
 
 void SolverNlopt::useRRTGuess(vec_E<Polyhedron<3>> &polyhedra)
@@ -222,24 +223,52 @@ void SolverNlopt::generateRandomN(std::vector<Eigen::Vector3d> &n)
   }
 }
 
+void SolverNlopt::findCentroidHull(const std::vector<Eigen::Vector3d> &hull, Eigen::Vector3d &centroid)
+{
+  centroid = Eigen::Vector3d::Zero();
+
+  for (auto vertex : hull)
+  {
+    centroid += vertex;
+  }
+  if (hull.size() > 0)
+  {
+    centroid = centroid / hull.size();
+    int novale = 0;
+  }
+}
+
 void SolverNlopt::generateGuessNFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n)
 {
   n.clear();
+  signs_.clear();
+
+  planes_.clear();
 
   for (int obst_index = 0; obst_index < num_obst_; obst_index++)
   {
     for (int i = 0; i < num_of_segments_; i++)
     {
-      Eigen::Vector3d point_in_hull = hulls_[obst_index][i][0];  // Take one vertex of the hull for example
+      Eigen::Vector3d centroid_hull;
+      findCentroidHull(hulls_[obst_index][i], centroid_hull);
 
       Eigen::Vector3d n_i =
-          (point_in_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
+          (centroid_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
 
-      Eigen::Vector3d point_in_middle = q[i] + (point_in_hull - q[i]) / 2.0;
+      double alpha = 0.01;  // the smaller, the higher the chances the plane is outside the obstacle. Should be <1
+
+      Eigen::Vector3d point_in_middle = q[i] + (centroid_hull - q[i]) * alpha;
 
       double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
 
-      n.push_back(n_i / d_i);
+      int sign_d_i = (d_i >= 0) ? 1 : -1;
+
+      signs_.push_back(sign_d_i);
+      n.push_back(n_i / d_i);  // n'x + 1 = 0
+
+      Hyperplane3D plane(point_in_middle, n_i / d_i);
+      planes_.push_back(plane);
+
       // d.push_back(d_i);
     }
   }
@@ -721,10 +750,12 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
       grad[i] = 0.0;
     }
   }
-#ifdef DEBUG_MODE_NLOPT
-  // std::cout << "here1" << std::endl;
-  std::cout << "Going to add plane constraints, r= " << r << std::endl;
-#endif
+  /*#ifdef DEBUG_MODE_NLOPT
+    // std::cout << "here1" << std::endl;*/
+  /*  std::cout << "Going to add plane constraints, r= " << r << std::endl;
+    //#endif
+    std::cout << "num_obst_ " << num_obst_ << std::endl;
+    std::cout << "num_of_segments_ " << num_of_segments_ << std::endl;*/
 
   for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
   {
@@ -732,35 +763,52 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
     {
       int ip = obst_index * num_of_segments_ + i;  // index plane
 
+      int sign_d_i = signs_[ip];
+
       // impose that all the vertexes of the obstacle are on one side of the plane
+      // std::cout << "Vertexes of Obstacle " << obst_index << std::endl;
       for (Eigen::Vector3d vertex : hulls_[obst_index][i])  // opt->hulls_[i].size()
       {
-        constraints[r] = -(n[ip].dot(vertex) + 1);  //+d[ip] // f<=0
+        constraints[r] = -sign_d_i * (n[ip].dot(vertex) + 1);  //+d[ip] // f<=0
+
+        /*        if (constraints[r] > epsilon_tol_constraints_)
+                {
+                  std::cout << bold << red << "sign_d_i= " << sign_d_i << reset << std::endl;
+                  std::cout << "n[ip]= " << n[ip] << std::endl;
+                  std::cout << "ip= " << ip << std::endl;
+                  std::cout << "vertex= " << vertex << std::endl;
+                  std::cout << "constraints[r]= " << constraints[r] << std::endl;
+                }*/
+
         if (grad)
         {
-          toGradSameConstraintDiffVariables(gIndexN(ip), -vertex, grad, r, nn);
+          toGradSameConstraintDiffVariables(gIndexN(ip), -sign_d_i * vertex, grad, r, nn);
           // assignValueToGradConstraints(gIndexD(ip), -1, grad, r, nn);
         }
         r++;
       }
 
+      // std::cout << "Control Points" << std::endl;
       // and the control points on the other side
       for (int u = 0; u <= 3; u++)
       {
-#ifdef DEBUG_MODE_NLOPT
-        if ((i + u) > N_)
-        {
-          std::cout << "There is sth wrong here" << std::endl;
-        }
-#endif
+        constraints[r] = sign_d_i * (n[ip].dot(q[i + u]) + 1);  //+d[ip]  // f<=0
 
-        constraints[r] = n[ip].dot(q[i + u]) + 1;  //+d[ip]  // f<=0
+        /*        if (constraints[r] > epsilon_tol_constraints_)
+                {
+                  std::cout << bold << red << "sign_d_i= " << sign_d_i << reset << std::endl;
+                  std::cout << "n[ip]= " << n[ip] << std::endl;
+                  std::cout << "q[i + u]= " << q[i + u] << std::endl;
+                  std::cout << "u= " << u << std::endl;
+                  std::cout << "constraints[r]= " << constraints[r] << std::endl;
+                }*/
+
         if (grad)
         {
-          toGradSameConstraintDiffVariables(gIndexN(ip), q[i + u], grad, r, nn);
+          toGradSameConstraintDiffVariables(gIndexN(ip), sign_d_i * q[i + u], grad, r, nn);
           if (isADecisionCP(i + u))  // If Q[i] is a decision variable
           {
-            toGradSameConstraintDiffVariables(gIndexQ(i + u), n[ip], grad, r, nn);
+            toGradSameConstraintDiffVariables(gIndexQ(i + u), sign_d_i * n[ip], grad, r, nn);
           }
           // assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
         }
@@ -769,9 +817,9 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
     }
   }
 
-#ifdef DEBUG_MODE_NLOPT
-  std::cout << "Going to add velocity constraints, r= " << r << std::endl;
-#endif
+  /*#ifdef DEBUG_MODE_NLOPT*/
+  // std::cout << "Going to add velocity constraints, r= " << r << std::endl;
+  //#endif
   // VELOCITY CONSTRAINTS:
   for (int i = 2; i <= (N_ - 3); i++)  // v0 and v1 are already determined by initial_state
   {
@@ -808,9 +856,9 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
     }
     r = r + 3;
   }
-#ifdef DEBUG_MODE_NLOPT
-  std::cout << "Going to add acceleration constraints, r= " << r << std::endl;
-#endif
+  //#ifdef DEBUG_MODE_NLOPT
+  // std::cout << "Going to add acceleration constraints, r= " << r << std::endl;
+  //#endif
   // ACCELERATION CONSTRAINTS:
   for (int i = 1; i <= (N_ - 3); i++)  // a0 is already determined by the initial state
   {
@@ -1086,6 +1134,9 @@ bool SolverNlopt::optimize()
   std::cout << "n_guess_ has size= " << n_guess_.size() << std::endl;
 
   // toEigen(x_, q_guess_, n_guess_);
+
+  std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
+  printInfeasibleConstraints(q_guess_, n_guess_);
 
   opt_timer_.Reset();
   std::cout << "Optimizing now, allowing time = " << max_runtime_ * 1000 << "ms" << std::endl;

@@ -6,6 +6,7 @@
 #include <decomp_ros_msgs/PolyhedronArray.h>
 #include <decomp_ros_utils/data_ros_utils.h>  //For DecompROS::polyhedron_array_to_ros
 #include <decomp_geometry/polyhedron.h>       //For hyperplane
+#include <Eigen/Geometry>
 
 typedef Timer MyTimer;
 
@@ -326,19 +327,43 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     pubTraj(X_safe, SAFE_COLORED);
 
     pubTraj(X_whole, WHOLE_COLORED);
-    std::cout << "Plane Guesses has" << planes_guesses.size() << std::endl;
+    // std::cout << "Plane Guesses has" << planes_guesses.size() << std::endl;
     publishPlanes(planes_guesses);
   }
 }
 
 void FasterRos::publishPlanes(std::vector<Hyperplane3D>& planes)
 {
+  //  int num_of_intervals = planes.size() / poly_safe.size();
+
+  auto color = visual_tools_->getRandColor();
+
+  int i = 0;
   for (auto plane_i : planes)
   {
-    double d_i = -plane_i.n_.dot(plane_i.p_);
-    visual_tools_->publishABCDPlane(plane_i.n_.x(), plane_i.n_.y(), plane_i.n_.z(), d_i, rvt::MAGENTA, 2, 2);
-    visual_tools_->trigger();
+    if ((i % par_.n_pol) == 0)  // planes for a new obstacle --> new color
+    {
+      color = visual_tools_->getRandColor();
+    }
+    Eigen::Isometry3d pose;
+    pose.translation() = plane_i.p_;
+
+    // Calculate the rotation matrix from the original normal z_0 = (0,0,1) to new normal n = (A,B,C)
+    Eigen::Vector3d z_0 = Eigen::Vector3d::UnitZ();
+    Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors(z_0, plane_i.n_);
+    pose.linear() = q.toRotationMatrix();
+
+    double height = 0.001;  // very thin
+    double x_width = 2;     // very thin
+    double y_width = 2;     // very thin
+    visual_tools_->publishCuboid(pose, x_width, y_width, height, color);
+    i++;
+
+    /*    double d_i = -plane_i.n_.dot(plane_i.p_);
+        std::cout << bold << "Publishing plane, d_i= " << d_i << reset << std::endl;
+        visual_tools_->publishABCDPlane(plane_i.n_.x(), plane_i.n_.y(), plane_i.n_.z(), d_i, rvt::MAGENTA, 2, 2);*/
   }
+  visual_tools_->trigger();
 }
 
 void FasterRos::publishPoly(const vec_E<Polyhedron<3>>& poly, int type)

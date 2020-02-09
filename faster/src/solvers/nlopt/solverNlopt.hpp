@@ -108,6 +108,8 @@ private:
 
   std::string getResultCode(int &result);
 
+  void findCentroidHull(const std::vector<Eigen::Vector3d> &hull, Eigen::Vector3d &centroid);
+
   int lastDecCP();
 
   int deg_pol_ = 3;
@@ -136,6 +138,9 @@ private:
   double best_cost_so_far_ = std::numeric_limits<double>::max();
 
   std::vector<double> best_feasible_sol_so_far_;
+
+  std::vector<int> signs_;
+  std::vector<Hyperplane3D> planes_;
 
   double epsilon_tol_constraints_;
 
