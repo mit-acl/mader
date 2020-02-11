@@ -10,6 +10,15 @@
 #include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
 #include <unsupported/Eigen/Splines>
 
+// CGAL
+#include <iostream>
+#include <list>
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/AABB_tree.h>
+#include <CGAL/AABB_traits.h>
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/AABB_face_graph_triangle_primitive.h>
+
 //#define DEBUG_MODE_NLOPT 1  // any value will make the debug output appear (comment line if you don't want debug)
 
 using namespace termcolor;
@@ -25,7 +34,7 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
 
   epsilon_tol_constraints_ = epsilon_tol_constraints;  // 1e-1;
 
-  num_obst_ = num_obst;
+  num_of_obst_ = num_obst;
   weight_ = weight;
   deg_pol_ = deg_pol;
   num_pol_ = num_pol;
@@ -40,14 +49,16 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
       3 * (N_ + 1) - 1 - 9 - 6;  //(9 * (force_final_state_));  // 18 is because pos, vel and accel at t_min_ and t_max_
                                  // are fixed (not dec variables)
   j_min_ = i_max_ + 1;
-  j_max_ = j_min_ + 3 * (M_ - 2 * p_) * num_obst_ - 1;
+  j_max_ = j_min_ + 3 * (M_ - 2 * p_) * num_of_obst_ - 1;
   // k_min_ = j_max_ + 1;
-  // k_max_ = k_min_ + (M_ - 2 * p_) * num_obst_ - 1;
+  // k_max_ = k_min_ + (M_ - 2 * p_) * num_of_obst_ - 1;
 
   num_of_variables_ = j_max_ + 1;  // k_max_ + 1;
 
   num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
   int num_of_cpoints = N_ + 1;
+
+  num_of_normals_ = num_of_segments_ * num_of_obst_;
 
   q0_ << 0, 0, 0;
   q1_ << 0, 0, 0;
@@ -62,12 +73,12 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
   // Debugging stuff
   std::cout << "deg_pol_= " << deg_pol_ << std::endl;
   std::cout << "num_pol= " << num_pol << std::endl;
-  std::cout << "num_obst_= " << num_obst_ << std::endl;
+  std::cout << "num_of_obst_= " << num_of_obst_ << std::endl;
   std::cout << "p_= " << p_ << std::endl;
   std::cout << "M_= " << M_ << std::endl;
   std::cout << "N_= " << N_ << std::endl;
   std::cout << "num_of_cpoints= " << num_of_cpoints << std::endl;
-  std::cout << "num_of_segments_= " << num_of_cpoints << std::endl;
+  std::cout << "num_of_segments_= " << num_of_segments_ << std::endl;
   std::cout << "i_min_= " << i_min_ << std::endl;
   std::cout << "i_max_= " << i_max_ << std::endl;
   std::cout << "j_min_= " << j_min_ << std::endl;
@@ -78,6 +89,8 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
   std::cout << "gIndexQ(num_of_cpoints-3)=" << gIndexQ(num_of_cpoints - 3 - 1) << std::endl;
   std::cout << "gIndexN(0)=" << gIndexN(0) << std::endl;
   std::cout << "gIndexN(num_of_segments-1)=" << gIndexN(num_of_segments_ - 1) << std::endl;
+
+  separator_solver = new separator::Separator(0.0, 0.0, 0.0);
 
   /*  x_.clear();
     for (int i = 0; i < num_of_variables_; i++)
@@ -113,66 +126,53 @@ void SolverNlopt::getGuessForPlanes(std::vector<Hyperplane3D> &planes)
     }*/
 }
 
-void SolverNlopt::useRRTGuess(vec_E<Polyhedron<3>> &polyhedra)
+bool SolverNlopt::intersects()
 {
-  // sleep(1);
-  n_guess_.clear();
-  q_guess_.clear();
+  typedef CGAL::Simple_cartesian<double> K;
+  typedef K::Point_3 Point;
+  typedef K::Plane_3 Plane;
+  typedef K::Vector_3 Vector;
+  typedef K::Segment_3 Segment;
+  typedef K::Ray_3 Ray;
+  typedef CGAL::Polyhedron_3<K> Polyhedron;
+  typedef CGAL::AABB_face_graph_triangle_primitive<Polyhedron> Primitive;
+  typedef CGAL::AABB_traits<K, Primitive> Traits;
+  typedef CGAL::AABB_tree<Traits> Tree;
+  typedef boost::optional<Tree::Intersection_and_primitive_id<Segment>::Type> Segment_intersection;
+  typedef boost::optional<Tree::Intersection_and_primitive_id<Plane>::Type> Plane_intersection;
+  typedef Tree::Primitive_id Primitive_id;
 
-  int num_of_intermediate_cps = N_ + 1 - 6;
+  Point p(1.0, 0.0, 0.0);
+  Point q(0.0, 1.0, 0.0);
+  Point r(0.0, 0.0, 1.0);
+  Point s(0.0, 0.0, 0.0);
+  Polyhedron polyhedron;
+  polyhedron.make_tetrahedron(p, q, r, s);
+  // constructs AABB tree
+  Tree tree(faces(polyhedron).first, faces(polyhedron).second, polyhedron);
+  // constructs segment query
+  Point a(-0.2, 0.2, -0.2);
+  Point b(1.3, 0.2, 1.3);
+  Segment segment_query(a, b);
+  // tests intersections with segment query
+  if (tree.do_intersect(segment_query))
+    std::cout << "intersection(s)" << std::endl;
+  else
+    std::cout << "no intersection" << std::endl;
+}
 
-  Eigen::Vector3d qNm2 = final_state_.pos;
+/*
+Correlated 3D Gaussian distribution
+#include "./../../eigenmvn.hpp"
+Eigen::Matrix3d rot = Eigen::Matrix3d::Identity();
+    Eigen::Matrix3d covar = rot * Eigen::DiagonalMatrix<double, 3, 3>(0.005, 0.005, 0.001) * rot.transpose();
+    Eigen::EigenMultivariateNormal<double> normX_solver(mean, covar);  // or normX_cholesk(mean, covar, true);
+    tmp = normX_solver.samples(1).transpose();*/
 
-  Eigen::Vector3d high_value = 100 * Eigen::Vector3d::Ones();  // to avoid very extreme values
+// std::cout << "obst index=" << obst_index << "sample= " << tmp.transpose() << std::endl;
 
-  double best_cost = std::numeric_limits<double>::max();
-
-  std::vector<Eigen::Vector3d> q;
-
-  for (int trial = 0; trial < 300; trial++)
-  {
-    std::vector<Eigen::Vector3d> q;
-    q.push_back(q0_);
-    q.push_back(q1_);
-    q.push_back(q2_);
-
-    // sample next cp in a sphere (or spherical surface?) near q2_ (limited by v_max), and
-
-    for (int i = 3; i <= (N_ - 3); i++)  // all the intermediate control points of the trajectory
-    {
-      Eigen::Vector3d tmp;
-
-      Eigen::Vector3d mean = q2_ + (qNm2 - q2_) * (i - 2) / (1.0 * num_of_intermediate_cps);
-      /*
-      Correlated 3D Gaussian distribution
-      #include "./../../eigenmvn.hpp"
-      Eigen::Matrix3d rot = Eigen::Matrix3d::Identity();
-          Eigen::Matrix3d covar = rot * Eigen::DiagonalMatrix<double, 3, 3>(0.005, 0.005, 0.001) * rot.transpose();
-          Eigen::EigenMultivariateNormal<double> normX_solver(mean, covar);  // or normX_cholesk(mean, covar, true);
-          tmp = normX_solver.samples(1).transpose();*/
-
-      Eigen::Vector3d max_value = mean + high_value;
-
-      std::default_random_engine generator;
-      generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
-      std::normal_distribution<double> distribution_x(mean(0), 0.5);
-      std::normal_distribution<double> distribution_y(mean(1), 0.5);
-      std::normal_distribution<double> distribution_z(mean(2), 0.5);
-
-    initloop:
-
-      // take sample
-
-      tmp << distribution_x(generator), distribution_y(generator), distribution_z(generator);
-
-      saturate(tmp, -max_value, max_value);
-
-      // check that it doesn't collide with the  obstacles
-      for (int obst_index = 0; obst_index < num_obst_; obst_index++)
-      {
-        // std::cout << "obst index=" << obst_index << "sample= " << tmp.transpose() << std::endl;
-
-        for (int j = i; j >= (i - 3); j--)  // Q3 needs to check against polyh0, polyh1 and polyh2 of all the obstacles
+/*        for (int j = i; j >= (i - 3); j--)  // Q3 needs to check against polyh0, polyh1 and polyh2 of all the
+   obstacles
         {
           // std::cout << "j=" << j << std::endl;
 
@@ -182,18 +182,184 @@ void SolverNlopt::useRRTGuess(vec_E<Polyhedron<3>> &polyhedra)
           {
             goto initloop;
           }
-        }
+        }*/
+
+void SolverNlopt::computeVeli(Eigen::Vector3d &vel, int i, std::vector<Eigen::Vector3d> &q)
+{
+  if (i >= (q.size() - 1))
+  {
+    std::cout << "Velocity cannot be computed for this index" << std::endl;
+    return;
+  }
+  vel = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
+}
+
+void SolverNlopt::computeAcceli(Eigen::Vector3d &accel, int i, std::vector<Eigen::Vector3d> &q)
+{
+  Eigen::Vector3d vi;
+  computeVeli(vi, i, q);
+  Eigen::Vector3d viP1;
+  computeVeli(viP1, i + 1, q);
+
+  accel = (p_ - 1) * (viP1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
+}
+
+// Given a vector of control points q0,...,qj
+// it checks if v_{j-1} satisfies vmax constraints
+// and if  a_{j-2} satisfies amax constraints
+bool SolverNlopt::satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q)
+{
+  if (q.size() <= 2)
+  {
+    std::cout << bold << red << "Velocity and accel cannot be computed for this q" << reset << std::endl;
+    return false;
+  }
+
+  Eigen::Vector3d vi;
+  computeVeli(vi, q.size() - 2, q);
+  Eigen::Vector3d aiM1;
+  computeAcceli(aiM1, q.size() - 3, q);
+
+  std::cout << "vi= " << vi.transpose() << std::endl;
+  std::cout << "ai= " << aiM1.transpose() << std::endl;
+
+  return ((vi.array().abs() <= v_max_.array()).all() && (aiM1.array().abs() <= a_max_.array()).all());
+}
+
+void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
+{
+  // sleep(1);
+  n_guess_.clear();
+  q_guess_.clear();
+
+  generateRandomN(n_guess_);
+  generateRandomQ(q_guess_);
+
+  int num_of_intermediate_cps = N_ + 1 - 6;
+
+  Eigen::Vector3d qNm2 = final_state_.pos;
+
+  Eigen::Vector3d high_value = 100 * Eigen::Vector3d::Ones();  // to avoid very extreme values
+
+  double best_cost = std::numeric_limits<double>::max();
+
+  signs_.clear();
+  for (int i = 0; i < n_guess_.size(); i++)
+  {
+    signs_.push_back(1);
+  }
+
+  planes_.clear();
+
+  MyTimer guess_timer(true);
+
+  for (int trial = 0; trial < 1; trial++)
+  {
+    std::cout << "trial= " << trial << std::endl;
+    std::cout << "num_of_normals_= " << num_of_normals_ << std::endl;
+    std::vector<Eigen::Vector3d> q;
+    std::vector<Eigen::Vector3d> n(std::max(num_of_normals_ - 2, 0),
+                                   Eigen::Vector3d::Zero());  // Initialize all elements
+
+    q.push_back(q0_);
+    q.push_back(q1_);
+    q.push_back(q2_);
+
+    // sample next cp in a sphere (or spherical surface?) near q2_ (limited by v_max)
+    for (int i = 3; i <= (N_ - 2); i++)  // all the intermediate control points, and cp N_-2 of the trajectory
+    {
+      std::cout << "i= " << i << std::endl;
+      Eigen::Vector3d tmp;
+
+      Eigen::Vector3d mean = q2_ + (qNm2 - q2_) * (i - 2) / (1.0 * num_of_intermediate_cps);
+      Eigen::Vector3d max_value = mean + high_value;
+      std::default_random_engine generator;
+      generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+      std::normal_distribution<double> distribution_x(mean(0), 0.1);
+      std::normal_distribution<double> distribution_y(mean(1), 0.1);
+      std::normal_distribution<double> distribution_z(mean(2), 0.1);
+
+    initloop:
+      if (guess_timer.ElapsedMs() > max_runtime_ * 1000)
+      {
+        return;
       }
 
-      //   std::cout << "Found intermediate cp " << i << "= " << tmp.transpose() << std::endl;
+      // take sample
+      tmp = q.back();  // hack;
+      // tmp << distribution_x(generator), distribution_y(generator), distribution_z(generator);
+      // saturate(tmp, -max_value, max_value);
 
+      std::vector<Eigen::Vector3d> last4Cps(4);
+      std::copy(q.begin() + i - 3, q.begin() + i, last4Cps.begin());  // copy three elements
+      last4Cps[3] = tmp;
+
+      /*      if ((satisfiesVmaxAmax(last4Cps) == false))
+            {
+              std::cout << "vmax and amax are not satisfied" << std::endl;
+              std::cout << "knots_=" << knots_ << std::endl;
+
+              for (auto x : last4Cps)
+              {
+                std::cout << x.transpose() << std::endl;
+              }
+
+              goto initloop;
+            }
+      */
+      // check that it doesn't collide with the  obstacles at t=i-3
+      for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+      {
+        /*        std::cout << "last4Cps= " << std::endl;
+                for (auto x : last4Cps)
+                {
+                  std::cout << x.transpose() << std::endl;
+                }
+                std::cout << "\nhulls_[obst_index][i]= " << std::endl;
+                for (auto x : hulls_[obst_index][i])
+                {
+                  std::cout << x.transpose() << std::endl;
+                }
+                std::cout << std::endl;*/
+
+        Eigen::Vector3d n_i;
+        if (separator_solver->solveModel(n_i, hulls_[obst_index][i - 3], last4Cps) == false)
+        {
+          std::cout << "Didn't work, i=" << i << std::endl;
+          std::cout << "Obstacle: " << std::endl;
+          printStdEigen(hulls_[obst_index][i - 3]);
+          std::cout << "Trajectory" << std::endl;
+          std::cout << last4Cps[0].transpose() << std::endl;
+          std::cout << last4Cps[1].transpose() << std::endl;
+          std::cout << last4Cps[2].transpose() << std::endl;
+          std::cout << last4Cps[3].transpose() << std::endl;
+
+          goto initloop;
+        }  // n_i will point to the points in the obstacle (hulls_)
+
+        std::cout << "Index of n filled= " << obst_index * num_of_segments_ << std::endl;
+        n[obst_index * num_of_segments_ + i - 3] = n_i;  // will be overwritten until the solution is found
+      }
+
+      std::cout << "Found intermediate cp " << i << "= " << tmp.transpose() << ", N_-3=" << (N_ - 3) << std::endl;
       q.push_back(tmp);
     }
-    // sample last cp in a sphere near qNm2_
 
-    q.push_back(qNm2);
-    q.push_back(qNm2);
-    q.push_back(qNm2);
+    std::cout << "Filling last two elements of n" << std::endl;
+    std::cout << "n.size() - 3=" << n.size() - 3 << std::endl;
+
+    if (n.size() > 0)
+    {  // only do this if there are obstacles
+      n.push_back(n.back());
+      n.push_back(n.back());
+    }
+
+    std::cout << "Filled" << std::endl;
+
+    // sample last cp in a sphere near qNm2_
+    q.push_back(q.back());
+    q.push_back(q.back());
+    // q.push_back(qNm2);
 
     std::vector<Eigen::Vector3d> n_novale;
 
@@ -202,13 +368,43 @@ void SolverNlopt::useRRTGuess(vec_E<Polyhedron<3>> &polyhedra)
     {
       best_cost = cost;
       q_guess_ = q;
+      n_guess_ = n;
     }
   }
 
-  // generateGuessNFromQ(q_best, n);
-  generateRandomN(n_guess_);
+  /*  for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+    {
+      for (int i = 0; i < num_of_segments_; i++)
+      {
+        Eigen::Vector3d centroid_hull;
+        findCentroidHull(hulls_[obst_index][i], centroid_hull);
 
-  // fillXTempFromCPs(q_best);
+        Eigen::Vector3d n_i =
+            (centroid_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
+
+        double alpha = 0.01;  // the smaller, the higher the chances the plane is outside the obstacle. Should be <1
+
+        Eigen::Vector3d point_in_middle = q[i] + (centroid_hull - q[i]) * alpha;
+
+        double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
+
+        int sign_d_i = (d_i >= 0) ? 1 : -1;
+
+        signs_.push_back(sign_d_i);
+        n.push_back(n_i / d_i);  // n'x + 1 = 0*/
+  /*
+    for (int i = 0; i < n_guess_.size(); i++)
+    {
+      double x = q[i]
+
+          Eigen::Vector3d point_in_plane =
+
+              Hyperplane3D plane(point_in_plane, n_i / d_i);
+      planes_.push_back(plane);
+    }
+  */
+  // generateGuessNFromQ(q_best, n);
+  //  generateRandomN(n_guess_);
 }
 
 void SolverNlopt::generateRandomN(std::vector<Eigen::Vector3d> &n)
@@ -220,6 +416,19 @@ void SolverNlopt::generateRandomN(std::vector<Eigen::Vector3d> &n)
     double r2 = ((double)rand() / (RAND_MAX));
     double r3 = ((double)rand() / (RAND_MAX));
     n.push_back(Eigen::Vector3d(r1, r2, r3));
+  }
+}
+
+void SolverNlopt::generateRandomQ(std::vector<Eigen::Vector3d> &q)
+{
+  q.clear();
+
+  for (int i = 0; i <= N_; i++)
+  {
+    double r1 = ((double)rand() / (RAND_MAX));
+    double r2 = ((double)rand() / (RAND_MAX));
+    double r3 = ((double)rand() / (RAND_MAX));
+    q.push_back(Eigen::Vector3d(r1, r2, r3));
   }
 }
 
@@ -245,7 +454,7 @@ void SolverNlopt::generateGuessNFromQ(const std::vector<Eigen::Vector3d> &q, std
 
   planes_.clear();
 
-  for (int obst_index = 0; obst_index < num_obst_; obst_index++)
+  for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
   {
     for (int i = 0; i < num_of_segments_; i++)
     {
@@ -520,6 +729,8 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
   initial_state_ = initial_state;
   final_state_ = final_state;
 
+  weight_modified_ = weight_ / (final_state_.pos - initial_state_.pos).norm();
+
   std::cout << "initial_state= " << std::endl;
   initial_state.printHorizontal();
 
@@ -652,7 +863,7 @@ double SolverNlopt::computeObjFuction(unsigned nn, double *grad, std::vector<Eig
 
   if (force_final_state_ == false)
   {
-    cost += weight_ * (q[N_] - final_state_.pos).squaredNorm();
+    cost += weight_modified_ * (q[N_] - final_state_.pos).squaredNorm();
   }
 
   if (grad)
@@ -671,7 +882,7 @@ double SolverNlopt::computeObjFuction(unsigned nn, double *grad, std::vector<Eig
       if (i == (N_ - 2))
       {
         gradient = -2 * (q[i - 1] - q[i]) + 2 * (q[i] - 2 * q[i - 1] + q[i - 2]);
-        gradient += 2 * weight_ * (q[i] - final_state_.pos);
+        gradient += 2 * weight_modified_ * (q[i] - final_state_.pos);
       }
       else
       {
@@ -752,14 +963,14 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   }
   /*#ifdef DEBUG_MODE_NLOPT
     // std::cout << "here1" << std::endl;*/
-  /*  std::cout << "Going to add plane constraints, r= " << r << std::endl;
-    //#endif
-    std::cout << "num_obst_ " << num_obst_ << std::endl;
-    std::cout << "num_of_segments_ " << num_of_segments_ << std::endl;*/
+  // std::cout << "Going to add plane constraints, r= " << r << std::endl;
+  /*  //#endif
+   std::cout << "num_of_obst_ " << num_of_obst_ << std::endl;
+   std::cout << "num_of_segments_ " << num_of_segments_ << std::endl;*/
 
   for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
   {
-    for (int obst_index = 0; obst_index < num_obst_; obst_index++)
+    for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
     {
       int ip = obst_index * num_of_segments_ + i;  // index plane
 
@@ -1059,6 +1270,14 @@ void SolverNlopt::useRandomInitialGuess()
   generateRandomN(n_guess_);
 }
 
+void SolverNlopt::printStdEigen(const std::vector<Eigen::Vector3d> &v)
+{
+  for (auto v_i : v)
+  {
+    std::cout << v_i.transpose() << std::endl;
+  }
+}
+
 bool SolverNlopt::optimize()
 
 {
@@ -1085,6 +1304,7 @@ bool SolverNlopt::optimize()
   opt_->set_xtol_rel(1e-8);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
   // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
+  max_runtime_ = 0.2;               // hack
   opt_->set_maxtime(max_runtime_);  // max_runtime_  // maximum time in seconds. Negative --> don't use this criterion
 
   initializeNumOfConstraints();
@@ -1132,6 +1352,9 @@ bool SolverNlopt::optimize()
   std::cout << "x_ has size= " << x_.size() << std::endl;
   std::cout << "q_guess_ has size= " << q_guess_.size() << std::endl;
   std::cout << "n_guess_ has size= " << n_guess_.size() << std::endl;
+
+  std::cout << "n_guess_ is\n" << std::endl;
+  printStdEigen(n_guess_);
 
   // toEigen(x_, q_guess_, n_guess_);
 

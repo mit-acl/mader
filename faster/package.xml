@@ -28,6 +28,7 @@
   <build_depend>decomp_util</build_depend>
   <build_depend>decomp_ros_utils</build_depend>
   <build_depend>jps3d</build_depend>
+  <build_depend>separator</build_depend>
 
  <!--
   <build_depend>decomp_util</build_depend>

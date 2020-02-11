@@ -48,6 +48,7 @@ find_package(catkin REQUIRED COMPONENTS
 	decomp_util
 	decomp_ros_utils
 	rviz_visual_tools
+	separator
 )
 find_package(decomp_util REQUIRED)
 include_directories(${DECOMP_UTIL_INCLUDE_DIRS})
@@ -67,16 +68,17 @@ include_directories(${catkin_INCLUDE_DIRS})
 set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;$ENV{GUROBI_HOME}/lib/libgurobi81.so;$ENV{GUROBI_HOME}/lib/" )
 
 
-add_library(utils STATIC src/utils.cpp src/utils.hpp)
+add_library(utils STATIC src/utils.cpp)
 #set_property(TARGET utils PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+#target_precompile_headers(utils PUBLIC src/utils.hpp)
 target_link_libraries(utils PUBLIC ${PCL_LIBRARIES})
 
 
 add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp)
 #set_property(TARGET solverNlopt PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
-target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils)
+target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils ${catkin_LIBRARIES})
 
 
 add_library(jps_manager STATIC src/jps_manager.cpp src/jps_manager.hpp)
@@ -121,6 +123,10 @@ target_link_libraries(${PROJECT_NAME}_node PUBLIC faster_ros)
 
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
+
+# add_executable(simplex_example src/solvers/simplex/example.cpp)
+# add_dependencies(simplex_example ${catkin_EXPORTED_TARGETS} )
+# target_link_libraries(simplex_example ${catkin_LIBRARIES})
 
 
 #add_executable(${PROJECT_NAME}_node_novale src/main_novale.cpp)

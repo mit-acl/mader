@@ -1129,8 +1129,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   mtx_map.unlock();
   mtx_unk.unlock();
   // end of Initial GUESSS
-  snlopt.useJPSGuess(JPSk_dyn);
-  // snlopt.setInitialGuess(JPSk_dyn);
+  // snlopt.useJPSGuess(JPSk_dyn);
+  snlopt.useRRTGuess();
   // snlopt.useRandomInitialGuess();
 
   mtx_trajs_.unlock();

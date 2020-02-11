@@ -11,6 +11,7 @@
 #include "./../../timer.hpp"
 //#include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
 #include <decomp_geometry/polyhedron.h>  //For Polyhedron definition
+#include "separator.hpp"
 
 typedef JPS::Timer MyTimer;
 
@@ -39,16 +40,19 @@ public:
 
   // Guesses
   void useJPSGuess(vec_Vecf<3> &jps_path);
-  void useRRTGuess(vec_E<Polyhedron<3>> &polyhedra);
+  void useRRTGuess();  // vec_E<Polyhedron<3>> &polyhedra
   void useRandomInitialGuess();
 
   void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
 
 protected:
 private:
+  void printStdEigen(const std::vector<Eigen::Vector3d> &v);
   void generateGuessNFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
 
   void generateRandomN(std::vector<Eigen::Vector3d> &n);
+  void generateRandomQ(std::vector<Eigen::Vector3d> &q);
+
   void fillXTempFromCPs(std::vector<Eigen::Vector3d> &q);
 
   nlopt::algorithm getSolver(std::string &solver);
@@ -112,6 +116,14 @@ private:
 
   int lastDecCP();
 
+  bool intersects();
+
+  void computeVeli(Eigen::Vector3d &vel, int i, std::vector<Eigen::Vector3d> &q);
+
+  void computeAcceli(Eigen::Vector3d &accel, int i, std::vector<Eigen::Vector3d> &q);
+
+  bool satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q);
+
   int deg_pol_ = 3;
   int num_pol_ = 5;
   int p_ = 5;
@@ -127,7 +139,7 @@ private:
   int num_of_variables_;
   int num_of_normals_;
   int num_of_constraints_;
-  int num_obst_;
+  int num_of_obst_;
   int num_of_segments_;
 
   nlopt::algorithm solver_;
@@ -155,6 +167,7 @@ private:
   Eigen::Vector3d a_max_;
 
   double weight_ = 10000;
+  double weight_modified_ = 10000;
 
   bool force_final_state_ = true;
 
@@ -181,5 +194,7 @@ private:
   std::vector<Eigen::Vector3d> q_guess_;  // Guesses for the normals
 
   Eigen::MatrixXd R_;  // This matrix is [r0, r1, r2, r3, r0, r1, r2, r3] (for two segments)
+
+  separator::Separator *separator_solver;
 };
 #endif
