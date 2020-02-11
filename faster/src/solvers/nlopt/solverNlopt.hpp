@@ -48,7 +48,8 @@ public:
 protected:
 private:
   void printStdEigen(const std::vector<Eigen::Vector3d> &v);
-  void generateGuessNFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
+  void generateGuessNDFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
+                            std::vector<double> &d);
 
   void generateRandomN(std::vector<Eigen::Vector3d> &n);
   void generateRandomQ(std::vector<Eigen::Vector3d> &q);
@@ -62,13 +63,13 @@ private:
   void assignEigenToVector(double *grad, int index, const Eigen::Vector3d &tmp);
 
   template <class T>
-  void toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
+  void toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
   int gIndexQ(int i);  // Element jth of control point ith
   int gIndexN(int i);  // Element jth of normal ith
-  // int gIndexD(int i);
+  int gIndexD(int i);
 
-  void printQN(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
+  void printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
   // r is the constraint index
   // nn is the number of variables
@@ -87,16 +88,19 @@ private:
   // See example https://github.com/stevengj/nlopt/issues/168
   static void myIneqConstraints(unsigned m, double *result, unsigned nn, const double *x, double *grad, void *f_data);
 
-  double computeObjFuction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
+  double computeObjFuction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
+                           std::vector<double> &d);
 
   void computeConstraints(unsigned m, double *constraints, unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
-                          std::vector<Eigen::Vector3d> &n);
+                          std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
   void initializeNumOfConstraints();
 
-  void qntoX(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n, std::vector<double> &x);
+  void qndtoX(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
+              const std::vector<double> &d, std::vector<double> &x);
 
-  void printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n);
+  void printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
+                                  std::vector<double> &d);
 
   // template <class T>
   // void printInfeasibleConstraints(const T x);
@@ -131,8 +135,8 @@ private:
   int i_max_;
   int j_min_;
   int j_max_;
-  // int k_min_;
-  // int k_max_;
+  int k_min_;
+  int k_max_;
   int M_;
   int N_;
 
@@ -192,6 +196,7 @@ private:
   // Guesses
   std::vector<Eigen::Vector3d> n_guess_;  // Guesses for the normals
   std::vector<Eigen::Vector3d> q_guess_;  // Guesses for the normals
+  std::vector<double> d_guess_;           // Guesses for the normals
 
   Eigen::MatrixXd R_;  // This matrix is [r0, r1, r2, r3, r0, r1, r2, r3] (for two segments)
 
