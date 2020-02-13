@@ -97,31 +97,7 @@ std::vector<Node> SplineAStar::expand(Node& current)
   {
     vz_.push_back(-constraint_z + i * ((2.0 * constraint_z) / (samples_z_ - 1)));
   }
-  ////
 
-  /*  std::cout << "tmp=" << tmp << std::endl;
-
-    std::cout << "vx_ =" << std::endl;
-
-    for (double vx_i : vx_)
-    {
-      std::cout << vx_i << ", ";
-    }
-    std::cout << std::endl;
-
-    for (double vy_i : vy_)
-    {
-      std::cout << vy_i << ", ";
-    }
-    std::cout << std::endl;
-
-    for (double vz_i : vz_)
-    {
-      std::cout << vz_i << ", ";
-    }
-    std::cout << std::endl;*/
-
-  /////////////////////////////////
   for (double vx_i : vx_)
   {
     for (double vy_i : vy_)
@@ -160,15 +136,31 @@ std::vector<Node> SplineAStar::expand(Node& current)
   /*  if (current.index <= 6)
     {*/
   // For now return all the neighbors
-  return neighbors_va;
+  // return neighbors_va;
   //}
 
   // And now select the ones that satisfy the LP with all the obstacles
 
   std::vector<Eigen::Vector3d> last4Cps(4);
-  last4Cps[0] = current.previous->previous->qi;
-  last4Cps[1] = current.previous->qi;
-  last4Cps[2] = current.qi;
+
+  if (current.index == 2)
+  {
+    last4Cps[0] = q0_;
+    last4Cps[1] = q1_;
+    last4Cps[2] = current.qi;
+  }
+  else if (current.index == 3)
+  {
+    last4Cps[0] = q1_;
+    last4Cps[1] = current.previous->qi;
+    last4Cps[2] = current.qi;
+  }
+  else
+  {
+    last4Cps[0] = current.previous->previous->qi;
+    last4Cps[1] = current.previous->qi;
+    last4Cps[2] = current.qi;
+  }
 
   for (auto neighbor_va : neighbors_va)
   {
@@ -324,3 +316,25 @@ void SplineAStar::run(std::vector<Eigen::Vector3d>& result)
         // if neighbor not in OPEN SET TODO!!
         openList.push(neighbor);  // the order is automatic (it's a prioriry queue)
       }*/
+
+/*  std::cout << "tmp=" << tmp << std::endl;
+
+  std::cout << "vx_ =" << std::endl;
+
+  for (double vx_i : vx_)
+  {
+    std::cout << vx_i << ", ";
+  }
+  std::cout << std::endl;
+
+  for (double vy_i : vy_)
+  {
+    std::cout << vy_i << ", ";
+  }
+  std::cout << std::endl;
+
+  for (double vz_i : vz_)
+  {
+    std::cout << vz_i << ", ";
+  }
+  std::cout << std::endl;*/

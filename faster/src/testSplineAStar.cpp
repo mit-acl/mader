@@ -12,10 +12,11 @@ int main()
   int p = 3;
   int N = 11;
   int num_of_obst = 1;
+  int n_pol = 7;
 
-  int samples_x = 10;
-  int samples_y = 10;
-  int samples_z = 10;
+  int samples_x = 5;
+  int samples_y = 5;
+  int samples_z = 5;
 
   Eigen::Vector3d v_max(20.0, 20.0, 20.0);
   Eigen::Vector3d a_max(100.0, 100.0, 100.0);
@@ -44,7 +45,12 @@ int main()
 
   hull.push_back(Eigen::Vector3d(1.0, 1.0, 1.0));
 
-  hulls_curve.push_back(hull);
+  // Assummes static obstacle
+  for (int i = 0; i < n_pol; i++)
+  {
+    hulls_curve.push_back(hull);
+  }
+
   hulls_curves.push_back(hulls_curve);
 
   SplineAStar myAStarSolver(p, N, num_of_obst, knots, hulls_curves);
