@@ -24,7 +24,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: DynObstaclesGrid
+    SyncSource: ""
   - Class: rviz/Displays
     Help Height: 0
     Name: Displays
@@ -69,64 +69,6 @@ Visualization Manager:
           Value: false
         SQ020:
           Value: true
-        SQ021:
-          Value: true
-        SQ0210:
-          Value: true
-        SQ0211:
-          Value: true
-        SQ0212:
-          Value: true
-        SQ0213:
-          Value: true
-        SQ0214:
-          Value: true
-        SQ0215:
-          Value: true
-        SQ0216:
-          Value: true
-        SQ0217:
-          Value: true
-        SQ0218:
-          Value: true
-        SQ0219:
-          Value: true
-        SQ022:
-          Value: true
-        SQ0220:
-          Value: true
-        SQ0221:
-          Value: true
-        SQ0222:
-          Value: true
-        SQ0223:
-          Value: true
-        SQ0224:
-          Value: true
-        SQ0225:
-          Value: true
-        SQ0226:
-          Value: true
-        SQ0227:
-          Value: true
-        SQ0228:
-          Value: true
-        SQ0229:
-          Value: true
-        SQ023:
-          Value: true
-        SQ024:
-          Value: true
-        SQ025:
-          Value: true
-        SQ026:
-          Value: true
-        SQ027:
-          Value: true
-        SQ028:
-          Value: true
-        SQ029:
-          Value: true
         vicon:
           Value: false
         world:
@@ -139,64 +81,6 @@ Visualization Manager:
       Tree:
         world:
           SQ020:
-            {}
-          SQ021:
-            {}
-          SQ0210:
-            {}
-          SQ0211:
-            {}
-          SQ0212:
-            {}
-          SQ0213:
-            {}
-          SQ0214:
-            {}
-          SQ0215:
-            {}
-          SQ0216:
-            {}
-          SQ0217:
-            {}
-          SQ0218:
-            {}
-          SQ0219:
-            {}
-          SQ022:
-            {}
-          SQ0220:
-            {}
-          SQ0221:
-            {}
-          SQ0222:
-            {}
-          SQ0223:
-            {}
-          SQ0224:
-            {}
-          SQ0225:
-            {}
-          SQ0226:
-            {}
-          SQ0227:
-            {}
-          SQ0228:
-            {}
-          SQ0229:
-            {}
-          SQ023:
-            {}
-          SQ024:
-            {}
-          SQ025:
-            {}
-          SQ026:
-            {}
-          SQ027:
-            {}
-          SQ028:
-            {}
-          SQ029:
             {}
           vicon:
             SQ01s:
@@ -229,7 +113,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/setpoint
       Name: Setpoint
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -413,13 +297,13 @@ Visualization Manager:
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /rviz_visual_tools
       Name: Planes
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /SQ01s/cvx/point_M
@@ -492,18 +376,18 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.656343281
-        Y: 0.997161925
-        Z: 2.04868031
+        X: 1.01115024
+        Y: 1.43863499
+        Z: 3.10983443
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.489797235
+      Pitch: 0.709797204
       Target Frame: LQ01s
       Value: Orbit (rviz)
-      Yaw: 3.98749328
+      Yaw: 3.95749307
     Saved: ~
 Window Geometry:
   Displays:

@@ -47,10 +47,17 @@ public:
 
 protected:
 private:
-  void printStdEigen(const std::vector<Eigen::Vector3d> &v);
+  void sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vector3d> &q);
+
+  void printStd(const std::vector<Eigen::Vector3d> &v);
+  void printStd(const std::vector<double> &v);
   void generateGuessNDFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                             std::vector<double> &d);
 
+  void fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const std::vector<Eigen::Vector3d> &n,
+                         const std::vector<double> &d, const std::vector<Eigen::Vector3d> &q);
+
+  void generateRandomD(std::vector<double> &d);
   void generateRandomN(std::vector<Eigen::Vector3d> &n);
   void generateRandomQ(std::vector<Eigen::Vector3d> &q);
 
@@ -122,9 +129,9 @@ private:
 
   bool intersects();
 
-  void computeVeli(Eigen::Vector3d &vel, int i, std::vector<Eigen::Vector3d> &q);
+  void computeVeli(Eigen::Vector3d &vel, std::vector<Eigen::Vector3d> &q);
 
-  void computeAcceli(Eigen::Vector3d &accel, int i, std::vector<Eigen::Vector3d> &q);
+  void computeAcceli(Eigen::Vector3d &accel, std::vector<Eigen::Vector3d> &q);
 
   bool satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q);
 

@@ -90,7 +90,7 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
   std::cout << "gIndexN(0)=" << gIndexN(0) << std::endl;
   std::cout << "gIndexN(num_of_segments-1)=" << gIndexN(num_of_segments_ - 1) << std::endl;
 
-  separator_solver = new separator::Separator(0.0, 0.0, 0.0);
+  separator_solver = new separator::Separator(1.0, 1.0, 1.0);
 
   /*  x_.clear();
     for (int i = 0; i < num_of_variables_; i++)
@@ -184,22 +184,37 @@ Eigen::Matrix3d rot = Eigen::Matrix3d::Identity();
           }
         }*/
 
-void SolverNlopt::computeVeli(Eigen::Vector3d &vel, int i, std::vector<Eigen::Vector3d> &q)
+void SolverNlopt::computeVeli(Eigen::Vector3d &vel, std::vector<Eigen::Vector3d> &q)
 {
+  int i = q.size() - 2;
+
   if (i >= (q.size() - 1))
   {
-    std::cout << "Velocity cannot be computed for this index" << std::endl;
+    std::cout << "Velocity cannot be ccomputed for this index" << std::endl;
     return;
   }
   vel = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
 }
 
-void SolverNlopt::computeAcceli(Eigen::Vector3d &accel, int i, std::vector<Eigen::Vector3d> &q)
+void SolverNlopt::computeAcceli(Eigen::Vector3d &accel, std::vector<Eigen::Vector3d> &q)
 {
+  int i = q.size() - 3;
+
+  std::vector<Eigen::Vector3d> q_reduced;
+  q_reduced.push_back(q[q.size() - 4]);
+  q_reduced.push_back(q[q.size() - 3]);
+  q_reduced.push_back(q[q.size() - 2]);
+
   Eigen::Vector3d vi;
-  computeVeli(vi, i, q);
+  computeVeli(vi, q_reduced);
+
   Eigen::Vector3d viP1;
-  computeVeli(viP1, i + 1, q);
+  computeVeli(viP1, q);
+
+  std::cout << "In computeAcceli q=" << std::endl;
+  printStd(q);
+  std::cout << "In computeAcceli vi=" << vi.transpose() << std::endl;
+  std::cout << "In computeAcceli viP1" << viP1.transpose() << std::endl;
 
   accel = (p_ - 1) * (viP1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
 }
@@ -216,9 +231,9 @@ bool SolverNlopt::satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q)
   }
 
   Eigen::Vector3d vi;
-  computeVeli(vi, q.size() - 2, q);
+  computeVeli(vi, q);
   Eigen::Vector3d aiM1;
-  computeAcceli(aiM1, q.size() - 3, q);
+  computeAcceli(aiM1, q);
 
   std::cout << "vi= " << vi.transpose() << std::endl;
   std::cout << "ai= " << aiM1.transpose() << std::endl;
@@ -226,13 +241,105 @@ bool SolverNlopt::satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q)
   return ((vi.array().abs() <= v_max_.array()).all() && (aiM1.array().abs() <= a_max_.array()).all());
 }
 
+void SolverNlopt::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const std::vector<Eigen::Vector3d> &n,
+                                    const std::vector<double> &d, const std::vector<Eigen::Vector3d> &q)
+{
+  planes_.clear();
+
+  for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+  {
+    for (int i = 0; i < num_of_segments_; i++)
+    {
+      Eigen::Vector3d centroid_hull;
+      findCentroidHull(hulls_[obst_index][i], centroid_hull);
+      Eigen::Vector3d tmp = (centroid_hull + q[i]) / 2.0;
+
+      Eigen::Vector3d point_in_plane = Eigen::Vector3d::Zero();
+
+      if (fabs(n[i].x()) != 0)
+      {
+        point_in_plane << -(n[i].y() * tmp.y() + n[i].z() * tmp.z() + d[i]) / (n[i].x()), tmp.y(), tmp.z();
+      }
+      else if (fabs(n[i].y()) != 0)
+      {
+        point_in_plane << tmp.x(), -(n[i].x() * tmp.x() + n[i].z() * tmp.z() + d[i]) / (n[i].y()), tmp.z();
+      }
+      else
+      {
+        point_in_plane << tmp.x(), tmp.y(), -(n[i].x() * tmp.x() + n[i].y() * tmp.y() + d[i]) / (n[i].z());
+      }
+      Hyperplane3D plane(point_in_plane, n[i]);
+      planes_.push_back(plane);
+    }
+  }
+}
+
+// Given std::vector<Eigen::Vector3d> &q, this generates a sample that satisfies the vmax and amax constraints wrt the
+// last 3 cpoints of q
+void SolverNlopt::sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vector3d> &q)
+{
+  if (q.size() <= 2)
+  {
+    std::cout << bold << red << "q should be bigger" << reset << std::endl;
+  }
+
+  int i = q.size() - 1;
+
+  double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
+
+  double constraint_x = std::min(v_max_.x(), a_max_.x() * tmp);
+  double constraint_y = std::min(v_max_.y(), a_max_.y() * tmp);
+  double constraint_z = std::min(v_max_.z(), a_max_.z() * tmp);
+
+  std::default_random_engine generator;
+  generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+  std::uniform_real_distribution<double> distribution_x(-constraint_x, +constraint_x);
+  std::uniform_real_distribution<double> distribution_y(-constraint_y, +constraint_y);
+  std::uniform_real_distribution<double> distribution_z(-constraint_z, +constraint_z);
+
+  Eigen::Vector3d vi(distribution_x(generator), distribution_y(generator),
+                     distribution_z(generator));  // velocity sample
+
+  std::cout << "q[i]= " << q[i].transpose() << std::endl;
+  std::cout << "Velocity sample= " << vi.transpose() << std::endl;
+
+  qiP1 = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q[i];
+
+  std::cout << "q[i+1]= " << qiP1.transpose() << std::endl;
+
+  std::cout << "====================" << std::endl;
+  // test
+  /*  std::vector<Eigen::Vector3d> last4Cps(4);
+    std::copy(q.end() - 3, q.end(), last4Cps.begin());  // copy three elements
+    last4Cps[3] = qiP1;
+    satisfiesVmaxAmax(last4Cps);
+
+
+    // more tests
+    Eigen::Vector3d vel_test;
+    Eigen::Vector3d accel_test;
+    computeVeli(vel_test, 2, last4Cps);
+    computeAcceli(accel_test, 1, last4Cps);
+    std::cout << "vel_test=" << vel_test.transpose() << std::endl;
+    std::cout << "accel_test=" << accel_test.transpose() << std::endl;
+
+    std::cout << "====================" << std::endl;
+    std::cout << "====================" << std::endl;*/
+
+  // vel = p_ * (qiP1 - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
+  // accel = (p_ - 1) * (viP1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
+}
+
 void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
 {
   // sleep(1);
   n_guess_.clear();
   q_guess_.clear();
+  d_guess_.clear();
+  planes_.clear();
 
   generateRandomN(n_guess_);
+  generateRandomD(d_guess_);
   generateRandomQ(q_guess_);
 
   int num_of_intermediate_cps = N_ + 1 - 6;
@@ -268,19 +375,23 @@ void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
     q.push_back(q1_);
     q.push_back(q2_);
 
+    std::cout << "q0_=" << q0_.transpose() << std::endl;
+    std::cout << "q1_=" << q1_.transpose() << std::endl;
+    std::cout << "q2_=" << q2_.transpose() << std::endl;
+
     // sample next cp in a sphere (or spherical surface?) near q2_ (limited by v_max)
     for (int i = 3; i <= (N_ - 2); i++)  // all the intermediate control points, and cp N_-2 of the trajectory
     {
       std::cout << "i= " << i << std::endl;
       Eigen::Vector3d tmp;
 
-      Eigen::Vector3d mean = q2_ + (qNm2 - q2_) * (i - 2) / (1.0 * num_of_intermediate_cps);
-      Eigen::Vector3d max_value = mean + high_value;
-      std::default_random_engine generator;
-      generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
-      std::normal_distribution<double> distribution_x(mean(0), 0.1);
-      std::normal_distribution<double> distribution_y(mean(1), 0.1);
-      std::normal_distribution<double> distribution_z(mean(2), 0.1);
+      /*      Eigen::Vector3d mean = q2_ + (qNm2 - q2_) * (i - 2) / (1.0 * num_of_intermediate_cps);
+            Eigen::Vector3d max_value = mean + high_value;
+            std::default_random_engine generator;
+            generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+            std::normal_distribution<double> distribution_x(mean(0), 1.0);
+            std::normal_distribution<double> distribution_y(mean(1), 1.0);
+            std::normal_distribution<double> distribution_z(mean(2), 1.0);*/
 
     initloop:
       if (guess_timer.ElapsedMs() > max_runtime_ * 1000)
@@ -289,27 +400,38 @@ void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
       }
 
       // take sample
-      tmp = q.back();  // hack;
+      std::vector<Eigen::Vector3d> last3Cps;
+      last3Cps.push_back(q[q.size() - 3]);
+      last3Cps.push_back(q[q.size() - 2]);
+      last3Cps.push_back(q[q.size() - 1]);
+      sampleFeasible(tmp, last3Cps);
+
+      // tmp = q.back();  // hack;
       // tmp << distribution_x(generator), distribution_y(generator), distribution_z(generator);
       // saturate(tmp, -max_value, max_value);
 
-      std::vector<Eigen::Vector3d> last4Cps(4);
-      std::copy(q.begin() + i - 3, q.begin() + i, last4Cps.begin());  // copy three elements
+      std::vector<Eigen::Vector3d> last4Cps;
+      last4Cps.push_back(q[q.size() - 3]);
+      last4Cps.push_back(q[q.size() - 2]);
+      last4Cps.push_back(q[q.size() - 1]);
+      last4Cps.push_back(tmp);
+
+      // std::copy(q.end() - 3, q.end(), last4Cps.begin());  // copy three elements
       last4Cps[3] = tmp;
 
-      /*      if ((satisfiesVmaxAmax(last4Cps) == false))
-            {
-              std::cout << "vmax and amax are not satisfied" << std::endl;
-              std::cout << "knots_=" << knots_ << std::endl;
+      if ((satisfiesVmaxAmax(last4Cps) == false))
+      {
+        std::cout << "vmax and amax are not satisfied" << std::endl;
+        std::cout << "knots_=" << knots_ << std::endl;
 
-              for (auto x : last4Cps)
-              {
-                std::cout << x.transpose() << std::endl;
-              }
+        for (auto x : last4Cps)
+        {
+          std::cout << x.transpose() << std::endl;
+        }
 
-              goto initloop;
-            }
-      */
+        goto initloop;
+      }
+
       // check that it doesn't collide with the  obstacles at t=i-3
       for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
       {
@@ -331,7 +453,7 @@ void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
         {
           std::cout << "Didn't work, i=" << i << std::endl;
           std::cout << "Obstacle: " << std::endl;
-          printStdEigen(hulls_[obst_index][i - 3]);
+          printStd(hulls_[obst_index][i - 3]);
           std::cout << "Trajectory" << std::endl;
           std::cout << last4Cps[0].transpose() << std::endl;
           std::cout << last4Cps[1].transpose() << std::endl;
@@ -346,7 +468,7 @@ void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
         d[obst_index * num_of_segments_ + i - 3] = d_i;  // will be overwritten until the solution is found
       }
 
-      std::cout << "Found intermediate cp " << i << "= " << tmp.transpose() << ", N_-3=" << (N_ - 3) << std::endl;
+      std::cout << "Found intermediatee cp " << i << "= " << tmp.transpose() << ", N_-3=" << (N_ - 3) << std::endl;
       q.push_back(tmp);
     }
 
@@ -378,8 +500,11 @@ void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
       best_cost = cost;
       q_guess_ = q;
       n_guess_ = n;
+      d_guess_ = d;
     }
   }
+
+  fillPlanesFromNDQ(planes_, n_guess_, d_guess_, q_guess_);
 
   /*  for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
     {
@@ -414,6 +539,16 @@ void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
   */
   // generateGuessNFromQ(q_best, n);
   //  generateRandomN(n_guess_);
+}
+
+void SolverNlopt::generateRandomD(std::vector<double> &d)
+{
+  d.clear();
+  for (int k = k_min_; k <= k_max_; k++)
+  {
+    double r1 = ((double)rand() / (RAND_MAX));
+    d.push_back(r1);
+  }
 }
 
 void SolverNlopt::generateRandomN(std::vector<Eigen::Vector3d> &n)
@@ -1143,18 +1278,18 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   }
 
   // Impose that the normals are not [0 0 0]
-  /*  for (int i = 0; i < n.size(); i++)
-    {
-      double min_norm = 1;  // normals should have at least module min_norm
+  for (int i = 0; i < n.size(); i++)
+  {
+    double min_norm = 1;  // normals should have at least module min_norm
 
-      // std::cout << "n[i]= " << n[i].transpose() << std::endl;
-      constraints[r] = min_norm - n[i].dot(n[i]);  // f<=0
-      if (grad)
-      {
-        toGradSameConstraintDiffVariables(gIndexN(i), -2 * n[i], grad, r, nn);
-      }
-      r++;
-    }*/
+    // std::cout << "n[i]= " << n[i].transpose() << std::endl;
+    constraints[r] = min_norm - n[i].dot(n[i]);  // f<=0
+    if (grad)
+    {
+      toGradSameConstraintDiffVariables(gIndexN(i), -2 * n[i], grad, r, nn);
+    }
+    r++;
+  }
 
 #ifdef DEBUG_MODE_NLOPT
 
@@ -1271,7 +1406,7 @@ void SolverNlopt::useRandomInitialGuess()
 {
   q_guess_.clear();
   n_guess_.clear();
-  // d.clear();
+  d_guess_.clear();
 
   q_guess_.push_back(q0_);  // Not a decision variable
   q_guess_.push_back(q1_);  // Not a decision variable
@@ -1290,9 +1425,18 @@ void SolverNlopt::useRandomInitialGuess()
   q_guess_.push_back(q_guess_.back());  // Not a decision variable
 
   generateRandomN(n_guess_);
+  generateRandomD(d_guess_);
 }
 
-void SolverNlopt::printStdEigen(const std::vector<Eigen::Vector3d> &v)
+void SolverNlopt::printStd(const std::vector<double> &v)
+{
+  for (auto v_i : v)
+  {
+    std::cout << v_i << std::endl;
+  }
+}
+
+void SolverNlopt::printStd(const std::vector<Eigen::Vector3d> &v)
 {
   for (auto v_i : v)
   {
@@ -1375,8 +1519,14 @@ bool SolverNlopt::optimize()
   std::cout << "q_guess_ has size= " << q_guess_.size() << std::endl;
   std::cout << "n_guess_ has size= " << n_guess_.size() << std::endl;
 
+  std::cout << "q_guess_ is\n" << std::endl;
+  printStd(q_guess_);
+
   std::cout << "n_guess_ is\n" << std::endl;
-  printStdEigen(n_guess_);
+  printStd(n_guess_);
+
+  std::cout << "d_guess_ is\n" << std::endl;
+  printStd(d_guess_);
 
   // toEigen(x_, q_guess_, n_guess_);
 

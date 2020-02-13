@@ -46,18 +46,18 @@ class FakeSim:
         self.timer = rospy.Timer(rospy.Duration(0.001), self.pubTF)
 
         self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
-        self.num_of_objects = 30;
+        self.num_of_objects = 1;
 
         self.x_all=[];
         self.y_all=[];
         self.z_all=[];
         for i in range(self.num_of_objects):
-            self.x_all.append(50*random.random());
-            self.y_all.append(self.x_all[i]+2*random.random());
-            self.z_all.append(2);
-            # self.x_all.append(random.random());
-            # self.y_all.append(4*random.random());
+            # self.x_all.append(50*random.random());
+            # self.y_all.append(self.x_all[i]+2*random.random());
             # self.z_all.append(2);
+            self.x_all.append(random.random());
+            self.y_all.append(4*random.random());
+            self.z_all.append(2);
         # self.state.quat.x = 0
         # self.state.quat.y = 0
         # self.state.quat.z = 0
@@ -93,7 +93,7 @@ class FakeSim:
 
             dynamic_trajectory_msg.header.stamp= t_ros;
             dynamic_trajectory_msg.function = [x_string, y_string, z_string]
-            dynamic_trajectory_msg.bbox = [0.3, 0.3, 2]
+            dynamic_trajectory_msg.bbox = [0.6, 0.6, 2]
             dynamic_trajectory_msg.pos.x=x #Current position
             dynamic_trajectory_msg.pos.y=y #Current position
             dynamic_trajectory_msg.pos.z=z #Current position
@@ -131,7 +131,7 @@ class FakeSim:
     # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
     def trefoil(self,x,y,z,scale_x, scale_y, scale_z, offset):
 
-        slower=2.0; #The higher, the slower the obstacles move" 
+        slower=200.0; #The higher, the slower the obstacles move" 
         tt='t/' + str(slower)+'+';
 
         x_string='(sin('+tt +str(offset)+') + 2 * sin(2 * '+tt +str(offset)+'))/' + str(scale_x) +'+' + str(x); #'2*sin(t)' 
