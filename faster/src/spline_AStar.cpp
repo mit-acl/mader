@@ -141,6 +141,10 @@ std::vector<Node> SplineAStar::expand(Node& current)
           neighbor.g = current.g + weightEdge(current, neighbor);
           neighbor.h = h(neighbor);
           neighbors_va.push_back(neighbor);
+          // std::cout << "*************************" << std::endl;
+          // std::cout << "vx_i=" << vx_i << ", vy_i=" << vy_i << ", vz_i=" << vz_i << std::endl;
+          // std::cout << "Linking, qi=" << neighbor.qi.transpose() << std::endl;
+          // std::cout << "Linking, anterior=" << neighbor.previous->qi.transpose() << std::endl;
         }
         /*        else
                 {
@@ -149,7 +153,7 @@ std::vector<Node> SplineAStar::expand(Node& current)
       }
     }
   }
-  std::cout << "neighbors_va.size()= " << neighbors_va.size() << std::endl;
+  // std::cout << "neighbors_va.size()= " << neighbors_va.size() << std::endl;
 
   // if the index is <=6, return what we have //TODO this should be <=2, !!!!
 
@@ -222,7 +226,19 @@ double SplineAStar::weightEdge(Node& node1, Node& node2)  // edge cost when addi
   return (node2.qi - 2 * node1.qi + node1.previous->qi).squaredNorm();
 }
 
-void SplineAStar::run()
+void SplineAStar::printPath(Node& node1)
+{
+  Node tmp = node1;
+  while (tmp.previous != NULL)
+  {
+    std::cout << tmp.index << ", ";  // qi.transpose().x()
+    // std::cout << "El anterior es=" << tmp.previous->qi.transpose() << std::endl;
+    tmp = *tmp.previous;
+  }
+  std::cout << std::endl;
+}
+
+void SplineAStar::run(std::vector<Eigen::Vector3d>& result)
 {
   auto cmp = [](Node& left, Node& right) { return (left.h + left.g) > (right.h + right.g); };
   std::priority_queue<Node, std::vector<Node>, decltype(cmp)> openList(cmp);  //= OpenSet, = Q
@@ -237,52 +253,45 @@ void SplineAStar::run()
 
   openList.push(nodeq2);
 
+  Node* current;
+
   while (openList.size() > 0)
   {
-    /*    std::cout << "======================" << std::endl;
-
-        std::priority_queue<Node, std::vector<Node>, decltype(cmp)> novale = openList;
-
-        while (!novale.empty())
-        {
-          std::cout << (novale.top().h + novale.top().g) << " ";
-          novale.pop();
-        }*/
-
     std::cout << "======================" << std::endl;
     std::cout << "sizeOpenList=" << openList.size() << std::endl;
-    Node current = openList.top();
+    current = new Node;
+    *current = openList.top();
 
-    std::cout << "dist2Goal=" << (current.qi - goal_).norm() << std::endl;
-    if ((current.qi - goal_).norm() < 0.5)
+    // std::cout << "Path to current= " << (*current).qi.transpose() << std::endl;
+    // printPath(*current);
+
+    std::cout << "dist2Goal=" << ((*current).qi - goal_).norm() << std::endl;
+    if (((*current).qi - goal_).norm() < 0.5)
     {
       std::cout << "Success" << std::endl;
+
+      result.clear();
+
+      Node* tmp = current;
+      while (tmp != NULL)
+      {
+        // std::cout << "Pushing back tmp->qi=" << tmp->qi.transpose() << std::endl;
+        result.push_back(tmp->qi);
+        tmp = tmp->previous;
+      }
+
       return;
     }
 
     openList.pop();  // remove the element
 
-    std::vector<Node> neighbors = expand(current);
+    std::vector<Node> neighbors = expand(*current);
 
     std::cout << "There are " << neighbors.size() << " neighbors" << std::endl;
 
     for (auto neighbor : neighbors)
     {
       openList.push(neighbor);
-      /*      double tentative_g = current.g + weightEdge(current, neighbor);  // Cost to come + new edge
-            std::cout << "TEST" << std::endl;
-            std::cout << "tentative_g=" << tentative_g << std::endl;
-            std::cout << "g(neighbor)=" << g(neighbor) << std::endl;
-            std::cout << "neighor.index=" << neighbor.index << std::endl;
-
-            if (tentative_g < g(neighbor))
-            {
-              neighbor.previous = &current;
-              neighbor.g = tentative_g;
-              neighbor.f = neighbor.g + h(neighbor);
-              // if neighbor not in OPEN SET TODO!!
-              openList.push(neighbor);  // the order is automatic (it's a prioriry queue)
-            }*/
     }
 
     // closedList.push_back(current);
@@ -290,3 +299,28 @@ void SplineAStar::run()
 
   std::cout << "Failure!" << std::endl;
 }
+
+/*    std::cout << "======================" << std::endl;
+
+    std::priority_queue<Node, std::vector<Node>, decltype(cmp)> novale = openList;
+
+    while (!novale.empty())
+    {
+      std::cout << (novale.top().h + novale.top().g) << " ";
+      novale.pop();
+    }*/
+
+/*      double tentative_g = current.g + weightEdge(current, neighbor);  // Cost to come + new edge
+      std::cout << "TEST" << std::endl;
+      std::cout << "tentative_g=" << tentative_g << std::endl;
+      std::cout << "g(neighbor)=" << g(neighbor) << std::endl;
+      std::cout << "neighor.index=" << neighbor.index << std::endl;
+
+      if (tentative_g < g(neighbor))
+      {
+        neighbor.previous = &current;
+        neighbor.g = tentative_g;
+        neighbor.f = neighbor.g + h(neighbor);
+        // if neighbor not in OPEN SET TODO!!
+        openList.push(neighbor);  // the order is automatic (it's a prioriry queue)
+      }*/

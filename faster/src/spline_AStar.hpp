@@ -26,11 +26,12 @@ public:
   void setGoal(Eigen::Vector3d& goal);
   void setSamples(int samples_x, int samples_y, int samples_z);
 
-  void run();
+  void run(std::vector<Eigen::Vector3d>& result);
 
 protected:
 private:
   std::vector<Node> expand(Node& current);
+  void printPath(Node& node1);
   double h(Node& node);
   double g(Node& node);
   double weightEdge(Node& node1, Node& node2);

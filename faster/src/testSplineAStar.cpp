@@ -13,9 +13,9 @@ int main()
   int N = 11;
   int num_of_obst = 1;
 
-  int samples_x = 5;
-  int samples_y = 5;
-  int samples_z = 5;
+  int samples_x = 10;
+  int samples_y = 10;
+  int samples_z = 10;
 
   Eigen::Vector3d v_max(20.0, 20.0, 20.0);
   Eigen::Vector3d a_max(100.0, 100.0, 100.0);
@@ -52,7 +52,14 @@ int main()
   myAStarSolver.setMaxValues(v_max, a_max);  // should go after setSamples
   myAStarSolver.setq0q1q2(q0, q1, q2);
   myAStarSolver.setGoal(goal);
-  myAStarSolver.run();
+  std::vector<Eigen::Vector3d> result;
+  myAStarSolver.run(result);
+
+  std::cout << "This is the result" << std::endl;
+  for (auto qi : result)
+  {
+    std::cout << qi.transpose() << std::endl;
+  }
 
   return 0;
 }
