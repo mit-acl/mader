@@ -265,12 +265,18 @@ void SplineAStar::run(std::vector<Eigen::Vector3d>& result)
       result.clear();
 
       Node* tmp = current;
+
+      result.insert(result.begin(), tmp->qi);  // qN
+      result.insert(result.begin(), tmp->qi);  // qN-1
+
       while (tmp != NULL)
       {
         // std::cout << "Pushing back tmp->qi=" << tmp->qi.transpose() << std::endl;
-        result.push_back(tmp->qi);
+        result.insert(result.begin(), tmp->qi);
         tmp = tmp->previous;
       }
+      result.insert(result.begin(), q1_);
+      result.insert(result.begin(), q0_);
 
       return;
     }

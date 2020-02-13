@@ -14,9 +14,9 @@ int main()
   int num_of_obst = 1;
   int n_pol = 7;
 
-  int samples_x = 5;
-  int samples_y = 5;
-  int samples_z = 5;
+  int samples_x = 15;
+  int samples_y = 15;
+  int samples_z = 15;
 
   Eigen::Vector3d v_max(20.0, 20.0, 20.0);
   Eigen::Vector3d a_max(100.0, 100.0, 100.0);
@@ -33,17 +33,17 @@ int main()
   ConvexHullsOfCurve_Std hulls_curve;
   Polyhedron_Std hull;
 
-  hull.push_back(Eigen::Vector3d(0.0, 0.0, 0.0));
+  hull.push_back(Eigen::Vector3d(-0.5, -0.5, -0.5));
 
-  hull.push_back(Eigen::Vector3d(1.0, 0.0, 0.0));
-  hull.push_back(Eigen::Vector3d(0.0, 1.0, 0.0));
-  hull.push_back(Eigen::Vector3d(0.0, 0.0, 1.0));
+  hull.push_back(Eigen::Vector3d(-0.5, 0.5, 0.5));
+  hull.push_back(Eigen::Vector3d(0.5, -0.5, 0.5));
+  hull.push_back(Eigen::Vector3d(0.5, 0.5, -0.5));
 
-  hull.push_back(Eigen::Vector3d(1.0, 0.0, 1.0));
-  hull.push_back(Eigen::Vector3d(0.0, 1.0, 1.0));
-  hull.push_back(Eigen::Vector3d(1.0, 1.0, 0.0));
+  hull.push_back(Eigen::Vector3d(-0.5, -0.5, 0.5));
+  hull.push_back(Eigen::Vector3d(0.5, -0.5, -0.5));
+  hull.push_back(Eigen::Vector3d(-0.5, 0.5, -0.5));
 
-  hull.push_back(Eigen::Vector3d(1.0, 1.0, 1.0));
+  hull.push_back(Eigen::Vector3d(0.5, 0.5, 0.5));
 
   // Assummes static obstacle
   for (int i = 0; i < n_pol; i++)
