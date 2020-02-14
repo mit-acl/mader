@@ -11,7 +11,7 @@ int main()
   int samples_y = 5;
   int samples_z = 3;
 
-  double runtime = 4;      //[seconds]
+  double runtime = 30;     //[seconds]
   double goal_size = 0.5;  //[meters]
 
   Eigen::Vector3d v_max(10.0, 10.0, 10.0);

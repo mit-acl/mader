@@ -277,16 +277,39 @@ double SplineAStar::h(Node& node)
     double goal = goal_(coord);
 
     b(0, 0) = 2 * (qiM1 - 4 * qi);
-    b(1, 0) = 2 * qi;
-    b(b.size() - 2, 0) = 2 * goal;
+
+    // See mathematica notebook
+    if (dim_var == 3)
+    {
+      b(1, 0) = 2 * qi + 2 * goal;
+    }
+    else
+    {
+      b(1, 0) = 2 * qi;
+      b(b.size() - 2, 0) = 2 * goal;
+    }
     b(b.size() - 1, 0) = -6 * goal;
     // std::cout << "Going to compute coordinates now3" << std::endl;
     double c = qiM1 * qiM1 - 4 * qiM1 * qi + 5 * qi * qi + 2 * goal * goal;
 
+    /*    double cost_i = (-0.5 * b.transpose() * Ainverses_[dim_var] * b + c);
+
+        if (cost_i < -0.0000001)
+        {
+          std::cout << "cost_i is negative, dim_var= " << dim_var << std::endl;
+          std::cout << "b= " << b.transpose() << std::endl;
+          std::cout << Ainverses_[dim_var].inverse() << std::endl;
+          std::cout << "-0.5 * b.transpose() * Ainverses_[dim_var] * b = " << -0.5 * b.transpose() * Ainverses_[dim_var]
+       * b
+                    << std::endl;
+
+          std::cout << "c= " << c << std::endl;
+        }*/
+
     heuristics = heuristics + (-0.5 * b.transpose() * Ainverses_[dim_var] * b + c);
   }
 
-  std::cout << "heuristics= " << heuristics << std::endl;
+  //  std::cout << "heuristics= " << heuristics << std::endl;
 
   return heuristics;
   // return (node.qi - goal_).norm();  // hack, should be squaredNorm();
