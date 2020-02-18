@@ -58,7 +58,7 @@ private:
   Eigen::Vector3d a_max_;
 
   ConvexHullsOfCurves_Std hulls_;
-  separator::Separator* separator_solver;
+  separator::Separator* separator_solver_;
 
   std::vector<double> vx_;
   std::vector<double> vy_;

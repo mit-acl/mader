@@ -11,7 +11,7 @@
 #include "./../../timer.hpp"
 //#include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
 #include <decomp_geometry/polyhedron.h>  //For Polyhedron definition
-#include "separator.hpp"
+//#include "separator.hpp"
 
 typedef JPS::Timer MyTimer;
 
@@ -136,6 +136,8 @@ private:
 
   bool satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q);
 
+  void printIndexesConstraints();
+
   int deg_pol_ = 3;
   int num_pol_ = 5;
   int p_ = 5;
@@ -208,6 +210,11 @@ private:
 
   Eigen::MatrixXd R_;  // This matrix is [r0, r1, r2, r3, r0, r1, r2, r3] (for two segments)
 
-  separator::Separator *separator_solver;
+  // separator::Separator *separator_solver;
+
+  int index_const_obs_ = 0;
+  int index_const_vel_ = 0;
+  int index_const_accel_ = 0;
+  int index_const_normals_ = 0;
 };
 #endif

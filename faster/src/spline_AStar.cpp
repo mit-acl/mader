@@ -47,7 +47,7 @@ SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, d
   knots_ = knots;
   // std::cout << "knots_=" << knots_ << std::endl;
 
-  separator_solver = new separator::Separator(1.0, 1.0, 1.0);
+  separator_solver_ = new separator::Separator(1.0, 1.0, 1.0);
 
   computeInverses();
 }
@@ -157,8 +157,8 @@ std::vector<Node> SplineAStar::expand(Node& current)
 
   if (current.index == (N_ - 2))
   {
-    std::cout << "can't expand more in this direction" << std::endl;  // can't expand more
-    return neighbors;                                                 // empty vector
+    // std::cout << "can't expand more in this direction" << std::endl;  // can't expand more
+    return neighbors;  // empty vector
   }
 
   // first expansion satisfying vmax and amax
@@ -271,7 +271,7 @@ std::vector<Node> SplineAStar::expand(Node& current)
       //}
     }
   }
-  std::cout << "neighbors_va.size()= " << neighbors_va.size() << std::endl;
+  // std::cout << "neighbors_va.size()= " << neighbors_va.size() << std::endl;
 
   // if the index is <=6, return what we have //TODO this should be <=2, !!!!
 
@@ -315,7 +315,7 @@ std::vector<Node> SplineAStar::expand(Node& current)
       double d_i;
 
       MyTimer timer_lp(true);
-      satisfies_LP = separator_solver->solveModel(n_i, d_i, hulls_[obst_index][current.index + 1 - 3], last4Cps);
+      satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][current.index + 1 - 3], last4Cps);
       time_solving_lps_ += timer_lp.ElapsedMs();
 
       if (satisfies_LP == false)
@@ -527,15 +527,15 @@ void SplineAStar::fillNDFromNode(std::vector<Eigen::Vector3d>& result, std::vect
       Eigen::Vector3d n_i;
       double d_i;
 
-      bool solved = separator_solver->solveModel(n_i, d_i, hulls_[obst_index][index_interv], last4Cps);
+      bool solved = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][index_interv], last4Cps);
 
       if (solved == false)
       {
         std::cout << bold << red << "The node provided doesn't satisfy LPs" << reset << std::endl;
       }
 
-      /*      std::cout << "solved with ni=" << n_i.transpose() << std::endl;
-            std::cout << "solved with d_i=" << d_i << std::endl;*/
+      std::cout << "solved with ni=" << n_i.transpose() << std::endl;
+      std::cout << "solved with d_i=" << d_i << std::endl;
 
       n[obst_index * num_of_segments_ + index_interv] = n_i;
       d[obst_index * num_of_segments_ + index_interv] = d_i;
@@ -568,9 +568,8 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
 
   while (openList.size() > 0)
   {
-    std::cout << red << "=============================" << reset << std::endl;
+    // std::cout << red << "=============================" << reset << std::endl;
 
-    std::cout << "sizeOpenList=" << openList.size() << std::endl;
     current_ptr = new Node;
     *current_ptr = openList.top();
 
@@ -578,24 +577,25 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     // printPath(*current_ptr);
 
     double dist = ((*current_ptr).qi - goal_).norm();
-    std::cout << "dist2Goal=" << dist << ", index=" << (*current_ptr).index << std::endl;
+    // std::cout << "dist2Goal=" << dist << ", index=" << (*current_ptr).index << std::endl;
     // std::cout << "bias_=" << bias_ << std::endl;
-    std::cout << "N_-2=" << N_ - 2 << std::endl;
-    std::cout << "index=" << (*current_ptr).index << std::endl;
+    // std::cout << "N_-2=" << N_ - 2 << std::endl;
+    // std::cout << "index=" << (*current_ptr).index << std::endl;
 
     // log the closest solution so far
-    if ((*current_ptr).index == (N_ - 2))
+    // if ((*current_ptr).index == (N_ - 2))
+    // {
+    if (dist < closest_dist_so_far_)
     {
-      if (dist < closest_dist_so_far_)
-      {
-        closest_dist_so_far_ = dist;
-        closest_result_so_far_ptr_ = current_ptr;
-      }
+      closest_dist_so_far_ = dist;
+      closest_result_so_far_ptr_ = current_ptr;
     }
+    // }
 
-    std::cout << "time_solving_lps_= " << 100 * time_solving_lps_ / (timer_astar.ElapsedMs()) << "%" << std::endl;
-    std::cout << "time_expanding_= " << time_expanding_ << "ms, " << 100 * time_expanding_ / (timer_astar.ElapsedMs())
-              << "%" << std::endl;
+    // std::cout << "time_solving_lps_= " << 100 * time_solving_lps_ / (timer_astar.ElapsedMs()) << "%" << std::endl;
+    // std::cout << "time_expanding_= " << time_expanding_ << "ms, " << 100 * time_expanding_ /
+    // (timer_astar.ElapsedMs())
+    //           << "%" << std::endl;
 
     //////////////////////////////////////////////////////////////////
     //////////////Check if we are in the goal or if the runtime is over
@@ -648,15 +648,20 @@ exitloop:
   }
   else
   {
+    // Fill the until we arrive to N_-2, with the same qi
+    for (int j = (closest_result_so_far_ptr_->index) + 1; j <= N_ - 2; j++)
+    {
+      std::cout << "Filling " << j << std::endl;
+      Node* node_ptr = new Node;
+      node_ptr->qi = closest_result_so_far_ptr_->qi;
+      node_ptr->index = j;
+      node_ptr->previous = closest_result_so_far_ptr_;
+      closest_result_so_far_ptr_ = node_ptr;
+    }
+
     std::cout << " and the best solution found has dist=" << closest_dist_so_far_ << std::endl;
     recoverPath(closest_result_so_far_ptr_, result);
     fillNDFromNode(result, n, d);
-
-    std::cout << "Normal Vectors: " << std::endl;
-    for (auto ni : n)
-    {
-      std::cout << ni.transpose() << std::endl;
-    }
 
     if (visual_)
     {

@@ -103,10 +103,11 @@ Faster::Faster(parameters par) : par_(par)
 
 void Faster::updateTrajObstacles(std::vector<dynTraj> trajs)
 {
+  //  std::cout << bold << red << "[updateTrajObstacles] locking" << reset << std::endl;
   mtx_trajs_.lock();
-  trajs_.clear();
+  //  std::cout << bold << red << "[updateTrajObstacles] Locked" << reset << std::endl;
 
-  // std::cout << "init of updateTrajObstacles" << std::endl;
+  trajs_.clear();
 
   for (auto traj : trajs)
   {
@@ -138,7 +139,9 @@ void Faster::updateTrajObstacles(std::vector<dynTraj> trajs)
 
   // std::cout << "end of updateTrajObstacles" << std::endl;
 
+  // std::cout << bold << red << "[updateTrajObstacles] unlocking" << reset << std::endl;
   mtx_trajs_.unlock();
+  // std::cout << bold << red << "[updateTrajObstacles] unlocked" << reset << std::endl;
 
   // std::cout << "end of updateTrajObstacles" << std::endl;
 }
@@ -208,7 +211,6 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_s
     points.push_back(p6);
     points.push_back(p7);
   }
-  // mtx_trajs_.unlock();
 
   // generate 3 points randomly on a sphere of radius 1.0
   // and copy them to a vector
@@ -279,13 +281,13 @@ void Faster::removeTrajsThatWillNotAffectMe(state A, double t_start, double t_en
 
     if (traj_affects_me == false)
     {
-      std::cout << red << bold << "Going to  delete t raj " << trajs_[index_traj].id << reset << std::endl;
+      // std::cout << red << bold << "Going to  delete t raj " << trajs_[index_traj].id << reset << std::endl;
       ids_to_remove.push_back(trajs_[index_traj].id);
     }
-    else
-    {
-      std::cout << green << bold << "Going to delete traj " << trajs_[index_traj].id << reset << std::endl;
-    }
+    /*    else
+        {
+          std::cout << green << bold << "Going to delete traj " << trajs_[index_traj].id << reset << std::endl;
+        }*/
   }
 
   for (auto id : ids_to_remove)
@@ -295,12 +297,12 @@ void Faster::removeTrajsThatWillNotAffectMe(state A, double t_start, double t_en
         trajs_.end());
   }
 
-  std::cout << "After deleting the trajectory, we have that ids= " << std::endl;
+  /*  std::cout << "After deleting the trajectory, we have that ids= " << std::endl;
 
-  for (auto traj : trajs_)
-  {
-    std::cout << traj.id << std::endl;
-  }
+    for (auto traj : trajs_)
+    {
+      std::cout << traj.id << std::endl;
+    }*/
 }
 
 ConvexHullsOfCurve Faster::convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end)
@@ -326,7 +328,7 @@ ConvexHullsOfCurves Faster::convexHullsOfCurves(double t_start, double t_end)
 
   for (auto traj : trajs_)
   {
-    std::cout << "Computing convex hull of curve " << traj.id << std::endl;
+    // std::cout << "Computing convex hull of curve " << traj.id << std::endl;
     // std::cout << "above, traj.function.size()= " << traj.function.size() << std::endl;
     // std::cout << "going to call convexHullsOfCurve" << std::endl;
     result.push_back(convexHullsOfCurve(traj, t_start, t_end));
@@ -341,7 +343,7 @@ ConvexHullsOfCurves_Std Faster::vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves
 {
   ConvexHullsOfCurves_Std convexHulls_of_curves_std;
 
-  std::cout << "convexHulls.size()= " << convexHulls.size() << std::endl;
+  // std::cout << "convexHulls.size()= " << convexHulls.size() << std::endl;
 
   for (int index_curve = 0; index_curve < convexHulls.size(); index_curve++)
   {
@@ -363,7 +365,7 @@ ConvexHullsOfCurves_Std Faster::vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves
 
     convexHulls_of_curves_std.push_back(convexHulls_of_curve_std);
   }
-  std::cout << "convexHulls_of_curves_std.size()= " << convexHulls_of_curves_std.size() << std::endl;
+  // std::cout << "convexHulls_of_curves_std.size()= " << convexHulls_of_curves_std.size() << std::endl;
 
   return convexHulls_of_curves_std;
 }
@@ -839,7 +841,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
     return;
   }
 
-  std::cout << bold << "************IN REPLAN CB*********" << reset << std::endl;
+  std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
+  std::cout << bold << on_white << "******************************************************" << reset << std::endl;
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Select state A /////////////////////////////////
@@ -1073,25 +1076,26 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   double t_min = k_whole * par_.dc + ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
   double t_max = t_min + (initial.pos - final.pos).norm() / (0.6 * par_.v_max);  // time to execute the optimized path
 
-  std::cout << "Going to compute the convex hulls, t_min= " << t_min << std::endl;
-  std::cout << "Going to compute the convex hulls, t_max= " << t_max << std::endl;
-  std::cout << "ros::Time::now().toSec()= " << ros::Time::now().toSec() << std::endl;
-  std::cout << "deltaT_= " << deltaT_ << std::endl;
-  std::cout << "par_.dc= " << par_.dc << std::endl;
-
+  /*  std::cout << "Going to compute the convex hulls, t_min= " << t_min << std::endl;
+    std::cout << "Going to compute the convex hulls, t_max= " << t_max << std::endl;
+    std::cout << "ros::Time::now().toSec()= " << ros::Time::now().toSec() << std::endl;
+    std::cout << "deltaT_= " << deltaT_ << std::endl;
+    std::cout << "par_.dc= " << par_.dc << std::endl;
+  */
+  // std::cout << bold << red << "[replan] Locking" << reset << std::endl;
   mtx_trajs_.lock();
+  // std::cout << bold << red << "[replan] Locked" << reset << std::endl;
 
   MyTimer convex_hulls_timer(true);
-  // removeTrajsThatWillNotAffectMe(A, t_min, t_max);
+  removeTrajsThatWillNotAffectMe(A, t_min, t_max);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_min, t_max);
-  std::cout << "hulls.size()=" << hulls.size() << std::endl;
+  // std::cout << "hulls.size()=" << hulls.size() << std::endl;
 
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
 
-  std::cout << cyan << "Convex Hull time = " << convex_hulls_timer << reset << std::endl;
-
-  std::cout << bold << "hulls has size=" << hulls.size() << reset << std::endl;
+  // std::cout << cyan << "Convex Hull time = " << convex_hulls_timer << reset << std::endl;
+  // std::cout << bold << "hulls has size=" << hulls.size() << reset << std::endl;
 
   int num_obst = hulls.size();
 
@@ -1110,31 +1114,33 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
     return;                                // // in testing phase*/
 
   // Initial GUESS: run JPS with the dynamic obstacles as static obstacles
-  mtx_map.lock();
-  mtx_unk.lock();
+  /*  mtx_map.lock();
+    mtx_unk.lock();
 
-  createObstacleMapFromTrajs(t_min, t_max);
-  bool solvedjps_dyn = false;
+    createObstacleMapFromTrajs(t_min, t_max);
+    bool solvedjps_dyn = false;
 
-  vec_Vecf<3> JPSk_dyn = jps_manager_dyn_.solveJPS3D(initial.pos, final.pos, &solvedjps_dyn, 1);
+    vec_Vecf<3> JPSk_dyn = jps_manager_dyn_.solveJPS3D(initial.pos, final.pos, &solvedjps_dyn, 1);
 
-  if (solvedjps_dyn == false)
-  {
-    std::cout << bold << red << "JPS didn't find a solution, using straight line" << reset << std::endl;
-  }
+    if (solvedjps_dyn == false)
+    {
+      std::cout << bold << red << "JPS didn't find a solution, using straight line" << reset << std::endl;
+    }
 
-  JPS_safe_out = JPSk_dyn;              // for visualization
-  jps_manager_dyn_.getMap(pcloud_jps);  // for visualization
+    JPS_safe_out = JPSk_dyn;              // for visualization
+    jps_manager_dyn_.getMap(pcloud_jps);  // for visualization
 
-  mtx_map.unlock();
-  mtx_unk.unlock();
+    mtx_map.unlock();
+    mtx_unk.unlock();*/
   // end of Initial GUESSS
   // snlopt.useJPSGuess(JPSk_dyn);
   // snlopt.useRRTGuess();
   // snlopt.useRandomInitialGuess();
   snlopt.useAStarGuess();
 
+  // std::cout << bold << red << "[replan] Unlocking" << reset << std::endl;
   mtx_trajs_.unlock();
+  // std::cout << bold << red << "[replan] Unlocked" << reset << std::endl;
 
   // snlopt.createGuess(poly_safe_out);
 
@@ -1157,7 +1163,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   solutions_found_++;
 
-  std::cout << "Below of loop\n";
+  // std::cout << "Below of loop\n";
 
   /////// END OF DEBUGGING
   /*
@@ -1220,10 +1226,10 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   // Check if we have planned until G_term
   state F = plan_.back();  // Final point of the safe path (\equiv final point of the comitted path)
-  std::cout << "F is " << std::endl;
-  F.print();
+  // std::cout << "F is " << std::endl;
+  // F.print();
   double dist = (G_term_.pos - F.pos).norm();
-  std::cout << "Computed norm" << std::endl;
+
   if (dist < par_.goal_radius)
   {
     changeDroneStatus(DroneStatus::GOAL_SEEN);
@@ -1234,7 +1240,6 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000));  // Number of states that
                                                                              // would have been needed for
                                                                              // the last replan
-
   deltaT_ = std::max(par_.alpha * states_last_replan, 1.0);
   // std::max(par_.alpha * states_last_replan,(double)par_.min_states_deltaT);  // Delta_t
   mtx_offsets.unlock();
@@ -1292,11 +1297,11 @@ bool Faster::appendToPlan(int k_end_whole, const std::vector<state>& whole, int 
 {
   mtx_plan_.lock();
 
-  std::cout << "Erasing" << std::endl;
+  // std::cout << "Erasing" << std::endl;
   bool output;
   int plan_size = plan_.size();
-  std::cout << "plan_.size()= " << plan_.size() << std::endl;
-  std::cout << "plan_size - k_end_whole = " << plan_size - k_end_whole << std::endl;
+  //  std::cout << "plan_.size()= " << plan_.size() << std::endl;
+  //  std::cout << "plan_size - k_end_whole = " << plan_size - k_end_whole << std::endl;
   if ((plan_size - 1 - k_end_whole) < 0)
   {
     std::cout << bold << red << "Already published the point A" << reset << std::endl;
@@ -1304,15 +1309,14 @@ bool Faster::appendToPlan(int k_end_whole, const std::vector<state>& whole, int 
   }
   else
   {
-    std::cout << "k_end_whole= " << k_end_whole << std::endl;
-    std::cout << "k_safe = " << k_safe << std::endl;
+    // std::cout << "k_end_whole= " << k_end_whole << std::endl;
+    // std::cout << "k_safe = " << k_safe << std::endl;
 
     plan_.erase(plan_.end() - k_end_whole - 1, plan_.end());
 
-    std::cout << "Erased" << std::endl;
-
-    std::cout << "whole.size() = " << whole.size() << std::endl;
-    std::cout << "safe.size() = " << safe.size() << std::endl;
+    //    std::cout << "Erased" << std::endl;
+    //    std::cout << "whole.size() = " << whole.size() << std::endl;
+    //    std::cout << "safe.size() = " << safe.size() << std::endl;
     for (int i = 0; i <= k_safe; i++)
     {
       plan_.push_back(whole[i]);
@@ -1322,7 +1326,7 @@ bool Faster::appendToPlan(int k_end_whole, const std::vector<state>& whole, int 
     {
       plan_.push_back(safe[i]);
     }
-    std::cout << "Pushed everything back" << std::endl;
+    // std::cout << "Pushed everything back" << std::endl;
 
     output = true;
   }

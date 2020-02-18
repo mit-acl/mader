@@ -58,6 +58,10 @@ class FakeSim:
             self.x_all.append(random.random());
             self.y_all.append(4*random.random());
             self.z_all.append(2);
+            # self.x_all.append(50*random.random());
+            # self.y_all.append(1*random.random());
+            # self.z_all.append(2);
+
         # self.state.quat.x = 0
         # self.state.quat.y = 0
         # self.state.quat.z = 0
@@ -85,7 +89,7 @@ class FakeSim:
         for i in range(self.num_of_objects):
             t_ros=rospy.Time.now()
             t=rospy.get_time(); #Same as before, but it's float
-            [x_string, y_string, z_string] = self.trefoil(self.x_all[i], self.y_all[i], self.z_all[i], 1, 1, 1, self.x_all[i]) #offset=x
+            [x_string, y_string, z_string] = self.trefoil(self.x_all[i], self.y_all[i], self.z_all[i], 100, 1, 1, self.x_all[i]) #offset=x
             x = eval(x_string)
             y = eval(y_string)
             z = eval(z_string)
@@ -93,7 +97,7 @@ class FakeSim:
 
             dynamic_trajectory_msg.header.stamp= t_ros;
             dynamic_trajectory_msg.function = [x_string, y_string, z_string]
-            dynamic_trajectory_msg.bbox = [0.6, 0.6, 2]
+            dynamic_trajectory_msg.bbox = [0.3, 0.3, 2]
             dynamic_trajectory_msg.pos.x=x #Current position
             dynamic_trajectory_msg.pos.y=y #Current position
             dynamic_trajectory_msg.pos.z=z #Current position
