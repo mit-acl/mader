@@ -853,6 +853,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   // If k_end_whole=0, then A = plan_.back() = plan_[plan_.size() - 1]
   k_end_whole = std::max((int)(plan_.size() - deltaT_), 0);
+  k_end_whole = std::max((int)(plan_.size() * 0.25), 0);  // HACK, COMMENT THIS!! (this chooses A at 3/4)
   k_whole = plan_.size() - 1 - k_end_whole;
   A = plan_.get(k_whole);
 
@@ -1102,11 +1103,11 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   SolverNlopt snlopt(n_pol, deg, num_obst, par_.weight, par_.epsilon_tol_constraints, false,
                      par_.solver);  // snlopt(a,g) a polynomials of degree 3
   snlopt.setHulls(hulls_std);
-
+  snlopt.setKappaAndMu(par_.kappa, par_.mu);
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc
   snlopt.setTminAndTmax(t_min, t_max);
-  snlopt.setMaxRuntime(0.8 * deltaT_ * par_.dc);  // 0.8 to take into account other computations
+  snlopt.setMaxRuntime(k_whole * par_.dc);  // 0.8 * deltaT_ * par_.dc to take into account other computations
   snlopt.setInitAndFinalStates(initial, final);
 
   /*  snlopt.getGuessForCPs(poly_safe_out);  // in testing phase

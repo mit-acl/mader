@@ -67,6 +67,9 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "epsilon_tol_constraints", par_.epsilon_tol_constraints);
   safeGetParam(nh_, "solver", par_.solver);
 
+  safeGetParam(nh_, "kappa", par_.kappa);
+  safeGetParam(nh_, "mu", par_.mu);
+
   // Parameters for the ground robot (jackal):
   /*  safeGetParam(nh_,"kw", par_.kw);
     safeGetParam(nh_,"kyaw", par_.kyaw);
@@ -109,6 +112,12 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
     abort();
   }
 
+  if ((par_.kappa + par_.mu) > 1)
+  {
+    std::cout << bold << red << "Needed: (par_.kappa + par_.mu) <= 1" << reset
+              << std::endl;  // To decrease the probability of not finding a solution
+    abort();
+  }
   /*  if (par_.Ra_max > (par_.wdx / 2.0) || (par_.Ra_max > par_.wdy / 2.0))
     {
       std::cout << bold << red << "Needed: par_.Ra_max > par_.wdx/2.0|| par_.Ra_max > par_.wdy/2.0" << reset

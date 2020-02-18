@@ -184,6 +184,12 @@ Eigen::Matrix3d rot = Eigen::Matrix3d::Identity();
           }
         }*/
 
+void SolverNlopt::setKappaAndMu(double kappa, double mu)
+{
+  kappa_ = kappa;
+  mu_ = mu;
+}
+
 void SolverNlopt::computeVeli(Eigen::Vector3d &vel, std::vector<Eigen::Vector3d> &q)
 {
   int i = q.size() - 2;
@@ -281,6 +287,8 @@ void SolverNlopt::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const st
 
 void SolverNlopt::useAStarGuess()
 {
+  std::cout << bold << red << "Running A*, allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << reset
+            << std::endl;
   n_guess_.clear();
   q_guess_.clear();
   d_guess_.clear();
@@ -298,13 +306,13 @@ void SolverNlopt::useAStarGuess()
   int samples_x = 10;
   int samples_y = 10;
   int samples_z = 10;
-  double runtime = 0.05;   //[seconds]
+  // double runtime = 0.05;   //[seconds]
   double goal_size = 0.5;  //[meters]
 
   myAStarSolver.setBBoxSearch(30.0, 30.0, 30.0);  // limits for the search
   myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, samples_x, samples_y, samples_z);
 
-  myAStarSolver.setRunTime(runtime);
+  myAStarSolver.setRunTime(kappa_ * max_runtime_);
   myAStarSolver.setGoalSize(goal_size);
 
   myAStarSolver.setBias(1000000.0);
@@ -1234,8 +1242,9 @@ bool SolverNlopt::optimize()
   opt_->set_xtol_rel(1e-8);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
   // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
-  max_runtime_ = 0.2;               // hack
-  opt_->set_maxtime(max_runtime_);  // max_runtime_  // maximum time in seconds. Negative --> don't use this criterion
+  // max_runtime_ = 0.2;               // hack
+  opt_->set_maxtime(mu_ * max_runtime_);  // max_runtime_  // maximum time in seconds. Negative --> don't use this
+                                          // criterion
 
   initializeNumOfConstraints();
 
@@ -1297,7 +1306,7 @@ bool SolverNlopt::optimize()
   printIndexesConstraints();
 
   opt_timer_.Reset();
-  std::cout << "Optimizing now, allowing time = " << max_runtime_ * 1000 << "ms" << std::endl;
+  std::cout << "Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
   int result = opt_->optimize(x_, minf);
 
   // See codes in https://github.com/JuliaOpt/NLopt.jl/blob/master/src/NLopt.jl

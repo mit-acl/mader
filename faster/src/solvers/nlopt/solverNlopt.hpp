@@ -46,6 +46,8 @@ public:
 
   void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
 
+  void setKappaAndMu(double kappa, double mu);
+
 protected:
 private:
   void sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vector3d> &q);
@@ -216,5 +218,8 @@ private:
   int index_const_vel_ = 0;
   int index_const_accel_ = 0;
   int index_const_normals_ = 0;
+
+  double kappa_ = 0.2;  // kappa_*max_runtime_ is spent on the initial guess
+  double mu_ = 0.5;     // mu_*max_runtime_ is spent on the optimization
 };
 #endif

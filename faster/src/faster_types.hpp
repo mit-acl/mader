@@ -88,6 +88,9 @@ struct parameters
   double epsilon_tol_constraints;
   std::string solver;
 
+  double kappa;
+  double mu;
+
   /*  double kw;
     double kyaw;
     double kdalpha;
