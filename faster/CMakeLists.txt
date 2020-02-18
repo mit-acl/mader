@@ -100,12 +100,16 @@ target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 #target_precompile_headers(utils PUBLIC src/utils.hpp)
 target_link_libraries(utils PUBLIC ${PCL_LIBRARIES})
 
+add_library(spline_AStar STATIC src/spline_AStar.cpp)
+target_include_directories (spline_AStar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(spline_AStar PUBLIC ${catkin_LIBRARIES})
+
 
 add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp)
 #set_property(TARGET solverNlopt PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 #target_precompile_headers(utils PUBLIC src/solvers/nlopt/solverNlopt.hpp)
 target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
-target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils ${catkin_LIBRARIES})
+target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils spline_AStar ${catkin_LIBRARIES})
 
 
 add_library(jps_manager STATIC src/jps_manager.cpp)
@@ -118,6 +122,8 @@ add_library(solverGurobi STATIC src/solvers/solverGurobi.cpp )
 target_include_directories (solverGurobi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 #target_precompile_headers(utils PUBLIC src/solvers/solverGurobi.hpp)
 target_link_libraries(solverGurobi PUBLIC ${GUROBI_LIBRARIES})
+
+
 
 
 add_library(faster_hpp STATIC src/faster.hpp)

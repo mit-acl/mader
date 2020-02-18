@@ -1120,7 +1120,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   if (solvedjps_dyn == false)
   {
-    std::cout << bold << red << "JPS didn't find a solution, using straight line" << reset << std::endl;  // but
+    std::cout << bold << red << "JPS didn't find a solution, using straight line" << reset << std::endl;
   }
 
   JPS_safe_out = JPSk_dyn;              // for visualization
@@ -1131,7 +1131,8 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   // end of Initial GUESSS
   // snlopt.useJPSGuess(JPSk_dyn);
   // snlopt.useRRTGuess();
-  snlopt.useRandomInitialGuess();
+  // snlopt.useRandomInitialGuess();
+  snlopt.useAStarGuess();
 
   mtx_trajs_.unlock();
 

@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "timer.hpp"
+#include "termcolor.hpp"
+using namespace termcolor;
 
 #define WITHOUT_NUMPY
 #include "matplotlibcpp.h"
@@ -19,6 +21,8 @@ SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, d
   M_ = num_pol + 2 * p_;
   N_ = M_ - p_ - 1;
   num_of_obst_ = num_obst;
+  num_of_segments_ = (M_ - 2 * p_);
+  num_of_normals_ = num_of_segments_ * num_of_obst_;
 
   hulls_ = hulls;
 
@@ -52,6 +56,18 @@ SplineAStar::~SplineAStar()
 {
 }
 
+void SplineAStar::setVisual(bool visual)
+{
+  visual_ = visual;
+}
+
+void SplineAStar::setBBoxSearch(double x, double y, double z)
+{
+  bbox_x_ = x;
+  bbox_y_ = y;
+  bbox_z_ = z;
+}
+
 void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int samples_x, int samples_y,
                                          int samples_z)
 {
@@ -61,6 +77,56 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   samples_x_ = samples_x;
   samples_y_ = samples_y;
   samples_z_ = samples_z;
+
+  ////////////
+  vx_.clear();
+  vy_.clear();
+  vz_.clear();
+
+  for (int i = 0; i < samples_x_; i++)
+  {
+    vx_.push_back(-v_max_.x() + i * ((2.0 * v_max_.x()) / (samples_x_ - 1)));
+  }
+  for (int i = 0; i < samples_y_; i++)
+  {
+    vy_.push_back(-v_max_.y() + i * ((2.0 * v_max_.y()) / (samples_y_ - 1)));
+  }
+  for (int i = 0; i < samples_z_; i++)
+  {
+    vz_.push_back(-v_max_.z() + i * ((2.0 * v_max_.z()) / (samples_z_ - 1)));
+  }
+  std::cout << "vx size= " << vx_.size() << std::endl;
+
+  // TODO: remove hand-coded stuff
+  int i = 6;
+  increment_ = v_max_(0) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
+
+  vx_.clear();
+  vy_.clear();
+  vz_.clear();
+
+  vx_.push_back(v_max_(0));
+  vx_.push_back(0);
+  vx_.push_back(-v_max_(0));
+
+  vy_.push_back(v_max_(1));
+  vy_.push_back(0);
+  vy_.push_back(-v_max_(1));
+
+  vz_.push_back(v_max_(2));
+  vz_.push_back(0);
+  vz_.push_back(-v_max_(2));
+
+  int length_x = bbox_x_ / increment_;
+  int length_y = bbox_y_ / increment_;
+  int length_z = bbox_z_ / increment_;
+
+  std::vector<std::vector<std::vector<bool>>> novale(
+      length_x, std::vector<std::vector<bool>>(length_y, std::vector<bool>(length_z, false)));
+
+  orig_ = q2_ - Eigen::Vector3d(bbox_x_ / 2.0, bbox_y_ / 2.0, bbox_z_ / 2.0);
+
+  matrixExpandedNodes_ = novale;
 }
 
 void SplineAStar::setBias(double bias)
@@ -84,13 +150,15 @@ void SplineAStar::setGoalSize(double goal_size)
 
 std::vector<Node> SplineAStar::expand(Node& current)
 {
+  MyTimer timer_expand(true);
+
   // std::cout << "expanding" << std::endl;
   std::vector<Node> neighbors;
 
   if (current.index == (N_ - 2))
   {
-    // std::cout << "can't expand more in this direction" << std::endl;  // can't expand more
-    return neighbors;  // empty vector
+    std::cout << "can't expand more in this direction" << std::endl;  // can't expand more
+    return neighbors;                                                 // empty vector
   }
 
   // first expansion satisfying vmax and amax
@@ -110,35 +178,38 @@ std::vector<Node> SplineAStar::expand(Node& current)
   }
 
   // std::cout << "v_iM1= " << v_iM1.transpose() << std::endl;
-  double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
-  double constraint_x = std::min(v_max_.x(), a_max_.x() * tmp + v_iM1.x());
-  double constraint_y = std::min(v_max_.y(), a_max_.y() * tmp + v_iM1.y());
-  double constraint_z = std::min(v_max_.z(), a_max_.z() * tmp + v_iM1.z());
+  // double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
 
-  ////////////
-  vx_.clear();
-  vy_.clear();
-  vz_.clear();
+  /*  std::cout << "Current= " << current.qi.transpose() << std::endl;
 
-  for (int i = 0; i < samples_x_; i++)
-  {
-    vx_.push_back(-constraint_x + i * ((2.0 * constraint_x) / (samples_x_ - 1)));
-  }
-  for (int i = 0; i < samples_y_; i++)
-  {
-    vy_.push_back(-constraint_y + i * ((2.0 * constraint_y) / (samples_y_ - 1)));
-  }
-  for (int i = 0; i < samples_z_; i++)
-  {
-    vz_.push_back(-constraint_z + i * ((2.0 * constraint_z) / (samples_z_ - 1)));
-  }
+    std::cout << "Current index= " << current.index << std::endl;
+    std::cout << "knots= " << knots_ << std::endl;
+    std::cout << "tmp= " << tmp << std::endl;
+    std::cout << "a_max_.x() * tmp= " << a_max_.x() * tmp << std::endl;
+    std::cout << "v_iM1.x()= " << v_iM1.x() << std::endl;*/
+
+  /*  double constraint_xU = std::min(v_max_.x(), a_max_.x() * tmp + v_iM1.x());    // upper bound
+    double constraint_xL = std::max(-v_max_.x(), -a_max_.x() * tmp + v_iM1.x());  // lower bound
+
+    double constraint_yU = std::min(v_max_.y(), a_max_.y() * tmp + v_iM1.y());    // upper bound
+    double constraint_yL = std::max(-v_max_.y(), -a_max_.y() * tmp + v_iM1.y());  // lower bound
+
+    double constraint_zU = std::min(v_max_.z(), a_max_.z() * tmp + v_iM1.z());    // upper bound
+    double constraint_zL = std::max(-v_max_.z(), -a_max_.z() * tmp + v_iM1.z());  // lower bound*/
+
+  /*  std::cout << " constraint_x= " << constraint_x << ", constraint_y= " << constraint_x
+              << " constraint_z= " << constraint_x << std::endl;*/
 
   /////////////
 
   for (double vx_i : vx_)
   {
+    // if (constraint_xL <= vx_i <= constraint_xU)
+    // {
     for (double vy_i : vy_)
     {
+      // if (constraint_yL <= vy_i <= constraint_yU)
+      //{
       for (double vz_i : vz_)
       {
         if (vx_i == 0 && vy_i == 0 && vz_i == 0)
@@ -147,31 +218,60 @@ std::vector<Node> SplineAStar::expand(Node& current)
         }
 
         // std::cout << "vx_i=" << vx_i << ", vy_i=" << vy_i << ", vz_i=" << vz_i << std::endl;
-        if (fabs(vx_i) <= constraint_x && fabs(vy_i) <= constraint_y && fabs(vz_i) <= constraint_z)
-        {
-          // std::cout << "Satisfies constraints" << std::endl;
+        //    if (constraint_zL <= vz_i <= constraint_zU)
+        //    {
+        // std::cout << "vx_i=" << vx_i << ", vy_i=" << vy_i << ", vz_i=" << vz_i << std::endl;
 
-          Eigen::Vector3d vi(vx_i, vy_i, vz_i);
-          Node neighbor;
-          neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
+        Eigen::Vector3d vi(vx_i, vy_i, vz_i);
+        Node neighbor;
+
+        neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
+
+        unsigned int ix = round((neighbor.qi.x() - orig_.x()) / increment_);
+        unsigned int iy = round((neighbor.qi.y() - orig_.y()) / increment_);
+        unsigned int iz = round((neighbor.qi.z() - orig_.z()) / increment_);
+
+        if (ix >= matrixExpandedNodes_.size() || iy >= matrixExpandedNodes_[0].size() ||
+            iz >= matrixExpandedNodes_[0][0].size())
+        {
+          // node is outside the search box
+          std::cout << "ix= " << ix << " is outside, max= " << matrixExpandedNodes_.size() << std::endl;
+          std::cout << "iy= " << iy << " is outside, max= " << matrixExpandedNodes_[0].size() << std::endl;
+          std::cout << "iz= " << iz << " is outside, max= " << matrixExpandedNodes_[0][0].size() << std::endl;
+          std::cout << "increment_= " << increment_ << std::endl;
+          std::cout << "orig_= " << orig_.transpose() << std::endl;
+          std::cout << "neighbor.qi= " << neighbor.qi.transpose() << std::endl;
+          continue;
+        }
+
+        // check here if ix, iy, iz are within the interval of matrixExpandedNodes_
+
+        if (matrixExpandedNodes_[ix][iy][iz] == true)
+        {
+          // std::cout << "Already in the expanded list" << std::endl;
+          continue;  // already in the expanded list
+        }
+        else
+        {
+          matrixExpandedNodes_[ix][iy][iz] = true;
+
           neighbor.index = current.index + 1;
           neighbor.previous = &current;
           neighbor.g = current.g + weightEdge(current, neighbor);
           neighbor.h = h(neighbor);
           neighbors_va.push_back(neighbor);
-          // std::cout << "*************************" << std::endl;
-          // std::cout << "vx_i=" << vx_i << ", vy_i=" << vy_i << ", vz_i=" << vz_i << std::endl;
-          // std::cout << "Linking, qi=" << neighbor.qi.transpose() << std::endl;
-          // std::cout << "Linking, anterior=" << neighbor.previous->qi.transpose() << std::endl;
         }
+        // }
         /*        else
                 {
                   std::cout << "Doesn't satisfy the constraints" << std::endl;
                 }*/
+        //  }
       }
+      //}
     }
   }
-  // std::cout << "neighbors_va.size()= " << neighbors_va.size() << std::endl;
+  std::cout << "neighbors_va.size()= " << neighbors_va.size() << std::endl;
 
   // if the index is <=6, return what we have //TODO this should be <=2, !!!!
 
@@ -214,34 +314,23 @@ std::vector<Node> SplineAStar::expand(Node& current)
       Eigen::Vector3d n_i;
       double d_i;
 
+      MyTimer timer_lp(true);
       satisfies_LP = separator_solver->solveModel(n_i, d_i, hulls_[obst_index][current.index + 1 - 3], last4Cps);
+      time_solving_lps_ += timer_lp.ElapsedMs();
 
       if (satisfies_LP == false)
       {
         break;
       }
-
-      /*      std::cout << "Size cvxhull=" << hulls_[obst_index][current.index + 1 - 3].size() << std::endl;
-
-            std::cout << "Vertexes obstacle" << std::endl;
-            for (auto vertex_obs : hulls_[obst_index][current.index + 1 - 3])
-            {
-              std::cout << "vertex_obs= " << vertex_obs.transpose() << std::endl;
-            }
-
-            std::cout << "CPs" << std::endl;
-            for (auto cp : last4Cps)
-            {
-              std::cout << "cp= " << cp.transpose() << std::endl;
-            }
-
-            std::cout << "n_i= " << n_i.transpose() << ", d_i= " << d_i << std::endl;*/
     }
     if (satisfies_LP == true)  // this is true also when num_of_obst_=0;
     {
       neighbors.push_back(neighbor_va);
     }
   }
+
+  time_expanding_ += timer_expand.ElapsedMs();
+
   // std::cout << "returning neighbors" << std::endl;
   return neighbors;
 }
@@ -249,70 +338,49 @@ std::vector<Node> SplineAStar::expand(Node& current)
 double SplineAStar::h(Node& node)
 {
   // See Notebook mathematica
-  int dim_var = N_ - node.index;
+  /*  int dim_var = N_ - node.index;
 
-  Eigen::Matrix<double, -1, 1> b = Eigen::MatrixXd::Zero(dim_var, 1);
+    Eigen::Matrix<double, -1, 1> b = Eigen::MatrixXd::Zero(dim_var, 1);
 
-  double heuristics = 0;
+    double heuristics = 0;
 
-  // std::cout << "Going to compute coordinates now" << std::endl;
-
-  for (int coord = 0; coord < 3; coord++)  // separation in the three coordinates
-  {
-    double qi = node.qi(coord);
-    double qiM1;
-
-    // std::cout << "Going to compute coordinates now1" << std::endl;
-
-    if (node.index == 2)
+    for (int coord = 0; coord < 3; coord++)  // separation in the three coordinates
     {
-      qiM1 = q1_(coord);
-    }
-    else
-    {
-      qiM1 = node.previous->qi(coord);
-    }
-    // std::cout << "Going to compute coordinates now2" << std::endl;
+      double qi = node.qi(coord);
+      double qiM1;
 
-    double goal = goal_(coord);
+      if (node.index == 2)
+      {
+        qiM1 = q1_(coord);
+      }
+      else
+      {
+        qiM1 = node.previous->qi(coord);
+      }
 
-    b(0, 0) = 2 * (qiM1 - 4 * qi);
+      double goal = goal_(coord);
 
-    // See mathematica notebook
-    if (dim_var == 3)
-    {
-      b(1, 0) = 2 * qi + 2 * goal;
-    }
-    else
-    {
-      b(1, 0) = 2 * qi;
-      b(b.size() - 2, 0) = 2 * goal;
-    }
-    b(b.size() - 1, 0) = -6 * goal;
-    // std::cout << "Going to compute coordinates now3" << std::endl;
-    double c = qiM1 * qiM1 - 4 * qiM1 * qi + 5 * qi * qi + 2 * goal * goal;
+      b(0, 0) = 2 * (qiM1 - 4 * qi);
 
-    /*    double cost_i = (-0.5 * b.transpose() * Ainverses_[dim_var] * b + c);
+      // See mathematica notebook
+      if (dim_var == 3)
+      {
+        b(1, 0) = 2 * qi + 2 * goal;
+      }
+      else
+      {
+        b(1, 0) = 2 * qi;
+        b(b.size() - 2, 0) = 2 * goal;
+      }
+      b(b.size() - 1, 0) = -6 * goal;
+      // std::cout << "Going to compute coordinates now3" << std::endl;
+      double c = qiM1 * qiM1 - 4 * qiM1 * qi + 5 * qi * qi + 2 * goal * goal;
 
-        if (cost_i < -0.0000001)
-        {
-          std::cout << "cost_i is negative, dim_var= " << dim_var << std::endl;
-          std::cout << "b= " << b.transpose() << std::endl;
-          std::cout << Ainverses_[dim_var].inverse() << std::endl;
-          std::cout << "-0.5 * b.transpose() * Ainverses_[dim_var] * b = " << -0.5 * b.transpose() * Ainverses_[dim_var]
-       * b
-                    << std::endl;
+      heuristics = heuristics + (-0.5 * b.transpose() * Ainverses_[dim_var] * b + c);
+    }*/
 
-          std::cout << "c= " << c << std::endl;
-        }*/
-
-    heuristics = heuristics + (-0.5 * b.transpose() * Ainverses_[dim_var] * b + c);
-  }
-
-  //  std::cout << "heuristics= " << heuristics << std::endl;
-
+  double heuristics = (node.qi - goal_).squaredNorm();  // hack
   return heuristics;
-  // return (node.qi - goal_).norm();  // hack, should be squaredNorm();
 }
 
 void SplineAStar::computeInverses()
@@ -351,18 +419,19 @@ double SplineAStar::g(Node& node)
     cost = cost + weightEdge(*tmp->previous, *tmp);
     tmp = tmp->previous;
   }
+
   return cost;
 }
 
 double SplineAStar::weightEdge(Node& node1, Node& node2)  // edge cost when adding node 2
 {
-  if (node1.index == 2)
-  {
-    return (node2.qi - 2 * node1.qi + q1_).squaredNorm();
-  }
+  /*  if (node1.index == 2)
+    {
+      return (node2.qi - 2 * node1.qi + q1_).squaredNorm();
+    }*/
 
-  // return (node2.qi - node1.qi).norm();  // hack Comment this and comment out the other stuff
-  return (node2.qi - 2 * node1.qi + node1.previous->qi).squaredNorm();
+  return (node2.qi - node1.qi).norm() / (node2.index);  // hack Comment this and comment out the other stuff
+  // return (node2.qi - 2 * node1.qi + node1.previous->qi).squaredNorm();
 }
 
 void SplineAStar::printPath(Node& node1)
@@ -370,8 +439,8 @@ void SplineAStar::printPath(Node& node1)
   Node tmp = node1;
   while (tmp.previous != NULL)
   {
-    std::cout << tmp.index << ", ";  // qi.transpose().x()
-    // std::cout << "El anterior es=" << tmp.previous->qi.transpose() << std::endl;
+    // std::cout << tmp.index << ", ";  // qi.transpose().x()
+    std::cout << tmp.previous->qi.transpose() << std::endl;
     tmp = *tmp.previous;
   }
   std::cout << std::endl;
@@ -388,7 +457,6 @@ void SplineAStar::recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& res
 
   while (tmp != NULL)
   {
-    // std::cout << "Pushing back tmp->qi=" << tmp->qi.transpose() << std::endl;
     result.insert(result.begin(), tmp->qi);
     tmp = tmp->previous;
   }
@@ -396,36 +464,88 @@ void SplineAStar::recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& res
   result.insert(result.begin(), q0_);
 }
 
-void SplineAStar::plotExpandedNodesAndResult(std::vector<Eigen::Vector3d>& expanded_nodes,
-                                             std::vector<Eigen::Vector3d>& result)
+void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, Node* result_ptr)
 {
-  std::vector<double> x, y, z;
   for (auto node : expanded_nodes)
   {
-    x.push_back(node.x());
-    y.push_back(node.y());
-    z.push_back(node.z());
+    Node* tmp = &node;
+
+    std::vector<double> x, y, z;
+    while (tmp != NULL)
+    {
+      x.push_back(tmp->qi.x());
+      y.push_back(tmp->qi.y());
+      z.push_back(tmp->qi.z());
+
+      tmp = tmp->previous;
+    }
+    plt::plot(x, y, "ob-");
   }
 
-  plt::plot(x, y, "o ");
-
-  std::vector<double> x_result, y_result, z_result;
-
-  for (auto node : result)
+  if (result_ptr != NULL)
   {
-    x_result.push_back(node.x());
-    y_result.push_back(node.y());
-    z_result.push_back(node.z());
-  }
+    std::vector<Eigen::Vector3d> path;
+    recoverPath(result_ptr, path);
 
-  plt::plot(x_result, y_result, "or ");
+    std::vector<double> x_result, y_result, z_result;
+
+    for (auto node : path)
+    {
+      x_result.push_back(node.x());
+      y_result.push_back(node.y());
+      z_result.push_back(node.z());
+    }
+
+    plt::plot(x_result, y_result, "or-");
+  }
 
   plt::show();
 }
 
-bool SplineAStar::run(std::vector<Eigen::Vector3d>& result)
+/*bool SplineAStar::isInExpandedList(Node& tmp)
 {
-  std::vector<Eigen::Vector3d> expanded_nodes;
+
+}*/
+
+void SplineAStar::fillNDFromNode(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n,
+                                 std::vector<double>& d)
+{
+  n.resize(std::max(num_of_normals_, 0), Eigen::Vector3d::Zero());
+  d.resize(std::max(num_of_normals_, 0), 0.0);
+
+  std::vector<Eigen::Vector3d> last4Cps(4);
+
+  for (int index_interv = 0; index_interv < (result.size() - 3); index_interv++)
+  {
+    last4Cps[0] = result[index_interv];
+    last4Cps[1] = result[index_interv + 1];
+    last4Cps[2] = result[index_interv + 2];
+    last4Cps[3] = result[index_interv + 3];
+
+    for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+    {
+      Eigen::Vector3d n_i;
+      double d_i;
+
+      bool solved = separator_solver->solveModel(n_i, d_i, hulls_[obst_index][index_interv], last4Cps);
+
+      if (solved == false)
+      {
+        std::cout << bold << red << "The node provided doesn't satisfy LPs" << reset << std::endl;
+      }
+
+      /*      std::cout << "solved with ni=" << n_i.transpose() << std::endl;
+            std::cout << "solved with d_i=" << d_i << std::endl;*/
+
+      n[obst_index * num_of_segments_ + index_interv] = n_i;
+      d[obst_index * num_of_segments_ + index_interv] = d_i;
+    }
+  }
+}
+
+bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d)
+{
+  expanded_nodes_.clear();
 
   MyTimer timer_astar(true);
 
@@ -448,20 +568,20 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result)
 
   while (openList.size() > 0)
   {
-    // std::cout << "======================" << std::endl;
-    // std::cout << "sizeOpenList=" << openList.size() << std::endl;
+    std::cout << red << "=============================" << reset << std::endl;
+
+    std::cout << "sizeOpenList=" << openList.size() << std::endl;
     current_ptr = new Node;
     *current_ptr = openList.top();
-
-    expanded_nodes.push_back((*current_ptr).qi);
 
     // std::cout << "Path to current_ptr= " << (*current_ptr).qi.transpose() << std::endl;
     // printPath(*current_ptr);
 
     double dist = ((*current_ptr).qi - goal_).norm();
     std::cout << "dist2Goal=" << dist << ", index=" << (*current_ptr).index << std::endl;
-    std::cout << "bias_=" << bias_ << std::endl;
-    // std::cout << "N_=" << N_ << std::endl;
+    // std::cout << "bias_=" << bias_ << std::endl;
+    std::cout << "N_-2=" << N_ - 2 << std::endl;
+    std::cout << "index=" << (*current_ptr).index << std::endl;
 
     // log the closest solution so far
     if ((*current_ptr).index == (N_ - 2))
@@ -472,6 +592,10 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result)
         closest_result_so_far_ptr_ = current_ptr;
       }
     }
+
+    std::cout << "time_solving_lps_= " << 100 * time_solving_lps_ / (timer_astar.ElapsedMs()) << "%" << std::endl;
+    std::cout << "time_expanding_= " << time_expanding_ << "ms, " << 100 * time_expanding_ / (timer_astar.ElapsedMs())
+              << "%" << std::endl;
 
     //////////////////////////////////////////////////////////////////
     //////////////Check if we are in the goal or if the runtime is over
@@ -487,7 +611,11 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result)
     {
       std::cout << "[A*] Goal was reached!" << std::endl;
       recoverPath(current_ptr, result);
-      plotExpandedNodesAndResult(expanded_nodes, result);
+      fillNDFromNode(result, n, d);
+      if (visual_)
+      {
+        plotExpandedNodesAndResult(expanded_nodes_, current_ptr);
+      }
 
       return true;
     }
@@ -497,15 +625,12 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result)
     openList.pop();  // remove the element
 
     std::vector<Node> neighbors = expand(*current_ptr);
-
-    // std::cout << "There are " << neighbors.size() << " neighbors" << std::endl;
+    expanded_nodes_.push_back((*current_ptr));
 
     for (auto neighbor : neighbors)
     {
       openList.push(neighbor);
     }
-
-    // closedList.push_back(current_ptr);
   }
 
   std::cout << "openList is empty" << std::endl;
@@ -515,14 +640,28 @@ exitloop:
   if (closest_result_so_far_ptr_ == NULL)
   {
     std::cout << " and couldn't find any solution" << std::endl;
-    plotExpandedNodesAndResult(expanded_nodes, result);
+    if (visual_)
+    {
+      plotExpandedNodesAndResult(expanded_nodes_, closest_result_so_far_ptr_);
+    }
     return false;
   }
   else
   {
     std::cout << " and the best solution found has dist=" << closest_dist_so_far_ << std::endl;
     recoverPath(closest_result_so_far_ptr_, result);
-    plotExpandedNodesAndResult(expanded_nodes, result);
+    fillNDFromNode(result, n, d);
+
+    std::cout << "Normal Vectors: " << std::endl;
+    for (auto ni : n)
+    {
+      std::cout << ni.transpose() << std::endl;
+    }
+
+    if (visual_)
+    {
+      plotExpandedNodesAndResult(expanded_nodes_, closest_result_so_far_ptr_);
+    }
     return true;
   }
 
@@ -599,3 +738,19 @@ exitloop:
     neighbors.push_back(nodeq2);
     return neighbors;
   }*/
+
+/*      std::cout << "Size cvxhull=" << hulls_[obst_index][current.index + 1 - 3].size() << std::endl;
+
+      std::cout << "Vertexes obstacle" << std::endl;
+      for (auto vertex_obs : hulls_[obst_index][current.index + 1 - 3])
+      {
+        std::cout << "vertex_obs= " << vertex_obs.transpose() << std::endl;
+      }
+
+      std::cout << "CPs" << std::endl;
+      for (auto cp : last4Cps)
+      {
+        std::cout << "cp= " << cp.transpose() << std::endl;
+      }
+
+      std::cout << "n_i= " << n_i.transpose() << ", d_i= " << d_i << std::endl;*/

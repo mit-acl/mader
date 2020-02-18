@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include "./../../termcolor.hpp"
+#include "./../../spline_AStar.hpp"
 
 #include <random>
 
@@ -330,6 +331,53 @@ void SolverNlopt::sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vecto
   // accel = (p_ - 1) * (viP1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
 }
 
+void SolverNlopt::useAStarGuess()
+{
+  n_guess_.clear();
+  q_guess_.clear();
+  d_guess_.clear();
+  planes_.clear();
+
+  generateRandomN(n_guess_);
+  generateRandomD(d_guess_);
+  generateRandomQ(q_guess_);
+
+  SplineAStar myAStarSolver(num_pol_, deg_pol_, hulls_.size(), t_min_, t_max_, hulls_);
+
+  myAStarSolver.setq0q1q2(q0_, q1_, q2_);
+  myAStarSolver.setGoal(final_state_.pos);
+
+  int samples_x = 10;
+  int samples_y = 10;
+  int samples_z = 10;
+  double runtime = 0.05;   //[seconds]
+  double goal_size = 0.5;  //[meters]
+
+  myAStarSolver.setBBoxSearch(30.0, 30.0, 30.0);  // limits for the search
+  myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, samples_x, samples_y, samples_z);
+
+  myAStarSolver.setRunTime(runtime);
+  myAStarSolver.setGoalSize(goal_size);
+
+  myAStarSolver.setBias(1000000.0);
+  myAStarSolver.setVisual(false);
+
+  std::vector<Eigen::Vector3d> q;
+  std::vector<Eigen::Vector3d> n;
+  std::vector<double> d;
+  bool solved = myAStarSolver.run(q, n, d);
+
+  if (solved == true)
+  {
+    q_guess_ = q;
+    n_guess_ = n;
+    d_guess_ = d;
+    fillPlanesFromNDQ(planes_, n_guess_, d_guess_, q_guess_);
+  }
+
+  return;
+}
+
 void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
 {
   // sleep(1);
@@ -365,6 +413,7 @@ void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
     std::cout << "trial= " << trial << std::endl;
     std::cout << "num_of_normals_= " << num_of_normals_ << std::endl;
     std::vector<Eigen::Vector3d> q;
+    // n-2 because the three last cpoints have the same normals
     std::vector<Eigen::Vector3d> n(std::max(num_of_normals_ - 2, 0),
                                    Eigen::Vector3d::Zero());  // Initialize all elements
 

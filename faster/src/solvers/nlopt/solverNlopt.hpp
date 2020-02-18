@@ -40,8 +40,9 @@ public:
 
   // Guesses
   void useJPSGuess(vec_Vecf<3> &jps_path);
-  void useRRTGuess();  // vec_E<Polyhedron<3>> &polyhedra
+  void useRRTGuess();
   void useRandomInitialGuess();
+  void useAStarGuess();
 
   void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
 
