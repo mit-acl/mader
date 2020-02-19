@@ -190,63 +190,6 @@ void SolverNlopt::setKappaAndMu(double kappa, double mu)
   mu_ = mu;
 }
 
-void SolverNlopt::computeVeli(Eigen::Vector3d &vel, std::vector<Eigen::Vector3d> &q)
-{
-  int i = q.size() - 2;
-
-  if (i >= (q.size() - 1))
-  {
-    std::cout << "Velocity cannot be ccomputed for this index" << std::endl;
-    return;
-  }
-  vel = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
-}
-
-void SolverNlopt::computeAcceli(Eigen::Vector3d &accel, std::vector<Eigen::Vector3d> &q)
-{
-  int i = q.size() - 3;
-
-  std::vector<Eigen::Vector3d> q_reduced;
-  q_reduced.push_back(q[q.size() - 4]);
-  q_reduced.push_back(q[q.size() - 3]);
-  q_reduced.push_back(q[q.size() - 2]);
-
-  Eigen::Vector3d vi;
-  computeVeli(vi, q_reduced);
-
-  Eigen::Vector3d viP1;
-  computeVeli(viP1, q);
-
-  std::cout << "In computeAcceli q=" << std::endl;
-  printStd(q);
-  std::cout << "In computeAcceli vi=" << vi.transpose() << std::endl;
-  std::cout << "In computeAcceli viP1" << viP1.transpose() << std::endl;
-
-  accel = (p_ - 1) * (viP1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
-}
-
-// Given a vector of control points q0,...,qj
-// it checks if v_{j-1} satisfies vmax constraints
-// and if  a_{j-2} satisfies amax constraints
-bool SolverNlopt::satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q)
-{
-  if (q.size() <= 2)
-  {
-    std::cout << bold << red << "Velocity and accel cannot be computed for this q" << reset << std::endl;
-    return false;
-  }
-
-  Eigen::Vector3d vi;
-  computeVeli(vi, q);
-  Eigen::Vector3d aiM1;
-  computeAcceli(aiM1, q);
-
-  std::cout << "vi= " << vi.transpose() << std::endl;
-  std::cout << "ai= " << aiM1.transpose() << std::endl;
-
-  return ((vi.array().abs() <= v_max_.array()).all() && (aiM1.array().abs() <= a_max_.array()).all());
-}
-
 void SolverNlopt::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const std::vector<Eigen::Vector3d> &n,
                                     const std::vector<double> &d, const std::vector<Eigen::Vector3d> &q)
 {
@@ -332,7 +275,7 @@ void SolverNlopt::useAStarGuess()
   }
   else
   {
-    std::cout << bold << red << "A* didn't find a solution" << reset << std::endl;
+    std::cout << bold << red << "A* didn't find a solution, using random guess" << reset << std::endl;
   }
 
   return;
@@ -1515,9 +1458,66 @@ std::string SolverNlopt::getResultCode(int &result)
     case 6:
       return "Maxtime_reached";
     default:
-      return "Code_unknown";
+      return "Result_Code_unknown";
   }
 }
+
+/*void SolverNlopt::computeVeli(Eigen::Vector3d &vel, std::vector<Eigen::Vector3d> &q)
+{
+  int i = q.size() - 2;
+
+  if (i >= (q.size() - 1))
+  {
+    std::cout << "Velocity cannot be ccomputed for this index" << std::endl;
+    return;
+  }
+  vel = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
+}
+
+void SolverNlopt::computeAcceli(Eigen::Vector3d &accel, std::vector<Eigen::Vector3d> &q)
+{
+  int i = q.size() - 3;
+
+  std::vector<Eigen::Vector3d> q_reduced;
+  q_reduced.push_back(q[q.size() - 4]);
+  q_reduced.push_back(q[q.size() - 3]);
+  q_reduced.push_back(q[q.size() - 2]);
+
+  Eigen::Vector3d vi;
+  computeVeli(vi, q_reduced);
+
+  Eigen::Vector3d viP1;
+  computeVeli(viP1, q);
+
+  std::cout << "In computeAcceli q=" << std::endl;
+  printStd(q);
+  std::cout << "In computeAcceli vi=" << vi.transpose() << std::endl;
+  std::cout << "In computeAcceli viP1" << viP1.transpose() << std::endl;
+
+  accel = (p_ - 1) * (viP1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
+}
+
+// Given a vector of control points q0,...,qj
+// it checks if v_{j-1} satisfies vmax constraints
+// and if  a_{j-2} satisfies amax constraints
+bool SolverNlopt::satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q)
+{
+  if (q.size() <= 2)
+  {
+    std::cout << bold << red << "Velocity and accel cannot be computed for this q" << reset << std::endl;
+    return false;
+  }
+
+  Eigen::Vector3d vi;
+  computeVeli(vi, q);
+  Eigen::Vector3d aiM1;
+  computeAcceli(aiM1, q);
+
+  std::cout << "vi= " << vi.transpose() << std::endl;
+  std::cout << "ai= " << aiM1.transpose() << std::endl;
+
+  return ((vi.array().abs() <= v_max_.array()).all() && (aiM1.array().abs() <= a_max_.array()).all());
+}*/
 
 // Given std::vector<Eigen::Vector3d> &q, this generates a sample that satisfies the vmax and amax constraints wrt the
 // last 3 cpoints of q

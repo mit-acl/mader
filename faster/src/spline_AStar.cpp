@@ -652,7 +652,7 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
 
 exitloop:
 
-  if (closest_result_so_far_ptr_ == NULL)
+  if (closest_result_so_far_ptr_ == NULL || (closest_result_so_far_ptr_->index == 2))
   {
     std::cout << " and couldn't find any solution" << std::endl;
     if (visual_)

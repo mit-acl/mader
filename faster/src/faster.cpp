@@ -1107,7 +1107,14 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc
   snlopt.setTminAndTmax(t_min, t_max);
-  snlopt.setMaxRuntime(k_whole * par_.dc);  // 0.8 * deltaT_ * par_.dc to take into account other computations
+  if (k_whole != 0)
+  {
+    snlopt.setMaxRuntime(k_whole * par_.dc);  // 0.8 * deltaT_ * par_.dc to take into account other computations
+  }
+  else
+  {
+    snlopt.setMaxRuntime(0.2);  // I'm stopped at the end of the trajectory --> take my time to replan
+  }
   snlopt.setInitAndFinalStates(initial, final);
 
   /*  snlopt.getGuessForCPs(poly_safe_out);  // in testing phase

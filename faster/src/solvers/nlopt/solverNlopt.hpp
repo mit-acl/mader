@@ -132,11 +132,11 @@ private:
 
   bool intersects();
 
-  void computeVeli(Eigen::Vector3d &vel, std::vector<Eigen::Vector3d> &q);
+  // void computeVeli(Eigen::Vector3d &vel, std::vector<Eigen::Vector3d> &q);
 
-  void computeAcceli(Eigen::Vector3d &accel, std::vector<Eigen::Vector3d> &q);
+  // void computeAcceli(Eigen::Vector3d &accel, std::vector<Eigen::Vector3d> &q);
 
-  bool satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q);
+  // bool satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q);
 
   void printIndexesConstraints();
 
