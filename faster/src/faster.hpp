@@ -104,6 +104,8 @@ private:
   int n_pol_ = 7;
   int deg_ = 3;
 
+  bool initializedStateAndTermGoal();
+
   void removeTrajsThatWillNotAffectMe(state A, double t_start, double t_end);
 
   vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves);

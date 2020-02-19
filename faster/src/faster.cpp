@@ -777,6 +777,15 @@ bool Faster::initializedAllExceptPlanner()
   return true;
 }
 
+bool Faster::initializedStateAndTermGoal()
+{
+  if (!state_initialized_ || !terminal_goal_initialized_)
+  {
+    return false;
+  }
+  return true;
+}
+
 bool Faster::initialized()
 {
   if (!state_initialized_ || !kdtree_map_initialized_ || !kdtree_unk_initialized_ || !terminal_goal_initialized_ ||
@@ -797,14 +806,20 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
                     std::vector<state>& X_whole_out, pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps,
                     std::vector<Hyperplane3D>& planes_guesses)
 {
-  // std::cout << "here1" << std::endl;
   MyTimer replanCB_t(true);
-  // std::cout << "here2" << std::endl;
 
-  if (initializedAllExceptPlanner() == false)
+  /*  if (initializedAllExceptPlanner() == false)
+    {
+      std::cout << "Not Replanning" << std::endl;
+      return;
+    }
+  */
+  if (initializedStateAndTermGoal() == false)
   {
+    std::cout << "Not Replanning" << std::endl;
     return;
   }
+
   // std::cout << "here3" << std::endl;
 
   sg_whole_.ResetToNormalState();
@@ -1394,7 +1409,12 @@ void Faster::getDesiredYaw(state& next_goal)
 
 bool Faster::getNextGoal(state& next_goal)
 {
-  if (initializedAllExceptPlanner() == false)
+  /*  if (initializedAllExceptPlanner() == false)
+    {
+      std::cout << "Not publishing new goal!!" << std::endl;
+      return false;
+    }*/
+  if (initializedStateAndTermGoal() == false)
   {
     std::cout << "Not publishing new goal!!" << std::endl;
     return false;
