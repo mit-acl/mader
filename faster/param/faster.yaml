@@ -18,7 +18,7 @@ z_max: 2         #[m] JPS is not allowed to give a solution that goes higher tha
 inflation_jps: 0.35  #[m] The obstacles are inflated (to run JPS) by this amount
 factor_jps: 1  #[m] JPS is run with resolution=factor_jps*(resolution of the map)
 
-v_max: 3.0   #[m/s]  1.4
+v_max: 8.0   #[m/s]  1.4
 a_max: 10.0   #[m/s2] 1.4
 j_max: 10.0  #[m/s3] 35
 
@@ -50,8 +50,8 @@ deg: 3
 samples_per_interval: 1
 weight: 10000.0 #The .0 is needed
 epsilon_tol_constraints: 0.1
-xtol_rel: 0.01
-ftol_rel: 0.01
+xtol_rel: 0.001
+ftol_rel: 0.001
 solver: "LD_MMA"
 
 #  // work:  //LD_MMA // //LN_NELDERMEAD // LN_SBPLX(fastest) //LN_PRAXIS(fastest) //LD_AUGLAG //LD_AUGLAG_EQ
