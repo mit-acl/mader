@@ -65,6 +65,8 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "samples_per_interval", par_.samples_per_interval);
   safeGetParam(nh_, "weight", par_.weight);
   safeGetParam(nh_, "epsilon_tol_constraints", par_.epsilon_tol_constraints);
+  safeGetParam(nh_, "xtol_rel", par_.xtol_rel);
+  safeGetParam(nh_, "ftol_rel", par_.ftol_rel);
   safeGetParam(nh_, "solver", par_.solver);
 
   safeGetParam(nh_, "kappa", par_.kappa);

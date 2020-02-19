@@ -18,8 +18,8 @@ typedef JPS::Timer MyTimer;
 class SolverNlopt
 {
 public:
-  SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints,
-              bool force_final_state, std::string &solver);
+  SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints, double xtol_rel,
+              double ftol_rel, bool force_final_state, std::string &solver);
 
   ~SolverNlopt();
 
@@ -171,6 +171,8 @@ private:
   std::vector<Hyperplane3D> planes_;
 
   double epsilon_tol_constraints_;
+  double xtol_rel_;
+  double ftol_rel_;
 
   std::vector<double> x_;  // Here the initial guess, and the solution, are stored
 

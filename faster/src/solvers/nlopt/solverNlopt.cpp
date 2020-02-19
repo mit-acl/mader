@@ -24,7 +24,7 @@
 using namespace termcolor;
 
 SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints,
-                         bool force_final_state, std::string &solver)
+                         double xtol_rel, double ftol_rel, bool force_final_state, std::string &solver)
 {
   // std::cout << "In the SolverNlopt Constructor\n";
 
@@ -33,6 +33,8 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
   force_final_state_ = force_final_state;
 
   epsilon_tol_constraints_ = epsilon_tol_constraints;  // 1e-1;
+  xtol_rel_ = xtol_rel;                                // 1e-1;
+  ftol_rel_ = ftol_rel;                                // 1e-1;
 
   num_of_obst_ = num_obst;
   weight_ = weight;
@@ -246,9 +248,9 @@ void SolverNlopt::useAStarGuess()
   myAStarSolver.setq0q1q2(q0_, q1_, q2_);
   myAStarSolver.setGoal(final_state_.pos);
 
-  int samples_x = 5;
-  int samples_y = 5;
-  int samples_z = 3;
+  int samples_x = 7;
+  int samples_y = 7;
+  int samples_z = 7;
   // double runtime = 0.05;   //[seconds]
   double goal_size = 0.5;  //[meters]
 
@@ -1180,11 +1182,11 @@ bool SolverNlopt::optimize()
   opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
   local_opt_ = new nlopt::opt(solver_, num_of_variables_);
 
-  local_opt_->set_xtol_rel(1e-18);  // stopping criteria. If >=1e-1, it leads to weird trajectories
-  local_opt_->set_ftol_rel(1e-18);  // stopping criteria. If >=1e-1, it leads to weird trajectories
+  local_opt_->set_xtol_rel(xtol_rel_);  // stopping criteria. If >=1e-1, it leads to weird trajectories
+  local_opt_->set_ftol_rel(ftol_rel_);  // stopping criteria. If >=1e-1, it leads to weird trajectories
   opt_->set_local_optimizer(*local_opt_);
-  opt_->set_xtol_rel(1e-18);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
-  opt_->set_ftol_rel(1e-18);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
+  opt_->set_xtol_rel(xtol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
+  opt_->set_ftol_rel(ftol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
   // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
   // max_runtime_ = 0.2;               // hack

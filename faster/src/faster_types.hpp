@@ -86,6 +86,8 @@ struct parameters
   int samples_per_interval;
   double weight;
   double epsilon_tol_constraints;
+  double xtol_rel;
+  double ftol_rel;
   std::string solver;
 
   double kappa;
