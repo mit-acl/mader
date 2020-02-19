@@ -268,6 +268,9 @@ void SolverNlopt::useAStarGuess()
   std::vector<double> d;
   bool solved = myAStarSolver.run(q, n, d);
 
+  std::cout << "After Running solved, n= " << std::endl;
+  printStd(n);
+
   if (solved == true)
   {
     q_guess_ = q;
@@ -303,6 +306,8 @@ void SolverNlopt::generateRandomN(std::vector<Eigen::Vector3d> &n)
     double r3 = ((double)rand() / (RAND_MAX));
     n.push_back(Eigen::Vector3d(r1, r2, r3));
   }
+
+  std::cout << "After Generating RandomN, n has size= " << n.size() << std::endl;
 }
 
 void SolverNlopt::generateRandomQ(std::vector<Eigen::Vector3d> &q)
@@ -852,13 +857,13 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   int r = 0;
   // grad is a vector with nn*m elements
   // Initialize grad to 0 all the elements, not sure if needed
-  if (grad)
-  {
-    for (int i = 0; i < nn * m; i++)
+  /*  if (grad)
     {
-      grad[i] = 0.0;
-    }
-  }
+      for (int i = 0; i < nn * m; i++)
+      {
+        grad[i] = 0.0;
+      }
+    }*/
 
   index_const_obs_ = r;
   /*#ifdef DEBUG_MODE_NLOPT
@@ -1027,10 +1032,10 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   // Impose that the normals are not [0 0 0]
   for (int i = 0; i < n.size(); i++)
   {
-    double min_norm = 1;  // normals should have at least module min_norm
+    double min_norm_squared = 1;  // normals should have at least module^2 min_norm_squared
 
     // std::cout << "n[i]= " << n[i].transpose() << std::endl;
-    constraints[r] = min_norm - n[i].dot(n[i]);  // f<=0
+    constraints[r] = min_norm_squared - n[i].dot(n[i]);  // f<=0
     if (grad)
     {
       toGradSameConstraintDiffVariables(gIndexN(i), -2 * n[i], grad, r, nn);

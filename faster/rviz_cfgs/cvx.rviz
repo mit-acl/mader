@@ -93,6 +93,26 @@ Visualization Manager:
           Value: true
         SQ022:
           Value: true
+        SQ0220:
+          Value: true
+        SQ0221:
+          Value: true
+        SQ0222:
+          Value: true
+        SQ0223:
+          Value: true
+        SQ0224:
+          Value: true
+        SQ0225:
+          Value: true
+        SQ0226:
+          Value: true
+        SQ0227:
+          Value: true
+        SQ0228:
+          Value: true
+        SQ0229:
+          Value: true
         SQ023:
           Value: true
         SQ024:
@@ -143,6 +163,26 @@ Visualization Manager:
           SQ0219:
             {}
           SQ022:
+            {}
+          SQ0220:
+            {}
+          SQ0221:
+            {}
+          SQ0222:
+            {}
+          SQ0223:
+            {}
+          SQ0224:
+            {}
+          SQ0225:
+            {}
+          SQ0226:
+            {}
+          SQ0227:
+            {}
+          SQ0228:
+            {}
+          SQ0229:
             {}
           SQ023:
             {}
@@ -373,13 +413,13 @@ Visualization Manager:
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /rviz_visual_tools
       Name: Planes
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /SQ01s/cvx/point_M
@@ -445,25 +485,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 10.2206993
+      Distance: 19.5938244
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.949332714
-        Y: 0.226585865
-        Z: -1.03695766e-06
+        X: -1.06276584
+        Y: 0.93046236
+        Z: -2.48495667e-06
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.349797368
+      Pitch: 0.324797571
       Target Frame: LQ01s
       Value: ThirdPersonFollower (rviz)
-      Yaw: -2.29069161
+      Yaw: 4.16749668
     Saved: ~
 Window Geometry:
   Displays:

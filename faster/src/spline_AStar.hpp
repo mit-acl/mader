@@ -51,7 +51,7 @@ private:
   double g(Node& node);
   double weightEdge(Node& node1, Node& node2);
 
-  void fillNDFromNode(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d);
+  bool fillNDFromNode(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d);
 
   Eigen::Vector3d goal_;
   Eigen::Vector3d v_max_;

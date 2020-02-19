@@ -522,14 +522,27 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
 
 }*/
 
-void SplineAStar::fillNDFromNode(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n,
+bool SplineAStar::fillNDFromNode(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n,
                                  std::vector<double>& d)
 {
   n.resize(std::max(num_of_normals_, 0), Eigen::Vector3d::Zero());
   d.resize(std::max(num_of_normals_, 0), 0.0);
 
   std::vector<Eigen::Vector3d> last4Cps(4);
+  /*
+   std::cout << "result=" << std::endl;
 
+   for (auto result_i : result)
+   {
+     std::cout << result_i.transpose() << std::endl;
+   }
+
+   std::cout << "num_of_segments_= " << num_of_segments_ << std::endl;
+     std::cout << "num_of_normals_= " << num_of_normals_ << std::endl;
+     std::cout << "M_= " << M_ << std::endl;
+     std::cout << "N_= " << N_ << std::endl;
+     std::cout << "p_= " << p_ << std::endl;
+   */
   for (int index_interv = 0; index_interv < (result.size() - 3); index_interv++)
   {
     last4Cps[0] = result[index_interv];
@@ -544,18 +557,35 @@ void SplineAStar::fillNDFromNode(std::vector<Eigen::Vector3d>& result, std::vect
 
       bool solved = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][index_interv], last4Cps);
 
+      /*      std::cout << "Filling " << obst_index * num_of_segments_ + index_interv << std::endl;
+            std::cout << "OBSTACLE= " << obst_index << std::endl;
+            std::cout << "INTERVAL= " << index_interv << std::endl;
+            std::cout << "last4Cps= " << std::endl;
+            for (auto last4Cps_i : last4Cps)
+            {
+              std::cout << last4Cps_i.transpose() << std::endl;
+            }
+
+            std::cout << "Obstacle= " << std::endl;
+            for (auto vertex_i : hulls_[obst_index][index_interv])
+            {
+              std::cout << vertex_i.transpose() << std::endl;
+            }
+      */
       if (solved == false)
       {
         std::cout << bold << red << "The node provided doesn't satisfy LPs" << reset << std::endl;
+        return false;
       }
 
-      std::cout << "solved with ni=" << n_i.transpose() << std::endl;
-      std::cout << "solved with d_i=" << d_i << std::endl;
+      /*      std::cout << "solved with ni=" << n_i.transpose() << std::endl;
+            std::cout << "solved with d_i=" << d_i << std::endl;*/
 
       n[obst_index * num_of_segments_ + index_interv] = n_i;
       d[obst_index * num_of_segments_ + index_interv] = d_i;
     }
   }
+  return true;
 }
 
 bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d)
@@ -626,7 +656,10 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     {
       std::cout << "[A*] Goal was reached!" << std::endl;
       recoverPath(current_ptr, result);
-      fillNDFromNode(result, n, d);
+      if (fillNDFromNode(result, n, d) == false)  // happens sometimes, unsure why yet...
+      {
+        return false;
+      }
       if (visual_)
       {
         plotExpandedNodesAndResult(expanded_nodes_, current_ptr);
@@ -676,7 +709,10 @@ exitloop:
 
     std::cout << " and the best solution found has dist=" << closest_dist_so_far_ << std::endl;
     recoverPath(closest_result_so_far_ptr_, result);
-    fillNDFromNode(result, n, d);
+    if (fillNDFromNode(result, n, d) == false)
+    {  // happens sometimes, unsure why yet...
+      return false;
+    }
 
     if (visual_)
     {

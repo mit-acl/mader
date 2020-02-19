@@ -1167,9 +1167,11 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   // snlopt.createGuess(poly_safe_out);
 
+  std::cout << on_cyan << bold << "Solved so far" << solutions_found_ << "/" << total_replannings_ << reset
+            << std::endl;
+
   std::cout << "Calling optimize" << std::endl;
   bool result = snlopt.optimize();
-  std::cout << on_cyan << bold << "Solved " << solutions_found_ << "/" << total_replannings_ << reset << std::endl;
 
   snlopt.getGuessForPlanes(planes_guesses);
 
