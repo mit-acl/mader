@@ -7,11 +7,11 @@ int main()
   int num_pol = 7;
   int deg_pol = 3;
 
-  int samples_x = 10;
-  int samples_y = 10;
-  int samples_z = 10;
+  int samples_x = 5;  // odd number
+  int samples_y = 5;  // odd number
+  int samples_z = 3;  // odd number
 
-  double runtime = 0.005;  //[seconds]
+  double runtime = 0.05;   //[seconds]
   double goal_size = 0.5;  //[meters]
 
   Eigen::Vector3d v_max(10.0, 10.0, 10.0);

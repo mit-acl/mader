@@ -303,16 +303,16 @@ void SolverNlopt::useAStarGuess()
   myAStarSolver.setq0q1q2(q0_, q1_, q2_);
   myAStarSolver.setGoal(final_state_.pos);
 
-  int samples_x = 10;
-  int samples_y = 10;
-  int samples_z = 10;
+  int samples_x = 5;
+  int samples_y = 5;
+  int samples_z = 3;
   // double runtime = 0.05;   //[seconds]
   double goal_size = 0.5;  //[meters]
 
   myAStarSolver.setBBoxSearch(30.0, 30.0, 30.0);  // limits for the search
   myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, samples_x, samples_y, samples_z);
 
-  myAStarSolver.setRunTime(kappa_ * max_runtime_);
+  myAStarSolver.setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
   myAStarSolver.setGoalSize(goal_size);
 
   myAStarSolver.setBias(1000000.0);
@@ -1237,14 +1237,16 @@ bool SolverNlopt::optimize()
   opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
   local_opt_ = new nlopt::opt(solver_, num_of_variables_);
 
-  local_opt_->set_xtol_rel(1e-8);  // stopping criteria. If >=1e-1, it leads to weird trajectories
+  local_opt_->set_xtol_rel(1e-18);  // stopping criteria. If >=1e-1, it leads to weird trajectories
+  local_opt_->set_ftol_rel(1e-18);  // stopping criteria. If >=1e-1, it leads to weird trajectories
   opt_->set_local_optimizer(*local_opt_);
-  opt_->set_xtol_rel(1e-8);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
+  opt_->set_xtol_rel(1e-18);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
+  opt_->set_ftol_rel(1e-18);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
   // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
   // max_runtime_ = 0.2;               // hack
-  opt_->set_maxtime(mu_ * max_runtime_);  // max_runtime_  // maximum time in seconds. Negative --> don't use this
-                                          // criterion
+  opt_->set_maxtime(std::max(mu_ * max_runtime_, 0.001));  // 0.001 to make use this criterion is used  // maximum time
+                                                           // in seconds. Negative --> don't use this criterion
 
   initializeNumOfConstraints();
 

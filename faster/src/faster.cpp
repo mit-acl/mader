@@ -853,7 +853,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   // If k_end_whole=0, then A = plan_.back() = plan_[plan_.size() - 1]
   k_end_whole = std::max((int)(plan_.size() - deltaT_), 0);
-  k_end_whole = std::max((int)(plan_.size() * 0.25), 0);  // HACK, COMMENT THIS!! (this chooses A at 3/4)
+  // k_end_whole = std::max((int)(plan_.size() * 0.25), 0);  // HACK, COMMENT THIS!! (this chooses A at 3/4)
   k_whole = plan_.size() - 1 - k_end_whole;
   A = plan_.get(k_whole);
 

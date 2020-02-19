@@ -74,9 +74,10 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   v_max_ = v_max;
   a_max_ = a_max;
 
-  samples_x_ = samples_x;
-  samples_y_ = samples_y;
-  samples_z_ = samples_z;
+  // ensure they are odd numbers (so that vx=0 is included in the samples)
+  samples_x_ = (samples_x % 2 == 0) ? ceil(samples_x) : samples_x;
+  samples_y_ = (samples_y % 2 == 0) ? ceil(samples_y) : samples_y;
+  samples_z_ = (samples_z % 2 == 0) ? ceil(samples_z) : samples_z;
 
   ////////////
   vx_.clear();
@@ -95,27 +96,40 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   {
     vz_.push_back(-v_max_.z() + i * ((2.0 * v_max_.z()) / (samples_z_ - 1)));
   }
-  std::cout << "vx size= " << vx_.size() << std::endl;
+
+  std::cout << "vx is: " << std::endl;
+  for (auto vxi : vx_)
+  {
+    std::cout << "vxi= " << vxi << std::endl;
+  }
 
   // TODO: remove hand-coded stuff
   int i = 6;
-  increment_ = v_max_(0) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
+  // increment_ = v_max_(0) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
+  increment_ = fabs(vx_[1] - vx_[0]) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
+  // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of increment_
 
-  vx_.clear();
-  vy_.clear();
-  vz_.clear();
+  /*  vx_.clear();
+    vy_.clear();
+    vz_.clear();
 
-  vx_.push_back(v_max_(0));
-  vx_.push_back(0);
-  vx_.push_back(-v_max_(0));
+    vx_.push_back(v_max_(0));
+    vx_.push_back(v_max_(0) / 2.0);
+    vx_.push_back(0);
+    vx_.push_back(-v_max_(0) / 2.0);
+    vx_.push_back(-v_max_(0));
 
-  vy_.push_back(v_max_(1));
-  vy_.push_back(0);
-  vy_.push_back(-v_max_(1));
+    vy_.push_back(v_max_(1));
+    vy_.push_back(v_max_(1) / 2.0);
+    vy_.push_back(0);
+    vy_.push_back(-v_max_(1) / 2.0);
+    vy_.push_back(-v_max_(1));
 
-  vz_.push_back(v_max_(2));
-  vz_.push_back(0);
-  vz_.push_back(-v_max_(2));
+    vz_.push_back(v_max_(2));
+    vz_.push_back(v_max_(2) / 2.0);
+    vz_.push_back(0);
+    vz_.push_back(-v_max_(2) / 2.0);
+    vz_.push_back(-v_max_(2));*/
 
   int length_x = bbox_x_ / increment_;
   int length_y = bbox_y_ / increment_;
@@ -226,6 +240,7 @@ std::vector<Node> SplineAStar::expand(Node& current)
         Node neighbor;
 
         neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
+        // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of increment_
 
         unsigned int ix = round((neighbor.qi.x() - orig_.x()) / increment_);
         unsigned int iy = round((neighbor.qi.y() - orig_.y()) / increment_);
