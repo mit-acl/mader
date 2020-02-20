@@ -22,7 +22,7 @@ public:
   ~SplineAStar();
 
   void setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int samples_x, int samples_y,
-                              int samples_z, double increment);
+                              int samples_z, double voxel_size);
   void setq0q1q2(Eigen::Vector3d& q0, Eigen::Vector3d& q1, Eigen::Vector3d& q2);
   void setGoal(Eigen::Vector3d& goal);
   void setSamples(int samples_x, int samples_y, int samples_z);
@@ -44,6 +44,7 @@ public:
 
 protected:
 private:
+  void computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size);
   void computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
                                        double& constraint_xL, double& constraint_xU, double& constraint_yL,
                                        double& constraint_yU, double& constraint_zL, double& constraint_zU);
@@ -102,7 +103,7 @@ private:
   double time_solving_lps_ = 0.0;
   double time_expanding_ = 0.0;
 
-  double increment_;
+  double voxel_size_;
 
   std::vector<Node> expanded_nodes_;
 

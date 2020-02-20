@@ -69,7 +69,7 @@ void SplineAStar::setBBoxSearch(double x, double y, double z)
 }
 
 void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int samples_x, int samples_y,
-                                         int samples_z, double increment)
+                                         int samples_z, double voxel_size)
 {
   v_max_ = v_max;
   a_max_ = a_max;
@@ -83,16 +83,24 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
 
   // TODO: remove hand-coded stuff
   // int i = 6;
-  // increment_ = v_max_(0) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
-  // increment_ = fabs(vx_[1] - vx_[0]) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
+  // voxel_size_ = v_max_(0) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
+  // voxel_size_ = fabs(vx_[1] - vx_[0]) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
 
-  increment_ = increment;  // hack
+  double min_voxel_size;
+  double max_voxel_size;
+  computeLimitsVoxelSize(min_voxel_size, max_voxel_size);
 
-  // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of increment_
+  voxel_size_ = std::max(voxel_size_, min_voxel_size);
+  voxel_size_ = std::min(voxel_size, max_voxel_size);
 
-  int length_x = bbox_x_ / increment_;
-  int length_y = bbox_y_ / increment_;
-  int length_z = bbox_z_ / increment_;
+  std::cout << red << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", " << max_voxel_size
+            << ")" << reset << std::endl;
+
+  // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of voxel_size_
+
+  int length_x = bbox_x_ / voxel_size_;
+  int length_y = bbox_y_ / voxel_size_;
+  int length_z = bbox_z_ / voxel_size_;
 
   std::vector<std::vector<std::vector<bool>>> novale(
       length_x, std::vector<std::vector<bool>>(length_y, std::vector<bool>(length_z, false)));
@@ -121,6 +129,62 @@ void SplineAStar::setGoalSize(double goal_size)
   goal_size_ = goal_size;
 }
 
+// returns the minimum voxel_size needed (if bigger, all the neighbous from q2_ are inside the voxel of q2_)
+// min_voxel_size: if voxel_size < min_voxel_size, all the neighbous from q2_ will be expanded correctly
+// max_voxel_size: if voxel_size > max_voxel_size, there will be no nodes expanded from q2_ (they are on the same cell
+// as q2_)
+
+void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size)
+{
+  int i = 2;
+  double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
+  computeUpperAndLowerConstraints(i, q1_, q2_, constraint_xL, constraint_xU, constraint_yL, constraint_yU,
+                                  constraint_zL, constraint_zU);
+
+  min_voxel_size = std::numeric_limits<double>::max();
+
+  Eigen::Vector3d neighbor_of_q2;
+
+  for (int jx = 0; jx < samples_x_; jx++)
+  {
+    for (int jy = 0; jy < samples_y_; jy++)
+    {
+      for (int jz = 0; jz < samples_z_; jz++)
+      {
+        // sample a velocity
+        Eigen::Vector3d vi;
+        vi << constraint_xL + jx * ((constraint_xU - constraint_xL) / (samples_x_ - 1)),  /////////
+            constraint_yL + jy * ((constraint_yU - constraint_yL) / (samples_y_ - 1)),    /////////
+            constraint_zL + jz * ((constraint_zU - constraint_zL) / (samples_z_ - 1));    /////////
+
+        if (vi.x() == 0 && vi.y() == 0 && vi.z() == 0)
+        {
+          continue;
+        }
+
+        neighbor_of_q2 = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q2_;
+
+        min_voxel_size = std::min(min_voxel_size, (neighbor_of_q2 - q2_).norm());
+      }
+    }
+  }
+
+  Eigen::Vector3d vi;
+
+  vi << constraint_xU, constraint_yU, constraint_zU;
+  Eigen::Vector3d neighbor_of_q2_U = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q2_;
+
+  vi << constraint_xL, constraint_yL, constraint_zL;
+  Eigen::Vector3d neighbor_of_q2_L = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q2_;
+
+  max_voxel_size = std::max((neighbor_of_q2_L - q2_).norm(), (neighbor_of_q2_U - q2_).norm());
+
+  /*  return 1.001 * std::max((neighbor_of_q2_L - q2_).norm(), (neighbor_of_q2_U - q2_).norm());
+
+    return min_voxel_size;*/
+}
+
+// Compute the lower and upper bounds on the velocity based on the velocity and acceleration constraints
 void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
                                                   double& constraint_xL, double& constraint_xU, double& constraint_yL,
                                                   double& constraint_yU, double& constraint_zL, double& constraint_zU)
@@ -179,7 +243,6 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
   Node neighbor;
   // Eigen::Vector3d aiM1;
   unsigned int ix, iy, iz;
-
   for (int jx = 0; jx < samples_x_; jx++)
   {
     for (int jy = 0; jy < samples_y_; jy++)
@@ -208,14 +271,14 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
                   continue;
                 }*/
 
-        // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of increment_
+        // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of voxel_size_
 
-        // increment_ = 0.004;  // hack
-        // std::cout << "increment_= " << increment_ << std::endl;
+        // voxel_size_ = 0.004;  // hack
+        // std::cout << "voxel_size_= " << voxel_size_ << std::endl;
 
-        ix = round((neighbor.qi.x() - orig_.x()) / increment_);
-        iy = round((neighbor.qi.y() - orig_.y()) / increment_);
-        iz = round((neighbor.qi.z() - orig_.z()) / increment_);
+        ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
+        iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
+        iz = round((neighbor.qi.z() - orig_.z()) / voxel_size_);
 
         /*        std::cout << "neighbor.qi.x() - orig_.x()= " << neighbor.qi.x() - orig_.x() << std::endl;
                 std::cout << "qi.x() = " << neighbor.qi.x() << std::endl;
@@ -228,14 +291,13 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
           std::cout << "ix= " << ix << " is outside, max= " << matrixExpandedNodes_.size() << std::endl;
           std::cout << "iy= " << iy << " is outside, max= " << matrixExpandedNodes_[0].size() << std::endl;
           std::cout << "iz= " << iz << " is outside, max= " << matrixExpandedNodes_[0][0].size() << std::endl;
-          std::cout << "increment_= " << increment_ << std::endl;
+          std::cout << "voxel_size_= " << voxel_size_ << std::endl;
           std::cout << "orig_= " << orig_.transpose() << std::endl;
           std::cout << "neighbor.qi= " << neighbor.qi.transpose() << std::endl;
           continue;
         }
 
         // check here if ix, iy, iz are within the interval of matrixExpandedNodes_
-
         if (matrixExpandedNodes_[ix][iy][iz] == true)
         {
           // std::cout << "already in the exp. list= " << std::endl;
