@@ -56,7 +56,8 @@ int main()
   myAStarSolver.setq0q1q2(q0, q1, q2);
   myAStarSolver.setGoal(goal);
 
-  myAStarSolver.setBBoxSearch(30.0, 30.0, 30.0);  // limits for the search
+  myAStarSolver.setZminZmax(-10.0, 10.0);         // z limits for the search, in world frame
+  myAStarSolver.setBBoxSearch(30.0, 30.0, 30.0);  // limits for the search, centered on q2
   myAStarSolver.setMaxValuesAndSamples(v_max, a_max, samples_x, samples_y, samples_z, increment);
 
   myAStarSolver.setRunTime(runtime);

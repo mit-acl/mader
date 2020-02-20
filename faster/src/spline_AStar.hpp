@@ -42,6 +42,8 @@ public:
 
   void setVisual(bool visual);
 
+  void setZminZmax(double z_min, double z_max);
+
 protected:
 private:
   void computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size);
@@ -114,6 +116,9 @@ private:
   double bbox_z_;
 
   bool visual_ = false;
+
+  double z_min_ = std::numeric_limits<double>::min();
+  double z_max_ = std::numeric_limits<double>::max();
 
   // bool matrixExpandedNodes_[40][40][40];
 };

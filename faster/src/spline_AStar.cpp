@@ -110,6 +110,12 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   matrixExpandedNodes_ = novale;
 }
 
+void SplineAStar::setZminZmax(double z_min, double z_max)
+{
+  z_min_ = z_min;
+  z_max_ = z_max;
+}
+
 void SplineAStar::setBias(double bias)
 {
   bias_ = bias;
@@ -275,6 +281,11 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
 
         // voxel_size_ = 0.004;  // hack
         // std::cout << "voxel_size_= " << voxel_size_ << std::endl;
+
+        if (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_)
+        {  // outside the limits
+          continue;
+        }
 
         ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
         iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
