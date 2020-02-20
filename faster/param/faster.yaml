@@ -50,8 +50,8 @@ deg: 3
 samples_per_interval: 1
 weight: 10000.0 #The .0 is needed
 epsilon_tol_constraints: 0.1
-xtol_rel: 0.001
-ftol_rel: 0.001
+xtol_rel: 0.001 #negative value --> stopping criterion not used
+ftol_rel: 0.001 #negative value --> stopping criterion not used
 solver: "LD_MMA"
 
 #  // work:  //LD_MMA // //LN_NELDERMEAD // LN_SBPLX(fastest) //LN_PRAXIS(fastest) //LD_AUGLAG //LD_AUGLAG_EQ
