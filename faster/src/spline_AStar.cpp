@@ -175,6 +175,7 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
     {
       for (int jz = 0; jz < samples_z_; jz++)
       {
+        // sample a velocity
         vi << constraint_xL + jx * ((constraint_xU - constraint_xL) / (samples_x_ - 1)),  /////////
             constraint_yL + jy * ((constraint_yU - constraint_yL) / (samples_y_ - 1)),    /////////
             constraint_zL + jz * ((constraint_zU - constraint_zL) / (samples_z_ - 1));    /////////
@@ -205,9 +206,9 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
         iy = round((neighbor.qi.y() - orig_.y()) / increment_);
         iz = round((neighbor.qi.z() - orig_.z()) / increment_);
 
-        std::cout << "neighbor.qi.x() - orig_.x()= " << neighbor.qi.x() - orig_.x() << std::endl;
-        std::cout << "qi.x() = " << neighbor.qi.x() << std::endl;
-        std::cout << "ix=  " << ix << std::endl;
+        /*        std::cout << "neighbor.qi.x() - orig_.x()= " << neighbor.qi.x() - orig_.x() << std::endl;
+                std::cout << "qi.x() = " << neighbor.qi.x() << std::endl;
+                std::cout << "ix=  " << ix << std::endl;*/
 
         if (ix >= matrixExpandedNodes_.size() || iy >= matrixExpandedNodes_[0].size() ||
             iz >= matrixExpandedNodes_[0][0].size())
@@ -226,7 +227,7 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
 
         if (matrixExpandedNodes_[ix][iy][iz] == true)
         {
-          std::cout << "already in the exp. list= " << std::endl;
+          // std::cout << "already in the exp. list= " << std::endl;
           continue;  // already in the expanded list
         }
         else
