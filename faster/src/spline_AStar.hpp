@@ -44,6 +44,10 @@ public:
 
 protected:
 private:
+  void computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
+                                       double& constraint_xL, double& constraint_xU, double& constraint_yL,
+                                       double& constraint_yU, double& constraint_zL, double& constraint_zU);
+
   void plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, Node* result_ptr);
   void expand(Node& current, std::vector<Node>& neighbors);
   void printPath(Node& node1);

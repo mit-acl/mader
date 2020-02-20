@@ -121,6 +121,24 @@ void SplineAStar::setGoalSize(double goal_size)
   goal_size_ = goal_size;
 }
 
+void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
+                                                  double& constraint_xL, double& constraint_xU, double& constraint_yL,
+                                                  double& constraint_yU, double& constraint_zL, double& constraint_zU)
+{
+  Eigen::Vector3d viM1 = p_ * (qi - qiM1) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
+
+  double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
+
+  constraint_xL = std::max(-v_max_.x(), -a_max_.x() * tmp + viM1.x());  // lower bound
+  constraint_xU = std::min(v_max_.x(), a_max_.x() * tmp + viM1.x());    // upper bound
+
+  constraint_yL = std::max(-v_max_.y(), -a_max_.y() * tmp + viM1.y());  // lower bound
+  constraint_yU = std::min(v_max_.y(), a_max_.y() * tmp + viM1.y());    // upper bound
+
+  constraint_zL = std::max(-v_max_.z(), -a_max_.z() * tmp + viM1.z());  // lower bound
+  constraint_zU = std::min(v_max_.z(), a_max_.z() * tmp + viM1.z());    // upper bound
+}
+
 void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
 {
   MyTimer timer_expand(true);
@@ -138,35 +156,28 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
 
   int i = current.index;
 
-  Eigen::Vector3d viM1;
+  Eigen::Vector3d qiM1;
 
   if (current.index == 2)
   {
-    viM1 = p_ * (current.qi - q1_) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
+    qiM1 = q1_;
   }
   else
   {
-    viM1 = p_ * (current.qi - current.previous->qi) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
+    qiM1 = current.previous->qi;
   }
 
-  // std::cout << "v_iM1= " << v_iM1.transpose() << std::endl;
-  double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
+  double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
 
-  double constraint_xU = std::min(v_max_.x(), a_max_.x() * tmp + viM1.x());    // upper bound
-  double constraint_xL = std::max(-v_max_.x(), -a_max_.x() * tmp + viM1.x());  // lower bound
-
-  double constraint_yU = std::min(v_max_.y(), a_max_.y() * tmp + viM1.y());    // upper bound
-  double constraint_yL = std::max(-v_max_.y(), -a_max_.y() * tmp + viM1.y());  // lower bound
-
-  double constraint_zU = std::min(v_max_.z(), a_max_.z() * tmp + viM1.z());    // upper bound
-  double constraint_zL = std::max(-v_max_.z(), -a_max_.z() * tmp + viM1.z());  // lower bound
+  computeUpperAndLowerConstraints(i, qiM1, current.qi, constraint_xL, constraint_xU, constraint_yL, constraint_yU,
+                                  constraint_zL, constraint_zU);
 
   //////////////////////////////
 
   // stuff used in the loop (here to reduce time)
   Eigen::Vector3d vi;
   Node neighbor;
-  Eigen::Vector3d aiM1;
+  // Eigen::Vector3d aiM1;
   unsigned int ix, iy, iz;
 
   for (int jx = 0; jx < samples_x_; jx++)
@@ -187,7 +198,7 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
 
         neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
 
-        aiM1 = (p_ - 1) * (vi - viM1) / (knots_(i + p_) - knots_(i + 1));
+        // aiM1 = (p_ - 1) * (vi - viM1) / (knots_(i + p_) - knots_(i + 1));
 
         /*        if (((aiM1.array().abs()) > ((1.01 * a_max_).array())).any())
                 {
