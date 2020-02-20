@@ -13,7 +13,7 @@ int main()
 
   double increment = 0.3;  // grid used to prune nodes that are on the same cell
 
-  double runtime = 0.1;    //[seconds]
+  double runtime = 1.5;    //[seconds]
   double goal_size = 0.5;  //[meters]
 
   Eigen::Vector3d v_max(10.0, 10.0, 10.0);

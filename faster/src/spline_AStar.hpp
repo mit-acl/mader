@@ -45,13 +45,14 @@ public:
 protected:
 private:
   void plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, Node* result_ptr);
-  std::vector<Node> expand(Node& current);
+  void expand(Node& current, std::vector<Node>& neighbors);
   void printPath(Node& node1);
   double h(Node& node);
   double g(Node& node);
   double weightEdge(Node& node1, Node& node2);
 
-  bool fillNDFromNode(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d);
+  bool checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n,
+                          std::vector<double>& d);
 
   Eigen::Vector3d goal_;
   Eigen::Vector3d v_max_;
