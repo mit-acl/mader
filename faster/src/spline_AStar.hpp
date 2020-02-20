@@ -22,7 +22,7 @@ public:
   ~SplineAStar();
 
   void setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int samples_x, int samples_y,
-                              int samples_z);
+                              int samples_z, double increment);
   void setq0q1q2(Eigen::Vector3d& q0, Eigen::Vector3d& q1, Eigen::Vector3d& q2);
   void setGoal(Eigen::Vector3d& goal);
   void setSamples(int samples_x, int samples_y, int samples_z);

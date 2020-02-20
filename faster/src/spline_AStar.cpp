@@ -69,7 +69,7 @@ void SplineAStar::setBBoxSearch(double x, double y, double z)
 }
 
 void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int samples_x, int samples_y,
-                                         int samples_z)
+                                         int samples_z, double increment)
 {
   v_max_ = v_max;
   a_max_ = a_max;
@@ -106,7 +106,10 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   // TODO: remove hand-coded stuff
   int i = 6;
   // increment_ = v_max_(0) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
-  increment_ = fabs(vx_[1] - vx_[0]) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
+  // increment_ = fabs(vx_[1] - vx_[0]) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
+
+  increment_ = increment;  // hack
+
   // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of increment_
 
   /*  vx_.clear();
@@ -180,19 +183,19 @@ std::vector<Node> SplineAStar::expand(Node& current)
 
   int i = current.index;
 
-  Eigen::Vector3d v_iM1;
+  Eigen::Vector3d viM1;
 
   if (current.index == 2)
   {
-    v_iM1 = p_ * (current.qi - q1_) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
+    viM1 = p_ * (current.qi - q1_) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
   }
   else
   {
-    v_iM1 = p_ * (current.qi - current.previous->qi) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
+    viM1 = p_ * (current.qi - current.previous->qi) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
   }
 
   // std::cout << "v_iM1= " << v_iM1.transpose() << std::endl;
-  // double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
+  double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
 
   /*  std::cout << "Current= " << current.qi.transpose() << std::endl;
 
@@ -202,18 +205,60 @@ std::vector<Node> SplineAStar::expand(Node& current)
     std::cout << "a_max_.x() * tmp= " << a_max_.x() * tmp << std::endl;
     std::cout << "v_iM1.x()= " << v_iM1.x() << std::endl;*/
 
-  /*  double constraint_xU = std::min(v_max_.x(), a_max_.x() * tmp + v_iM1.x());    // upper bound
-    double constraint_xL = std::max(-v_max_.x(), -a_max_.x() * tmp + v_iM1.x());  // lower bound
+  double constraint_xU = std::min(v_max_.x(), a_max_.x() * tmp + viM1.x());    // upper bound
+  double constraint_xL = std::max(-v_max_.x(), -a_max_.x() * tmp + viM1.x());  // lower bound
 
-    double constraint_yU = std::min(v_max_.y(), a_max_.y() * tmp + v_iM1.y());    // upper bound
-    double constraint_yL = std::max(-v_max_.y(), -a_max_.y() * tmp + v_iM1.y());  // lower bound
+  double constraint_yU = std::min(v_max_.y(), a_max_.y() * tmp + viM1.y());    // upper bound
+  double constraint_yL = std::max(-v_max_.y(), -a_max_.y() * tmp + viM1.y());  // lower bound
 
-    double constraint_zU = std::min(v_max_.z(), a_max_.z() * tmp + v_iM1.z());    // upper bound
-    double constraint_zL = std::max(-v_max_.z(), -a_max_.z() * tmp + v_iM1.z());  // lower bound*/
+  double constraint_zU = std::min(v_max_.z(), a_max_.z() * tmp + viM1.z());    // upper bound
+  double constraint_zL = std::max(-v_max_.z(), -a_max_.z() * tmp + viM1.z());  // lower bound
 
-  /*  std::cout << " constraint_x= " << constraint_x << ", constraint_y= " << constraint_x
-              << " constraint_z= " << constraint_x << std::endl;*/
+  /*  Eigen::Matrix<double, 4, 1> tmp_x;
+    tmp_x << v_max_.x(), -v_max_.x(), a_max_.x() * tmp + viM1.x(), -a_max_.x() * tmp + viM1.x();
+    double constraint_xU = tmp_x.maxCoeff();  // upper bound
+    double constraint_xL = tmp_x.minCoeff();  // lower bound
 
+    Eigen::Matrix<double, 4, 1> tmp_y;
+    tmp_y << v_max_.y(), -v_max_.y(), a_max_.y() * tmp + viM1.y(), -a_max_.y() * tmp + viM1.y();
+    double constraint_yU = tmp_y.maxCoeff();  // upper bound
+    double constraint_yL = tmp_y.minCoeff();  // lower bound
+
+    Eigen::Matrix<double, 4, 1> tmp_z;
+    tmp_z << v_max_.z(), -v_max_.z(), a_max_.z() * tmp + viM1.z(), -a_max_.z() * tmp + viM1.z();
+    double constraint_zU = tmp_z.maxCoeff();  // upper bound
+    double constraint_zL = tmp_z.minCoeff();  // lower bound*/
+
+  /*  std::cout << "constraint_xL= " << constraint_xL << std::endl;
+    std::cout << "constraint_xU= " << constraint_xU << std::endl;
+    std::cout << "constraint_yL= " << constraint_yL << std::endl;
+    std::cout << "constraint_yU= " << constraint_yU << std::endl;
+    std::cout << "constraint_zL= " << constraint_zL << std::endl;
+    std::cout << "constraint_zU= " << constraint_zU << std::endl;*/
+
+  vx_.clear();
+  vy_.clear();
+  vz_.clear();
+
+  for (int i = 0; i < samples_x_; i++)
+  {
+    vx_.push_back(constraint_xL + i * ((constraint_xU - constraint_xL) / (samples_x_ - 1)));
+  }
+  for (int i = 0; i < samples_y_; i++)
+  {
+    vy_.push_back(constraint_yL + i * ((constraint_yU - constraint_yL) / (samples_y_ - 1)));
+  }
+  for (int i = 0; i < samples_z_; i++)
+  {
+    vz_.push_back(constraint_zL + i * ((constraint_zU - constraint_zL) / (samples_z_ - 1)));
+  }
+
+  /*  std::cout << "vx is: " << std::endl;
+    for (auto tmp_i : vx_)
+    {
+      std::cout << tmp_i << std::endl;
+    }
+  */
   /////////////
 
   for (double vx_i : vx_)
@@ -240,11 +285,29 @@ std::vector<Node> SplineAStar::expand(Node& current)
         Node neighbor;
 
         neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
+
+        Eigen::Vector3d aiM1 = (p_ - 1) * (vi - viM1) / (knots_(i + p_) - knots_(i + 1));
+
+        /*        if (((aiM1.array().abs()) > ((1.01 * a_max_).array())).any())
+                {
+                            std::cout << "This node does not satisfy accel constraints" << std::endl;
+                            std::cout << "aiM1= " << aiM1.transpose() << std::endl;
+                            std::cout << "a_max_= " << a_max_.transpose() << std::endl;
+                  continue;
+                }*/
+
         // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of increment_
+
+        // increment_ = 0.004;  // hack
+        // std::cout << "increment_= " << increment_ << std::endl;
 
         unsigned int ix = round((neighbor.qi.x() - orig_.x()) / increment_);
         unsigned int iy = round((neighbor.qi.y() - orig_.y()) / increment_);
         unsigned int iz = round((neighbor.qi.z() - orig_.z()) / increment_);
+
+        /*        std::cout << "neighbor.qi.x() - orig_.x()= " << neighbor.qi.x() - orig_.x() << std::endl;
+                std::cout << "qi.x() = " << neighbor.qi.x() << std::endl;
+                std::cout << "ix=  " << ix << std::endl;*/
 
         if (ix >= matrixExpandedNodes_.size() || iy >= matrixExpandedNodes_[0].size() ||
             iz >= matrixExpandedNodes_[0][0].size())
@@ -263,6 +326,8 @@ std::vector<Node> SplineAStar::expand(Node& current)
 
         if (matrixExpandedNodes_[ix][iy][iz] == true)
         {
+          // std::cout << "already in the exp. list= " << neighbor.qi.transpose() << std::endl;
+
           // std::cout << "Already in the expanded list" << std::endl;
           continue;  // already in the expanded list
         }
@@ -321,6 +386,8 @@ std::vector<Node> SplineAStar::expand(Node& current)
 
   for (auto neighbor_va : neighbors_va)
   {
+    // std::cout << "checkinb obs neighbor_va= " << neighbor_va.qi.transpose() << std::endl;
+
     last4Cps[3] = neighbor_va.qi;
     bool satisfies_LP = true;
     // std::cout << "num_of_obst_=" << num_of_obst_ << std::endl;
@@ -335,6 +402,7 @@ std::vector<Node> SplineAStar::expand(Node& current)
 
       if (satisfies_LP == false)
       {
+        // std::cout << neighbor_va.qi.transpose() << " does not satisfy constraints" << std::endl;
         break;
       }
     }

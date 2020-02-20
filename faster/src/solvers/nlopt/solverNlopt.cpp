@@ -255,7 +255,7 @@ void SolverNlopt::useAStarGuess()
   double goal_size = 0.5;  //[meters]
 
   myAStarSolver.setBBoxSearch(30.0, 30.0, 30.0);  // limits for the search
-  myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, samples_x, samples_y, samples_z);
+  myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, samples_x, samples_y, samples_z, 0.3);
 
   myAStarSolver.setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
   myAStarSolver.setGoalSize(goal_size);

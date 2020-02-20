@@ -11,11 +11,13 @@ int main()
   int samples_y = 5;  // odd number
   int samples_z = 3;  // odd number
 
-  double runtime = 0.05;   //[seconds]
+  double increment = 0.3;  // grid used to prune nodes that are on the same cell
+
+  double runtime = 0.1;    //[seconds]
   double goal_size = 0.5;  //[meters]
 
   Eigen::Vector3d v_max(10.0, 10.0, 10.0);
-  Eigen::Vector3d a_max(40000.0, 40000.0, 40000.0);
+  Eigen::Vector3d a_max(40.0, 40.0, 40.0);
 
   Eigen::Vector3d q0(-1.0, 0.0, 0.0);
   Eigen::Vector3d q1 = q0;
@@ -55,12 +57,12 @@ int main()
   myAStarSolver.setGoal(goal);
 
   myAStarSolver.setBBoxSearch(30.0, 30.0, 30.0);  // limits for the search
-  myAStarSolver.setMaxValuesAndSamples(v_max, a_max, samples_x, samples_y, samples_z);
+  myAStarSolver.setMaxValuesAndSamples(v_max, a_max, samples_x, samples_y, samples_z, increment);
 
   myAStarSolver.setRunTime(runtime);
   myAStarSolver.setGoalSize(goal_size);
 
-  myAStarSolver.setBias(1000000.0);
+  myAStarSolver.setBias(100.0);
   myAStarSolver.setVisual(true);
 
   std::vector<Eigen::Vector3d> q;
