@@ -544,7 +544,9 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
 
   geometry_msgs::PoseStamped temp_path;
 
-  int increm = (int)std::max(data.size() / 10.0, 1.0);  // this is to speed up rviz
+  double resolution = 10;  // higher --> more resolution when plotting the traj
+
+  int increm = (int)std::max(data.size() / resolution, 1.0);  // this is to speed up rviz
 
   for (int i = 0; i < data.size(); i = i + increm)
   {
