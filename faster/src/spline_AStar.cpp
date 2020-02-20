@@ -96,14 +96,21 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   std::cout << red << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", " << max_voxel_size
             << ")" << reset << std::endl;
 
+  // Make sure voxel_size_<= (min_voxel_size + max_voxel_size) / 2.0  (if not, very few nodes are expanded)
+  // voxel_size_ = (min_voxel_size + max_voxel_size) / 2.0;
+
+  std::cout << "Using voxel_size_= " << voxel_size_ << std::endl;
+
   // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of voxel_size_
 
   int length_x = bbox_x_ / voxel_size_;
   int length_y = bbox_y_ / voxel_size_;
   int length_z = bbox_z_ / voxel_size_;
 
+  std::cout << "Allocating vector" << std::endl;
   std::vector<std::vector<std::vector<bool>>> novale(
       length_x, std::vector<std::vector<bool>>(length_y, std::vector<bool>(length_z, false)));
+  std::cout << "Vector allocated" << std::endl;
 
   orig_ = q2_ - Eigen::Vector3d(bbox_x_ / 2.0, bbox_y_ / 2.0, bbox_z_ / 2.0);
 
@@ -144,10 +151,23 @@ void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_vox
 {
   int i = 2;
   double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
+
+  std::cout << "Computing upper and lower, qiM1=" << q1_.transpose() << ", and qi=" << q2_.transpose() << std::endl;
+
   computeUpperAndLowerConstraints(i, q1_, q2_, constraint_xL, constraint_xU, constraint_yL, constraint_yU,
                                   constraint_zL, constraint_zU);
 
+  std::cout << "constraint_xL= " << constraint_xL << std::endl;
+  std::cout << "constraint_xU= " << constraint_xU << std::endl;
+
+  std::cout << "constraint_yL= " << constraint_yL << std::endl;
+  std::cout << "constraint_yU= " << constraint_yU << std::endl;
+
+  std::cout << "constraint_zL= " << constraint_zL << std::endl;
+  std::cout << "constraint_zU= " << constraint_zU << std::endl;
+
   min_voxel_size = std::numeric_limits<double>::max();
+  max_voxel_size = std::numeric_limits<double>::min();
 
   Eigen::Vector3d neighbor_of_q2;
 
@@ -163,27 +183,31 @@ void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_vox
             constraint_yL + jy * ((constraint_yU - constraint_yL) / (samples_y_ - 1)),    /////////
             constraint_zL + jz * ((constraint_zU - constraint_zL) / (samples_z_ - 1));    /////////
 
-        if (vi.x() == 0 && vi.y() == 0 && vi.z() == 0)
+        if (vi.norm() < 0.000001)  // remove the cases where vi is very small
         {
           continue;
         }
 
+        //  std::cout << "vx= " << vi.x() << ", vy= " << vi.y() << ", vz= " << vi.z() << std::endl;
+        //  std::cout << "(neighbor_of_q2 - q2_).norm()= " << (neighbor_of_q2 - q2_).norm() << std::endl;
+
         neighbor_of_q2 = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q2_;
 
         min_voxel_size = std::min(min_voxel_size, (neighbor_of_q2 - q2_).norm());
+        max_voxel_size = std::max(max_voxel_size, (neighbor_of_q2 - q2_).norm());
       }
     }
   }
 
-  Eigen::Vector3d vi;
+  /*  Eigen::Vector3d vi;
 
-  vi << constraint_xU, constraint_yU, constraint_zU;
-  Eigen::Vector3d neighbor_of_q2_U = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q2_;
+    vi << constraint_xU, constraint_yU, constraint_zU;
+    Eigen::Vector3d neighbor_of_q2_U = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q2_;
 
-  vi << constraint_xL, constraint_yL, constraint_zL;
-  Eigen::Vector3d neighbor_of_q2_L = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q2_;
+    vi << constraint_xL, constraint_yL, constraint_zL;
+    Eigen::Vector3d neighbor_of_q2_L = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q2_;
 
-  max_voxel_size = std::max((neighbor_of_q2_L - q2_).norm(), (neighbor_of_q2_U - q2_).norm());
+    max_voxel_size = std::max((neighbor_of_q2_L - q2_).norm(), (neighbor_of_q2_U - q2_).norm());*/
 
   /*  return 1.001 * std::max((neighbor_of_q2_L - q2_).norm(), (neighbor_of_q2_U - q2_).norm());
 
@@ -198,7 +222,13 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   Eigen::Vector3d viM1 = p_ * (qi - qiM1) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
 
   double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
+  std::cout << "tmp= " << tmp << std::endl;
 
+  // |vi - viM1|<=a_max_*tmp
+  //  <=>
+  // (vi - viM1)<=a_max_*tmp   AND   (vi - viM1)>=-a_max_*tmp
+  //  <=>
+  //  vi<=a_max_*tmp + viM1   AND     vi>=-a_max_*tmp + viM1
   constraint_xL = std::max(-v_max_.x(), -a_max_.x() * tmp + viM1.x());  // lower bound
   constraint_xU = std::min(v_max_.x(), a_max_.x() * tmp + viM1.x());    // upper bound
 
@@ -282,8 +312,13 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
         // voxel_size_ = 0.004;  // hack
         // std::cout << "voxel_size_= " << voxel_size_ << std::endl;
 
+        /*        std::cout << "z_min= " << z_min_ << std::endl;
+                std::cout << "z_max= " << z_max_ << std::endl;
+                std::cout << "qi= " << neighbor.qi.z() << std::endl;*/
+
         if (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_)
         {  // outside the limits
+          // std::cout << "qi= " << neighbor.qi.z() << " is outside" << std::endl;
           continue;
         }
 
@@ -484,7 +519,7 @@ double SplineAStar::weightEdge(Node& node1, Node& node2)  // edge cost when addi
       return (node2.qi - 2 * node1.qi + q1_).squaredNorm();
     }*/
 
-  return (node2.qi - node1.qi).norm() / (node2.index);  // hack Comment this and comment out the other stuff
+  return (node2.qi - node1.qi).norm();  // / (node2.index);  // hack Comment this and comment out the other stuff
   // return (node2.qi - 2 * node1.qi + node1.previous->qi).squaredNorm();
 }
 

@@ -47,6 +47,7 @@ public:
   void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
 
   void setKappaAndMu(double kappa, double mu);
+  void setZminZmax(double z_min, double z_max);  // A* guess will always be between z_min and z_max
 
 protected:
 private:
@@ -223,5 +224,8 @@ private:
 
   double kappa_ = 0.2;  // kappa_*max_runtime_ is spent on the initial guess
   double mu_ = 0.5;     // mu_*max_runtime_ is spent on the optimization
+
+  double z_ground_ = std::numeric_limits<double>::min();
+  double z_max_ = std::numeric_limits<double>::max();
 };
 #endif

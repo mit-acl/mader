@@ -192,6 +192,12 @@ void SolverNlopt::setKappaAndMu(double kappa, double mu)
   mu_ = mu;
 }
 
+void SolverNlopt::setZminZmax(double z_min, double z_max)
+{
+  z_ground_ = z_min;
+  z_max_ = z_max;
+}
+
 void SolverNlopt::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const std::vector<Eigen::Vector3d> &n,
                                     const std::vector<double> &d, const std::vector<Eigen::Vector3d> &q)
 {
@@ -254,7 +260,8 @@ void SolverNlopt::useAStarGuess()
   // double runtime = 0.05;   //[seconds]
   double goal_size = 0.5;  //[meters]
 
-  myAStarSolver.setBBoxSearch(30.0, 30.0, 30.0);  // limits for the search
+  myAStarSolver.setZminZmax(z_ground_, z_max_);   // z limits for the search, in world frame
+  myAStarSolver.setBBoxSearch(20.0, 20.0, 20.0);  // limits for the search, centered on q2
   myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, samples_x, samples_y, samples_z, 0.3);
 
   myAStarSolver.setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
@@ -314,12 +321,15 @@ void SolverNlopt::generateRandomQ(std::vector<Eigen::Vector3d> &q)
 {
   q.clear();
 
+  std::default_random_engine generator;
+  generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+  std::uniform_real_distribution<double> dist_x(0, 1);  // TODO
+  std::uniform_real_distribution<double> dist_y(0, 1);  // TODO
+  std::uniform_real_distribution<double> dist_z(z_ground_, z_max_);
+
   for (int i = 0; i <= N_; i++)
   {
-    double r1 = ((double)rand() / (RAND_MAX));
-    double r2 = ((double)rand() / (RAND_MAX));
-    double r3 = ((double)rand() / (RAND_MAX));
-    q.push_back(Eigen::Vector3d(r1, r2, r3));
+    q.push_back(Eigen::Vector3d(dist_x(generator), dist_y(generator), dist_z(generator)));
   }
 }
 
@@ -1115,28 +1125,36 @@ void SolverNlopt::printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::V
 
 void SolverNlopt::useRandomInitialGuess()
 {
-  q_guess_.clear();
   n_guess_.clear();
+  q_guess_.clear();
   d_guess_.clear();
-
-  q_guess_.push_back(q0_);  // Not a decision variable
-  q_guess_.push_back(q1_);  // Not a decision variable
-  q_guess_.push_back(q2_);  // Not a decision variable
-
-  // Control points (3x1)
-  for (int i = i_min_; i <= i_max_ - 2; i = i + 3)
-  {
-    double r1 = ((double)rand() / (RAND_MAX));
-    double r2 = ((double)rand() / (RAND_MAX));
-    double r3 = ((double)rand() / (RAND_MAX));
-    q_guess_.push_back(Eigen::Vector3d(r1, r2, r3));
-  }
-
-  q_guess_.push_back(q_guess_.back());  // Not a decision variable
-  q_guess_.push_back(q_guess_.back());  // Not a decision variable
 
   generateRandomN(n_guess_);
   generateRandomD(d_guess_);
+  generateRandomQ(q_guess_);
+
+  /*  q_guess_.clear();
+    n_guess_.clear();
+    d_guess_.clear();
+
+    q_guess_.push_back(q0_);  // Not a decision variable
+    q_guess_.push_back(q1_);  // Not a decision variable
+    q_guess_.push_back(q2_);  // Not a decision variable
+
+    // Control points (3x1)
+    for (int i = i_min_; i <= i_max_ - 2; i = i + 3)
+    {
+      double r1 = ((double)rand() / (RAND_MAX));
+      double r2 = ((double)rand() / (RAND_MAX));
+      double r3 = ((double)rand() / (RAND_MAX));
+      q_guess_.push_back(Eigen::Vector3d(r1, r2, r3));
+    }
+
+    q_guess_.push_back(q_guess_.back());  // Not a decision variable
+    q_guess_.push_back(q_guess_.back());  // Not a decision variable
+
+    generateRandomN(n_guess_);
+    generateRandomD(d_guess_);*/
 }
 
 void SolverNlopt::printStd(const std::vector<double> &v)
@@ -1208,25 +1226,36 @@ bool SolverNlopt::optimize()
   }
 
   // andd lower and upper bounds
-  /*  std::vector<double> lb;
-    std::vector<double> ub;
-    for (int i = 0; i <= i_max_; i++)
-    {
-      lb.push_back(-HUGE_VAL);
-      ub.push_back(HUGE_VAL);
-    }
-    for (int j = j_min_; j <= j_max_; j++)
-    {
-      lb.push_back(-1);
-      ub.push_back(1);
-    }*/
-  /*  for (int k = k_min_; k <= k_max_; k++)
-    {
-      lb.push_back(-HUGE_VAL);
-      ub.push_back(HUGE_VAL);
-    }*/
-  /*  opt_->set_lower_bounds(lb);
-    opt_->set_upper_bounds(ub);*/
+  std::vector<double> lb;
+  std::vector<double> ub;
+  // control points q
+  for (int i = 0; i <= i_max_; i = i + 3)
+  {
+    lb.push_back(-HUGE_VAL);
+    ub.push_back(HUGE_VAL);
+    // y compoment
+    lb.push_back(-HUGE_VAL);
+    ub.push_back(HUGE_VAL);
+    // z compoment
+    lb.push_back(z_ground_);
+    ub.push_back(z_max_);
+  }
+  // normals n
+  for (int j = j_min_; j <= j_max_; j++)
+  {
+    lb.push_back(-HUGE_VAL);
+    ub.push_back(HUGE_VAL);
+  }
+  // coefficients d
+  for (int k = k_min_; k <= k_max_; k++)
+  {
+    lb.push_back(-HUGE_VAL);
+    ub.push_back(HUGE_VAL);
+  }
+  opt_->set_lower_bounds(lb);
+  opt_->set_upper_bounds(ub);
+  local_opt_->set_lower_bounds(lb);
+  local_opt_->set_upper_bounds(ub);
 
   // set constraint and objective
   opt_->add_inequality_mconstraint(SolverNlopt::myIneqConstraints, this, tol_constraints);

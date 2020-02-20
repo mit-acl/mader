@@ -1119,6 +1119,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
                      false, par_.solver);  // snlopt(a,g) a polynomials of degree 3
   snlopt.setHulls(hulls_std);
   snlopt.setKappaAndMu(par_.kappa, par_.mu);
+  snlopt.setZminZmax(par_.z_ground, par_.z_max);
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc
   snlopt.setTminAndTmax(t_min, t_max);

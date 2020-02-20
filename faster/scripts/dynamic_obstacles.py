@@ -135,7 +135,7 @@ class FakeSim:
     # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
     def trefoil(self,x,y,z,scale_x, scale_y, scale_z, offset):
 
-        slower=1.5; #The higher, the slower the obstacles move" 
+        slower=1.0; #The higher, the slower the obstacles move" 
         tt='t/' + str(slower)+'+';
 
         x_string='(sin('+tt +str(offset)+') + 2 * sin(2 * '+tt +str(offset)+'))/' + str(scale_x) +'+' + str(x); #'2*sin(t)' 
