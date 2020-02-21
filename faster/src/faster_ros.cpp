@@ -181,7 +181,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   sub_goal_ = nh_.subscribe("term_goal", 1, &FasterRos::terminalGoalCB, this);
   sub_mode_ = nh_.subscribe("mode", 1, &FasterRos::modeCB, this);
   sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);
-  sub_traj_ = nh_.subscribe("/trajs", 1, &FasterRos::trajCB, this);
+  sub_traj_ = nh_.subscribe("/trajs", 20, &FasterRos::trajCB, this);  // The number is the queue size
   // sub_odom_ = nh_.subscribe("odom", 1, &FasterRos::odomCB, this);
 
   // Timers

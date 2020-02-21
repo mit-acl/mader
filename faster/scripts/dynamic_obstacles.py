@@ -39,7 +39,7 @@ class FakeSim:
         name = rospy.get_namespace()
         self.name = name[1:-1]
 
-        self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=1, latch=True)
+        self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=20, latch=True)
 
         self.pubShapes = rospy.Publisher('/shapes', Marker, queue_size=1, latch=True)
 

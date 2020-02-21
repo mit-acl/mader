@@ -7,7 +7,7 @@
 #include "termcolor.hpp"
 using namespace termcolor;
 
-#define WITHOUT_NUMPY
+#define WITHOUT_NUMPY  // for matplotlibcpp
 #include "matplotlibcpp.h"
 
 typedef JPS::Timer MyTimer;
@@ -108,18 +108,18 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
 
   // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of voxel_size_
 
-  int length_x = bbox_x_ / voxel_size_;
-  int length_y = bbox_y_ / voxel_size_;
-  int length_z = bbox_z_ / voxel_size_;
+  /*  int length_x = bbox_x_ / voxel_size_;
+    int length_y = bbox_y_ / voxel_size_;
+    int length_z = bbox_z_ / voxel_size_;*/
 
-  std::cout << "Allocating vector" << std::endl;
-  std::vector<std::vector<std::vector<bool>>> novale(
-      length_x, std::vector<std::vector<bool>>(length_y, std::vector<bool>(length_z, false)));
-  std::cout << "Vector allocated" << std::endl;
+  /*  std::cout << "Allocating vector" << std::endl;
+    std::vector<std::vector<std::vector<bool>>> novale(
+        length_x, std::vector<std::vector<bool>>(length_y, std::vector<bool>(length_z, false)));
+    std::cout << "Vector allocated" << std::endl;*/
 
   orig_ = q2_ - Eigen::Vector3d(bbox_x_ / 2.0, bbox_y_ / 2.0, bbox_z_ / 2.0);
 
-  matrixExpandedNodes_ = novale;
+  // matrixExpandedNodes_ = novale;
 }
 
 void SplineAStar::setZminZmax(double z_min, double z_max)
@@ -227,7 +227,6 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   Eigen::Vector3d viM1 = p_ * (qi - qiM1) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
 
   double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
-  std::cout << "tmp= " << tmp << std::endl;
 
   // |vi - viM1|<=a_max_*tmp
   //  <=>
@@ -295,68 +294,27 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
             constraint_yL + jy * ((constraint_yU - constraint_yL) / (samples_y_ - 1)),    /////////
             constraint_zL + jz * ((constraint_zU - constraint_zL) / (samples_z_ - 1));    /////////
 
-        if (vi.x() == 0 && vi.y() == 0 && vi.z() == 0)
-        {
-          continue;
-        }
-
         neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
-
-        // aiM1 = (p_ - 1) * (vi - viM1) / (knots_(i + p_) - knots_(i + 1));
-
-        /*        if (((aiM1.array().abs()) > ((1.01 * a_max_).array())).any())
-                {
-                            std::cout << "This node does not satisfy accel constraints" << std::endl;
-                            std::cout << "aiM1= " << aiM1.transpose() << std::endl;
-                            std::cout << "a_max_= " << a_max_.transpose() << std::endl;
-                  continue;
-                }*/
-
-        // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of voxel_size_
-
-        // voxel_size_ = 0.004;  // hack
-        // std::cout << "voxel_size_= " << voxel_size_ << std::endl;
-
-        /*        std::cout << "z_min= " << z_min_ << std::endl;
-                std::cout << "z_max= " << z_max_ << std::endl;
-                std::cout << "qi= " << neighbor.qi.z() << std::endl;*/
-
-        if (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_)
-        {  // outside the limits
-          // std::cout << "qi= " << neighbor.qi.z() << " is outside" << std::endl;
-          continue;
-        }
 
         ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
         iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
         iz = round((neighbor.qi.z() - orig_.z()) / voxel_size_);
 
-        /*        std::cout << "neighbor.qi.x() - orig_.x()= " << neighbor.qi.x() - orig_.x() << std::endl;
-                std::cout << "qi.x() = " << neighbor.qi.x() << std::endl;
-                std::cout << "ix=  " << ix << std::endl;*/
+        auto ptr_to_voxel = mapExpandedNodes_.find(Eigen::Vector3i(ix, iy, iz));
 
-        if (ix >= matrixExpandedNodes_.size() || iy >= matrixExpandedNodes_[0].size() ||
-            iz >= matrixExpandedNodes_[0][0].size())
+        if ((vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||             // Not wanna use v=[0,0,0]
+            (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_) ||  /// Outside the limits
+            (ix >= bbox_x_ / voxel_size_ ||                            // Out. the search box
+             iy >= bbox_y_ / voxel_size_ ||                            // Out. the search box
+             iz >= bbox_z_ / voxel_size_) ||                           // Out. the search box
+            ptr_to_voxel != mapExpandedNodes_.end())                   // Element already exist. the search box
+
         {
-          // node is outside the search box
-          std::cout << "ix= " << ix << " is outside, max= " << matrixExpandedNodes_.size() << std::endl;
-          std::cout << "iy= " << iy << " is outside, max= " << matrixExpandedNodes_[0].size() << std::endl;
-          std::cout << "iz= " << iz << " is outside, max= " << matrixExpandedNodes_[0][0].size() << std::endl;
-          std::cout << "voxel_size_= " << voxel_size_ << std::endl;
-          std::cout << "orig_= " << orig_.transpose() << std::endl;
-          std::cout << "neighbor.qi= " << neighbor.qi.transpose() << std::endl;
           continue;
         }
-
-        // check here if ix, iy, iz are within the interval of matrixExpandedNodes_
-        if (matrixExpandedNodes_[ix][iy][iz] == true)
-        {
-          // std::cout << "already in the exp. list= " << std::endl;
-          continue;  // already in the expanded list
-        }
         else
-        {
-          matrixExpandedNodes_[ix][iy][iz] = true;
+        {  // element does not exist
+          mapExpandedNodes_[Eigen::Vector3i(ix, iy, iz)] = true;
 
           neighbor.index = current.index + 1;
           neighbor.previous = &current;
@@ -367,15 +325,6 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
       }
     }
   }
-  // std::cout << "neighbors_va.size()= " << neighbors_va.size() << std::endl;
-
-  // if the index is <=6, return what we have //TODO this should be <=2, !!!!
-
-  /*  if (current.index <= 6)
-    {*/
-  // For now return all the neighbors
-  // return neighbors_va;
-  //}
 
   // And now select the ones that satisfy the LP with all the obstacles
 
@@ -806,6 +755,13 @@ exitloop:
 
   return false;
 }
+
+/*          std::cout << "ix= " << ix << " is outside, max= " << matrixExpandedNodes_.size() << std::endl;
+          std::cout << "iy= " << iy << " is outside, max= " << matrixExpandedNodes_[0].size() << std::endl;
+          std::cout << "iz= " << iz << " is outside, max= " << matrixExpandedNodes_[0][0].size() << std::endl;
+          std::cout << "voxel_size_= " << voxel_size_ << std::endl;
+          std::cout << "orig_= " << orig_.transpose() << std::endl;
+          std::cout << "neighbor.qi= " << neighbor.qi.transpose() << std::endl;*/
 
 /*  vx_.clear();
   vy_.clear();

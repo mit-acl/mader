@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include "faster_types.hpp"
 #include "separator.hpp"
+#include <unordered_map>
 
 typedef struct Node Node;  // neede to be able to have a pointer inside the struct
 
@@ -13,6 +14,25 @@ struct Node
   double g = 0;
   double h = 0;
   int index = 2;  // Start with q2_
+};
+
+// Taken from https://wjngkoh.wordpress.com/2015/03/04/c-hash-function-for-eigen-matrix-and-vector/
+template <typename T>
+struct matrix_hash : std::unary_function<T, size_t>
+{
+  std::size_t operator()(T const& matrix) const
+  {
+    // Note that it is oblivious to the storage order of Eigen matrix (column- or
+    // row-major). It will give you the same hash value for two different matrices if they
+    // are the transpose of each other in different storage order.
+    size_t seed = 0;
+    for (size_t i = 0; i < matrix.size(); ++i)
+    {
+      auto elem = *(matrix.data() + i);
+      seed ^= std::hash<typename T::Scalar>()(elem) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    return seed;
+  }
 };
 
 class SplineAStar
@@ -111,7 +131,9 @@ private:
 
   std::vector<Node> expanded_nodes_;
 
-  std::vector<std::vector<std::vector<bool>>> matrixExpandedNodes_;
+  // std::vector<std::vector<std::vector<bool>>> matrixExpandedNodes_;
+
+  std::unordered_map<Eigen::Vector3i, bool, matrix_hash<Eigen::Vector3i>> mapExpandedNodes_;
 
   double bbox_x_;
   double bbox_y_;
