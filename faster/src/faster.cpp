@@ -1,4 +1,4 @@
-
+// Jesus Tordesillas Torres, jtorde@mit.edu
 #include <Eigen/StdVector>
 #include <stdio.h>
 #include <math.h>

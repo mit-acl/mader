@@ -19,7 +19,7 @@ inflation_jps: 0.35  #[m] The obstacles are inflated (to run JPS) by this amount
 factor_jps: 1  #[m] JPS is run with resolution=factor_jps*(resolution of the map)
 
 v_max: 7.0   #[m/s]  1.4
-a_max: 40.0   #[m/s2] 1.4
+a_max: 20.0   #[m/s2] 1.4
 j_max: 10.0  #[m/s3] 35
 
 #Factors for time allocation

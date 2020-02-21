@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /OverlayText1
+        - /TFTrajectory1
       Splitter Ratio: 0.514905155
     Tree Height: 1213
   - Class: rviz/Selection
@@ -116,6 +117,26 @@ Visualization Manager:
           Value: true
         SQ023:
           Value: true
+        SQ0230:
+          Value: true
+        SQ0231:
+          Value: true
+        SQ0232:
+          Value: true
+        SQ0233:
+          Value: true
+        SQ0234:
+          Value: true
+        SQ0235:
+          Value: true
+        SQ0236:
+          Value: true
+        SQ0237:
+          Value: true
+        SQ0238:
+          Value: true
+        SQ0239:
+          Value: true
         SQ024:
           Value: true
         SQ025:
@@ -186,6 +207,26 @@ Visualization Manager:
           SQ0229:
             {}
           SQ023:
+            {}
+          SQ0230:
+            {}
+          SQ0231:
+            {}
+          SQ0232:
+            {}
+          SQ0233:
+            {}
+          SQ0234:
+            {}
+          SQ0235:
+            {}
+          SQ0236:
+            {}
+          SQ0237:
+            {}
+          SQ0238:
+            {}
+          SQ0239:
             {}
           SQ024:
             {}
@@ -300,7 +341,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -480,6 +521,14 @@ Visualization Manager:
       text size: 12
       top: 0
       width: 128
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: true
+      Name: TFTrajectory
+      Value: true
+      color: 25; 255; 240
+      duration: 10
+      frame: SQ01s
+      line_width: 0.00999999978
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -505,25 +554,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 35.76931
+      Distance: 16.5021152
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 28.3718166
-        Y: 32.7939262
-        Z: -2.00811951e-06
+        X: 1.91938901
+        Y: -1.15879083
+        Z: 3.09817506e-06
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.559797406
+      Pitch: 0.394797444
       Target Frame: LQ01s
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.9824965
+      Yaw: 4.22749424
     Saved: ~
 Window Geometry:
   Displays:
