@@ -46,7 +46,7 @@ class FakeSim:
         self.timer = rospy.Timer(rospy.Duration(0.001), self.pubTF)
 
         self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
-        self.num_of_objects = 30;
+        self.num_of_objects = 40;
 
         self.x_all=[];
         self.y_all=[];

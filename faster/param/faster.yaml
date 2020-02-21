@@ -51,7 +51,7 @@ samples_per_interval: 1
 weight: 10000.0 #The .0 is needed
 epsilon_tol_constraints: 0.1
 xtol_rel: 0.001 #negative value --> stopping criterion not used
-ftol_rel: 0.001 #negative value --> stopping criterion not used
+ftol_rel: 0.00001 #negative value --> stopping criterion not used
 solver: "LD_MMA"
 
 #  // work:  //LD_MMA // //LN_NELDERMEAD // LN_SBPLX(fastest) //LN_PRAXIS(fastest) //LD_AUGLAG //LD_AUGLAG_EQ
@@ -60,8 +60,8 @@ solver: "LD_MMA"
 
 
 #kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff )
-kappa: 0.3 #% of time spent to find initial guess
-mu: 0.5    #% of time spent to solve the optimization
+kappa: 0.25 #% of time spent to find initial guess
+mu: 0.4    #% of time spent to solve the optimization
 
 
 
