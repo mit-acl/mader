@@ -163,6 +163,7 @@ private:
   ros::Publisher pub_traj_whole_colored_;
   ros::Publisher pub_traj_safe_colored_;
   ros::Publisher pub_cloud_jps_;
+  ros::Publisher pub_text_;
 
   ros::Publisher pub_planning_vis_;
   ros::Publisher pub_intersec_points_;
@@ -216,4 +217,7 @@ private:
 
   int actual_trajID_ = 0;
   // faster_msgs::Mode mode_;
+
+  int num_of_LPs_run_ = 0;
+  int num_of_QCQPs_run_ = 0;
 };

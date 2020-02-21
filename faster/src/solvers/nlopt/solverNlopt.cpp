@@ -128,6 +128,16 @@ void SolverNlopt::getGuessForPlanes(std::vector<Hyperplane3D> &planes)
     }*/
 }
 
+int SolverNlopt::getNumOfLPsRun()
+{
+  return num_of_LPs_run_;
+}
+
+int SolverNlopt::getNumOfQCQPsRun()
+{
+  return num_of_QCQPs_run_;
+}
+
 bool SolverNlopt::intersects()
 {
   typedef CGAL::Simple_cartesian<double> K;
@@ -275,6 +285,7 @@ void SolverNlopt::useAStarGuess()
   std::vector<double> d;
   bool solved = myAStarSolver.run(q, n, d);
 
+  num_of_LPs_run_ = myAStarSolver.getNumOfLPsRun();
   std::cout << "After Running solved, n= " << std::endl;
   printStd(n);
 
@@ -1289,6 +1300,8 @@ bool SolverNlopt::optimize()
   opt_timer_.Reset();
   std::cout << "Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
   int result = opt_->optimize(x_, minf);
+
+  num_of_QCQPs_run_++;
 
   // See codes in https://github.com/JuliaOpt/NLopt.jl/blob/master/src/NLopt.jl
   bool failed = (result != nlopt::SUCCESS) && (!got_a_feasible_solution_);

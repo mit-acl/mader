@@ -223,6 +223,17 @@ std_msgs::ColorRGBA color(int id)
   orange_trans.g = 0.5;
   orange_trans.b = 0;
   orange_trans.a = 0.7;
+  std_msgs::ColorRGBA teal_normal;  // orange transparent
+  teal_normal.r = 25 / 255.0;
+  teal_normal.g = 1.0;
+  teal_normal.b = 240.0 / 255.0;
+  teal_normal.a = 1.0;
+  std_msgs::ColorRGBA black_trans;  // orange transparent
+  black_trans.r = 0.0;
+  black_trans.g = 0.0;
+  black_trans.b = 0.0;
+  black_trans.a = 0.2;
+
   switch (id)
   {
     case RED_NORMAL:
@@ -254,6 +265,12 @@ std_msgs::ColorRGBA color(int id)
       break;
     case ORANGE_TRANS:
       return orange_trans;
+      break;
+    case BLACK_TRANS:
+      return black_trans;
+      break;
+    case TEAL_NORMAL:
+      return teal_normal;
       break;
     default:
       printf("COLOR NOT DEFINED");

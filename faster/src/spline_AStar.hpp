@@ -44,6 +44,8 @@ public:
 
   void setZminZmax(double z_min, double z_max);
 
+  int getNumOfLPsRun();
+
 protected:
 private:
   void computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size);
@@ -119,6 +121,8 @@ private:
 
   double z_min_ = std::numeric_limits<double>::min();
   double z_max_ = std::numeric_limits<double>::max();
+
+  int num_of_LPs_run_ = 0;
 
   // bool matrixExpandedNodes_[40][40][40];
 };

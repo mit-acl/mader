@@ -24,6 +24,8 @@
 #define BLUE_LIGHT 8
 #define YELLOW_NORMAL 9
 #define ORANGE_TRANS 10
+#define BLACK_TRANS 11
+#define TEAL_NORMAL 12
 
 #define STATE 0
 #define INPUT 1

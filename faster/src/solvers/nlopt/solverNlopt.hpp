@@ -49,6 +49,10 @@ public:
   void setKappaAndMu(double kappa, double mu);
   void setZminZmax(double z_min, double z_max);  // A* guess will always be between z_min and z_max
 
+  int getNumOfLPsRun();
+
+  int getNumOfQCQPsRun();
+
 protected:
 private:
   void sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vector3d> &q);
@@ -227,5 +231,8 @@ private:
 
   double z_ground_ = std::numeric_limits<double>::min();
   double z_max_ = std::numeric_limits<double>::max();
+
+  int num_of_LPs_run_ = 0;
+  int num_of_QCQPs_run_ = 0;
 };
 #endif

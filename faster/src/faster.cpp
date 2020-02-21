@@ -804,7 +804,7 @@ bool Faster::initialized()
 void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E<Polyhedron<3>>& poly_safe_out,
                     vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out,
                     std::vector<state>& X_whole_out, pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps,
-                    std::vector<Hyperplane3D>& planes_guesses)
+                    std::vector<Hyperplane3D>& planes_guesses, int& num_of_LPs_run, int& num_of_QCQPs_run)
 {
   MyTimer replanCB_t(true);
 
@@ -1173,6 +1173,9 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   std::cout << "Calling optimize" << std::endl;
   bool result = snlopt.optimize();
+
+  num_of_LPs_run += snlopt.getNumOfLPsRun();
+  num_of_QCQPs_run += snlopt.getNumOfQCQPsRun();
 
   snlopt.getGuessForPlanes(planes_guesses);
 

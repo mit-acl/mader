@@ -8,6 +8,8 @@
 #include <decomp_geometry/polyhedron.h>       //For hyperplane
 #include <Eigen/Geometry>
 
+#include <jsk_rviz_plugins/OverlayText.h>
+
 typedef Timer MyTimer;
 
 // this object is created in the faster_ros_node
@@ -164,6 +166,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   poly_whole_pub_ = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_whole", 1, true);
   poly_safe_pub_ = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_safe", 1, true);
   pub_jps_inters_ = nh_.advertise<geometry_msgs::PointStamped>("jps_intersection", 1);
+  pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
   // pub_log_ = nh_.advertise<snapstack_msgs::Cvx>("log_topic", 1);
   pub_traj_committed_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_committed_colored", 1);
   pub_traj_whole_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_whole_colored", 1);
@@ -315,7 +318,8 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     pcl::PointCloud<pcl::PointXYZ>::Ptr pcloud_jps(new pcl::PointCloud<pcl::PointXYZ>);
     std::vector<Hyperplane3D> planes_guesses;
 
-    faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole, pcloud_jps, planes_guesses);
+    faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole, pcloud_jps, planes_guesses,
+                        num_of_LPs_run_, num_of_QCQPs_run_);
 
     // Delete markers to publish stuff
     visual_tools_->deleteAllMarkers();
@@ -340,6 +344,23 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     pubTraj(X_whole, WHOLE_COLORED);
     // std::cout << "Plane Guesses has" << planes_guesses.size() << std::endl;
     publishPlanes(planes_guesses);
+
+    pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
+    jsk_rviz_plugins::OverlayText text;
+    text.width = 400;
+    text.height = 200;
+    text.left = 10;
+    text.top = 10;
+    text.text_size = 12;
+    text.line_width = 2;
+    text.font = "DejaVu Sans Mono";
+    text.text = "Num of LPs run= " + std::to_string(num_of_LPs_run_) + "\n" +  ///////////////////
+                "Num of QCQPs run= " + std::to_string(num_of_QCQPs_run_);
+
+    text.fg_color = color(TEAL_NORMAL);
+    text.bg_color = color(BLACK_TRANS);
+
+    pub_text_.publish(text);
   }
 }
 

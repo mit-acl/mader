@@ -56,6 +56,11 @@ SplineAStar::~SplineAStar()
 {
 }
 
+int SplineAStar::getNumOfLPsRun()
+{
+  return num_of_LPs_run_;
+}
+
 void SplineAStar::setVisual(bool visual)
 {
   visual_ = visual;
@@ -407,6 +412,8 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
 
       MyTimer timer_lp(true);
       satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][current.index + 1 - 3], last4Cps);
+      num_of_LPs_run_++;
+      std::cout << "num_of_LPs_run_= " << num_of_LPs_run_ << std::endl;
       time_solving_lps_ += timer_lp.ElapsedMs();
 
       if (satisfies_LP == false)
