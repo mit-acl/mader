@@ -65,6 +65,8 @@ public:
 private:
   std::unique_ptr<Faster> faster_ptr_;
 
+  void publishOwnTraj(const PieceWisePol& pwp);
+
   void publishPlanes(std::vector<Hyperplane3D>& planes);
 
   // class methods
@@ -164,6 +166,7 @@ private:
   ros::Publisher pub_traj_safe_colored_;
   ros::Publisher pub_cloud_jps_;
   ros::Publisher pub_text_;
+  ros::Publisher pub_traj_;
 
   ros::Publisher pub_planning_vis_;
   ros::Publisher pub_intersec_points_;
@@ -220,4 +223,6 @@ private:
 
   int num_of_LPs_run_ = 0;
   int num_of_QCQPs_run_ = 0;
+
+  int id_;  // id of the drone
 };

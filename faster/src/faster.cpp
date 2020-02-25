@@ -801,10 +801,11 @@ bool Faster::initialized()
   return true;
 }
 
-void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E<Polyhedron<3>>& poly_safe_out,
+bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E<Polyhedron<3>>& poly_safe_out,
                     vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out,
                     std::vector<state>& X_whole_out, pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps,
-                    std::vector<Hyperplane3D>& planes_guesses, int& num_of_LPs_run, int& num_of_QCQPs_run)
+                    std::vector<Hyperplane3D>& planes_guesses, int& num_of_LPs_run, int& num_of_QCQPs_run,
+                    PieceWisePol& pwp_out)
 {
   MyTimer replanCB_t(true);
 
@@ -817,7 +818,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   if (initializedStateAndTermGoal() == false)
   {
     std::cout << "Not Replanning" << std::endl;
-    return;
+    return false;
   }
 
   // std::cout << "here3" << std::endl;
@@ -847,13 +848,14 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   if (dist_to_goal < par_.goal_radius)
   {
     changeDroneStatus(DroneStatus::GOAL_REACHED);
+    exists_previous_pwp_ = false;
   }
   // Don't plan if drone is not traveling
   if (drone_status_ == DroneStatus::GOAL_REACHED || (drone_status_ == DroneStatus::YAWING))
   {
     // std::cout << "No replanning needed because" << std::endl;
     // print_status();
-    return;
+    return false;
   }
 
   std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
@@ -872,6 +874,11 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   k_whole = plan_.size() - 1 - k_end_whole;
   A = plan_.get(k_whole);
 
+  if (k_end_whole == 0)
+  {
+    exists_previous_pwp_ = false;
+  }
+
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Solve JPS //////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
@@ -888,7 +895,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   if (solvedjps == false)
   {
     std::cout << bold << red << "JPS didn't find a solution" << reset << std::endl;
-    return;
+    return false;
   }
 
   //////////////////////////////////////////////////////////////////////////
@@ -1089,7 +1096,9 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   state initial = A;
   state final = E;
 
-  double t_min = k_whole * par_.dc + ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+  double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+
+  double t_min = k_whole * par_.dc + time_now;
   double t_max = t_min + (initial.pos - final.pos).norm() / (0.6 * par_.v_max);  // time to execute the optimized path
 
   /*  std::cout << "Going to compute the convex hulls, t_min= " << t_min << std::endl;
@@ -1187,7 +1196,7 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
                                                                                // the last replan
     deltaT_ = std::max(par_.alpha * states_last_replan, 1.0);
     deltaT_ = std::min(1.0 * deltaT_, 2.0 / par_.dc);
-    return;
+    return false;
   }
 
   solutions_found_++;
@@ -1227,9 +1236,26 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   k_safe = 0;
 
-  if (appendToPlan(k_end_whole, sg_whole_.X_temp_, k_safe, snlopt.X_temp_) != true)
+  bool result_appending = appendToPlan(k_end_whole, sg_whole_.X_temp_, k_safe, snlopt.X_temp_);
+
+  if (result_appending != true)
   {
-    return;
+    return false;
+  }
+
+  PieceWisePol pwp_now;
+  snlopt.getSolution(pwp_now);
+
+  if (exists_previous_pwp_ == true)
+  {
+    pwp_out = composePieceWisePol(time_now, pwp_prev_, pwp_now);
+    pwp_prev_ = pwp_out;
+  }
+  else
+  {  // exists_previous_pwp_ == false;
+    exists_previous_pwp_ = true;
+    pwp_out = pwp_now;
+    pwp_prev_ = pwp_now;
   }
 
   X_safe_out = plan_.toStdVector();
@@ -1284,8 +1310,46 @@ void Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   planner_initialized_ = true;
 
-  return;
+  return true;
 }
+
+/*template <typename T>
+struct myfunc : public exprtk::ifunction<T>
+{
+  myfunc() : exprtk::ifunction<T>(2)
+  {
+    exprtk::disable_has_side_effects(*this);
+  }
+
+  inline T operator()(const T& v1, const T& v2)
+  {
+    return T(1) + (v1 * v2) / T(3);
+  }
+};*/
+
+/*template <typename T>
+inline T eval_x(PieceWisePol piecewisepol, double t)
+{
+  double x, y, z;
+  //(piecewisepol.times - 1) is the numbe of intervals
+  for (int i = 1; i < (piecewisepol.times - 1); i++)
+  {
+    if (piecewisepol.times[i - 1] <= t < piecewisepol.times[i])
+    {
+      u = (t - times[i - 1]) / (times[i] - times[i - 1]);
+
+      Eigen::Matrix<double, 1, 4> tmp;
+      tmp << u * u * u, u * u, u, 1.0;
+      x = coefficients_x.dot(tmp);
+      // TODO: This is hand-coded for a third-degree polynomial
+      // x = coefficients_x[0] * u * u * u + coefficients_x[1] * u * u + coefficients_x[2] * u + coefficients_x[3];
+      // y = coefficients_y[0] * u * u * u + coefficients_y[1] * u * u + coefficients_y[2] * u + coefficients_y[3];
+      // z = coefficients_z[0] * u * u * u + coefficients_z[1] * u * u + coefficients_z[2] * u + coefficients_z[3];
+      break;
+    }
+  }
+  return x;
+}*/
 
 void Faster::createObstacleMapFromTrajs(double t_min, double t_max)
 {

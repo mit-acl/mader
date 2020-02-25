@@ -53,6 +53,8 @@ public:
 
   int getNumOfQCQPsRun();
 
+  void getSolution(PieceWisePol &solution);
+
 protected:
 private:
   void sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vector3d> &q);
@@ -144,6 +146,8 @@ private:
   // bool satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q);
 
   void printIndexesConstraints();
+
+  PieceWisePol solution_;
 
   int deg_pol_ = 3;
   int num_pol_ = 5;

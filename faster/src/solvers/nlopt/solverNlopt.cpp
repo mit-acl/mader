@@ -1367,6 +1367,11 @@ bool SolverNlopt::optimize()
   return true;
 }
 
+void SolverNlopt::getSolution(PieceWisePol &solution)
+{
+  solution = solution_;
+}
+
 void SolverNlopt::fillXTempFromCPs(std::vector<Eigen::Vector3d> &q)
 {
   Eigen::MatrixXd control_points(3, N_ + 1);
@@ -1376,14 +1381,50 @@ void SolverNlopt::fillXTempFromCPs(std::vector<Eigen::Vector3d> &q)
     control_points.col(i) = q[i];
   }
 
+  Eigen::Matrix<double, 4, 4> M;
+  M << 1, 4, 1, 0,   //////
+      -3, 0, 3, 0,   //////
+      3, -6, 3, 0,   //////
+      -1, 3, -3, 1;  //////
+  M = M / 6.0;       // *1/3!
+
   // std::cout << "Control Points used are\n" << control_points << std::endl;
   // std::cout << "====================" << std::endl;
 
+  solution_.clear();
+
+  for (int i = p_; i < (knots_.size() - p_); i++)
+  {
+    solution_.times.push_back(knots_(i));
+  }
+
+  for (int j = 0; j < num_pol_; j++)
+  {
+    Eigen::Matrix<double, 4, 1> cps_x = (control_points.block(0, j, 1, 4).transpose());
+    Eigen::Matrix<double, 4, 1> cps_y = (control_points.block(1, j, 1, 4).transpose());
+    Eigen::Matrix<double, 4, 1> cps_z = (control_points.block(2, j, 1, 4).transpose());
+
+    solution_.coeff_x.push_back((M * cps_x).reverse());  // at^3 + bt^2 + ct + d --> [a b c d]'
+    solution_.coeff_y.push_back((M * cps_y).reverse());  // at^3 + bt^2 + ct + d --> [a b c d]'
+    solution_.coeff_z.push_back((M * cps_z).reverse());  // at^3 + bt^2 + ct + d --> [a b c d]'
+  }
+  /*
+
+  Eigen::Matrix<double, 1, 4> tmp;
+  double u = 0.5;
+  tmp << 1.0, u, u * u, u * u * u;
+
+  double evaluation = tmp * M * cps;
+
+
+    // std::cout << "Knots= " << knots_ << std::endl;
+    // std::cout << "t_min_= " << t_min_ << std::endl;
+
+    std::cout << "evaluation by my method: " << evaluation << std::endl;
+    Eigen::MatrixXd novale = spline.derivatives(t_min_ + deltaT_ / 2.0, 4);
+    std::cout << "evaluation by Eigen: " << novale.col(0).x() << std::endl;*/
+
   Eigen::Spline<double, 3, Eigen::Dynamic> spline(knots_, control_points);
-
-  // std::cout << "Knots= " << knots_ << std::endl;
-  // std::cout << "t_min_= " << t_min_ << std::endl;
-
   X_temp_.clear();
 
   for (double t = t_min_; t <= t_max_; t = t + dc_)

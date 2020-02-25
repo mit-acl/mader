@@ -41,9 +41,13 @@
 #define OCCUPIED_SPACE 1
 #define UNKOWN_AND_OCCUPIED_SPACE 2
 
+PieceWisePol composePieceWisePol(const double t, const PieceWisePol& p1, const PieceWisePol& p2);
+
 bool boxIntersectsSphere(Eigen::Vector3d center, double r, Eigen::Vector3d c1, Eigen::Vector3d c2);
 
 void printStateDeque(std::deque<state>& data);
+
+std::vector<std::string> pieceWisePol2String(const PieceWisePol& piecewisepol);
 
 void printStateVector(std::vector<state>& data);
 

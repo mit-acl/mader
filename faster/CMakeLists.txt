@@ -98,7 +98,7 @@ add_library(utils STATIC src/utils.cpp src/utils.hpp)
 #set_property(TARGET utils PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 #target_precompile_headers(utils PUBLIC src/utils.hpp)
-target_link_libraries(utils PUBLIC ${PCL_LIBRARIES})
+target_link_libraries(utils PUBLIC ${PCL_LIBRARIES} ${catkin_LIBRARIES})
 
 add_library(spline_AStar STATIC src/spline_AStar.cpp)
 target_include_directories (spline_AStar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -143,7 +143,7 @@ target_include_directories (faster_ros PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(faster_ros PUBLIC ${catkin_LIBRARIES} faster)
 
 
-enable_unity_build(UNITY_BUILD_NAME src/main.cpp)
+#enable_unity_build(UNITY_BUILD_NAME src/main.cpp)
 
 add_executable(${PROJECT_NAME}_node src/main.cpp)
 
@@ -156,13 +156,15 @@ add_executable(${PROJECT_NAME}_node src/main.cpp)
 
 #If GUROBI and NLOPT are required
 target_link_libraries(${PROJECT_NAME}_node PUBLIC faster_ros)
-
-
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
 add_executable(astar_example src/testSplineAStar.cpp src/spline_AStar.cpp )
 add_dependencies(astar_example ${catkin_EXPORTED_TARGETS} )
 target_link_libraries(astar_example ${catkin_LIBRARIES})
+
+add_executable(test_utils src/test_utils.cpp)
+add_dependencies(test_utils ${catkin_EXPORTED_TARGETS})
+target_link_libraries(test_utils ${catkin_LIBRARIES} utils)
 
 
 # add_executable(simplex_example src/solvers/simplex/example.cpp)

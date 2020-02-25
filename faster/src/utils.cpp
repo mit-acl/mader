@@ -2,10 +2,186 @@
 
 #include "termcolor.hpp"
 
+#include "ros/ros.h"  //TODO this shouldn't be here (separate in utils_ros and utils)
+
 /*typedef struct
 {
   double r, g, b;
 } COLOUR;*/
+
+// returns a PieceWisePol, taking the polynomials of p1 and p2 that satisfy p1>t, p2>t
+PieceWisePol composePieceWisePol(const double t, const PieceWisePol& p1, const PieceWisePol& p2)
+{
+  if (fabs(t - p2.times.front()) < 1e-5)
+  {
+    return p2;
+  }
+
+  if (p1.times.back() < p2.times.front() || t > p2.times.back() || t < p1.times.front())
+  {
+    std::cout << "Error composing the piecewisePol" << std::endl;
+    std::cout << std::setprecision(30) << "t= " << t << std::endl;
+    std::cout << std::setprecision(30) << "p1.times.front()= " << p1.times.front() << std::endl;
+    std::cout << std::setprecision(30) << "p1.times.back()= " << p1.times.back() << std::endl;
+    std::cout << std::setprecision(30) << "p2.times.front() = " << p2.times.front() << std::endl;
+    std::cout << std::setprecision(30) << "p2.times.back() = " << p2.times.back() << std::endl;
+    PieceWisePol dummy;
+    return dummy;
+  }
+
+  std::vector<int> indexes1, indexes2;
+
+  for (int i = 0; i < p1.times.size(); i++)
+  {
+    if (p1.times[i] > t && p1.times[i] < p2.times[0])
+    {
+      indexes1.push_back(i);
+    }
+  }
+
+  for (int i = 0; i < p2.times.size(); i++)
+  {
+    if (p2.times[i] > t)
+    {
+      indexes2.push_back(i);
+    }
+  }
+
+  PieceWisePol p;
+  p.times.push_back(t);
+
+  for (auto index_1_i : indexes1)
+  {
+    p.times.push_back(p1.times[index_1_i]);
+    p.coeff_x.push_back(p1.coeff_x[index_1_i - 1]);
+    p.coeff_y.push_back(p1.coeff_y[index_1_i - 1]);
+    p.coeff_z.push_back(p1.coeff_z[index_1_i - 1]);
+  }
+
+  /*  if (indexes1.size() == 0)
+    {
+      p.times.push_back(p2.times[0]);
+    }*/
+
+  for (auto index_2_i : indexes2)
+  {
+    if (index_2_i == 0)
+    {
+      p.coeff_x.push_back(p1.coeff_x.back());
+      p.coeff_y.push_back(p1.coeff_y.back());
+      p.coeff_z.push_back(p1.coeff_z.back());
+      p.times.push_back(p2.times[index_2_i]);
+      continue;
+    }
+    p.times.push_back(p2.times[index_2_i]);
+    p.coeff_x.push_back(p2.coeff_x[index_2_i - 1]);
+    p.coeff_y.push_back(p2.coeff_y[index_2_i - 1]);
+    p.coeff_z.push_back(p2.coeff_z[index_2_i - 1]);
+  }
+
+  /*  for (int i = 0; i < (p1.times.size() - 1); i++)  // i is the index of the interval
+    {
+      if (p1.times[i + 1] > t && p1.times[i] < p2.times[0])
+      {
+        p.times.push_back(p1.times[i + 1]);
+        p.coeff_x.push_back(p1.coeff_x[i]);
+        p.coeff_y.push_back(p1.coeff_y[i]);
+        p.coeff_z.push_back(p1.coeff_z[i]);
+      }
+    }
+
+    for (int i = 0; i < (p2.times.size() - 1); i++)  // i is the index of the interval
+    {
+      std::cout << "i= " << i << std::endl;
+
+      if (t < p2.times[i + 1])
+      {
+        std::cout << "p2.times.size() - 1= " << p2.times.size() - 1 << std::endl;
+        p.times.push_back(p2.times[i + 1]);
+        p.coeff_x.push_back(p2.coeff_x[i]);
+        p.coeff_y.push_back(p2.coeff_y[i]);
+        p.coeff_z.push_back(p2.coeff_z[i]);
+      }
+    }*/
+
+  // p.times.push_back(p2.times.back());
+
+  return p;
+}
+
+std::vector<std::string> pieceWisePol2String(const PieceWisePol& piecewisepol)
+{
+  // Define strings
+  std::string s_x = "0.0";
+  std::string s_y = "0.0";
+  std::string s_z = "0.0";
+
+  //(piecewisepol.times - 1) is the number of intervals
+  for (int i = 0; i < (piecewisepol.times.size() - 1); i++)  // i is the index of the interval
+  {
+    std::string div_by_delta = "/ (" + std::to_string(piecewisepol.times[i + 1] - piecewisepol.times[i]) + ")";
+
+    std::string t = "(min(t," + std::to_string(piecewisepol.times.back()) + "))";
+
+    std::string u = "(" + t + "-" + std::to_string(piecewisepol.times[i]) + ")" + div_by_delta;
+    u = "(" + u + ")";
+    std::string uu = u + "*" + u;
+    std::string uuu = u + "*" + u + "*" + u;
+    /*    std::cout << "piecewisepol.times[i]= " << piecewisepol.times[i] << std::endl;
+        std::cout << "piecewisepol.times[i+1]= " << piecewisepol.times[i + 1] << std::endl;*/
+
+    std::string cond;
+    if (i == (piecewisepol.times.size() - 2))  // if the last interval
+    {
+      cond = "(t>=" + std::to_string(piecewisepol.times[i]) + ")";
+    }
+    else
+    {
+      cond = "(t>=" + std::to_string(piecewisepol.times[i]) + " and " + "t<" +
+             std::to_string(piecewisepol.times[i + 1]) + ")";
+    }
+
+    // std::cout << "here1" << std::endl;
+
+    std::string s_x_i = std::to_string((double)piecewisepol.coeff_x[i](0)) + "*" + uuu;   //////////////////
+    s_x_i = s_x_i + "+" + std::to_string((double)piecewisepol.coeff_x[i](1)) + "*" + uu;  //////////////////
+    s_x_i = s_x_i + "+" + std::to_string((double)piecewisepol.coeff_x[i](2)) + "*" + u;   //////////////////
+    s_x_i = s_x_i + "+" + std::to_string((double)piecewisepol.coeff_x[i](3));             //////////////////
+    s_x_i = cond + "*(" + s_x_i + ")";
+
+    // std::cout << "here2" << std::endl;
+
+    std::string s_y_i = std::to_string((double)piecewisepol.coeff_y[i](0)) + "*" + uuu;   //////////////////
+    s_y_i = s_y_i + "+" + std::to_string((double)piecewisepol.coeff_y[i](1)) + "*" + uu;  //////////////////
+    s_y_i = s_y_i + "+" + std::to_string((double)piecewisepol.coeff_y[i](2)) + "*" + u;   //////////////////
+    s_y_i = s_y_i + "+" + std::to_string((double)piecewisepol.coeff_y[i](3));             //////////////////
+    s_y_i = cond + "*(" + s_y_i + ")";
+
+    // std::cout << "here3" << std::endl;
+
+    std::string s_z_i = std::to_string((double)piecewisepol.coeff_z[i](0)) + "*" + uuu;   //////////////////
+    s_z_i = s_z_i + "+" + std::to_string((double)piecewisepol.coeff_z[i](1)) + "*" + uu;  //////////////////
+    s_z_i = s_z_i + "+" + std::to_string((double)piecewisepol.coeff_z[i](2)) + "*" + u;   //////////////////
+    s_z_i = s_z_i + "+" + std::to_string((double)piecewisepol.coeff_z[i](3));             //////////////////
+    s_z_i = cond + "*(" + s_z_i + ")";
+
+    // std::cout << "here4" << std::endl;
+
+    // std::cout << "s_x_i is" << s_x_i << std::endl;
+    // std::cout << "u is" << u << std::endl;
+
+    s_x = s_x + " + " + s_x_i;
+    s_y = s_y + " + " + s_y_i;
+    s_z = s_z + " + " + s_z_i;
+  }
+
+  std::vector<std::string> s;
+  s.push_back(s_x);
+  s.push_back(s_y);
+  s.push_back(s_z);
+
+  return s;
+}
 
 void printStateDeque(std::deque<state>& data)
 {

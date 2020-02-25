@@ -172,6 +172,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   pub_traj_whole_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_whole_colored", 1);
   pub_traj_safe_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
   pub_cloud_jps_ = nh_.advertise<sensor_msgs::PointCloud2>("cloud_jps", 1);
+  pub_traj_ = nh_.advertise<faster_msgs::DynTraj>("/trajs", 1);
 
   // Subscribers
   occup_grid_sub_.subscribe(nh_, "occup_grid", 1);
@@ -217,6 +218,10 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   name_drone_ = ros::this_node::getNamespace();
   name_drone_.erase(0, 2);  // Erase slashes
 
+  std::string id = name_drone_;
+  id.erase(0, 2);  // Erase SQ or HX i.e. SQ12 --> 12  HX8621 --> 8621
+  id_ = std::stoi(id);
+
   tfListener = new tf2_ros::TransformListener(tf_buffer_);
   // wait for body transform to be published before initializing
   ROS_INFO("Waiting for world to camera transform...");
@@ -250,6 +255,11 @@ FasterRos::~FasterRos()
 
 void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 {
+  if (msg.id == id_)
+  {  // This is my own trajectory
+    return;
+  }
+
   std::vector<dynTraj>::iterator obs_ptr =
       std::find_if(trajs_.begin(), trajs_.end(), [=](const dynTraj& traj) { return traj.id == msg.id; });
   bool exists = (obs_ptr != std::end(trajs_));
@@ -305,6 +315,24 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   // std::cout << "End of trajCB" << reset << std::endl;
 }
 
+// This trajectory is published when the agent arrives at A
+void FasterRos::publishOwnTraj(const PieceWisePol& pwp)
+{
+  std::vector<std::string> s = pieceWisePol2String(pwp);
+
+  faster_msgs::DynTraj msg;
+  msg.function = s;
+  msg.bbox.push_back(2 * par_.drone_radius);
+  msg.bbox.push_back(2 * par_.drone_radius);
+  msg.bbox.push_back(2 * par_.drone_radius);
+  msg.pos.x = state_.pos.x();
+  msg.pos.y = state_.pos.y();
+  msg.pos.z = state_.pos.z();
+  msg.id = id_;
+
+  pub_traj_.publish(msg);
+}
+
 void FasterRos::replanCB(const ros::TimerEvent& e)
 {
   if (ros::ok())
@@ -317,9 +345,10 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     std::vector<state> X_whole;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pcloud_jps(new pcl::PointCloud<pcl::PointXYZ>);
     std::vector<Hyperplane3D> planes_guesses;
+    PieceWisePol pwp;
 
-    faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole, pcloud_jps, planes_guesses,
-                        num_of_LPs_run_, num_of_QCQPs_run_);
+    bool replanned = faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole, pcloud_jps,
+                                         planes_guesses, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
 
     // Delete markers to publish stuff
     visual_tools_->deleteAllMarkers();
@@ -359,6 +388,11 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
 
     text.fg_color = color(TEAL_NORMAL);
     text.bg_color = color(BLACK_TRANS);
+
+    if (replanned)
+    {
+      publishOwnTraj(pwp);
+    }
 
     pub_text_.publish(text);
   }

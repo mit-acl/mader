@@ -73,10 +73,10 @@ class Faster
 {
 public:
   Faster(parameters par);
-  void replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E<Polyhedron<3>>& poly_safe_out,
+  bool replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E<Polyhedron<3>>& poly_safe_out,
               vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out, std::vector<state>& X_whole_out,
               pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps, std::vector<Hyperplane3D>& planes_guesses,
-              int& num_of_LPs_run, int& num_of_QCQPs_run);
+              int& num_of_LPs_run, int& num_of_QCQPs_run, PieceWisePol& pwp_out);
   void updateState(state data);
   // void changeMode(int new_mode);
   void updateMap(pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_map, pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_unk);
@@ -259,6 +259,10 @@ private:
 
   int solutions_found_ = 0;
   int total_replannings_ = 0;
+
+  PieceWisePol pwp_prev_;
+
+  bool exists_previous_pwp_ = false;
 };
 
 #endif

@@ -102,7 +102,7 @@ class FakeSim:
             dynamic_trajectory_msg.pos.y=y #Current position
             dynamic_trajectory_msg.pos.z=z #Current position
 
-            dynamic_trajectory_msg.id = i #Current id
+            dynamic_trajectory_msg.id = 4000+ i #Current id 4000 to avoid interference with ids from agents TODO
 
             self.pubTraj.publish(dynamic_trajectory_msg)
             br.sendTransform((x, y, z), (0,0,0,1), t_ros, self.name+str(i), "world")

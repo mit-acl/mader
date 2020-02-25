@@ -30,6 +30,82 @@ struct polytope
   Eigen::MatrixXd b;
 };
 
+struct PieceWisePol
+{
+  // Interval 0: t\in[t0, t1)
+  // Interval 1: t\in[t1, t2)
+  // Interval 2: t\in[t2, t3)
+  //...
+  // Interval n-1: t\in[tn, tn+1)
+
+  // n intervals in total
+
+  // times has n+1 elements
+  std::vector<double> times;  // [t0,t1,t2,...,tn+1]
+
+  // coefficients has n elements
+  std::vector<Eigen::Matrix<double, 4, 1>> coeff_x;  // [a b c d]' of Int0 , [a b c d]' of Int1,...
+  std::vector<Eigen::Matrix<double, 4, 1>> coeff_y;  // [a b c d]' of Int0 , [a b c d]' of Int1,...
+  std::vector<Eigen::Matrix<double, 4, 1>> coeff_z;  // [a b c d]' of Int0 , [a b c d]' of Int1,...
+
+  void clear()
+  {
+    times.clear();
+    coeff_x.clear();
+    coeff_y.clear();
+    coeff_z.clear();
+  }
+
+  Eigen::Vector3d eval(double t)
+  {
+    Eigen::Vector3d result;
+
+    if (t >= times[times.size() - 1])
+    {  // return the last value of the polynomial in the last interval
+      Eigen::Matrix<double, 4, 1> tmp;
+      double u = 1;
+      tmp << u * u * u, u * u, u, 1.0;
+      result.x() = coeff_x.back().transpose() * tmp;
+      result.y() = coeff_y.back().transpose() * tmp;
+      result.z() = coeff_z.back().transpose() * tmp;
+      return result;
+    }
+    //(times - 1) is the number of intervals
+    for (int i = 0; i < (times.size() - 1); i++)
+    {
+      if (times[i] <= t && t < times[i + 1])
+      {
+        double u = (t - times[i]) / (times[i + 1] - times[i]);
+
+        // TODO: This is hand-coded for a third-degree polynomial
+        Eigen::Matrix<double, 4, 1> tmp;
+        tmp << u * u * u, u * u, u, 1.0;
+
+        result.x() = coeff_x[i].transpose() * tmp;
+        result.y() = coeff_y[i].transpose() * tmp;
+        result.z() = coeff_z[i].transpose() * tmp;
+
+        break;
+      }
+    }
+    return result;
+  }
+
+  void print()
+  {
+    std::cout << "coeff_x.size()= " << coeff_x.size() << std::endl;
+    std::cout << "times.size()= " << times.size() << std::endl;
+
+    for (int i = 0; i < (times.size() - 1); i++)
+    {
+      std::cout << "From " << times[i] << " to " << times[i + 1] << std::endl;
+      std::cout << "  Coeff_x= " << coeff_x[i].transpose() << std::endl;
+      std::cout << "  Coeff_y= " << coeff_y[i].transpose() << std::endl;
+      std::cout << "  Coeff_z= " << coeff_z[i].transpose() << std::endl;
+    }
+  }
+};
+
 struct parameters
 {
   bool use_ff;
