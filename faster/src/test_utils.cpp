@@ -137,7 +137,7 @@ int main()
 
   for (t = 0; t < 5; t = t + 0.4)
   {
-    PieceWisePol piecewisepolAB = composePieceWisePol(t, piecewisepol, piecewisepolB);
+    PieceWisePol piecewisepolAB = composePieceWisePol(t, -0.1, piecewisepol, piecewisepolB);
     std::cout << "==================" << std::endl;
     std::cout << "t= " << t << std::endl;
     std::cout << "==================" << std::endl;

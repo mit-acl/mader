@@ -874,10 +874,10 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   k_whole = plan_.size() - 1 - k_end_whole;
   A = plan_.get(k_whole);
 
-  if (k_end_whole == 0)
-  {
-    exists_previous_pwp_ = false;
-  }
+  /*  if (k_end_whole == 0)
+    {
+      exists_previous_pwp_ = false;
+    }*/
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Solve JPS //////////////////////////////////////
@@ -1246,17 +1246,26 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   PieceWisePol pwp_now;
   snlopt.getSolution(pwp_now);
 
+  std::cout << std::setprecision(30) << "pwp_now.times[0]=" << pwp_now.times[0] << std::endl;
+  std::cout << "t_min= " << t_min << std::endl;
+
   if (exists_previous_pwp_ == true)
   {
-    pwp_out = composePieceWisePol(time_now, pwp_prev_, pwp_now);
+    std::cout << "k_whole= " << k_whole << std::endl;
+    std::cout << "k_end_whole= " << k_end_whole << std::endl;
+    pwp_out = composePieceWisePol(time_now, par_.dc, pwp_prev_, pwp_now);
     pwp_prev_ = pwp_out;
   }
   else
-  {  // exists_previous_pwp_ == false;
-    exists_previous_pwp_ = true;
+  {  //
+    std::cout << "exists_previous_pwp_ = false" << std::endl;
     pwp_out = pwp_now;
     pwp_prev_ = pwp_now;
+    exists_previous_pwp_ = true;
   }
+
+  std::cout << std::setprecision(30) << "pwp_composed.times[0]=" << pwp_prev_.times[0] << std::endl;
+  std::cout << "t_min= " << t_min << std::endl;
 
   X_safe_out = plan_.toStdVector();
   // novale_already_done_ = true;

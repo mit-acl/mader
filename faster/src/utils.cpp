@@ -10,8 +10,19 @@
 } COLOUR;*/
 
 // returns a PieceWisePol, taking the polynomials of p1 and p2 that satisfy p1>t, p2>t
-PieceWisePol composePieceWisePol(const double t, const PieceWisePol& p1, const PieceWisePol& p2)
+PieceWisePol composePieceWisePol(const double t, const double dc, const PieceWisePol& p1, PieceWisePol& p2)
 {
+  // if t is in between p1 and p2, force p2[0] to be t
+  if (t > p1.times.back() && t < p2.times.front())  // && fabs(t - p2.times.front()) <= dc) TODO
+  {
+    p2.times.front() = t;
+  }
+
+  if (p1.times.back() < p2.times.front())  // && fabs(p1.times.back() - p2.times.front()) <= dc) TODO
+  {
+    p2.times.front() = p1.times.back();
+  }
+
   if (fabs(t - p2.times.front()) < 1e-5)
   {
     return p2;
