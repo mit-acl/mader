@@ -143,7 +143,7 @@ target_include_directories (faster_ros PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(faster_ros PUBLIC ${catkin_LIBRARIES} faster)
 
 
-#enable_unity_build(UNITY_BUILD_NAME src/main.cpp)
+enable_unity_build(UNITY_BUILD_NAME src/main.cpp)
 
 add_executable(${PROJECT_NAME}_node src/main.cpp)
 

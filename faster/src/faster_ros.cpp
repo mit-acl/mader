@@ -379,11 +379,11 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
 
     pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
     jsk_rviz_plugins::OverlayText text;
-    text.width = 400;
-    text.height = 200;
+    text.width = 600;
+    text.height = 400;
     text.left = 10;
     text.top = 10;
-    text.text_size = 12;
+    text.text_size = 17;
     text.line_width = 2;
     text.font = "DejaVu Sans Mono";
     text.text = "Num of LPs run= " + std::to_string(num_of_LPs_run_) + "\n" +  ///////////////////

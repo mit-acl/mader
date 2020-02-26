@@ -1292,8 +1292,8 @@ bool SolverNlopt::optimize()
 
   // toEigen(x_, q_guess_, n_guess_);
 
-  std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
-  printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
+  // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
+  // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
   printIndexesConstraints();
 
@@ -1322,7 +1322,7 @@ bool SolverNlopt::optimize()
     std::cout << on_red << bold << "Solution not found" << opt_timer_ << reset << std::endl;
 
     toEigen(x_, q, n, d);
-    printInfeasibleConstraints(q, n, d);
+    // printInfeasibleConstraints(q, n, d);
 
     return false;
   }
@@ -1342,7 +1342,7 @@ bool SolverNlopt::optimize()
     return false;
   }
 
-  printQND(q, n, d);
+  // printQND(q, n, d);
 
   /*  std::cout << on_green << bold << "Solution found: " << time_first_feasible_solution_ << "/" << opt_timer_ << reset
               << std::endl;*/
