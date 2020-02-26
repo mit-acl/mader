@@ -850,8 +850,20 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
     changeDroneStatus(DroneStatus::GOAL_REACHED);
     exists_previous_pwp_ = false;
   }
+
+  // Check if we have seen the goal in the last replan
+  mtx_plan_.lock();
+  double dist_last_plan_to_goal = (G_term.pos - plan_.back().pos).norm();
+  mtx_plan_.unlock();
+  if (dist_last_plan_to_goal < par_.goal_radius && drone_status_ == DroneStatus::TRAVELING)
+  {
+    changeDroneStatus(DroneStatus::GOAL_SEEN);
+    exists_previous_pwp_ = false;
+  }
+
   // Don't plan if drone is not traveling
-  if (drone_status_ == DroneStatus::GOAL_REACHED || (drone_status_ == DroneStatus::YAWING))
+  if (drone_status_ == DroneStatus::GOAL_REACHED || (drone_status_ == DroneStatus::YAWING) ||
+      (drone_status_ == DroneStatus::GOAL_SEEN))
   {
     // std::cout << "No replanning needed because" << std::endl;
     // print_status();

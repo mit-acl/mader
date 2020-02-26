@@ -656,7 +656,7 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
   initial_state_ = initial_state;
   final_state_ = final_state;
 
-  weight_modified_ = weight_ / (final_state_.pos - initial_state_.pos).norm();
+  weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
 
   std::cout << "initial_state= " << std::endl;
   initial_state.printHorizontal();
