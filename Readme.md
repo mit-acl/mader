@@ -1,5 +1,20 @@
 # FASTER: Fast and Safe Trajectory Planner for Flights in Unknown Environments #
 
+For one drone:
+```
+roslaunch faster all.launch
+roslaunch faster faster.launch
+```
+
+For many drones:
+```
+roscore
+roslaunch faster faster_general.launch
+python launch_many_drones.py start
+python launch_many_drones.py faster
+python launch_many_drones.py send_goal
+```
+
 Code used for the paper **FASTER: Fast and Safe Trajectory Planner for Flights in Unknown Environments** (IROS 2019) ([pdf](https://arxiv.org/abs/1903.03558), [video](https://www.youtube.com/watch?v=gwV0YRs5IWs))
 
 ```
