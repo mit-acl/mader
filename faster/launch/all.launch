@@ -1,25 +1,37 @@
 <launch>
 
+	<arg name="quad" default="SQ01s"/>
 <!--
   <include file="$(find acl_sim)/launch/start_world.launch">
+  	<arg name="quad" value="$(arg quad)"/>
   </include>
 
   <include file="$(find global_mapper_ros)/launch/global_mapper_node.launch">
+  	<arg name="quad" value="$(arg quad)"/>
   </include>
 
 -->
 
 
-  <include file="$(find acl_sim)/launch/perfect_tracker_and_sim.launch">
-  </include>
+
+ <include file="$(find faster)/launch/faster_specific.launch">
+      <arg name="quad" value="$(arg quad)"/>
+  </include> 
+ 
+  <include file="$(find faster)/launch/faster_general.launch">
+      <arg name="quad" value="$(arg quad)"/>
+  </include> 
 
 
-
+<!--    <include file="$(find acl_sim)/launch/perfect_tracker_and_sim.launch">
+  		<arg name="quad" value="$(arg quad)"/>
+  </include> 
 
 
  
  <include file="$(find faster)/launch/faster_interface.launch">
-  </include> 
+  		<arg name="quad" value="$(arg quad)"/>
+  </include>  -->
 
 </launch>
 

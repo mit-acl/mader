@@ -1,16 +1,21 @@
 <launch>
 	<arg name="quad" default="SQ01s"/>
 	
-	<!-- Start faster commands -->
+	<!-- Start faster commands 
 	<node ns="$(arg quad)" name="faster_commands" pkg="faster" type="faster_commands.py" output="screen"/>
+	 -->
+	<!-- Start Behaviour Selector-->
+	  <node pkg="behavior_selector" type="behavior_selector_node.py" name="behavior_selector" output="screen" />
 
 	<!-- Start Rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find faster)/rviz_cfgs/cvx.rviz"/>
 
-	<!-- Start GUI -->
+	<!-- Start GUI 	-->
 	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" args="--perspective-file $(find faster)/rqt_cfgs/demo_interface.perspective"/>
+
 
     <!-- Start dynamic obstacles -->
 	<node ns="SQ02" name="dynamic_obstacles" pkg="faster" type="dynamic_obstacles.py" output="screen"/>
+	
 
 </launch>

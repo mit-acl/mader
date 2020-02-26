@@ -2,3 +2,5 @@
 *.o
 *.lp
 *.log
+*.swp
+*.swo

@@ -13,7 +13,9 @@
 PieceWisePol composePieceWisePol(const double t, const double dc, const PieceWisePol& p1, PieceWisePol& p2)
 {
   // if t is in between p1 and p2, force p2[0] to be t
-  if (t > p1.times.back() && t < p2.times.front())  // && fabs(t - p2.times.front()) <= dc) TODO
+  if (t > p1.times.back() && t < p2.times.front())  // && fabs(t - p2.times.front()) <= dc) TODO Sometimes fabs(t -
+                                                    // p2.times.front()) is 0.18>c --> I'm doing sth wrong in the append
+                                                    // step in the plan_
   {
     p2.times.front() = t;
   }

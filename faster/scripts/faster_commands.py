@@ -6,7 +6,8 @@ import rospy
 from faster_msgs.msg import Mode
 from snapstack_msgs.msg import QuadGoal, State
 from geometry_msgs.msg import Pose, PoseStamped
-from behavior_selector.srv import MissionModeChange
+from snapstack_msgs.msg import QuadFlightMode
+#from behavior_selector.srv import MissionModeChange
 import math
 
 def quat2yaw(q):
@@ -42,12 +43,12 @@ class Behavior_Selector:
             #self.takeOff() #hack to take off directly
 
     #Called when buttom pressed in the interface
-    def srvCB(self,req):
+    def globalflightmodeCB(self,req):
         if(self.initialized==False):
             print "Not initialized yet"
             return
 
-        if req.mode == req.START and self.mode.mode==self.mode.ON_GROUND:
+        if req.mode == req.GO and self.mode.mode==self.mode.ON_GROUND:
             print "Taking off"
             self.takeOff()
             print "Take off done"
@@ -56,7 +57,7 @@ class Behavior_Selector:
             print "Killing"
             self.kill()
 
-        if req.mode == req.END and self.mode.mode==self.mode.GO:
+        if req.mode == req.LAND and self.mode.mode==self.mode.GO:
             print "Landing"
             self.land()
             print "Landing done"
@@ -96,6 +97,9 @@ class Behavior_Selector:
 
     def kill(self):
         goal=QuadGoal();
+        goal.pos.x = self.pose.position.x;
+        goal.pos.y = self.pose.position.y;
+        goal.pos.z = self.pose.position.z;
         goal.cut_power=True
         self.sendGoal(goal)
         self.mode.mode=self.mode.ON_GROUND
@@ -118,8 +122,9 @@ class Behavior_Selector:
                   
 def startNode():
     c = Behavior_Selector()
-    s = rospy.Service("/change_mode",MissionModeChange,c.srvCB)
+    #s = rospy.Service("/change_mode",MissionModeChange,c.srvCB)
     rospy.Subscriber("state", State, c.stateCB)
+    rospy.Subscriber("/globalflightmode", QuadFlightMode, c.globalflightmodeCB)
     rospy.spin()
 
 if __name__ == '__main__':

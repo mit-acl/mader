@@ -224,19 +224,22 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   tfListener = new tf2_ros::TransformListener(tf_buffer_);
   // wait for body transform to be published before initializing
-  ROS_INFO("Waiting for world to camera transform...");
-  while (true)
-  {
-    try
+
+  // COMMENTED TO BE ABLE TO LAUNCH SIMULATIONS WITHOUT GAZEBO
+  /*  ROS_INFO("Waiting for world to camera transform...");
+    while (true)
     {
-      tf_buffer_.lookupTransform(world_name_, name_drone_ + "/camera", ros::Time::now(), ros::Duration(3.0));  //
-      break;
-    }
-    catch (tf2::TransformException& ex)
-    {
-      ROS_WARN("%s", ex.what());
-    }
-  }
+      try
+      {
+        tf_buffer_.lookupTransform(world_name_, name_drone_ + "/camera", ros::Time::now(), ros::Duration(3.0));  //
+        break;
+      }
+      catch (tf2::TransformException& ex)
+      {
+        ROS_WARN("%s", ex.what());
+      }
+    }*/
+  // END OF COMMENTED
   clearMarkerActualTraj();
 
   faster_ptr_ = std::unique_ptr<Faster>(new Faster(par_));
