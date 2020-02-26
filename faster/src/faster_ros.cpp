@@ -16,8 +16,6 @@ typedef Timer MyTimer;
 FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::NodeHandle nh_pub_CB)
   : nh_(nh), nh_replan_CB_(nh_replan_CB), nh_pub_CB_(nh_pub_CB)
 {
-  // fla_utils::SafeGetParam(pnh_, "global_frame", params_.global_frame);
-
   safeGetParam(nh_, "use_ff", par_.use_ff);
   safeGetParam(nh_, "visual", par_.visual);
 
@@ -73,6 +71,10 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "kappa", par_.kappa);
   safeGetParam(nh_, "mu", par_.mu);
+
+  safeGetParam(nh_, "a_star_samp_x", par_.a_star_samp_x);
+  safeGetParam(nh_, "a_star_samp_y", par_.a_star_samp_y);
+  safeGetParam(nh_, "a_star_samp_z", par_.a_star_samp_z);
 
   // Parameters for the ground robot (jackal):
   /*  safeGetParam(nh_,"kw", par_.kw);

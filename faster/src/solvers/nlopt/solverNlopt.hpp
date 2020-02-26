@@ -42,7 +42,6 @@ public:
   void useJPSGuess(vec_Vecf<3> &jps_path);
   void useRRTGuess();
   void useRandomInitialGuess();
-  void useAStarGuess();
 
   void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
 
@@ -55,8 +54,12 @@ public:
 
   void getSolution(PieceWisePol &solution);
 
+  void setAStarSamples(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z);
+
 protected:
 private:
+  void generateAStarGuess();
+
   void sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vector3d> &q);
 
   void printStd(const std::vector<Eigen::Vector3d> &v);
@@ -238,5 +241,9 @@ private:
 
   int num_of_LPs_run_ = 0;
   int num_of_QCQPs_run_ = 0;
+
+  int a_star_samp_x_ = 7;
+  int a_star_samp_y_ = 7;
+  int a_star_samp_z_ = 7;
 };
 #endif

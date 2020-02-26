@@ -246,7 +246,14 @@ void SolverNlopt::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const st
   }
 }
 
-void SolverNlopt::useAStarGuess()
+void SolverNlopt::setAStarSamples(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z)
+{
+  a_star_samp_x_ = a_star_samp_x;
+  a_star_samp_y_ = a_star_samp_y;
+  a_star_samp_z_ = a_star_samp_z;
+}
+
+void SolverNlopt::generateAStarGuess()
 {
   std::cout << bold << red << "Running A*, allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << reset
             << std::endl;
@@ -264,15 +271,12 @@ void SolverNlopt::useAStarGuess()
   myAStarSolver.setq0q1q2(q0_, q1_, q2_);
   myAStarSolver.setGoal(final_state_.pos);
 
-  int samples_x = 7;
-  int samples_y = 7;
-  int samples_z = 7;
   // double runtime = 0.05;   //[seconds]
   double goal_size = 0.5;  //[meters]
 
   myAStarSolver.setZminZmax(z_ground_, z_max_);   // z limits for the search, in world frame
   myAStarSolver.setBBoxSearch(20.0, 20.0, 20.0);  // limits for the search, centered on q2
-  myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, samples_x, samples_y, samples_z, 0.3);
+  myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_, 0.3);
 
   myAStarSolver.setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
   myAStarSolver.setGoalSize(goal_size);
@@ -791,7 +795,7 @@ double SolverNlopt::computeObjFuction(unsigned nn, double *grad, std::vector<Eig
 
   if (grad)
   {
-    // Initialize to zero all the elements, not sure if needed
+    // Initialize to zero all the elements, IT IS NEEDED (if not it doesn't converge)
     for (int i = 0; i < nn; i++)
     {
       grad[i] = 0.0;
@@ -1198,6 +1202,8 @@ void SolverNlopt::printIndexesConstraints()
 bool SolverNlopt::optimize()
 
 {
+  generateAStarGuess();
+
   // std::cout << "knots= " << knots_ << std::endl;
 
   // the creations of the solvers should be done here, and NOT on the constructor (not sure why, but if you do it in the

@@ -58,15 +58,16 @@ solver: "LD_MMA"
 #  // don't work: LN_BOBYQA // LD_SLSQP //LN_NEWUOA //LN_NEWUOA_BOUND //LN_COBYLA
 #  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1 //LD_VAR2 //LD_LBFGS_NOCEDAL
 
-
-#kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff )
+# kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
 kappa: 0.25 #% of time spent to find initial guess
 mu: 0.4    #% of time spent to solve the optimization
 
+# Samples in velocity for the A* guess used in the nlopt optimization problem
+a_star_samp_x: 7
+a_star_samp_y: 7 
+a_star_samp_z: 7 
 
-
-
-#Parameters for the ground robot (jackal):
+# Parameters for the ground robot (jackal):
 # kw: 1
 # kyaw: 1.5
 # kdalpha: 0.0

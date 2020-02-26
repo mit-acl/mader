@@ -169,6 +169,10 @@ struct parameters
   double kappa;
   double mu;
 
+  int a_star_samp_x = 7;
+  int a_star_samp_y = 7;
+  int a_star_samp_z = 7;
+
   /*  double kw;
     double kyaw;
     double kdalpha;

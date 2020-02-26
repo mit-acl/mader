@@ -1129,6 +1129,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   snlopt.setHulls(hulls_std);
   snlopt.setKappaAndMu(par_.kappa, par_.mu);
   snlopt.setZminZmax(par_.z_ground, par_.z_max);
+  snlopt.setAStarSamples(par_.a_star_samp_x, par_.a_star_samp_y, par_.a_star_samp_z);
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc
   snlopt.setTminAndTmax(t_min, t_max);
@@ -1167,9 +1168,6 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
     mtx_unk.unlock();*/
   // end of Initial GUESSS
   // snlopt.useJPSGuess(JPSk_dyn);
-  // snlopt.useRRTGuess();
-  // snlopt.useRandomInitialGuess();
-  snlopt.useAStarGuess();
 
   // std::cout << bold << red << "[replan] Unlocking" << reset << std::endl;
   mtx_trajs_.unlock();
