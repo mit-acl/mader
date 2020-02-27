@@ -685,6 +685,20 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
           ((-1 + p_) * p_);
 }
 
+// check if there is a normal vector = [0 0 0]
+bool SolverNlopt::isDegenerate(const std::vector<double> &x)
+{
+  for (int j = j_min_; j <= (j_max_ - 2); j = j + 3)
+  {
+    Eigen::Vector3d normal(x[j], x[j + 1], x[j + 2]);
+    if ((normal.norm() < 1e-5))
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
 template <class T>
 void SolverNlopt::toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                           std::vector<double> &d)
@@ -779,8 +793,52 @@ void SolverNlopt::assignValueToGradConstraints(int var_gindex, const double &tmp
   grad[r * nn + var_gindex] = tmp;
 }
 
-double SolverNlopt::computeObjFuction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
-                                      std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
+double SolverNlopt::computeObjFunctionJerk(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
+                                           std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
+{
+  // Cost. See Lyx derivation (notes.lyx)
+  double cost = 0.0;
+  for (int i = p_; i <= N_; i++)  // i is the index of the control point
+  {
+    cost += (-q[i - 3] + 3 * q[i - 2] - 3 * q[i - 1] + q[i]).squaredNorm();  // the jerk of the interval i-4
+                                                                             // ///////////////////
+  }
+
+  if (force_final_state_ == false)
+  {
+    cost += weight_modified_ * (q[N_] - final_state_.pos).squaredNorm();
+  }
+
+  if (grad)
+  {
+    // Initialize to zero all the elements, IT IS NEEDED (if not it doesn't converge)
+    for (int i = 0; i < nn; i++)
+    {
+      grad[i] = 0.0;
+    }
+
+    // Gradient for the control points that are decision variables
+    for (int i = p_; i <= lastDecCP(); i++)  // q0,q1,q2 are not decision variables
+    {
+      Eigen::Vector3d gradient;
+
+      gradient = 2 * (-q[i - 3] + 3 * q[i - 2] - 3 * q[i - 1] + q[i])                      // Right
+                 - 6 * (-q[i - 2] + 3 * q[i - 1] - 3 * q[i] + q[i + 1])                    // Center-right
+                 + 6 * (-q[i - 1] + 3 * q[i] - 3 * q[i + 1] + q[i + 2])                    // Center-right
+                 - 2 * (i <= (N_ - 3)) * (-q[i] + 3 * q[i + 1] - 3 * q[i + 2] + q[i + 3])  // Left
+                 + (i == (N_ - 2)) * 2 * weight_modified_ * (q[i] - final_state_.pos);
+
+      assignEigenToVector(grad, gIndexQ(i), gradient);
+    }
+  }
+
+  // std::cout << "cost= " << cost << std::endl;
+
+  return cost;
+}
+
+double SolverNlopt::computeObjFunction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
+                                       std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
 {
   // Cost
   double cost = 0.0;
@@ -807,7 +865,7 @@ double SolverNlopt::computeObjFuction(unsigned nn, double *grad, std::vector<Eig
     {
       Eigen::Vector3d gradient;
 
-      if (i == (N_ - 2))  // not reached when force_final_state_==false
+      if (i == (N_ - 2))  // not reached when force_final_state_==true
       {
         gradient = -2 * (q[i - 1] - q[i]) + 2 * (q[i] - 2 * q[i - 1] + q[i - 2]);
         gradient += 2 * weight_modified_ * (q[i] - final_state_.pos);
@@ -818,13 +876,6 @@ double SolverNlopt::computeObjFuction(unsigned nn, double *grad, std::vector<Eig
                    (-4 * (q[i + 1] - 2 * q[i] + q[i - 1])) +  // Center
                    (2 * (q[i + 2] - 2 * q[i + 1] + q[i]));    //// Left
       }
-
-#ifdef DEBUG_MODE_NLOPT
-      if (isADecisionCP(i) == false)
-      {
-        std::cout << "There is something wrong, this shouldn't be a dec var" << std::endl;
-      }
-#endif
       assignEigenToVector(grad, gIndexQ(i), gradient);
     }
   }
@@ -843,7 +894,7 @@ double SolverNlopt::myObjFunc(unsigned nn, const double *x, double *grad, void *
   std::vector<double> d;
   opt->toEigen(x, q, n, d);
 
-  double cost = opt->computeObjFuction(nn, grad, q, n, d);
+  double cost = opt->computeObjFunctionJerk(nn, grad, q, n, d);
 
   return cost;
 }
@@ -1104,7 +1155,7 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
   if (opt->areTheseConstraintsFeasible(constraints))
   {
     opt->got_a_feasible_solution_ = true;
-    double cost_now = opt->computeObjFuction(nn, NULL, q, n, d);
+    double cost_now = opt->computeObjFunctionJerk(nn, NULL, q, n, d);
     if (cost_now < opt->best_cost_so_far_)
     {
       opt->best_cost_so_far_ = cost_now;
@@ -1310,10 +1361,14 @@ bool SolverNlopt::optimize()
 
   num_of_QCQPs_run_++;
 
+  bool x_is_deg = isDegenerate(x_);
+  bool feas_is_deg = isDegenerate(best_feasible_sol_so_far_);
+
   // See codes in https://github.com/JuliaOpt/NLopt.jl/blob/master/src/NLopt.jl
-  bool failed = (result != nlopt::SUCCESS) && (!got_a_feasible_solution_);
-  bool optimal = (result == nlopt::SUCCESS);
-  bool feasible_but_not_optimal = (got_a_feasible_solution_) && (!optimal);
+  got_a_feasible_solution_ = got_a_feasible_solution_ && (!feas_is_deg);
+  bool optimal = (result == nlopt::SUCCESS) && (!x_is_deg);
+  bool failed = (!optimal) && (!got_a_feasible_solution_);
+  bool feasible_but_not_optimal = (!optimal) && (got_a_feasible_solution_);
 
   // Store the results here
   std::vector<Eigen::Vector3d> q;
@@ -1349,7 +1404,7 @@ bool SolverNlopt::optimize()
     return false;
   }
 
-  // printQND(q, n, d);
+  printQND(q, n, d);
 
   /*  std::cout << on_green << bold << "Solution found: " << time_first_feasible_solution_ << "/" << opt_timer_ << reset
               << std::endl;*/

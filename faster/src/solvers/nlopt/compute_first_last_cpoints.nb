@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     32073,        933]
-NotebookOptionsPosition[     29099,        878]
-NotebookOutlinePosition[     29463,        894]
-CellTagsIndexPosition[     29420,        891]
+NotebookDataLength[     34057,        991]
+NotebookOptionsPosition[     30886,        934]
+NotebookOutlinePosition[     31256,        950]
+CellTagsIndexPosition[     31213,        947]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -874,10 +874,66 @@ Cell[BoxData[
  CellLabel->
   "Out[288]//MatrixForm=",ExpressionUUID->"98a4bb52-9889-4611-8c35-\
 bac8cfb746e3"]
-}, Open  ]]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"ClearAll", "[", "\"\<Global`*\>\"", "]"}]], "Input",ExpressionUUID->"599708d3-08ef-42cb-92b1-eeb21aaa26f8"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"p", "=", 
+    RowBox[{
+     FractionBox["1", 
+      RowBox[{"2", "*", "3"}]], "*", 
+     RowBox[{
+      TagBox[
+       RowBox[{"(", GridBox[{
+          {"1", "u", 
+           RowBox[{"u", "*", "u"}], 
+           RowBox[{"u", "*", "u", "*", "u"}]}
+         }], ")"}],
+       Function[BoxForm`e$, 
+        MatrixForm[BoxForm`e$]]], ".", 
+      RowBox[{"(", GridBox[{
+         {"1", "4", 
+          RowBox[{"-", "1"}], "0"},
+         {
+          RowBox[{"-", "3"}], "0", "3", "0"},
+         {"3", 
+          RowBox[{"-", "6"}], "3", "0"},
+         {
+          RowBox[{"-", "1"}], "3", 
+          RowBox[{"-", "3"}], "1"}
+        }], ")"}], ".", 
+      TagBox[
+       RowBox[{"(", "\[NoBreak]", 
+        TagBox[GridBox[{
+           {"qiM3"},
+           {"qiM2"},
+           {"qiM1"},
+           {"qi"}
+          },
+          GridBoxAlignment->{"Columns" -> {{Center}}, "Rows" -> {{Baseline}}},
+          
+          GridBoxSpacings->{"Columns" -> {
+              Offset[0.27999999999999997`], {
+               Offset[0.5599999999999999]}, 
+              Offset[0.27999999999999997`]}, "Rows" -> {
+              Offset[0.2], {
+               Offset[0.4]}, 
+              Offset[0.2]}}],
+         Column], "\[NoBreak]", ")"}],
+       Function[BoxForm`e$, 
+        MatrixForm[BoxForm`e$]]]}]}]}], ";"}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.791738972931127*^9, 3.791739049654776*^9}, 
+   3.7917390894483013`*^9, {3.791739149810359*^9, 3.791739237874872*^9}, {
+   3.791739308759007*^9, 3.7917393396088467`*^9}},
+ CellLabel->"In[2]:=",ExpressionUUID->"fb728b87-753c-4f51-bf54-bffef4c25d00"]
 },
-WindowSize->{1855, 1056},
-WindowMargins->{{Automatic, 0}, {0, Automatic}},
+WindowSize->{2495, 1416},
+WindowMargins->{{1985, Automatic}, {Automatic, -117}},
 Magnification:>1.7 Inherited,
 FrontEndVersion->"12.0 for Linux x86 (64-bit) (April 8, 2019)",
 StyleDefinitions->"Default.nb"
@@ -926,15 +982,17 @@ Cell[18612, 587, 320, 5, 59, "Output",ExpressionUUID->"0193189b-9019-4ce7-868a-2
 }, Open  ]],
 Cell[CellGroupData[{
 Cell[18969, 597, 4425, 118, 606, "Input",ExpressionUUID->"d5d0d391-d579-4dc1-ac57-87214064f668"],
-Cell[23397, 717, 534, 7, 85, "Output",ExpressionUUID->"3fea5026-982b-445b-9ac3-570e19c1e78e"],
+Cell[23397, 717, 534, 7, 59, "Output",ExpressionUUID->"3fea5026-982b-445b-9ac3-570e19c1e78e"],
 Cell[23934, 726, 1127, 29, 141, "Output",ExpressionUUID->"9ecfc488-f43b-41fd-b71a-2895c9da3bd5"],
 Cell[25064, 757, 1324, 36, 141, "Output",ExpressionUUID->"66dcb714-b2af-487a-b0a1-47f6f9e7f69f"],
-Cell[26391, 795, 736, 14, 85, "Output",ExpressionUUID->"486a55b2-bf8b-4cde-b3dd-1822a9b77719"]
+Cell[26391, 795, 736, 14, 59, "Output",ExpressionUUID->"486a55b2-bf8b-4cde-b3dd-1822a9b77719"]
 }, Open  ]],
 Cell[CellGroupData[{
 Cell[27164, 814, 304, 8, 53, "Input",ExpressionUUID->"2c0987ad-85eb-48f1-895a-1b57b386e9b0"],
 Cell[27471, 824, 1612, 51, 228, "Output",ExpressionUUID->"98a4bb52-9889-4611-8c35-bac8cfb746e3"]
-}, Open  ]]
+}, Open  ]],
+Cell[29098, 878, 131, 1, 53, "Input",ExpressionUUID->"599708d3-08ef-42cb-92b1-eeb21aaa26f8"],
+Cell[29232, 881, 1650, 51, 193, "Input",ExpressionUUID->"fb728b87-753c-4f51-bf54-bffef4c25d00"]
 }
 ]
 *)

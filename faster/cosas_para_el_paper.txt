@@ -1,3 +1,5 @@
+--> Stop condition is not a safe condition in dynamic world
+
 --> Distintos origenes de tiempo (debo tener en cuenta delta_T)
 
 --> Tener en cuenta delta_T y ajustar el runtime de la optimization according to that

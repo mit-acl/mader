@@ -58,6 +58,8 @@ public:
 
 protected:
 private:
+  bool isDegenerate(const std::vector<double> &x);
+
   void generateAStarGuess();
 
   void sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vector3d> &q);
@@ -108,8 +110,11 @@ private:
   // See example https://github.com/stevengj/nlopt/issues/168
   static void myIneqConstraints(unsigned m, double *result, unsigned nn, const double *x, double *grad, void *f_data);
 
-  double computeObjFuction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-                           std::vector<double> &d);
+  double computeObjFunction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
+                            std::vector<double> &d);
+
+  double computeObjFunctionJerk(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
+                                std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
   void computeConstraints(unsigned m, double *constraints, unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
                           std::vector<Eigen::Vector3d> &n, std::vector<double> &d);

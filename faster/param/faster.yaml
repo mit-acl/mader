@@ -18,7 +18,7 @@ z_max: 2         #[m] JPS is not allowed to give a solution that goes higher tha
 inflation_jps: 0.35  #[m] The obstacles are inflated (to run JPS) by this amount
 factor_jps: 1  #[m] JPS is run with resolution=factor_jps*(resolution of the map)
 
-v_max: 7.0   #[m/s]  1.4
+v_max: 10.0   #[m/s]  1.4
 a_max: 20.0   #[m/s2] 1.4
 j_max: 10.0  #[m/s3] 35
 
@@ -48,10 +48,10 @@ use_faster: true  #if false, it will plan only in free space
 n_pol: 7
 deg: 3
 samples_per_interval: 1
-weight: 10000.0 #The .0 is needed
+weight: 5000.0 #The .0 is needed #10000  #1000000
 epsilon_tol_constraints: 0.1
-xtol_rel: 0.00001 #negative value --> stopping criterion not used
-ftol_rel: 0.000001 #negative value --> stopping criterion not used
+xtol_rel: 0.0000001 #negative value --> stopping criterion not used
+ftol_rel: 0.00000001 #negative value --> stopping criterion not used
 solver: "LD_MMA"
 
 #  // work:  //LD_MMA // //LN_NELDERMEAD // LN_SBPLX(fastest) //LN_PRAXIS(fastest) //LD_AUGLAG //LD_AUGLAG_EQ
@@ -60,7 +60,7 @@ solver: "LD_MMA"
 
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
 kappa: 0.25 #% of time spent to find initial guess
-mu: 0.4    #% of time spent to solve the optimization
+mu: 0.45    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
 a_star_samp_x: 7
