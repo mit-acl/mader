@@ -269,11 +269,15 @@ void SolverNlopt::generateAStarGuess()
 
   SplineAStar myAStarSolver(num_pol_, deg_pol_, hulls_.size(), t_min_, t_max_, hulls_);
 
+  std::cout << "q0_=" << q0_.transpose() << std::endl;
+  std::cout << "q1_=" << q1_.transpose() << std::endl;
+  std::cout << "q2_=" << q2_.transpose() << std::endl;
+
   myAStarSolver.setq0q1q2(q0_, q1_, q2_);
   myAStarSolver.setGoal(final_state_.pos);
 
   // double runtime = 0.05;   //[seconds]
-  double goal_size = 0.5;  //[meters]
+  double goal_size = 0.05;  //[meters]
 
   myAStarSolver.setZminZmax(z_ground_, z_max_);   // z limits for the search, in world frame
   myAStarSolver.setBBoxSearch(20.0, 20.0, 20.0);  // limits for the search, centered on q2
@@ -1240,6 +1244,11 @@ void SolverNlopt::printStd(const std::vector<Eigen::Vector3d> &v)
   }
 }
 
+void SolverNlopt::setDistanceToUseStraightLine(double dist_to_use_straight_guess)
+{
+  dist_to_use_straight_guess_ = dist_to_use_straight_guess;
+}
+
 void SolverNlopt::printIndexesConstraints()
 {
   std::cout << "_______________________" << std::endl;
@@ -1254,7 +1263,14 @@ void SolverNlopt::printIndexesConstraints()
 bool SolverNlopt::optimize()
 
 {
-  generateAStarGuess();
+  if ((initial_state_.pos - final_state_.pos).norm() < dist_to_use_straight_guess_ || num_of_obst_ == 0)
+  {
+    generateStraightLineGuess();
+  }
+  else
+  {
+    generateAStarGuess();
+  }
 
   // std::cout << "knots= " << knots_ << std::endl;
 
@@ -1302,10 +1318,10 @@ bool SolverNlopt::optimize()
   {
     lb.push_back(-HUGE_VAL);
     ub.push_back(HUGE_VAL);
-    // y compoment
+    // y conpoment
     lb.push_back(-HUGE_VAL);
     ub.push_back(HUGE_VAL);
-    // z compoment
+    // z conpoment
     lb.push_back(z_ground_);
     ub.push_back(z_max_);
   }
@@ -1504,6 +1520,52 @@ void SolverNlopt::fillXTempFromCPs(std::vector<Eigen::Vector3d> &q)
     // std::cout << "Aceleration= " << derivatives.col(2).transpose() << std::endl;
     // state_i.printHorizontal();
   }
+}
+
+void SolverNlopt::saturateQ(std::vector<Eigen::Vector3d> &q)
+{
+  for (int i = 0; i < q.size(); i++)
+  {
+    q[i].z() = std::max(q[i].z(), z_ground_);  // Make sure it's within the limits
+    q[i].z() = std::min(q[i].z(), z_max_);     // Make sure it's within the limits
+  }
+}
+
+void SolverNlopt::generateStraightLineGuess()
+{
+  std::cout << "Using StraightLineGuess" << std::endl;
+  q_guess_.clear();
+  n_guess_.clear();
+  d_guess_.clear();
+
+  q_guess_.push_back(q0_);  // Not a decision variable
+  q_guess_.push_back(q1_);  // Not a decision variable
+  q_guess_.push_back(q2_);  // Not a decision variable
+
+  for (int i = 3; i < (N_ - 2); i++)
+  {
+    Eigen::Vector3d q_i = q2_ + (i + 1) * (final_state_.pos - q2_) / ((N_ - 2) - 3);
+    q_guess_.push_back(q_i);
+  }
+
+  q_guess_.push_back(final_state_.pos);  // three last cps are the same because of the vel/accel final conditions
+  q_guess_.push_back(final_state_.pos);
+  q_guess_.push_back(final_state_.pos);
+
+  saturateQ(q_guess_);  // make sure is inside the bounds specified
+
+  generateRandomD(d_guess_);
+  generateRandomN(n_guess_);
+  // generateGuessNDFromQ(q_guess_, n_guess_, d_guess_);
+  // generateRandomN(n_guess_);
+  // Guesses for the planes
+  /*
+    std::cout << "This is the initial guess: " << std::endl;
+    std::cout << "q.size()= " << q_guess_.size() << std::endl;
+    std::cout << "n.size()= " << n_guess_.size() << std::endl;
+    std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
+
+    printQND(q_guess_, n_guess_, d_guess_);*/
 }
 
 nlopt::algorithm SolverNlopt::getSolver(std::string &solver)

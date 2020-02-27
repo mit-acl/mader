@@ -442,7 +442,7 @@ void Faster::setTerminalGoal(state& term_goal)
   G_term_.pos = term_goal.pos;
   Eigen::Vector3d temp = state_.pos;
   G_.pos = projectPointToBox(temp, G_term_.pos, par_.wdx, par_.wdy, par_.wdz);
-  if (drone_status_ == DroneStatus::GOAL_REACHED)
+  if (drone_status_ == DroneStatus::GOAL_REACHED || drone_status_ == DroneStatus::GOAL_SEEN)
   {
     changeDroneStatus(DroneStatus::YAWING);  // not done when drone_status==traveling
   }
@@ -858,6 +858,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   if (dist_last_plan_to_goal < par_.goal_radius && drone_status_ == DroneStatus::TRAVELING)
   {
     changeDroneStatus(DroneStatus::GOAL_SEEN);
+    std::cout << "Status changed to GOAL_SEEN!" << std::endl;
     exists_previous_pwp_ = false;
   }
 
@@ -1139,6 +1140,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   SolverNlopt snlopt(n_pol, deg, num_obst, par_.weight, par_.epsilon_tol_constraints, par_.xtol_rel, par_.ftol_rel,
                      false, par_.solver);  // snlopt(a,g) a polynomials of degree 3
   snlopt.setHulls(hulls_std);
+  snlopt.setDistanceToUseStraightLine(par_.Ra / 2.0);
   snlopt.setKappaAndMu(par_.kappa, par_.mu);
   snlopt.setZminZmax(par_.z_ground, par_.z_max);
   snlopt.setAStarSamples(par_.a_star_samp_x, par_.a_star_samp_y, par_.a_star_samp_z);

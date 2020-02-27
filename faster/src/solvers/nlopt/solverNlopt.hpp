@@ -56,11 +56,16 @@ public:
 
   void setAStarSamples(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z);
 
+  void setDistanceToUseStraightLine(double dist_to_use_straight_guess);
+
 protected:
 private:
+  void saturateQ(std::vector<Eigen::Vector3d> &q);
+
   bool isDegenerate(const std::vector<double> &x);
 
   void generateAStarGuess();
+  void generateStraightLineGuess();
 
   void sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vector3d> &q);
 
@@ -250,5 +255,7 @@ private:
   int a_star_samp_x_ = 7;
   int a_star_samp_y_ = 7;
   int a_star_samp_z_ = 7;
+
+  double dist_to_use_straight_guess_ = std::numeric_limits<double>::max();
 };
 #endif
