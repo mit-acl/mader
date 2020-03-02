@@ -41,7 +41,6 @@ public:
   // Guesses
   void useJPSGuess(vec_Vecf<3> &jps_path);
   void useRRTGuess();
-  void useRandomInitialGuess();
 
   void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
 
@@ -58,12 +57,15 @@ public:
 
   void setDistanceToUseStraightLine(double dist_to_use_straight_guess);
 
+  double getTimeNeeded();
+
 protected:
 private:
   void saturateQ(std::vector<Eigen::Vector3d> &q);
 
   bool isDegenerate(const std::vector<double> &x);
 
+  void generateRandomGuess();
   void generateAStarGuess();
   void generateStraightLineGuess();
 
@@ -256,6 +258,7 @@ private:
   int a_star_samp_y_ = 7;
   int a_star_samp_z_ = 7;
 
+  double time_needed_;
   double dist_to_use_straight_guess_ = std::numeric_limits<double>::max();
 };
 #endif

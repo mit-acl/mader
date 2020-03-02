@@ -178,9 +178,9 @@ target_link_libraries(test_utils ${catkin_LIBRARIES} utils)
 
 
 
-#add_executable(${PROJECT_NAME}_sample src/solvers/nlopt/main.cpp src/solvers/nlopt/solverNlopt.cpp)
-#target_link_libraries(${PROJECT_NAME}_sample  ${NLOPT_LIBRARIES}  ${CGAL_LIBS})
-#add_dependencies(${PROJECT_NAME}_sample ${catkin_EXPORTED_TARGETS} )
+add_executable(test_nlopt src/solvers/nlopt/test_nlopt.cpp src/solvers/nlopt/solverNlopt.cpp)
+add_dependencies(test_nlopt ${catkin_EXPORTED_TARGETS} )
+target_link_libraries(test_nlopt ${NLOPT_LIBRARIES} spline_AStar)
 
 
 #add_executable(gurobi_continuous_exec gurobi_continuous.cpp)

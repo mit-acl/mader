@@ -263,9 +263,10 @@ void SolverNlopt::generateAStarGuess()
   d_guess_.clear();
   planes_.clear();
 
-  generateRandomN(n_guess_);
-  generateRandomD(d_guess_);
-  generateRandomQ(q_guess_);
+  generateStraightLineGuess();  // If A* doesn't succeed --> use straight lineGuess
+  /*  generateRandomN(n_guess_);
+    generateRandomD(d_guess_);
+    generateRandomQ(q_guess_);*/
 
   SplineAStar myAStarSolver(num_pol_, deg_pol_, hulls_.size(), t_min_, t_max_, hulls_);
 
@@ -307,7 +308,7 @@ void SolverNlopt::generateAStarGuess()
   }
   else
   {
-    std::cout << bold << red << "A* didn't find a solution, using random guess" << reset << std::endl;
+    std::cout << bold << red << "A* didn't find a solution, using straight line guess" << reset << std::endl;
   }
 
   return;
@@ -351,6 +352,8 @@ void SolverNlopt::generateRandomQ(std::vector<Eigen::Vector3d> &q)
   {
     q.push_back(Eigen::Vector3d(dist_x(generator), dist_y(generator), dist_z(generator)));
   }
+
+  saturateQ(q);  // make sure is inside the bounds specified
 }
 
 void SolverNlopt::findCentroidHull(const std::vector<Eigen::Vector3d> &hull, Eigen::Vector3d &centroid)
@@ -924,6 +927,11 @@ void SolverNlopt::setMaxRuntime(double deltaT)
   max_runtime_ = deltaT;
 }
 
+double SolverNlopt::getTimeNeeded()
+{
+  return time_needed_;
+}
+
 int SolverNlopt::lastDecCP()
 {
   return (force_final_state_ == true) ? (N_ - 3) : (N_ - 2);
@@ -1194,7 +1202,7 @@ void SolverNlopt::printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::V
   }
 }
 
-void SolverNlopt::useRandomInitialGuess()
+void SolverNlopt::generateRandomGuess()
 {
   n_guess_.clear();
   q_guess_.clear();
@@ -1263,6 +1271,8 @@ void SolverNlopt::printIndexesConstraints()
 bool SolverNlopt::optimize()
 
 {
+  // generateRandomGuess();
+  // generateStraightLineGuess();
   if ((initial_state_.pos - final_state_.pos).norm() < dist_to_use_straight_guess_ || num_of_obst_ == 0)
   {
     generateStraightLineGuess();
@@ -1301,6 +1311,7 @@ bool SolverNlopt::optimize()
   opt_->set_maxtime(std::max(mu_ * max_runtime_, 0.001));  // 0.001 to make use this criterion is used  // maximum time
                                                            // in seconds. Negative --> don't use this criterion
 
+  // opt_->set_maxtime(max_runtime_);
   initializeNumOfConstraints();
 
   // see https://github.com/stevengj/nlopt/issues/168
@@ -1366,14 +1377,15 @@ bool SolverNlopt::optimize()
 
   // toEigen(x_, q_guess_, n_guess_);
 
-  std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
-  printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
+  // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
+  // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
   printIndexesConstraints();
 
   opt_timer_.Reset();
   std::cout << "Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
   int result = opt_->optimize(x_, minf);
+  time_needed_ = opt_timer_.ElapsedMs() / 1000;
 
   num_of_QCQPs_run_++;
 
@@ -1400,7 +1412,7 @@ bool SolverNlopt::optimize()
     std::cout << on_red << bold << "Solution not found" << opt_timer_ << reset << std::endl;
 
     toEigen(x_, q, n, d);
-    printInfeasibleConstraints(q, n, d);
+    // printInfeasibleConstraints(q, n, d);
 
     return false;
   }
@@ -1542,9 +1554,9 @@ void SolverNlopt::generateStraightLineGuess()
   q_guess_.push_back(q1_);  // Not a decision variable
   q_guess_.push_back(q2_);  // Not a decision variable
 
-  for (int i = 3; i < (N_ - 2); i++)
+  for (int i = 1; i < (N_ - 2 - 3); i++)
   {
-    Eigen::Vector3d q_i = q2_ + (i + 1) * (final_state_.pos - q2_) / ((N_ - 2) - 3);
+    Eigen::Vector3d q_i = q2_ + i * (final_state_.pos - q2_) / (N_ - 2 - 3);
     q_guess_.push_back(q_i);
   }
 
