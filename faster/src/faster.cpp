@@ -1262,7 +1262,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   bool result_appending = appendToPlan(k_end_whole, sg_whole_.X_temp_, k_safe, snlopt.X_temp_);
 
   std::cout << "After appendToPlan, plan_= " << std::endl;
-  plan_.print();
+  // plan_.print();
 
   if (result_appending != true)
   {
