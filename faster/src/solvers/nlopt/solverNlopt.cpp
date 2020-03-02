@@ -567,6 +567,27 @@ int SolverNlopt::getNumberOfInfeasibleConstraints(const T &constraints)
   return result;
 }
 
+template <class T>
+bool SolverNlopt::isFeasible(const T x)
+{
+  std::vector<Eigen::Vector3d> q;
+  std::vector<Eigen::Vector3d> n;
+  std::vector<double> d;
+  toEigen(x, q, n, d);
+  computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+
+  std::cout << "The Infeasible Constraints are these ones:\n";
+  for (int i = 0; i < num_of_constraints_; i++)
+  {
+    if (constraints_[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
+    {
+      return false;
+      // std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints_[i] << std::endl;
+    }
+  }
+  return true;
+}
+
 /*template <class T>
 void SolverNlopt::printInfeasibleConstraints(const T x)
 {
@@ -1164,20 +1185,20 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
 
   // Be careful cause this adds more runtime...
   // printInfeasibleConstraints(constraints);
-  if (opt->areTheseConstraintsFeasible(constraints))
-  {
-    opt->got_a_feasible_solution_ = true;
-    double cost_now = opt->computeObjFunctionJerk(nn, NULL, q, n, d);
-    if (cost_now < opt->best_cost_so_far_)
+  /*  if (opt->areTheseConstraintsFeasible(constraints))
     {
-      opt->best_cost_so_far_ = cost_now;
-      // Copy onto the std::vector)
-      for (int i = 0; i < nn; i++)
+      opt->got_a_feasible_solution_ = true;
+      double cost_now = opt->computeObjFunctionJerk(nn, NULL, q, n, d);
+      if (cost_now < opt->best_cost_so_far_)
       {
-        opt->best_feasible_sol_so_far_[i] = x[i];
+        opt->best_cost_so_far_ = cost_now;
+        // Copy onto the std::vector)
+        for (int i = 0; i < nn; i++)
+        {
+          opt->best_feasible_sol_so_far_[i] = x[i];
+        }
       }
-    }
-  }
+    }*/
 
   /**/
   return;
@@ -1389,8 +1410,9 @@ bool SolverNlopt::optimize()
 
   num_of_QCQPs_run_++;
 
+  got_a_feasible_solution_ = isFeasible(x_);
   bool x_is_deg = isDegenerate(x_);
-  bool feas_is_deg = isDegenerate(best_feasible_sol_so_far_);
+  bool feas_is_deg = isDegenerate(x_);  // was best_feasible_sol_so_far_
 
   // See codes in https://github.com/JuliaOpt/NLopt.jl/blob/master/src/NLopt.jl
   got_a_feasible_solution_ = got_a_feasible_solution_ && (!feas_is_deg);
@@ -1424,7 +1446,7 @@ bool SolverNlopt::optimize()
   else if (feasible_but_not_optimal)
   {
     std::cout << on_green << bold << "Feasible Solution found" << opt_timer_ << reset << std::endl;
-    toEigen(best_feasible_sol_so_far_, q, n, d);  //
+    toEigen(x_, q, n, d);  // was best_feasible_sol_so_far_
   }
   else
   {

@@ -89,6 +89,9 @@ private:
 
   bool isADecisionCP(int i);
 
+  template <class T>
+  bool isFeasible(const T x);
+
   void assignEigenToVector(double *grad, int index, const Eigen::Vector3d &tmp);
 
   template <class T>
