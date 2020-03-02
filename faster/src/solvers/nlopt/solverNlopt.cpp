@@ -1530,7 +1530,7 @@ void SolverNlopt::fillXTempFromCPs(std::vector<Eigen::Vector3d> &q)
     state_i.setJerk(derivatives.col(3));
     X_temp_.push_back(state_i);
     // std::cout << "Aceleration= " << derivatives.col(2).transpose() << std::endl;
-    // state_i.printHorizontal();
+    state_i.printHorizontal();
   }
 }
 

@@ -836,7 +836,12 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   state state_local = state_;
   state G;
+  // std::cout << bold << std::setprecision(3) << "G_term_.pos= " << G_term_.pos.transpose() << reset << std::endl;
   G.pos = projectPointToBox(state_local.pos, G_term_.pos, par_.wdx, par_.wdy, par_.wdz);
+  // std::cout << bold << std::setprecision(3) << "G.pos= " << G.pos.transpose() << reset << std::endl;
+  // std::cout << bold << std::setprecision(3) << "state_local.pos= " << state_local.pos.transpose() << reset <<
+  // std::endl;
+
   state G_term = G_term_;  // Local copy of the terminal terminal goal
 
   mtx_G.unlock();
@@ -919,7 +924,13 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   bool noPointsOutsideS;
   int li1;  // last index inside the sphere of JPSk
   state E;
+  // std::cout << bold << std::setprecision(3) << "A.pos= " << A.pos.transpose() << reset << std::endl;
   E.pos = getFirstIntersectionWithSphere(JPSk, ra, JPSk[0], &li1, &noPointsOutsideS);
+  if (noPointsOutsideS == true)  // if G is inside the sphere
+  {
+    E.pos = G.pos;
+  }
+  // std::cout << bold << std::setprecision(3) << "E.pos= " << E.pos.transpose() << reset << std::endl;
   vec_Vecf<3> JPS_in(JPSk.begin(), JPSk.begin() + li1 + 1);
   if (noPointsOutsideS == false)
   {
@@ -1153,7 +1164,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   }
   else
   {
-    snlopt.setMaxRuntime(0.2);  // I'm stopped at the end of the trajectory --> take my time to replan
+    snlopt.setMaxRuntime(1.0);  // I'm stopped at the end of the trajectory --> take my time to replan
   }
   snlopt.setInitAndFinalStates(initial, final);
 
@@ -1249,6 +1260,9 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   k_safe = 0;
 
   bool result_appending = appendToPlan(k_end_whole, sg_whole_.X_temp_, k_safe, snlopt.X_temp_);
+
+  std::cout << "After appendToPlan, plan_= " << std::endl;
+  plan_.print();
 
   if (result_appending != true)
   {

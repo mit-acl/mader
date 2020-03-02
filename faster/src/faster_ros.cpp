@@ -93,6 +93,10 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   par_.wdy = world_dimensions[1];
   par_.wdz = world_dimensions[2];
 
+  std::cout << "par_.wdx= " << par_.wdx << std::endl;
+  std::cout << "par_.wdy= " << par_.wdy << std::endl;
+  std::cout << "par_.wdz= " << par_.wdz << std::endl;
+
   std::cout << bold << green << "world_dimensions=" << world_dimensions << reset << std::endl;
   std::cout << bold << green << "resolution=" << par_.res << reset << std::endl;
 
