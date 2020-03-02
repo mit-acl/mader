@@ -10,6 +10,8 @@
 import math
 import os
 import sys
+import time
+from random import *
 
 def create_session(session_name, commands):
 
@@ -21,25 +23,31 @@ def create_session(session_name, commands):
    
     for i in range(len(commands)):
         os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m')
+    print("Commands sent")
 
 if __name__ == '__main__':
     commands = []
-    num_of_agents=10;
+    num_of_agents=2;
     half_of_agents=num_of_agents/2.0
     dist_bet_groups=6.0
+    random_01=randint(0, 1)
+    print("random_01= ", random_01)
+
     for i in range(1,num_of_agents+1):
-    	group = (i>=half_of_agents)
+    	group = (i>half_of_agents)
 
     	x= i if group == 0 else (i-half_of_agents)
     	y= dist_bet_groups*group   
     	z=0
 
         goal_x=half_of_agents-x
-        goal_y=dist_bet_groups-y 
+        goal_y=random_01*(dist_bet_groups-y) + (1-random_01)*y 
         goal_z=0
 
     	quad="SQ0" + str(i) + "s";
     	print ("quad= ",quad)
+        print ("goal_y= ",goal_y)
+        print ("goal_x= ",goal_x)
     	if(sys.argv[1]=="start"):
         	commands.append("roslaunch faster faster_specific.launch gazebo:=false quad:="+quad+" x:="+str(x)+" y:="+str(y)+" z:="+str(z))
     	if(sys.argv[1]=="send_goal"):
@@ -50,7 +58,14 @@ if __name__ == '__main__':
     session_name=sys.argv[1] + "_session"
     os.system("tmux kill-session -t" + session_name)
     create_session(session_name, commands)
-    os.system("tmux attach") #comment if you don't want to visualize all the terminals
+    if(sys.argv[1]!="send_goal"):
+        os.system("tmux attach") #comment if you don't want to visualize all the terminals
+    else: ##if send_goal, kill after some time
+        time.sleep(1.5);
+        os.system("tmux kill-session -t" + session_name)
+
+
+
 
 
 #import libtmux

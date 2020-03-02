@@ -442,9 +442,13 @@ void Faster::setTerminalGoal(state& term_goal)
   G_term_.pos = term_goal.pos;
   Eigen::Vector3d temp = state_.pos;
   G_.pos = projectPointToBox(temp, G_term_.pos, par_.wdx, par_.wdy, par_.wdz);
-  if (drone_status_ == DroneStatus::GOAL_REACHED || drone_status_ == DroneStatus::GOAL_SEEN)
+  if (drone_status_ == DroneStatus::GOAL_REACHED)
   {
     changeDroneStatus(DroneStatus::YAWING);  // not done when drone_status==traveling
+  }
+  if (drone_status_ == DroneStatus::GOAL_SEEN)
+  {
+    changeDroneStatus(DroneStatus::TRAVELING);
   }
   terminal_goal_initialized_ = true;
 

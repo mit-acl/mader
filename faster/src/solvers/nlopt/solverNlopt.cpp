@@ -1410,7 +1410,7 @@ bool SolverNlopt::optimize()
 
   num_of_QCQPs_run_++;
 
-  got_a_feasible_solution_ = isFeasible(x_);
+  got_a_feasible_solution_ = isFeasible(x_);  // wasn't here
   bool x_is_deg = isDegenerate(x_);
   bool feas_is_deg = isDegenerate(x_);  // was best_feasible_sol_so_far_
 

@@ -46,7 +46,7 @@ class FakeSim:
         self.timer = rospy.Timer(rospy.Duration(0.001), self.pubTF)
 
         self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
-        self.num_of_objects = 30;
+        self.num_of_objects = 0;
 
         self.x_all=[];
         self.y_all=[];
@@ -97,7 +97,7 @@ class FakeSim:
 
             dynamic_trajectory_msg.header.stamp= t_ros;
             dynamic_trajectory_msg.function = [x_string, y_string, z_string]
-            dynamic_trajectory_msg.bbox = [0.3, 0.3, 1.5]
+            dynamic_trajectory_msg.bbox = [0.6, 0.6, 0.6]
             dynamic_trajectory_msg.pos.x=x #Current position
             dynamic_trajectory_msg.pos.y=y #Current position
             dynamic_trajectory_msg.pos.z=z #Current position
@@ -140,7 +140,7 @@ class FakeSim:
 
         x_string='(sin('+tt +str(offset)+') + 2 * sin(2 * '+tt +str(offset)+'))/' + str(scale_x) +'+' + str(x); #'2*sin(t)' 
         y_string='(cos('+tt +str(offset)+') - 2 * cos(2 * '+tt +str(offset)+'))/' + str(scale_y) +'+' + str(y); #'2*cos(t)' 
-        z_string='1.0' #'-sin(3 * '+tt +str(offset)+')/' +str(scale_z) + '+' + str(z);                               #'1.0'        
+        z_string='-sin(3 * '+tt +str(offset)+')/' +str(scale_z) + '+' + str(z);                               #'1.0'        
 
         # x_string='sin('+tt +str(offset)+')';
         # y_string='cos('+tt +str(offset)+')';

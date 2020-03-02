@@ -12,6 +12,7 @@ roscore
 roslaunch faster faster_general.launch
 python launch_many_drones.py start
 python launch_many_drones.py faster
+(Take off)
 python launch_many_drones.py send_goal
 ```
 
