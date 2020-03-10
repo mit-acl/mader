@@ -14,7 +14,7 @@ end
 A = sdpvar(4,4,'full');
 
 constraints=[];
-constraints=[constraints A'*ones(4,1)==zeros(4,1)];%Sum \lambda_i(t)=1
+constraints=[constraints A*ones(4,1)==[0 0 0 1]'];%Sum \lambda_i(t)=1
 
 U=[];
 sum_Wi=zeros(2,2);
@@ -24,14 +24,15 @@ for i=1:4
     Vi=V(:,2*i-1:2*i);
     sum_Wi=sum_Wi+Wi;
     sum_Vi=sum_Vi+Vi;
+    
     %Wi and Vi are psd matrices
-    constraints=[constraints Wi>=0 Vi>=0];
+    %constraints=[constraints Wi>=0 Vi>=0];
     constraints=[constraints Wi(1,1)>=0 Vi(1,1)>=0];
-    constraints=[constraints Wi(1,1)*Wi(2,2)-Wi(1,2)*Wi(2,1)>=0];
-    constraints=[constraints Vi(1,1)*Vi(2,2)-Vi(1,2)*Vi(2,1)>=0];
+    constraints=[constraints Wi(1,1)*Wi(2,2)-Wi(1,2)*Wi(1,2)>=0];
+    constraints=[constraints Vi(1,1)*Vi(2,2)-Vi(1,2)*Vi(1,2)>=0];
     %%%%%%%
     
-    ui=[Wi(2,2)-Vi(2,2)     -2*Vi(1,2)+Vi(2,2)+2*Wi(1,2)   -Vi(1,1)+2*Vi(1,2)+2*Wi(1,1)  Vi(1,1)]';
+    ui=[Wi(2,2)-Vi(2,2)   ,  -2*Vi(1,2)+Vi(2,2)+2*Wi(1,2) ,  -Vi(1,1)+2*Vi(1,2)+Wi(1,1) , Vi(1,1)]';
     U=[U; ui'];
 end
 
@@ -48,8 +49,9 @@ A_bezier=[-1 3 -1 1;
 assign(A,A_bezier);
 assign(U,A_bezier');
 
+
 disp('Starting optimization') %'solver','bmibnb'  ,'solver','sdpt3'
-result=optimize(constraints,obj,sdpsettings('usex0',1,'solver','fmincon','showprogress',1,'verbose',2,'debug',0,'fmincon.maxfunevals',30000 ));
+result=optimize(constraints,obj,sdpsettings('usex0',1,'solver','fmincon','showprogress',1,'verbose',2,'debug',0,'fmincon.maxfunevals',300000 ));
 
 
 A_value=value(A);
