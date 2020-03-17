@@ -8,7 +8,6 @@ clear; clc; close all;
 %set(0,'DefaultFigureWindowStyle','docked')
 set(0,'DefaultFigureWindowStyle','normal')
 %Useful to plot the result: http://nurbscalculator.in/
-
 %READ THIS: https://yalmip.github.io/example/nonconvexquadraticprogramming/
 
 W=[];
@@ -21,7 +20,6 @@ end
 A = sdpvar(4,4,'full'); %Should I enforce A symmetric?? (for Bezier curves, it's symmetric)
 
 constraints=[];
-constraints=[constraints A*ones(4,1)==[0 0 0 1]'];%Sum \lambda_i(t)=1
 
 U=[];
 sum_Wi=zeros(2,2);
@@ -48,6 +46,10 @@ constraints=[constraints A'==U]; %
 C=sum_Wi-sum_Vi;
 D=sum_Vi;
 
+%This constraint are for \sum p_i(t)=1 \forall i
+% constraints=[constraints A*ones(4,1)==[0 0 0 1]'];%Sum \lambda_i(t)=1
+
+%These constraints are for \sum p_i(t)=1 \forall i
 constraints=[constraints, C(2,2)==0];
 constraints=[constraints, C(1,2)+C(2,1)+D(2,2)==0];
 constraints=[constraints, C(1,1)+D(1,2)+D(2,1)==0];
@@ -63,7 +65,7 @@ a41=A(4,1); a42=A(4,2); a43=A(4,3); a44=A(4,4);
 determinant=a11*a22*a33*a44 - a11*a22*a34*a43 - a11*a23*a32*a44 + a11*a23*a34*a42 + a11*a24*a32*a43 - a11*a24*a33*a42 - a12*a21*a33*a44 + a12*a21*a34*a43 + a12*a23*a31*a44 - a12*a23*a34*a41 - a12*a24*a31*a43 + a12*a24*a33*a41 + a13*a21*a32*a44 - a13*a21*a34*a42 - a13*a22*a31*a44 + a13*a22*a34*a41 + a13*a24*a31*a42 - a13*a24*a32*a41 - a14*a21*a32*a43 + a14*a21*a33*a42 + a14*a22*a31*a43 - a14*a22*a33*a41 - a14*a23*a31*a42 + a14*a23*a32*a41;
 
 %I want to maximize the absolute value of the determinant of A
-obj=-(determinant)*determinant
+obj=-determinant
 
 %I want to maximize the absolute value of the determinant of A
 %obj=-abs(det(A,'polynomial')); %Should I put abs() here?
@@ -75,42 +77,59 @@ V_bezier=[1.0000   -1.0025    0.0000   -0.0000    0.0000   -0.0003    0.0000   -
        -1.0025    1.0051   -0.0000    0.0006   -0.0003    3.0005   -0.0000    0.0043];
      
 A_bezier=[-1 3 -3 1;
-         3 -6 3 0;
-         -3 3 0 0;
-         1 0 0 0];
-assign(A,A_bezier);
-assign(U,A_bezier');
+          3 -6  3 0;
+         -3  3  0 0;
+          1  0  0 0];
+     
+A_guess=A_bezier;
+
+% A_guess=10*rand(4,4);
+
+%  A_guess=[ 1  0.5   0.5   1;
+%             50  3    0.5   0;
+%             3   3       1    -10;
+%             10  -30       4   3];
+        
+% A_guess=ones(4,4);
+% W_bezier = ones(2,8);
+% V_bezier = ones(2,8);
+%      
+W_bezier=[-50   20     4    6     -9    7     15   12;
+          20     1     6    22     7   0.5     12   19]; 
+
+V_bezier=[0.5     2     -9    2    2    40    20   2;
+           2    100    2   360   40    -5    2   10]; 
+ 
+% assign(A,10*A_guess);
+% assign(U,A_guess');
 assign(W,W_bezier);
 assign(V,V_bezier);
 
+% A_random=rand(size(A));
+% assign(A,A_random);
+% assign(U,A_random');
+% % W_random=rand(size(W))
+% % assign(W,W_random);
+% % assign(V,rand(size(V)));
+
+% cx=[5 7 8 6]';
+% constraints=constraints(inv(A)*cx==[1 2 3 4]')
 
 
-% disp('WWWWWWWWWWWWWWWWWWWWWW')
-% constraints_novale=[]
-% for i=1:4
-%     Wi=W_bezier(:,(2*i-1):2*i);
-%     Vi=W_bezier(:,(2*i-1):2*i);
-%     
-%     Wi(1,1)
-%     Vi(1,1)
-%     Wi(1,1)*Wi(2,2)-Wi(1,2)*Wi(1,2)
-%     Vi(1,1)*Vi(2,2)-Vi(1,2)*Vi(1,2)
-%     constraints_novale=[constraints_novale, (Wi(1,1)>=0), (Vi(1,1)>=0)];
-%     constraints_novale=[constraints_novale, (Wi(1,1)*Wi(2,2)-Wi(1,2)*Wi(1,2)>=0)];
-%     constraints_novale=[constraints_novale, (Vi(1,1)*Vi(2,2)-Vi(1,2)*Vi(1,2)>=0)];
-% end
-% disp('WWWWWWWWWWWWWWWWWWWWWW')
-
-
-disp('Starting optimization') %'solver','bmibnb'  ,'solver','sdpt3' 'ipopt' 'knitro'
-result=optimize(constraints,obj,sdpsettings('usex0',1,'solver','fmincon','showprogress',1,'verbose',2,'debug',0,'fmincon.maxfunevals',300000 ));
-check(constraints)
+disp('Starting optimization') %'solver','bmibnb' 'fmincon' ,'solver','sdpt3' 'ipopt' 'knitro' 'scip'
+% settings=sdpsettings('usex0',1,'savesolveroutput',1,'savesolverinput',1,'solver','fmincon','showprogress',1,'verbose',2,'debug',1,'fmincon.maxfunevals',300000,'fmincon.MaxIter', 300000);
+settings=sdpsettings('usex0',1,'savesolveroutput',1,'savesolverinput',1,'solver','fmincon','showprogress',1,'verbose',2,'ipopt.tol',1e-10,'debug',1);
+result=optimize(constraints,obj,settings);
+%check(constraints)
 
 A_value=value(A);
 U_value=value(U);
 W_value=value(W);
 V_value=value(V);
+disp("abs(|A_bezier|/|A_mio|)=")
+abs(det(A_bezier)/det(A_value))
 
+%%
 sum_Vi_value=value(sum_Vi);
 sum_Wi_value=value(sum_Wi);
 C_value=value(C);
@@ -125,7 +144,7 @@ t=0.8;
 
 [1 t]*(t*C_value + D_value)*[1;t]
 
-%% 
+ 
 figure
 syms t real
 T=[t*t*t t*t t 1]';
@@ -143,7 +162,22 @@ xlim([0 1])
 temporal=t2'*(t*W3 + (1-t)*V3)*t2; %should be lambda1
 coeff_temporal=vpa(coeffs(temporal,t),4)
 
+disp('wwwwwwwwwwwwwwwwwwwwwwwwww')
+coeff_lambda1=vpa(coeffs(lambda1,t),4)
+coeff_lambda2=vpa(coeffs(lambda2,t),4)
 coeff_lambda3=vpa(coeffs(lambda3,t),4)
+coeff_lambda4=vpa(coeffs(lambda4,t),4)
+
+% coeff_w1=[-32 64 -40 8]/9.0';
+% coeff_w2=[64 -112 49 0]/9.0';
+% coeff_w3=[-64 80 -17 1]/9.0';
+% coeff_w4=[32 -32 8 0]/9.0';
+% 
+% figure
+% fplot(coeff_w1*T,[0,1]); hold on;
+% fplot(coeff_w2*T,[0,1]);
+% fplot(coeff_w3*T,[0,1]);
+% fplot(coeff_w4*T,[0,1]);
 
 %%
 pol_x=[0.2 0.3 2 1]';%[a b c d]
@@ -155,24 +189,24 @@ pol_z=[1 -0.1 -1 -4]';%[a b c d]
 % py=-4*t*t*t+6*t*t+5*t+6;
 % pz=10*t*t*t+2*t*t+3*t+4;
 
-figure;
-subplot(2,1,1);
-fplot(pol_x'*T,pol_y'*T,[0 1],'r','LineWidth',3)
-xlabel('x'); ylabel('y');
-subplot(2,1,2);
-fplot(pol_x'*T,pol_z'*T,[0 1],'r','LineWidth',3)
-xlabel('x'); zlabel('z');
+% figure;
+% subplot(2,1,1);
+% fplot(pol_x'*T,pol_y'*T,[0 1],'r','LineWidth',3)
+% xlabel('x'); ylabel('y');
+% subplot(2,1,2);
+% fplot(pol_x'*T,pol_z'*T,[0 1],'r','LineWidth',3)
+% xlabel('x'); zlabel('z');
 
 %%
 figure; hold on;
 fplot3(pol_x'*T,pol_y'*T,pol_z'*T,[0 1],'r','LineWidth',3);
-%axis equal
+% axis equal
 volumen_mio=plot_convex_hull(pol_x,pol_y,pol_z,A_value,'b');
 volumen_bezier=plot_convex_hull(pol_x,pol_y,pol_z,A_bezier,'g');
-disp("abs(|A_mio|/|A_bezier|)=")
-abs(det(A_value)/det(A_bezier))
-disp("volumen_bezier/volumen_mio=")
-volumen_bezier/volumen_mio
+disp("abs(|A_bezier|/|A_mio|)=")
+abs(det(A_bezier)/det(A_value))
+disp("volumen_mio/volumen_bezier=")
+volumen_mio/volumen_bezier
 
 function volume=plot_convex_hull(pol_x,pol_y,pol_z,A,color)
     cx=pol_x;
@@ -183,23 +217,58 @@ function volume=plot_convex_hull(pol_x,pol_y,pol_z,A,color)
     vy=inv(A)*cy;
     vz=inv(A)*cz;
 
-    v1=[vx(1) vy(1) vz(1)]';
-    v2=[vx(2) vy(2) vz(2)]';
-    v3=[vx(3) vy(3) vz(3)]';
-    v4=[vx(4) vy(4) vz(4)]';
+    v1=[vx(1) vy(1) vz(1)]'
+    v2=[vx(2) vy(2) vz(2)]'  
+    v3=[vx(3) vy(3) vz(3)]'
+    v4=[vx(4) vy(4) vz(4)]'  
 
+    %Hack to see what happens if I choose the first and last control points
+%     if color=='b'
+%         v1=[1 6 -4]';
+%         v4=[3.5 3.7 -4.1]';
+%         vx(1)=v1(1);
+%         vy(1)=v1(2);
+%         vz(1)=v1(3);
+%         vx(4)=v4(1);
+%         vy(4)=v4(2);
+%         vz(4)=v4(3);
+ 
+
+    
+ 
+       
     plot3(v1(1),v1(2),v1(3),'-o','Color',color,'MarkerSize',10)
     plot3(v2(1),v2(2),v2(3),'-o','Color',color,'MarkerSize',10)
     plot3(v3(1),v3(2),v3(3),'-o','Color',color,'MarkerSize',10)
     plot3(v4(1),v4(2),v4(3),'-o','Color',color,'MarkerSize',10)
-
-    [k1,volume] = convhull(vx,vy,vz);
-
+  %  end
+    
+         [k1,volume] = convhull(vx,vy,vz);
+ 
+%     if color=='b'
     trisurf(k1,vx,vy,vz,'FaceColor',color)
+   
     xlabel('x')
     ylabel('y')
     zlabel('z')
     alpha 0.2
+%      end
     %axis equal
 end
 
+
+% disp('WWWWWWWWWWWWWWWWWWWWWW')
+% constraints_novale=[]
+% for i=1:4
+%     Wi=W_bezier(:,(2*i-1):2*i);
+%     Vi=W_bezier(:,(2*i-1):2*i);
+%     
+%     Wi(1,1)
+%     Vi(1,1)
+%     Wi(1,1)*Wi(2,2)-Wi(1,2)*Wi(1,2)
+%     Vi(1,1)*Vi(2,2)-Vi(1,2)*Vi(1,2)
+%     constraints_novale=[constraints_novale, (Wi(1,1)>=0), (Vi(1,1)>=0)];
+%     constraints_novale=[constraints_novale, (Wi(1,1)*Wi(2,2)-Wi(1,2)*Wi(1,2)>=0)];
+%     constraints_novale=[constraints_novale, (Vi(1,1)*Vi(2,2)-Vi(1,2)*Vi(1,2)>=0)];
+% end
+% disp('WWWWWWWWWWWWWWWWWWWWWW')
