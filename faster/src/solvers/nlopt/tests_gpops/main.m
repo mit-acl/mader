@@ -1,5 +1,29 @@
 clear all ; close all ; clc;
 
+global deg_pol  dim coeff_pol
+
+deg_pol=5;
+dim=deg_pol; %The control points are in R^dim
+%Note that only the first $(echo deg_pol) numbers of coeff_pol_ will be
+%used
+%Each column is one polynomial. i.e. col_1=[a b c d ...]'
+coeff_pol=[ 0.5   0.6   0.3  0.1  -0.3
+           0.2   -0.3  -0.1  0.7  -0.7
+           0.3     3    -1   -3   +0.4
+            2     -5    -4    2   -0.1
+            1      6    -4   -3   +0.6
+            -3     6   -0.5  0.2   9
+];
+% coeff_pol_x=[0.5 0.2 0.3 2 1]';%[a b c d]
+% coeff_pol_y=[0.6 -0.3 +3 -5 6]';%[a b c d]
+% coeff_pol_z=[0.3 1 -0.1 -1 -4]';%[a b c d]
+% coeff_pol_xx=[0.3 1 -0.1 -1 -4]';%[a b c d]
+% 
+% coeff_pol=[coeff_pol_x coeff_pol_y coeff_pol_z coeff_pol_xx];
+
+num_of_states=deg_pol+1;
+num_of_params=dim*num_of_states;
+
 t0 = 0;
 tfmin = pi; tfmax = pi;
 x0min = 0;  y0min = 0;
@@ -17,27 +41,28 @@ bounds.phase.initialtime.lower = 0;
 bounds.phase.initialtime.upper = 0;
 bounds.phase.finaltime.lower = 1;
 bounds.phase.finaltime.upper = 1;
-bounds.phase.initialstate.lower = [0, 0, 0, 0];
-bounds.phase.initialstate.upper = [1, 1, 1, 1];
-bounds.phase.state.lower = [0, 0, 0, 0];
-bounds.phase.state.upper = [1, 1, 1, 1];
-bounds.parameter.lower = -1000*ones(1,12);
-bounds.parameter.upper = 1000*ones(1,12);
-bounds.phase.finalstate.lower = [0, 0, 0, 0];
-bounds.phase.finalstate.upper = [1, 1, 1, 1];
-bounds.phase.control.lower = [-1000, -1000, -1000, -1000];
-bounds.phase.control.upper = [1000, 1000, 1000, 1000];
+bounds.phase.initialstate.lower = zeros(1,num_of_states);
+bounds.phase.initialstate.upper = ones(1,num_of_states);
+bounds.phase.state.lower = zeros(1,num_of_states);
+bounds.phase.state.upper = ones(1,num_of_states);
+bounds.parameter.lower = -1000*ones(1,num_of_params);
+bounds.parameter.upper = 1000*ones(1,num_of_params);
+bounds.phase.finalstate.lower = zeros(1,num_of_states);
+bounds.phase.finalstate.upper = ones(1,num_of_states);
+bounds.phase.control.lower = -1000*ones(1,num_of_states);%[-1000, -1000, -1000, -1000];
+bounds.phase.control.upper = 1000*ones(1,num_of_states);%[1000, 1000, 1000, 1000];
 
-bounds.phase.path.lower = [0,0,0,0];
-bounds.phase.path.upper = [0,0,0,0];
+bounds.phase.path.lower = zeros(1,dim+1);%[0,0,0,0];
+bounds.phase.path.upper = zeros(1,dim+1);%[0,0,0,0];
 % bounds.phase.integral.lower = intmin;
 % bounds.phase.integral.upper = intmax;
 
 %Provide Guess of Solution 
+tmp=[0;1];
 guess.phase.time = [ 0 ; pi ];
-guess.phase.state = [[ 0 ; 1],[ 0 ; 1] ,[ 0 ; 1] ,[ 0 ; 1] ];
-guess.phase.control = [1,1,1,1 ; 1 1 1 1];
-guess.parameter = [ones(1,12) ];
+guess.phase.state = repmat(tmp,1,num_of_states);
+guess.phase.control = ones(2,num_of_states);
+guess.parameter = ones(1,num_of_params);
 % guess.phase.integral = pi/2;
 
 %Provide Mesh Refinement Method and Initial Mesh 
@@ -73,13 +98,14 @@ ylabel('y')
 axis equal
 %printeps(1,'OptimalCurve');
 figure
-plot (solution.phase.time,solution.phase.state(:,1),'--o')
-hold on
-plot (solution.phase.time,solution.phase.state(:,2),'--o')
-plot (solution.phase.time,solution.phase.state(:,3),'--o')
-plot (solution.phase.time,solution.phase.state(:,3),'--o')
-plot (solution.phase.time,solution.phase.state(:,4),'--o')
+plot (solution.phase.time,solution.phase.state,'--o')
+% plot (solution.phase.time,solution.phase.state(:,1),'--o')
+% hold on
+% plot (solution.phase.time,solution.phase.state(:,2),'--o')
+% plot (solution.phase.time,solution.phase.state(:,3),'--o')
+% plot (solution.phase.time,solution.phase.state(:,3),'--o')
+% plot (solution.phase.time,solution.phase.state(:,4),'--o')
 % plot (solution.phase.time,solution.phase.control(:,1),'r--o')
-legend('\lambda1','\lambda2','\lambda3','\lambda4')
+% legend('\lambda1','\lambda2','\lambda3','\lambda4')
 xlabel('t')
 %printeps(2,'OptimalControl');
