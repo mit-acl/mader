@@ -1,4 +1,5 @@
 close all; clc; clear;
+matlab -nosoftwareopengl
 %n = 4;
 %knots = [0 0 0 0 1 2 3 4 5 5 5 5];  % knot vector
 %P = [ 0          0.4    0.773333      2.10425       6.5357           10           10           10 ...
@@ -40,21 +41,68 @@ my_velocity=(p/(deltaT))*(P(:,1+z)-P(:,z))
 his_velocity=vel_x(1)
 
 
-Mbspline=(1/6)*[ 1 4 1 0;
-                 -3 0 3 0;
-                 3 -6 3 0;
-                -1 3 -3 1];
-            
+
+
+
+%%
+
+
 Mbezier=[1 0 0 0;
          -3 3 0 0;
          3 -6 3 0;
          -1 3 -3 1];
      
-CPoints=[]
+Mbspline=(1/6)*[1 4 1 0
+               -3 0 3 0
+                3 -6 3 0
+               -1 3 -3 1];
+      
+P=(1/160)*[182  -3  -12  -7
+           56  96  24  -16
+           -16  24  96   56
+           -7  -12  -3  182];     
+ 
 
-[1 u u*u u*u*u]*Mbspline*
+q1=[3 2 0]';
+q2=[1 8 7]';
+q3=[6 4 1]';
+q4=[-2 5 7]';
 
-inv(Mbezier)*Mbspline
+Qbspline=[q1' ; q2' ; q3' ; q4'];  %Qbspline is [q1'
+                                   %              q2'
+                                   %              q3'
+                                   %              q4']
+
+
+syms u
+
+Pt=[1 u u*u u*u*u]*Mbspline*Qbspline; %Pt is [px py pz]
+Qbezier=inv(Mbezier)*Mbspline*Qbspline;
+Qoptimal=P*Qbezier;
+
+P=Pt';
+
+figure; hold on;
+plotConvHull(Qbspline,'b')
+plotConvHull(Qbezier,'r')
+plotConvHull(Qoptimal,'g')
+
+function volume=plotConvHull(Q, color)
+
+[k1,volume] = convhull(Q);
+trisurf(k1,Q(:,1),Q(:,2),Q(:,3),'FaceColor',color)
+xlabel('x');ylabel('y');zlabel('z')
+alpha 0.2
+
+end
+           
+% 
+%      
+% CPoints=[]
+% 
+% [1 u u*u u*u*u]*Mbspline*
+% 
+% inv(Mbezier)*Mbspline
      
 
      
