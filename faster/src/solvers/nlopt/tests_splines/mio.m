@@ -1,5 +1,5 @@
 close all; clc; clear;
-matlab -nosoftwareopengl
+
 %n = 4;
 %knots = [0 0 0 0 1 2 3 4 5 5 5 5];  % knot vector
 %P = [ 0          0.4    0.773333      2.10425       6.5357           10           10           10 ...
@@ -76,16 +76,25 @@ Qbspline=[q1' ; q2' ; q3' ; q4'];  %Qbspline is [q1'
 
 syms u
 
-Pt=[1 u u*u u*u*u]*Mbspline*Qbspline; %Pt is [px py pz]
+Pt=[1 u u*u u*u*u]*Mbspline*Qbspline; %Pt is [px  py  pz]
+                                      
+
+
+
 Qbezier=inv(Mbezier)*Mbspline*Qbspline;
 Qoptimal=P*Qbezier;
 
-P=Pt';
-
 figure; hold on;
-plotConvHull(Qbspline,'b')
-plotConvHull(Qbezier,'r')
-plotConvHull(Qoptimal,'g')
+fplot3(Pt(1),Pt(2),Pt(3),[0, 1],'r','LineWidth', 2);
+vol_bspline=plotConvHull(Qbspline,'b');
+vol_bezier=plotConvHull(Qbezier,'r');
+vol_opt=plotConvHull(Qoptimal,'g');
+
+disp("vol_bspline/vol_bezier")
+vol_bspline/vol_bezier
+disp("vol_opt/vol_bezier")
+vol_opt/vol_bezier
+
 
 function volume=plotConvHull(Q, color)
 
