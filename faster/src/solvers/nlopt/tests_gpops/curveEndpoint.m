@@ -15,12 +15,7 @@ end
 % tmp=[v1 v2 v3 v4];
 % tmp=[tmp;1 1 1 1];
 
-
-
 tmp=[V;ones(1,size(V,2))]; %Add a row of ones at the bottom of V
-
-
-
 
 output.objective = abs(det(tmp)); %I want to minimize the volume
 
