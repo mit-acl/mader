@@ -1,27 +1,18 @@
 clear all ; close all ; clc;
 
-global deg_pol  dim coeff_pol
+syms t
+
+global deg_pol  dim coeff_pol t
 
 deg_pol=3;
 dim=deg_pol; %The control points are in R^dim
-%Note that only the first $(echo deg_pol) numbers of coeff_pol_ will be
-%used
-%Each column is one polynomial. i.e. col_1=[a b c d ...]'
-coeff_pol=[ 0.5   0.6   0.3  0.1  -0.3
-           0.2   -0.3  -0.1  0.7  -0.7
-           0.3     3    -1   -3   +0.4
-            2     -5    -4    2   -0.1
-            1      6    -4   -3   +0.6
-            -3     6   -0.5  0.2   9
-];
-coeff_pol_x=[0.2 0.3 2 1]';%[a b c d]
-coeff_pol_y=[-0.3 +3 -5 6]';%[a b c d]
-coeff_pol_z=[1 -0.1 -1 -4]';%[a b c d]
 
-coeff_pol=[coeff_pol_x coeff_pol_y coeff_pol_z];
+num_elem_B=(deg_pol+1)/2;
+num_elem_R= ((deg_pol+1)/2)*((deg_pol-1)/2); 
 
-num_of_states=deg_pol+1;
-num_of_params=dim*num_of_states;
+num_of_params= num_elem_B + num_elem_R;
+
+num_of_states=1; %dummy state (all the opt variables are parameters)
 
 bounds.phase.initialtime.lower = 0;
 bounds.phase.initialtime.upper = 0;
@@ -31,15 +22,15 @@ bounds.phase.initialstate.lower = zeros(1,num_of_states);
 bounds.phase.initialstate.upper = ones(1,num_of_states);
 bounds.phase.state.lower = zeros(1,num_of_states);
 bounds.phase.state.upper = ones(1,num_of_states);
-bounds.parameter.lower = -1000*ones(1,num_of_params);
+bounds.parameter.lower = [zeros(1,num_elem_B)  -1000*ones(1,num_elem_R)];  %The elements of B are >=0
 bounds.parameter.upper = 1000*ones(1,num_of_params);
 bounds.phase.finalstate.lower = zeros(1,num_of_states);
 bounds.phase.finalstate.upper = ones(1,num_of_states);
 bounds.phase.control.lower = -1000*ones(1,num_of_states);%[-1000, -1000, -1000, -1000];
 bounds.phase.control.upper = 1000*ones(1,num_of_states);%[1000, 1000, 1000, 1000];
 
-bounds.phase.path.lower = zeros(1,dim+1);%[0,0,0,0];
-bounds.phase.path.upper = zeros(1,dim+1);%[0,0,0,0];
+% bounds.phase.path.lower = zeros(1,dim+1);%[0,0,0,0];
+% bounds.phase.path.upper = zeros(1,dim+1);%[0,0,0,0];
 % bounds.phase.integral.lower = intmin;
 % bounds.phase.integral.upper = intmax;
 
@@ -48,7 +39,7 @@ tmp=[0;1];
 guess.phase.time = [ 0 ; 1 ];
 guess.phase.state = repmat(tmp,1,num_of_states);
 guess.phase.control = ones(2,num_of_states);
-guess.parameter = ones(1,num_of_params);
+guess.parameter = [ones(1,num_elem_B)  rand(1,num_elem_R)];
 % guess.phase.integral = pi/2;
 
 %Provide Mesh Refinement Method and Initial Mesh 
