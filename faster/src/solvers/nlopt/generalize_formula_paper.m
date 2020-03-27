@@ -1,11 +1,11 @@
 close all; clc; clear;
 syms t
 
-deg=5;
+deg=3;
 
 W=[];
 
-B=sym('B',[(deg-1),1],'real');
+B=sym('B',[((deg+1)/2),1],'real');
 R=sym('R',[(deg+1)/2,(deg-1)/2],'real');
 
 %Insert half of the polynomials

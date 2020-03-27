@@ -2,17 +2,19 @@ clear all ; close all ; clc;
 
 global deg_pol  dim coeff_pol
 
-deg_pol=5;
+deg_pol=3;
 dim=deg_pol; %The control points are in R^dim
 %Note that only the first $(echo deg_pol) numbers of coeff_pol_ will be
 %used
 %Each column is one polynomial. i.e. col_1=[a b c d ...]'
-coeff_pol=[ 0.5   0.6   0.3  0.1  -0.3
-           0.2   -0.3  -0.1  0.7  -0.7
-           0.3     3    -1   -3   +0.4
-            2     -5    -4    2   -0.1
-            1      6    -4   -3   +0.6
-            -3     6   -0.5  0.2   9
+coeff_pol=[ 0.5   0.6   0.3  0.1  -0.3  0.4  1.0 
+           0.2   -0.3  -0.1  0.7  -0.7  5.0  -0.3
+           0.3     3    -1   -3   +0.4  1.2  -1.5
+            2     -5    -4    2   -0.1 0.2    1.0
+            1      6    -4   -3   +0.6  0.3  2.5
+            -3     6   -0.5  0.2   9    1.1  0.9
+            -1.5   0.1   0.33 0.45  -0.48  -1.4 1.3
+            2.5  -1.8    3.1    -2.5  3.5  -0.2  0.4
 ];
 
 
@@ -28,18 +30,27 @@ end
 num_of_states=deg_pol+1;
 num_of_params=dim*num_of_states;
 
+deg_is_even =~mod(deg_pol,2)
+if (deg_is_even)
+    tmp1= 0;
+    tmp2= 1;
+else
+    tmp1= [];
+    tmp2= [];
+end
+
 bounds.phase.initialtime.lower = 0;
 bounds.phase.initialtime.upper = 0;
 bounds.phase.finaltime.lower = 1;
 bounds.phase.finaltime.upper = 1;
-bounds.phase.initialstate.lower = zeros(1,num_of_states);
-bounds.phase.initialstate.upper = ones(1,num_of_states);
+bounds.phase.initialstate.lower = [zeros(1,num_of_states/2) tmp1  zeros(1,num_of_states/2)];
+bounds.phase.initialstate.upper = [zeros(1,num_of_states/2) tmp2  ones(1,num_of_states/2)];
 bounds.phase.state.lower = zeros(1,num_of_states);
 bounds.phase.state.upper = ones(1,num_of_states);
 bounds.parameter.lower = -20*ones(1,num_of_params);
 bounds.parameter.upper = 20*ones(1,num_of_params);
-bounds.phase.finalstate.lower = zeros(1,num_of_states);
-bounds.phase.finalstate.upper = ones(1,num_of_states);
+bounds.phase.finalstate.lower = [zeros(1,num_of_states/2) tmp1 zeros(1,num_of_states/2)];
+bounds.phase.finalstate.upper = [ones(1,num_of_states/2) tmp2 zeros(1,num_of_states/2)];
 bounds.phase.control.lower = -2000*ones(1,num_of_states);%[-1000, -1000, -1000, -1000];
 bounds.phase.control.upper = 2000*ones(1,num_of_states);%[1000, 1000, 1000, 1000];
 
@@ -57,11 +68,17 @@ guess.parameter = rand(1,num_of_params);
 % guess.phase.integral = pi/2;
 
 %Provide Mesh Refinement Method and Initial Mesh 
-mesh.method = 'hp-PattersonRao';
-mesh.tolerance = 1e-9;
-mesh.maxiterations = 50;
-mesh.colpointsmin = 4;
-mesh.colpointsmax = 15;
+mesh.method = 'hp-LiuRao-Legendre' %  'hp-PattersonRao';
+mesh.tolerance = 1e-8;
+mesh.maxiterations = 150;
+mesh.colpointsmin = 30;  %30
+mesh.colpointsmax = 35;
+
+num_intervals=10;            %10
+col_points_per_interval=20;  %20
+
+mesh.phase.fraction = (1/num_intervals)*ones(1,num_intervals);
+mesh.phase.colpoints = col_points_per_interval*ones(1,num_intervals);
 
 setup.nlp.ipoptoptions.tolerance=1e-7; %Default is 1e-7
 
@@ -102,7 +119,11 @@ for i=1:size( solution.phase.state,2)
 end
 
 syms t;
-T=[t*t*t*t*t t*t*t*t t*t*t t*t t 1]';
+T=[];
+for i=flip(0:deg_pol)
+    T=[T ;t^(i)];
+end
+% T=[t*t*t*t*t t*t*t*t t*t*t t*t t 1]';
 fplot(A*T,[0,1])
 
 rootsA=[];

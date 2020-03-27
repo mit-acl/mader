@@ -12,31 +12,31 @@ num_elem_R= ((deg_pol+1)/2)*((deg_pol-1)/2);
 
 num_of_params= num_elem_B + num_elem_R;
 
-num_of_states=1; %dummy state (all the opt variables are parameters)
+num_of_states=4; %dummy state (all the opt variables are parameters)
 
-bounds.phase.initialtime.lower = 0;
-bounds.phase.initialtime.upper = 0;
-bounds.phase.finaltime.lower = 1;
-bounds.phase.finaltime.upper = 1;
+bounds.phase.initialtime.lower = -0.5;
+bounds.phase.initialtime.upper = -0.5;
+bounds.phase.finaltime.lower = 0.5;
+bounds.phase.finaltime.upper = 0.5;
 bounds.phase.initialstate.lower = zeros(1,num_of_states);
 bounds.phase.initialstate.upper = ones(1,num_of_states);
 bounds.phase.state.lower = zeros(1,num_of_states);
 bounds.phase.state.upper = ones(1,num_of_states);
-bounds.parameter.lower = [zeros(1,num_elem_B)  -1000*ones(1,num_elem_R)];  %The elements of B are >=0
-bounds.parameter.upper = 1000*ones(1,num_of_params);
+bounds.parameter.lower = [zeros(1,num_elem_B)  -30*ones(1,num_elem_R)];  %The elements of B are >=0
+bounds.parameter.upper = 30*ones(1,num_of_params);
 bounds.phase.finalstate.lower = zeros(1,num_of_states);
 bounds.phase.finalstate.upper = ones(1,num_of_states);
-bounds.phase.control.lower = -1000*ones(1,num_of_states);%[-1000, -1000, -1000, -1000];
-bounds.phase.control.upper = 1000*ones(1,num_of_states);%[1000, 1000, 1000, 1000];
+bounds.phase.control.lower = -1*ones(1,num_of_states);%[-1000, -1000, -1000, -1000];
+bounds.phase.control.upper = 1*ones(1,num_of_states);%[1000, 1000, 1000, 1000];
 
-% bounds.phase.path.lower = zeros(1,dim+1);%[0,0,0,0];
-% bounds.phase.path.upper = zeros(1,dim+1);%[0,0,0,0];
+bounds.phase.path.lower = zeros(1,dim+1);%[0,0,0,0];
+bounds.phase.path.upper = zeros(1,dim+1);%[0,0,0,0];
 % bounds.phase.integral.lower = intmin;
 % bounds.phase.integral.upper = intmax;
 
 %Provide Guess of Solution 
 tmp=[0;1];
-guess.phase.time = [ 0 ; 1 ];
+guess.phase.time = [ -0.5 ; 0.5 ];
 guess.phase.state = repmat(tmp,1,num_of_states);
 guess.phase.control = ones(2,num_of_states);
 guess.parameter = [ones(1,num_elem_B)  rand(1,num_elem_R)];
@@ -59,7 +59,7 @@ setup.guess = guess ;
 setup.mesh = mesh ;
 setup.nlp.solver = 'ipopt';
 setup.derivatives.supplier ='sparseCD';  %adigator
-setup.derivatives.derivativelevel = 'second';
+setup.derivatives.derivativelevel = 'first';
 setup.method = 'RPM-Differentiation'; %'Integration';
 % setup.scales.method = 'automatic-bounds';
 
@@ -67,7 +67,25 @@ setup.method = 'RPM-Differentiation'; %'Integration';
 
 output = gpops2 ( setup );
 %%
+
+
+
 solution = output.result.solution ;
+
+
+params=double(solution.parameter);
+
+[B,R]= generateBR(params);
+A=getA(B,R);
+
+syms t;
+T=[];
+for i=flip(0:deg_pol)
+    T=[T ;t^(i)];
+end
+% T=[t*t*t*t*t t*t*t*t t*t*t t*t t 1]';
+fplot(A*T,[0,1])
+
 figure
 plot (solution.phase.state(:,1),solution.phase.state(:,2),'b--o')
 xlabel('x')

@@ -17,7 +17,7 @@ for i=1:4
    V=[V sdpvar(2,2)];
 end
 
-A = sdpvar(4,4,'full'); %Should I enforce A symmetric?? (for Bezier curves, it's symmetric)
+A = sdpvar(4,4,'full'); %Should I enforce A symmetric?? NO!! (for Bezier curves, it's symmetric)
 
 constraints=[];
 
