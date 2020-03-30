@@ -12,34 +12,43 @@ num_elem_R= ((deg_pol+1)/2)*((deg_pol-1)/2);
 
 num_of_params= num_elem_B + num_elem_R;
 
-num_of_states=4; %dummy state (all the opt variables are parameters)
 
-bounds.phase.initialtime.lower = -0.5;
-bounds.phase.initialtime.upper = -0.5;
-bounds.phase.finaltime.lower = 0.5;
-bounds.phase.finaltime.upper = 0.5;
-bounds.phase.initialstate.lower = zeros(1,num_of_states);
-bounds.phase.initialstate.upper = ones(1,num_of_states);
-bounds.phase.state.lower = zeros(1,num_of_states);
-bounds.phase.state.upper = ones(1,num_of_states);
-bounds.parameter.lower = [zeros(1,num_elem_B)  -30*ones(1,num_elem_R)];  %The elements of B are >=0
-bounds.parameter.upper = 30*ones(1,num_of_params);
-bounds.phase.finalstate.lower = zeros(1,num_of_states);
-bounds.phase.finalstate.upper = ones(1,num_of_states);
-bounds.phase.control.lower = -1*ones(1,num_of_states);%[-1000, -1000, -1000, -1000];
-bounds.phase.control.upper = 1*ones(1,num_of_states);%[1000, 1000, 1000, 1000];
+global num_of_states
+
+num_of_states=num_elem_B + num_elem_R; %dummy state (all the opt variables are parameters)
+
+
+bounds.phase.initialtime.lower = -1;
+bounds.phase.initialtime.upper = -1;
+bounds.phase.finaltime.lower = 1;
+bounds.phase.finaltime.upper = 1;
+
+bounds.phase.initialstate.lower = -1000*ones(1,num_of_states);
+bounds.phase.initialstate.upper = 1000*ones(1,num_of_states);
+bounds.phase.state.lower = -1000*ones(1,num_of_states);
+bounds.phase.state.upper = 1000*ones(1,num_of_states);
+bounds.phase.finalstate.lower = -1000*ones(1,num_of_states);
+bounds.phase.finalstate.upper = 1000*ones(1,num_of_states);
+
+% bounds.parameter.lower = [zeros(1,num_elem_B)  -30*ones(1,num_elem_R)];  %The elements of B are >=0
+% bounds.parameter.upper = 30*ones(1,num_of_params);
+
+bounds.phase.control.lower = ones(1,num_of_states);%[-1000, -1000, -1000, -1000];
+bounds.phase.control.upper = ones(1,num_of_states);%[1000, 1000, 1000, 1000];
 
 bounds.phase.path.lower = zeros(1,dim+1);%[0,0,0,0];
 bounds.phase.path.upper = zeros(1,dim+1);%[0,0,0,0];
+
 % bounds.phase.integral.lower = intmin;
 % bounds.phase.integral.upper = intmax;
 
 %Provide Guess of Solution 
 tmp=[0;1];
-guess.phase.time = [ -0.5 ; 0.5 ];
-guess.phase.state = repmat(tmp,1,num_of_states);
-guess.phase.control = ones(2,num_of_states);
-guess.parameter = [ones(1,num_elem_B)  rand(1,num_elem_R)];
+guess.phase.time = [ -1 ; 1 ];
+tmp=rand(1,num_of_states);
+guess.phase.state = [tmp; tmp]; % repmat(tmp,1,num_of_states);
+guess.phase.control = rand(2,num_of_states);
+% guess.parameter = [ones(1,num_elem_B)  rand(1,num_elem_R)];
 % guess.phase.integral = pi/2;
 
 %Provide Mesh Refinement Method and Initial Mesh 
@@ -71,7 +80,7 @@ output = gpops2 ( setup );
 
 
 solution = output.result.solution ;
-
+ 
 
 params=double(solution.parameter);
 

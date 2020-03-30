@@ -1,7 +1,7 @@
 close all; clc; clear;
 syms t
 
-deg=3;
+deg=5;
 
 W=[];
 
@@ -38,16 +38,20 @@ for i=1:length(W)
     A=[A; tmp];
 end
 %Compute the determinant
-determ=simplify(det(A));
+disp("Computing determinant")
+determ=det(A);
 
 
-
+disp("Computing gradient")
  grad=gradient(determ,R(:));
 
-[N, D]=numden(grad);
+%  disp("Computing ND")
+% [N, D]=numden(grad);
+%  disp("Simplifying N")
 % expand(simplify(N))
 
-R_solved=vpasolve(N==zeros(length(N),1),R(:));
+ disp("vpasolve")
+R_solved=vpasolve(grad==zeros(length(grad),1),R(:));
  
 % 
 % B_sdp=sdpvar((deg-1),1);

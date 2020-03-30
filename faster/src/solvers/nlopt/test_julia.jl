@@ -3,7 +3,7 @@ using TSSOS
 using DynamicPolynomials
 using LinearAlgebra
 println("Starting")
-deg=3
+deg=5
 @polyvar t
 @polyvar B[1:deg-1,1]
 @polyvar R[1:convert(Int64,(deg+1)/2),1:convert(Int64,(deg-1)/2)]
@@ -98,7 +98,7 @@ pop=[detA B_row (coeffi-coeffi_should_be)']
 println("THIS IS POP BEFORE")
 println(pop)
 
-d=5 # the order of Lasserre's hierarchy
+d=6 # the order of Lasserre's hierarchy
 
 pop=pop[1,:]
 BR_row=BR_row[1,:]

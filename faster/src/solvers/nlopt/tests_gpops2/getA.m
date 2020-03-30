@@ -26,5 +26,9 @@ function A=getA(B,R)
         
         A=[A; tmp];
     end
+   
+%     vpa(W)
+%      vpa(A)
+   
     
 end
