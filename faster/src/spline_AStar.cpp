@@ -352,6 +352,9 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
   for (auto neighbor_va : neighbors_va)
   {
     last4Cps[3] = neighbor_va.qi;
+
+    transformBS2OV(last4Cps);
+
     bool satisfies_LP = true;
     // std::cout << "num_of_obst_=" << num_of_obst_ << std::endl;
     for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
@@ -361,6 +364,12 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
 
       MyTimer timer_lp(true);
       satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][current.index + 1 - 3], last4Cps);
+      std::cout << "\nThis statisfies the LP: " << std::endl;
+      std::cout << last4Cps[0].transpose() << std::endl;
+      std::cout << last4Cps[1].transpose() << std::endl;
+      std::cout << last4Cps[2].transpose() << std::endl;
+      std::cout << last4Cps[3].transpose() << std::endl;
+
       num_of_LPs_run_++;
       time_solving_lps_ += timer_lp.ElapsedMs();
 
@@ -372,6 +381,7 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
     }
     if (satisfies_LP == true)  // this is true also when num_of_obst_=0;
     {
+      std::cout << "Satisfies the LP!" << std::endl;
       neighbors.push_back(neighbor_va);
     }
   }
@@ -492,6 +502,7 @@ void SplineAStar::printPath(Node& node1)
 
 void SplineAStar::recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& result)
 {
+  std::cout << "Recovering path" << std::endl;
   result.clear();
 
   Node* tmp = node1_ptr;
@@ -501,6 +512,7 @@ void SplineAStar::recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& res
 
   while (tmp != NULL)
   {
+    std::cout << "tmp->qi=" << tmp->qi.transpose() << std::endl;
     result.insert(result.begin(), tmp->qi);
     tmp = tmp->previous;
   }
@@ -551,6 +563,60 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
 
 }*/
 
+void SplineAStar::transformBS2OV(std::vector<Eigen::Vector3d>& last4Cps)
+{
+  /////////////////////
+  Eigen::Matrix<double, 4, 3> Qbs;
+  Eigen::Matrix<double, 4, 3> Qov;
+  Qbs.row(0) = last4Cps[0].transpose();
+  Qbs.row(1) = last4Cps[1].transpose();
+  Qbs.row(2) = last4Cps[2].transpose();
+  Qbs.row(3) = last4Cps[3].transpose();
+
+  Eigen::Matrix<double, 4, 4> Mbs2ov;
+  Mbs2ov << 182, 685, 100, -7,  //////////////////
+      56, 640, 280, -16,        //////////////////
+      -16, 280, 640, 56,        //////////////////
+      -7, 100, 685, 182;
+  Mbs2ov = (1.0 / 960.0) * Mbs2ov;
+
+  Qov = Mbs2ov * Qbs;
+
+  last4Cps[0] = Qov.row(0).transpose();
+  last4Cps[1] = Qov.row(1).transpose();
+  last4Cps[2] = Qov.row(2).transpose();
+  last4Cps[3] = Qov.row(3).transpose();
+
+  /////////////////////
+}
+
+void SplineAStar::transformOV2VS(std::vector<Eigen::Vector3d>& last4Cps)
+{
+  /////////////////////
+  Eigen::Matrix<double, 4, 3> Qbs;
+  Eigen::Matrix<double, 4, 3> Qov;
+  Qov.row(0) = last4Cps[0].transpose();
+  Qov.row(1) = last4Cps[1].transpose();
+  Qov.row(2) = last4Cps[2].transpose();
+  Qov.row(3) = last4Cps[3].transpose();
+
+  Eigen::Matrix<double, 4, 4> Mbs2ov;
+  Mbs2ov << 182, 685, 100, -7,  //////////////////
+      56, 640, 280, -16,        //////////////////
+      -16, 280, 640, 56,        //////////////////
+      -7, 100, 685, 182;
+  Mbs2ov = (1.0 / 960.0) * Mbs2ov;
+
+  Qbs = Mbs2ov.inverse() * Qov;
+
+  last4Cps[0] = Qbs.row(0).transpose();
+  last4Cps[1] = Qbs.row(1).transpose();
+  last4Cps[2] = Qbs.row(2).transpose();
+  last4Cps[3] = Qbs.row(3).transpose();
+
+  /////////////////////
+}
+
 bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n,
                                      std::vector<double>& d)
 {
@@ -579,6 +645,8 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
     last4Cps[2] = result[index_interv + 2];
     last4Cps[3] = result[index_interv + 3];
 
+    transformBS2OV(last4Cps);
+
     for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
     {
       Eigen::Vector3d n_i;
@@ -601,8 +669,16 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
               std::cout << vertex_i.transpose() << std::endl;
             }
       */
+
+      std::cout << "index_interv= " << index_interv << std::endl;
       if (solved == false)
       {
+        std::cout << "\nThis does NOT satisfy the LP: " << std::endl;
+        std::cout << last4Cps[0].transpose() << std::endl;
+        std::cout << last4Cps[1].transpose() << std::endl;
+        std::cout << last4Cps[2].transpose() << std::endl;
+        std::cout << last4Cps[3].transpose() << std::endl;
+
         std::cout << bold << red << "The node provided doesn't satisfy LPs" << reset << std::endl;
         return false;
       }

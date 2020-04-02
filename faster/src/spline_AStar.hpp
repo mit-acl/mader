@@ -68,6 +68,8 @@ public:
 
 protected:
 private:
+  void transformBS2OV(std::vector<Eigen::Vector3d>& last4Cps);
+
   void computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size);
   void computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
                                        double& constraint_xL, double& constraint_xU, double& constraint_yL,

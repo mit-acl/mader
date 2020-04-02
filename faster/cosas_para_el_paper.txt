@@ -8,6 +8,8 @@
 
 --> Explicar la formula para minimizar el jerk (no la he visto usar en otros papers)
 
+--> Explicar c'omo pasar de control points de la curva de un B-Spline a control points de la curva Vopt. 
+
 --> El paso de B-Spline a Bezier ya lo hizo el paper "Real-time Trajectory Generation for quads using B-spline based Non-uniform Kinodynamic Search". Pero el paso de Bezier al de menor volumen no lo ha hecho nadie de planning (aunque fue demostrado en el paper "Polynomial bases for quadratic and cubic polynomials which yield control points with small convex hulls")
 
 --> Options para la initial guess:
