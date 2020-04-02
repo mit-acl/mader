@@ -1,0 +1,74 @@
+
+List of user-set options:
+
+                                    Name   Value                used
+                   hessian_approximation = limited-memory        yes
+                           linear_solver = mumps                 yes
+                  ma57_automatic_scaling = yes                    no
+                                max_iter = 2000                  yes
+                             mu_strategy = adaptive              yes
+                             output_file = Brachistochrone - ProblemIPOPTinfo.txt  yes
+                             print_level = 5                     yes
+                      print_user_options = yes                   yes
+                                     tol = 1e-07                 yes
+                   warm_start_init_point = no                    yes
+
+******************************************************************************
+This program contains Ipopt, a library for large-scale nonlinear optimization.
+ Ipopt is released as open source code under the Eclipse Public License (EPL).
+         For more information visit http://projects.coin-or.org/Ipopt
+******************************************************************************
+
+This is Ipopt version 3.12.9, running with linear solver mumps.
+NOTE: Other linear solvers might be more efficient (see Ipopt documentation).
+
+Too few degrees of freedom (n_x = 164, n_c = 320).
+  Trying fixed_variable_treatment = RELAX_BOUNDS
+
+Number of nonzeros in equality constraint Jacobian...:     1280
+Number of nonzeros in inequality constraint Jacobian.:        2
+Number of nonzeros in Lagrangian Hessian.............:        0
+
+Total number of variables............................:      326
+                     variables with only lower bounds:        0
+                variables with lower and upper bounds:      326
+                     variables with only upper bounds:        0
+Total number of equality constraints.................:      320
+Total number of inequality constraints...............:        1
+        inequality constraints with only lower bounds:        0
+   inequality constraints with lower and upper bounds:        1
+        inequality constraints with only upper bounds:        0
+
+iter    objective    inf_pr   inf_du lg(mu)  ||d||  lg(rg) alpha_du alpha_pr  ls
+   0  2.6748928e-01 5.20e+00 2.08e+00   0.0 0.00e+00    -  0.00e+00 0.00e+00   0
+   1  2.6748572e-01 5.20e+00 2.08e+00  -3.3 5.11e-02    -  9.90e-01 1.99e-05f  2
+   2  6.7266931e-02 4.65e+00 3.95e-01  -5.3 1.07e-01    -  9.90e-01 1.00e+00h  1
+   3  1.1588172e-02 4.41e+00 1.49e-01  -7.3 8.74e-02    -  9.90e-01 1.00e+00h  1
+   4  1.2603684e-05 4.23e+00 1.36e-01  -5.0 6.47e-02    -  1.00e+00 1.00e+00h  1
+   5  1.9973755e-08 4.23e+00 2.08e-03  -6.9 2.12e-03    -  1.00e+00 1.00e+00h  1
+   6  4.8698614e-14 4.23e+00 4.32e-06  -8.7 8.12e-05    -  1.00e+00 1.00e+00h  1
+   7r 4.8698614e-14 4.23e+00 9.99e+02   0.6 0.00e+00    -  0.00e+00 4.77e-07R 22
+   8r 4.8698614e-14 4.23e+00 1.62e-03  -1.4 4.19e-03    -  1.00e+00 9.62e-08f  7
+   9r 4.8692017e-14 4.23e+00 5.47e-07  -5.7 4.23e-03    -  1.00e+00 1.00e+00f  1
+
+Number of Iterations....: 9
+
+                                   (scaled)                 (unscaled)
+Objective...............:   4.8691250895793450e-14    4.8691250895793450e-14
+Dual infeasibility......:   7.6715845806511302e-07    7.6715845806511302e-07
+Constraint violation....:   4.2331853896511600e+00    4.2331853896511600e+00
+Complementarity.........:   3.6453612302705474e-09    3.6453612302705474e-09
+Overall NLP error.......:   4.2331853896511600e+00    4.2331853896511600e+00
+
+
+Number of objective function evaluations             = 41
+Number of objective gradient evaluations             = 9
+Number of equality constraint evaluations            = 41
+Number of inequality constraint evaluations          = 41
+Number of equality constraint Jacobian evaluations   = 12
+Number of inequality constraint Jacobian evaluations = 12
+Number of Lagrangian Hessian evaluations             = 0
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.305
+Total CPU secs in NLP function evaluations           =      3.577
+
+EXIT: Converged to a point of local infeasibility. Problem may be infeasible.

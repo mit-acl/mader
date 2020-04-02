@@ -17,7 +17,7 @@ for i=1:4
    V=[V sdpvar(2,2)];
 end
 
-A = sdpvar(4,4,'full'); %Should I enforce A symmetric?? (for Bezier curves, it's symmetric)
+A = sdpvar(4,4,'full'); %Should I enforce A symmetric?? NO!! (for Bezier curves, it's symmetric)
 
 constraints=[];
 
@@ -163,10 +163,10 @@ temporal=t2'*(t*W3 + (1-t)*V3)*t2; %should be lambda1
 coeff_temporal=vpa(coeffs(temporal,t),4)
 
 disp('wwwwwwwwwwwwwwwwwwwwwwwwww')
-coeff_lambda1=vpa(coeffs(lambda1,t),4)
-coeff_lambda2=vpa(coeffs(lambda2,t),4)
-coeff_lambda3=vpa(coeffs(lambda3,t),4)
-coeff_lambda4=vpa(coeffs(lambda4,t),4)
+coeff_lambda1=flip(vpa(coeffs(lambda1,t),4)) % [a b c d]
+coeff_lambda2=flip(vpa(coeffs(lambda2,t),4))
+coeff_lambda3=flip(vpa(coeffs(lambda3,t),4))
+coeff_lambda4=flip(vpa(coeffs(lambda4,t),4))
 
 % coeff_w1=[-32 64 -40 8]/9.0';
 % coeff_w2=[64 -112 49 0]/9.0';
@@ -202,7 +202,7 @@ figure; hold on;
 fplot3(pol_x'*T,pol_y'*T,pol_z'*T,[0 1],'r','LineWidth',3);
 % axis equal
 volumen_mio=plot_convex_hull(pol_x,pol_y,pol_z,A_value,'b');
-volumen_bezier=plot_convex_hull(pol_x,pol_y,pol_z,A_bezier,'g');
+%volumen_bezier=plot_convex_hull(pol_x,pol_y,pol_z,A_bezier,'g');
 disp("abs(|A_bezier|/|A_mio|)=")
 abs(det(A_bezier)/det(A_value))
 disp("volumen_mio/volumen_bezier=")
@@ -232,11 +232,7 @@ function volume=plot_convex_hull(pol_x,pol_y,pol_z,A,color)
 %         vx(4)=v4(1);
 %         vy(4)=v4(2);
 %         vz(4)=v4(3);
- 
-
-    
- 
-       
+  
     plot3(v1(1),v1(2),v1(3),'-o','Color',color,'MarkerSize',10)
     plot3(v2(1),v2(2),v2(3),'-o','Color',color,'MarkerSize',10)
     plot3(v3(1),v3(2),v3(3),'-o','Color',color,'MarkerSize',10)

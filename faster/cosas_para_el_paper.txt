@@ -21,3 +21,6 @@ Should I optimize further the initial guess, or should I go with the last feasib
 
 
 La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
+
+--> Sacar el envelove de los MinVo polynomials: https://mathworld.wolfram.com/BernsteinPolynomial.html
+(ver lo de abajo)
