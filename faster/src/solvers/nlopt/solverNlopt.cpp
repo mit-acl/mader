@@ -107,6 +107,14 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
   toEigen(x, q, n, d);
   printQND(q, n, d);*/
   //#endif
+
+  Mbs2mv_ << 182, 685, 100, -7,  //////////////////
+      56, 640, 280, -16,         //////////////////
+      -16, 280, 640, 56,         //////////////////
+      -7, 100, 685, 182;
+  Mbs2mv_ = (1.0 / 960.0) * Mbs2mv_;
+  // Mbs2ov_ = Eigen::Matrix<double, 4, 4>::Identity();
+  Mbs2mv_inverse_ = Mbs2mv_.inverse();
 }
 
 SolverNlopt::~SolverNlopt()
@@ -288,6 +296,15 @@ void SolverNlopt::generateAStarGuess()
   myAStarSolver.setGoalSize(goal_size);
 
   myAStarSolver.setBias(1000000.0);
+  if (basis_ == MINVO)
+  {
+    myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);
+  }
+  else
+  {
+    myAStarSolver.setBasisUsedForCollision(myAStarSolver.B_SPLINE);
+  }
+
   myAStarSolver.setVisual(false);
 
   std::vector<Eigen::Vector3d> q;
@@ -958,6 +975,19 @@ int SolverNlopt::lastDecCP()
   return (force_final_state_ == true) ? (N_ - 3) : (N_ - 2);
 }
 
+void SolverNlopt::transformBSpline2Minvo(Eigen::Matrix<double, 4, 3> &Qbs, Eigen::Matrix<double, 4, 3> &Qmv)
+{
+  /////////////////////
+  // Eigen::Matrix<double, 4, 3> Qmv;  // minvo
+
+  Qmv = Mbs2mv_ * Qbs;
+}
+
+void SolverNlopt::setBasisUsedForCollision(int basis)
+{
+  basis_ = basis;
+}
+
 // m is the number of constraints, nn is the number of variables
 void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned nn, double *grad,
                                      std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
@@ -993,6 +1023,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
 
       // impose that all the vertexes of the obstacle are on one side of the plane
       // std::cout << "Vertexes of Obstacle " << obst_index << std::endl;
+
       for (Eigen::Vector3d vertex : hulls_[obst_index][i])  // opt->hulls_[i].size()
       {
         constraints[r] = -(n[ip].dot(vertex) + d[ip]);  //+d[ip] // f<=0
@@ -1014,31 +1045,57 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         r++;
       }
 
-      // std::cout << "Control Points" << std::endl;
-      // and the control points on the other side
-      for (int u = 0; u <= 3; u++)
+      if (basis_ == MINVO)
       {
-        constraints[r] = (n[ip].dot(q[i + u]) + d[ip]);  //  // f<=0
+        Eigen::Matrix<double, 4, 3> Qbs;  // b-spline
+        Eigen::Matrix<double, 4, 3> Qmv;  // minvo
+        Qbs.row(0) = q[i].transpose();
+        Qbs.row(1) = q[i + 1].transpose();
+        Qbs.row(2) = q[i + 2].transpose();
+        Qbs.row(3) = q[i + 3].transpose();
+        transformBSpline2Minvo(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
 
-        /*        if (constraints[r] > epsilon_tol_constraints_)
-                {
-                  std::cout << bold << red << "sign_d_i= " << sign_d_i << reset << std::endl;
-                  std::cout << "n[ip]= " << n[ip] << std::endl;
-                  std::cout << "q[i + u]= " << q[i + u] << std::endl;
-                  std::cout << "u= " << u << std::endl;
-                  std::cout << "constraints[r]= " << constraints[r] << std::endl;
-                }*/
-
-        if (grad)
+        // std::cout << "Control Points" << std::endl;
+        // and the control points on the other side
+        Eigen::Vector3d q_ipu;
+        for (int u = 0; u <= 3; u++)
         {
-          toGradSameConstraintDiffVariables(gIndexN(ip), q[i + u], grad, r, nn);
-          if (isADecisionCP(i + u))  // If Q[i] is a decision variable
+          q_ipu = Qmv.row(u).transpose();               // if using the MINVO basis
+          constraints[r] = (n[ip].dot(q_ipu) + d[ip]);  //  // fi<=0
+
+          if (grad)
           {
-            toGradSameConstraintDiffVariables(gIndexQ(i + u), n[ip], grad, r, nn);
+            toGradSameConstraintDiffVariables(gIndexN(ip), q_ipu, grad, r, nn);
+
+            // If using the MINVO basis
+            for (int k = 0; k <= 3; k++)  // This loop is needed because each q in MINVO depends on every q in BSpline
+            {
+              if (isADecisionCP(i + k))  // If Q[i] is a decision variable
+              {
+                toGradSameConstraintDiffVariables(gIndexQ(i + k), Mbs2mv_(u, k) * n[ip], grad, r, nn);
+              }
+            }
+            assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
           }
-          assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
+          r++;
         }
-        r++;
+      }
+      else  // NOT using the MINVO Basis
+      {
+        for (int u = 0; u <= 3; u++)
+        {
+          constraints[r] = (n[ip].dot(q[i + u]) + d[ip]);  //  // f<=0
+          if (grad)
+          {
+            toGradSameConstraintDiffVariables(gIndexN(ip), q[i + u], grad, r, nn);
+            if (isADecisionCP(i + u))  // If Q[i] is a decision variable
+            {
+              toGradSameConstraintDiffVariables(gIndexQ(i + u), n[ip], grad, r, nn);
+            }
+            assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
+          }
+          r++;
+        }
       }
     }
   }

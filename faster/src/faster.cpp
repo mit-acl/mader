@@ -1154,6 +1154,14 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   SolverNlopt snlopt(n_pol, deg, num_obst, par_.weight, par_.epsilon_tol_constraints, par_.xtol_rel, par_.ftol_rel,
                      false, par_.solver);  // snlopt(a,g) a polynomials of degree 3
+  if (par_.basis == "MINVO")
+  {
+    snlopt.setBasisUsedForCollision(snlopt.MINVO);
+  }
+  else
+  {
+    snlopt.setBasisUsedForCollision(snlopt.B_SPLINE);
+  }
   snlopt.setHulls(hulls_std);
   snlopt.setDistanceToUseStraightLine(par_.Ra / 2.0);
   snlopt.setKappaAndMu(par_.kappa, par_.mu);

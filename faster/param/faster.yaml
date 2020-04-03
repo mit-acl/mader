@@ -67,6 +67,8 @@ a_star_samp_x: 7
 a_star_samp_y: 7 
 a_star_samp_z: 7 
 
+basis: "B_SPLINE"  #MINVO OR B_SPLINE  This is the basis used only for collision checking
+
 # Parameters for the ground robot (jackal):
 # kw: 1
 # kyaw: 1.5

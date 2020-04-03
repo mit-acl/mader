@@ -1,7 +1,7 @@
 close all; clc; clear;
 syms t
 
-deg=5;
+deg=3;
 
 W=[];
 
@@ -51,7 +51,7 @@ disp("Computing gradient")
 % expand(simplify(N))
 
  disp("vpasolve")
-R_solved=vpasolve(grad==zeros(length(grad),1),R(:));
+R_solved=solve(grad==zeros(length(grad),1),R(:),'Real',true, 'MaxDegree', 5);
  
 % 
 % B_sdp=sdpvar((deg-1),1);

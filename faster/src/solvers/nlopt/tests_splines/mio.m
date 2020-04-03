@@ -76,8 +76,7 @@ Qbspline=[q1' ; q2' ; q3' ; q4'];  %Qbspline is [q1'
 
 syms u
 
-Pt=[1 u u*u u*u*u]*Mbspline*Qbspline; %Pt is [px  py  pz]
-                                      
+                                     
 
 
 
@@ -85,7 +84,15 @@ Qbezier=inv(Mbezier)*Mbspline*Qbspline;
 Qoptimal=P*Qbezier;
 
 figure; hold on;
+Pt=[1 u u*u u*u*u]*Mbspline*Qbspline; %Pt is [px  py  pz]
 fplot3(Pt(1),Pt(2),Pt(3),[0, 1],'r','LineWidth', 2);
+
+Pt=[1 u u*u u*u*u]*Mbezier*Qbezier; %Pt is [px  py  pz]
+fplot3(Pt(1),Pt(2),Pt(3),[0, 1],'g','LineWidth', 2);
+
+Pt=[1 u u*u u*u*u]*P*Qbezier; %Pt is [px  py  pz]
+fplot3(Pt(1),Pt(2),Pt(3),[0, 1],'g','LineWidth', 2);
+
 vol_bspline=plotConvHull(Qbspline,'b');
 vol_bezier=plotConvHull(Qbezier,'r');
 vol_opt=plotConvHull(Qoptimal,'g');

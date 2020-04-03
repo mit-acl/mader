@@ -49,6 +49,14 @@ SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, d
 
   separator_solver_ = new separator::Separator(1.0, 1.0, 1.0);
 
+  Mbs2ov_ << 182, 685, 100, -7,  //////////////////
+      56, 640, 280, -16,         //////////////////
+      -16, 280, 640, 56,         //////////////////
+      -7, 100, 685, 182;
+  Mbs2ov_ = (1.0 / 960.0) * Mbs2ov_;
+  // Mbs2ov_ = Eigen::Matrix<double, 4, 4>::Identity();
+  Mbs2ov_inverse_ = Mbs2ov_.inverse();
+
   // computeInverses();
 }
 
@@ -64,6 +72,11 @@ int SplineAStar::getNumOfLPsRun()
 void SplineAStar::setVisual(bool visual)
 {
   visual_ = visual;
+}
+
+void SplineAStar::setBasisUsedForCollision(int basis)
+{
+  basis_ = basis;
 }
 
 void SplineAStar::setBBoxSearch(double x, double y, double z)
@@ -296,31 +309,43 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
 
         neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
 
+        neighbor.g = current.g + weightEdge(current, neighbor);
+        neighbor.h = h(neighbor);
+
         ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
         iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
         iz = round((neighbor.qi.z() - orig_.z()) / voxel_size_);
 
         auto ptr_to_voxel = mapExpandedNodes_.find(Eigen::Vector3i(ix, iy, iz));
 
+        bool already_exist = (ptr_to_voxel != mapExpandedNodes_.end());
+        bool already_exists_with_lower_cost = false;
+
+        if (already_exist)
+        {
+          // std::cout << "(*ptr_to_voxel).second" << (*ptr_to_voxel).second << std::endl;
+          // std::cout << "(current.index + 1)" << (current.index + 1) << std::endl;
+          already_exists_with_lower_cost = ((*ptr_to_voxel).second < (neighbor.g + bias_ * neighbor.h));
+        }
+
         if ((vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||             // Not wanna use v=[0,0,0]
             (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_) ||  /// Outside the limits
             (ix >= bbox_x_ / voxel_size_ ||                            // Out. the search box
              iy >= bbox_y_ / voxel_size_ ||                            // Out. the search box
              iz >= bbox_z_ / voxel_size_) ||                           // Out. the search box
-            ptr_to_voxel != mapExpandedNodes_.end())                   // Element already exist. the search box
+            already_exists_with_lower_cost)                            // Element already exists in the search box
 
         {
           continue;
         }
         else
         {  // element does not exist
-          mapExpandedNodes_[Eigen::Vector3i(ix, iy, iz)] = true;
 
           neighbor.index = current.index + 1;
           neighbor.previous = &current;
-          neighbor.g = current.g + weightEdge(current, neighbor);
-          neighbor.h = h(neighbor);
           neighbors_va.push_back(neighbor);
+
+          mapExpandedNodes_[Eigen::Vector3i(ix, iy, iz)] = neighbor.g + bias_ * neighbor.h;
         }
       }
     }
@@ -353,7 +378,10 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
   {
     last4Cps[3] = neighbor_va.qi;
 
-    transformBS2OV(last4Cps);
+    if (basis_ == MINVO)
+    {
+      transformBSpline2Minvo(last4Cps);
+    }
 
     bool satisfies_LP = true;
     // std::cout << "num_of_obst_=" << num_of_obst_ << std::endl;
@@ -363,12 +391,29 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
       double d_i;
 
       MyTimer timer_lp(true);
+
+      /*      std::cout << "last4Cps BEFORE = " << std::endl;
+            std::cout << last4Cps[0].transpose() << std::endl;
+            std::cout << last4Cps[1].transpose() << std::endl;
+            std::cout << last4Cps[2].transpose() << std::endl;
+            std::cout << last4Cps[3].transpose() << std::endl;*/
+
+      // transformBSpline2Minvo(last4Cps);
       satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][current.index + 1 - 3], last4Cps);
-      std::cout << "\nThis statisfies the LP: " << std::endl;
-      std::cout << last4Cps[0].transpose() << std::endl;
-      std::cout << last4Cps[1].transpose() << std::endl;
-      std::cout << last4Cps[2].transpose() << std::endl;
-      std::cout << last4Cps[3].transpose() << std::endl;
+      // transformMinvo2BSpline(last4Cps);
+
+      /*
+            std::cout << "last4Cps AFTER = " << std::endl;
+            std::cout << last4Cps[0].transpose() << std::endl;
+            std::cout << last4Cps[1].transpose() << std::endl;
+            std::cout << last4Cps[2].transpose() << std::endl;
+            std::cout << last4Cps[3].transpose() << std::endl;
+
+            std::cout << "\nThis statisfies the LP: " << std::endl;
+            std::cout << last4Cps[0].transpose() << std::endl;
+            std::cout << last4Cps[1].transpose() << std::endl;
+            std::cout << last4Cps[2].transpose() << std::endl;
+            std::cout << last4Cps[3].transpose() << std::endl;*/
 
       num_of_LPs_run_++;
       time_solving_lps_ += timer_lp.ElapsedMs();
@@ -381,12 +426,39 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
     }
     if (satisfies_LP == true)  // this is true also when num_of_obst_=0;
     {
-      std::cout << "Satisfies the LP!" << std::endl;
+      // std::cout << neighbor_va.qi.transpose() << "Satisfies the LP!" << std::endl;
       neighbors.push_back(neighbor_va);
     }
   }
 
   time_expanding_ += timer_expand.ElapsedMs();
+}
+
+void SplineAStar::computeInverses()
+{
+  Ainverses_.clear();
+  Ainverses_.push_back(Eigen::MatrixXd::Zero(1, 1));  // dimension 0
+  Ainverses_.push_back(Eigen::MatrixXd::Zero(1, 1));  // dimension 1
+  Ainverses_.push_back(Eigen::MatrixXd::Zero(2, 2));  // dimension 2
+  for (int dim = 3; dim < N_; dim++)
+  {
+    Eigen::MatrixXd A = 12 * Eigen::MatrixXd::Identity(dim, dim);
+    Eigen::Matrix<double, -1, 1> tmp1 = -8 * Eigen::MatrixXd::Ones(dim - 1, 1);
+    Eigen::Matrix<double, -1, 1> tmp2 = 2 * Eigen::MatrixXd::Ones(dim - 2, 1);
+    A.diagonal(1) = tmp1;
+    A.diagonal(-1) = tmp1;
+    A.diagonal(2) = tmp2;
+    A.diagonal(-2) = tmp2;
+
+    Ainverses_.push_back(A.inverse());
+  }
+}
+
+void SplineAStar::setq0q1q2(Eigen::Vector3d& q0, Eigen::Vector3d& q1, Eigen::Vector3d& q2)
+{
+  q0_ = q0;
+  q1_ = q1;
+  q2_ = q2;
 }
 
 double SplineAStar::h(Node& node)
@@ -433,35 +505,8 @@ double SplineAStar::h(Node& node)
       heuristics = heuristics + (-0.5 * b.transpose() * Ainverses_[dim_var] * b + c);
     }*/
 
-  double heuristics = (node.qi - goal_).squaredNorm();  // hack
+  double heuristics = (node.qi - goal_).norm();  // hack
   return heuristics;
-}
-
-void SplineAStar::computeInverses()
-{
-  Ainverses_.clear();
-  Ainverses_.push_back(Eigen::MatrixXd::Zero(1, 1));  // dimension 0
-  Ainverses_.push_back(Eigen::MatrixXd::Zero(1, 1));  // dimension 1
-  Ainverses_.push_back(Eigen::MatrixXd::Zero(2, 2));  // dimension 2
-  for (int dim = 3; dim < N_; dim++)
-  {
-    Eigen::MatrixXd A = 12 * Eigen::MatrixXd::Identity(dim, dim);
-    Eigen::Matrix<double, -1, 1> tmp1 = -8 * Eigen::MatrixXd::Ones(dim - 1, 1);
-    Eigen::Matrix<double, -1, 1> tmp2 = 2 * Eigen::MatrixXd::Ones(dim - 2, 1);
-    A.diagonal(1) = tmp1;
-    A.diagonal(-1) = tmp1;
-    A.diagonal(2) = tmp2;
-    A.diagonal(-2) = tmp2;
-
-    Ainverses_.push_back(A.inverse());
-  }
-}
-
-void SplineAStar::setq0q1q2(Eigen::Vector3d& q0, Eigen::Vector3d& q1, Eigen::Vector3d& q2)
-{
-  q0_ = q0;
-  q1_ = q1;
-  q2_ = q2;
 }
 
 double SplineAStar::g(Node& node)
@@ -512,7 +557,7 @@ void SplineAStar::recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& res
 
   while (tmp != NULL)
   {
-    std::cout << "tmp->qi=" << tmp->qi.transpose() << std::endl;
+    std::cout << "index= " << tmp->index << ", tmp->qi=" << tmp->qi.transpose() << std::endl;
     result.insert(result.begin(), tmp->qi);
     tmp = tmp->previous;
   }
@@ -538,6 +583,8 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
     plt::plot(x, y, "ob-");
   }
 
+  std::vector<std::string> colors = { "ok", "og", "oc", "om", "oy", "ok", "og", "or" };
+  int counter_color = 0;
   if (result_ptr != NULL)
   {
     std::vector<Eigen::Vector3d> path;
@@ -553,6 +600,47 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
     }
 
     plt::plot(x_result, y_result, "or-");
+
+    std::cout << "Path is:" << std::endl;
+    for (auto node : path)
+    {
+      std::cout << node.transpose() << std::endl;
+    }
+
+    if (basis_ == MINVO)  // Plot the control points using the MINVO basis
+    {
+      for (int i = 3; i < path.size(); i++)
+      {
+        std::vector<Eigen::Vector3d> last4Cps(4);
+        last4Cps[0] = path[i - 3];
+        last4Cps[1] = path[i - 2];
+        last4Cps[2] = path[i - 1];
+        last4Cps[3] = path[i];
+        std::cout << "Plotting these last4Cps (in OV) with color=" << colors[counter_color] << std::endl;
+        std::cout << last4Cps[0].transpose() << std::endl;
+        std::cout << last4Cps[1].transpose() << std::endl;
+        std::cout << last4Cps[2].transpose() << std::endl;
+        std::cout << last4Cps[3].transpose() << std::endl;
+
+        std::vector<double> x_result_ov, y_result_ov, z_result_ov;
+
+        transformBSpline2Minvo(last4Cps);
+
+        std::cout << "(which in OV are) " << std::endl;
+        std::cout << last4Cps[0].transpose() << std::endl;
+        std::cout << last4Cps[1].transpose() << std::endl;
+        std::cout << last4Cps[2].transpose() << std::endl;
+        std::cout << last4Cps[3].transpose() << std::endl;
+        for (int j = 0; j < 4; j++)
+        {
+          x_result_ov.push_back(last4Cps[j].x());
+          y_result_ov.push_back(last4Cps[j].y());
+          z_result_ov.push_back(last4Cps[j].z());
+        }
+        plt::plot(x_result_ov, y_result_ov, colors[counter_color]);
+        counter_color = counter_color + 1;
+      }
+    }
   }
 
   plt::show();
@@ -563,51 +651,47 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
 
 }*/
 
-void SplineAStar::transformBS2OV(std::vector<Eigen::Vector3d>& last4Cps)
+void SplineAStar::transformBSpline2Minvo(std::vector<Eigen::Vector3d>& last4Cps)
 {
   /////////////////////
-  Eigen::Matrix<double, 4, 3> Qbs;
-  Eigen::Matrix<double, 4, 3> Qov;
+  Eigen::Matrix<double, 4, 3> Qbs;  // b-spline
+  Eigen::Matrix<double, 4, 3> Qmv;  // minvo
   Qbs.row(0) = last4Cps[0].transpose();
   Qbs.row(1) = last4Cps[1].transpose();
   Qbs.row(2) = last4Cps[2].transpose();
   Qbs.row(3) = last4Cps[3].transpose();
 
-  Eigen::Matrix<double, 4, 4> Mbs2ov;
-  Mbs2ov << 182, 685, 100, -7,  //////////////////
-      56, 640, 280, -16,        //////////////////
-      -16, 280, 640, 56,        //////////////////
-      -7, 100, 685, 182;
-  Mbs2ov = (1.0 / 960.0) * Mbs2ov;
+  /*  Eigen::Matrix<double, 4, 4> tmp;
+    tmp.block(0, 0, 4, 3) = Qbs;
+    tmp.block(0, 3, 4, 1) = Eigen::Matrix<double, 4, 1>::Ones();
+    std::cout << "tmp BS= " << tmp << std::endl;
+    std::cout << "Determinant BS=" << tmp.determinant() << std::endl;*/
 
-  Qov = Mbs2ov * Qbs;
+  Qmv = Mbs2ov_ * Qbs;
 
-  last4Cps[0] = Qov.row(0).transpose();
-  last4Cps[1] = Qov.row(1).transpose();
-  last4Cps[2] = Qov.row(2).transpose();
-  last4Cps[3] = Qov.row(3).transpose();
+  /*  tmp.block(0, 0, 4, 3) = Qmv;
+    std::cout << "tmp OV= " << tmp << std::endl;
+    std::cout << "Determinant OV=" << tmp.determinant() << std::endl;*/
+
+  last4Cps[0] = Qmv.row(0).transpose();
+  last4Cps[1] = Qmv.row(1).transpose();
+  last4Cps[2] = Qmv.row(2).transpose();
+  last4Cps[3] = Qmv.row(3).transpose();
 
   /////////////////////
 }
 
-void SplineAStar::transformOV2VS(std::vector<Eigen::Vector3d>& last4Cps)
+void SplineAStar::transformMinvo2BSpline(std::vector<Eigen::Vector3d>& last4Cps)
 {
   /////////////////////
-  Eigen::Matrix<double, 4, 3> Qbs;
-  Eigen::Matrix<double, 4, 3> Qov;
-  Qov.row(0) = last4Cps[0].transpose();
-  Qov.row(1) = last4Cps[1].transpose();
-  Qov.row(2) = last4Cps[2].transpose();
-  Qov.row(3) = last4Cps[3].transpose();
+  Eigen::Matrix<double, 4, 3> Qbs;  // b-spline
+  Eigen::Matrix<double, 4, 3> Qmv;  // minvo
+  Qmv.row(0) = last4Cps[0].transpose();
+  Qmv.row(1) = last4Cps[1].transpose();
+  Qmv.row(2) = last4Cps[2].transpose();
+  Qmv.row(3) = last4Cps[3].transpose();
 
-  Eigen::Matrix<double, 4, 4> Mbs2ov;
-  Mbs2ov << 182, 685, 100, -7,  //////////////////
-      56, 640, 280, -16,        //////////////////
-      -16, 280, 640, 56,        //////////////////
-      -7, 100, 685, 182;
-  Mbs2ov = (1.0 / 960.0) * Mbs2ov;
-
-  Qbs = Mbs2ov.inverse() * Qov;
+  Qbs = Mbs2ov_inverse_ * Qmv;
 
   last4Cps[0] = Qbs.row(0).transpose();
   last4Cps[1] = Qbs.row(1).transpose();
@@ -645,14 +729,19 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
     last4Cps[2] = result[index_interv + 2];
     last4Cps[3] = result[index_interv + 3];
 
-    transformBS2OV(last4Cps);
+    if (basis_ == MINVO)
+    {
+      transformBSpline2Minvo(last4Cps);
+    }
 
     for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
     {
       Eigen::Vector3d n_i;
       double d_i;
 
+      // transformBSpline2Minvo(last4Cps);
       bool solved = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][index_interv], last4Cps);
+      //   transformMinvo2BSpline(last4Cps);
 
       /*      std::cout << "Filling " << obst_index * num_of_segments_ + index_interv << std::endl;
             std::cout << "OBSTACLE= " << obst_index << std::endl;
@@ -674,6 +763,7 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
       if (solved == false)
       {
         std::cout << "\nThis does NOT satisfy the LP: " << std::endl;
+
         std::cout << last4Cps[0].transpose() << std::endl;
         std::cout << last4Cps[1].transpose() << std::endl;
         std::cout << last4Cps[2].transpose() << std::endl;
@@ -689,6 +779,21 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
       n[obst_index * num_of_segments_ + index_interv] = n_i;
       d[obst_index * num_of_segments_ + index_interv] = d_i;
     }
+
+    std::cout << "\nThis satisfies the LP: " << std::endl;
+    std::cout << last4Cps[0].transpose() << std::endl;
+    std::cout << last4Cps[1].transpose() << std::endl;
+    std::cout << last4Cps[2].transpose() << std::endl;
+    std::cout << last4Cps[3].transpose() << std::endl;
+
+    std::cout << "(which, expressed in OV form, it is)" << std::endl;
+
+    transformBSpline2Minvo(last4Cps);
+    std::cout << last4Cps[0].transpose() << std::endl;
+    std::cout << last4Cps[1].transpose() << std::endl;
+    std::cout << last4Cps[2].transpose() << std::endl;
+    std::cout << last4Cps[3].transpose() << std::endl;
+    transformMinvo2BSpline(last4Cps);
   }
   return true;
 }
@@ -698,7 +803,7 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
   expanded_nodes_.clear();
 
   MyTimer timer_astar(true);
-
+  std::cout << "this->bias_ =" << this->bias_ << std::endl;
   auto cmp = [&](Node& left, Node& right) {
     return (left.g + this->bias_ * left.h) > (right.g + this->bias_ * right.h);
   };
@@ -807,25 +912,27 @@ exitloop:
     // and hence the need of the function checkFeasAndFillND()
     for (int j = (closest_result_so_far_ptr_->index) + 1; j <= N_ - 2; j++)
     {
-      std::cout << "Filling " << j << std::endl;
       Node* node_ptr = new Node;
       node_ptr->qi = closest_result_so_far_ptr_->qi;
       node_ptr->index = j;
+      std::cout << "Filling " << j << " with " << node_ptr->qi.transpose() << std::endl;
       node_ptr->previous = closest_result_so_far_ptr_;
       closest_result_so_far_ptr_ = node_ptr;
     }
 
     std::cout << " and the best solution found has dist=" << closest_dist_so_far_ << std::endl;
     recoverPath(closest_result_so_far_ptr_, result);
-    if (checkFeasAndFillND(result, n, d) == false)  // This may be true or false, depending on the case
-    {
-      return false;
-    }
 
     if (visual_)
     {
       plotExpandedNodesAndResult(expanded_nodes_, closest_result_so_far_ptr_);
     }
+
+    if (checkFeasAndFillND(result, n, d) == false)  // This may be true or false, depending on the case
+    {
+      return false;
+    }
+
     return true;
   }
 

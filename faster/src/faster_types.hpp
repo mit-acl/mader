@@ -173,6 +173,8 @@ struct parameters
   int a_star_samp_y = 7;
   int a_star_samp_z = 7;
 
+  std::string basis;
+
   /*  double kw;
     double kyaw;
     double kdalpha;

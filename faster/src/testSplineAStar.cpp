@@ -11,18 +11,18 @@ int main()
   int samples_y = 7;  // odd number
   int samples_z = 7;  // odd number
 
-  double increment = 0.3;  // grid used to prune nodes that are on the same cell
+  double voxel_size = 0.3;  // grid used to prune nodes that are on the same cell
 
-  double runtime = 0.1;    //[seconds]
-  double goal_size = 0.5;  //[meters]
+  double runtime = 0.1;     //[seconds]
+  double goal_size = 0.01;  //[meters]
 
   Eigen::Vector3d v_max(7.0, 7.0, 7.0);
   Eigen::Vector3d a_max(20.0, 20.0, 20.0);
 
-  Eigen::Vector3d q0(-2, 0, 0);
+  Eigen::Vector3d q0(-2.0, 0, 0);
   Eigen::Vector3d q1 = q0;
   Eigen::Vector3d q2 = q1;
-  Eigen::Vector3d goal(2, 0, 0);
+  Eigen::Vector3d goal(2.0, 0, 0);
 
   double t_min = 0.0;
   double t_max = t_min + (goal - q0).norm() / (0.6 * v_max(0));
@@ -32,16 +32,14 @@ int main()
   Polyhedron_Std hull;
 
   hull.push_back(Eigen::Vector3d(-0.5, -0.5, -70.0));
-
-  hull.push_back(Eigen::Vector3d(-0.5, 0.5, 70.0));
-  hull.push_back(Eigen::Vector3d(0.5, -0.5, 70.0));
-  hull.push_back(Eigen::Vector3d(0.5, 0.5, -70.0));
-
   hull.push_back(Eigen::Vector3d(-0.5, -0.5, 70.0));
-  hull.push_back(Eigen::Vector3d(0.5, -0.5, -70.0));
+  hull.push_back(Eigen::Vector3d(-0.5, 0.5, 70.0));
   hull.push_back(Eigen::Vector3d(-0.5, 0.5, -70.0));
 
   hull.push_back(Eigen::Vector3d(0.5, 0.5, 70.0));
+  hull.push_back(Eigen::Vector3d(0.5, 0.5, -70.0));
+  hull.push_back(Eigen::Vector3d(0.5, -0.5, 70.0));
+  hull.push_back(Eigen::Vector3d(0.5, -0.5, -70.0));
 
   // Assummes static obstacle
   for (int i = 0; i < num_pol; i++)
@@ -58,12 +56,13 @@ int main()
 
   myAStarSolver.setZminZmax(-1.0, 10.0);          // z limits for the search, in world frame
   myAStarSolver.setBBoxSearch(30.0, 30.0, 30.0);  // limits for the search, centered on q2
-  myAStarSolver.setMaxValuesAndSamples(v_max, a_max, samples_x, samples_y, samples_z, increment);
+  myAStarSolver.setMaxValuesAndSamples(v_max, a_max, samples_x, samples_y, samples_z, voxel_size);
 
   myAStarSolver.setRunTime(runtime);
   myAStarSolver.setGoalSize(goal_size);
 
-  myAStarSolver.setBias(100.0);
+  myAStarSolver.setBias(2.0);
+  myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);
   myAStarSolver.setVisual(true);
 
   std::vector<Eigen::Vector3d> q;

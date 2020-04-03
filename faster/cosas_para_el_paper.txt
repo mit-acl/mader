@@ -24,3 +24,5 @@ La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
 
 --> Sacar el envelove de los MinVo polynomials: https://mathworld.wolfram.com/BernsteinPolynomial.html
 (ver lo de abajo)
+
+--> extenderlo a surfaces la MINVO basis?

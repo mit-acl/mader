@@ -59,11 +59,18 @@ public:
 
   double getTimeNeeded();
 
+  void setBasisUsedForCollision(int basis);
+
+  int B_SPLINE = 1;  // B-Spline Basis
+  int MINVO = 2;     // Minimum volume basis
+
 protected:
 private:
   void saturateQ(std::vector<Eigen::Vector3d> &q);
 
   bool isDegenerate(const std::vector<double> &x);
+
+  void transformBSpline2Minvo(Eigen::Matrix<double, 4, 3> &Qbs, Eigen::Matrix<double, 4, 3> &Qmv);
 
   void generateRandomGuess();
   void generateAStarGuess();
@@ -167,6 +174,8 @@ private:
 
   PieceWisePol solution_;
 
+  int basis_ = B_SPLINE;
+
   int deg_pol_ = 3;
   int num_pol_ = 5;
   int p_ = 5;
@@ -263,5 +272,9 @@ private:
 
   double time_needed_;
   double dist_to_use_straight_guess_ = std::numeric_limits<double>::max();
+
+  // transformation between the B-spline control points and the optimal volume control points
+  Eigen::Matrix<double, 4, 4> Mbs2mv_;
+  Eigen::Matrix<double, 4, 4> Mbs2mv_inverse_;
 };
 #endif

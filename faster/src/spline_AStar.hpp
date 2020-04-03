@@ -50,6 +50,8 @@ public:
   void setRunTime(double max_runtime);
   void setGoalSize(double goal_size);
 
+  void setBasisUsedForCollision(int basis);
+
   void setBias(double bias);
 
   bool run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d);
@@ -66,9 +68,13 @@ public:
 
   int getNumOfLPsRun();
 
+  int B_SPLINE = 1;  // B-Spline Basis
+  int MINVO = 2;     // Minimum volume basis
+
 protected:
 private:
-  void transformBS2OV(std::vector<Eigen::Vector3d>& last4Cps);
+  void transformBSpline2Minvo(std::vector<Eigen::Vector3d>& last4Cps);
+  void transformMinvo2BSpline(std::vector<Eigen::Vector3d>& last4Cps);
 
   void computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size);
   void computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
@@ -84,6 +90,8 @@ private:
 
   bool checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n,
                           std::vector<double>& d);
+
+  int basis_ = B_SPLINE;
 
   Eigen::Vector3d goal_;
   Eigen::Vector3d v_max_;
@@ -135,7 +143,7 @@ private:
 
   // std::vector<std::vector<std::vector<bool>>> matrixExpandedNodes_;
 
-  std::unordered_map<Eigen::Vector3i, bool, matrix_hash<Eigen::Vector3i>> mapExpandedNodes_;
+  std::unordered_map<Eigen::Vector3i, double, matrix_hash<Eigen::Vector3i>> mapExpandedNodes_;
 
   double bbox_x_;
   double bbox_y_;
@@ -147,6 +155,10 @@ private:
   double z_max_ = std::numeric_limits<double>::max();
 
   int num_of_LPs_run_ = 0;
+
+  // transformation between the B-spline control points and the optimal volume control points
+  Eigen::Matrix<double, 4, 4> Mbs2ov_;
+  Eigen::Matrix<double, 4, 4> Mbs2ov_inverse_;
 
   // bool matrixExpandedNodes_[40][40][40];
 };
