@@ -39,6 +39,7 @@ find_library( GUROBI_LIBRARY
         libgurobi_c++.a
         libgurobi80.so
         libgurobi81.so
+        libgurobi90.so
               PATHS "$ENV{GUROBI_HOME}/lib" 
                     "/Library/gurobi502/mac64/lib"
                     "C:\\libs\\gurobi502\\lib"
