@@ -3,21 +3,51 @@ syms t
 
 % global R B_solved determ
 
-deg=7;
+deg=2;
 
 W=[];
 
-B=sym('B',[((deg+1)/2),1],'real');
-R=sym('R',[(deg+1)/2,(deg-1)/2],'real');
+
 
 %Insert half of the polynomials
-for i=1:((deg+1)/2)
-    pol=-B(i)*(t-1);
-    for j=1:(deg-1)/2
-        pol=pol*((t-R(i,j))^2);
+
+deg_is_even = (rem(deg, 2) == 0);
+
+if(deg_is_even==0)
+    
+    B=sym('B',[((deg+1)/2),1],'real');
+    R=sym('R',[(deg+1)/2,(deg-1)/2],'real');
+    
+    for i=1:((deg+1)/2)
+        pol=-B(i)*(t-1);
+        for j=1:(deg-1)/2
+            pol=pol*((t-R(i,j))^2);
+        end
+        pol
+        W=[W;pol];
     end
-    pol
-    W=[W;pol];
+else %Deg is even
+    %WORK IN PROGRESS!!!!!!!!!!!!!!!!!!!!!!
+
+    B=sym('B',[(deg/2 +1),1],'real');
+    R=sym('R',[deg/2 +1,(deg-1)/2],'real');
+    
+    for i=1:2:((deg)/2)
+        pol=-B(i);
+        for j=1:(deg)/2
+            pol=pol*((t-R(i,j))^2);
+        end
+        W=[W;pol];
+    end  
+ 
+   for i=2:2:((deg)/2)
+       pol=-B(i)*(t-1)*(t+1);
+        for j=1:(deg-2)/2
+            pol=pol*((t-R(i,j))^2);
+        end
+        W=[W;pol];
+   end  
+ 
 end
 
 %Insert the other half

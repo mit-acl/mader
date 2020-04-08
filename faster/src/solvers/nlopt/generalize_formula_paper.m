@@ -1,7 +1,7 @@
 close all; clc; clear;
 syms t
 
-deg=3;
+deg=5;
 
 W=[];
 
