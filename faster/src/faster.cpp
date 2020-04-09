@@ -134,6 +134,7 @@ void Faster::updateTrajObstacles(std::vector<dynTraj> trajs)
 
     traj_compiled.bbox = traj.bbox;
     traj_compiled.id = traj.id;
+    traj_compiled.time_received = ros::Time::now().toSec();
     trajs_.push_back(traj_compiled);
   }
 
@@ -444,6 +445,7 @@ void Faster::setTerminalGoal(state& term_goal)
   G_.pos = projectPointToBox(temp, G_term_.pos, par_.wdx, par_.wdy, par_.wdz);
   if (drone_status_ == DroneStatus::GOAL_REACHED)
   {
+    // std::cout << bold << green << "[Faster] state_.yaw=" << state_.yaw << reset << std::endl;
     changeDroneStatus(DroneStatus::YAWING);  // not done when drone_status==traveling
   }
   if (drone_status_ == DroneStatus::GOAL_SEEN)
@@ -763,6 +765,7 @@ void Faster::updateState(state data)
     tmp.pos = data.pos;
     tmp.yaw = data.yaw;
     plan_.push_back(tmp);
+    previous_yaw_ = tmp.yaw;
   }
 
   state_initialized_ = true;
@@ -805,6 +808,74 @@ bool Faster::initialized()
   return true;
 }
 
+// check wheter a dynTrajCompiled and a pwp_optimized are in collision in the interval [t_init, t_end]
+bool Faster::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_init, double t_end)
+{
+  int samples_per_traj = 10;
+  double inc = (t_end - t_init) / samples_per_traj;
+  for (int i = 0; i < samples_per_traj; i++)
+  {
+    t_ = t_init + i * inc;
+
+    Eigen::Vector3d pos_1;
+    pos_1 << traj.function[0].value(),  ////////////////////
+        traj.function[1].value(),       ////////////////
+        traj.function[2].value();       /////////////////
+
+    Eigen::Vector3d pos_2 = pwp_optimized.eval(t_);
+
+    double side_box_drone = (2 * sqrt(2) * par_.drone_radius);
+
+    Eigen::Vector3d positive_half_diagonal1;
+    positive_half_diagonal1 << traj.bbox[0] / 2.0, traj.bbox[1] / 2.0, traj.bbox[2] / 2.0;
+    Eigen::Vector3d min1 = pos_1 - positive_half_diagonal1;
+    Eigen::Vector3d max1 = pos_1 + positive_half_diagonal1;
+
+    Eigen::Vector3d positive_half_diagonal2;
+    positive_half_diagonal2 << side_box_drone / 2.0, side_box_drone / 2.0, side_box_drone / 2.0;
+    Eigen::Vector3d min2 = pos_2 - positive_half_diagonal2;
+    Eigen::Vector3d max2 = pos_2 + positive_half_diagonal2;
+
+    // Now check if the two bounding boxes overlap
+    // https://stackoverflow.com/questions/20925818/algorithm-to-check-if-two-boxes-overlap
+    if (min1.x() <= max2.x() && min2.x() <= max1.x() &&  /////////////////////
+        min1.y() <= max2.y() && min2.y() <= max1.y() &&  /////////////////////
+        min1.z() <= max2.z() && min2.z() <= max1.z())
+    {
+      std::cout << bold << blue << "These two bounding boxes overlap" << reset << std::endl;
+      std::cout << "1 pos and diagonal:" << std::endl;
+      std::cout << bold << blue << pos_1.transpose() << reset << std::endl;
+      std::cout << bold << blue << positive_half_diagonal1.transpose() << reset << std::endl;
+      std::cout << "2 pos and diagonal:" << std::endl;
+      std::cout << bold << blue << pos_2.transpose() << reset << std::endl;
+      std::cout << bold << blue << positive_half_diagonal2.transpose() << reset << std::endl;
+      return true;  // the two bounding boxes overlap
+    }
+  }
+
+  return false;
+}
+// Checks that I have not received new trajectories that affect me while doing the optimization
+bool Faster::safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimized)
+{
+  mtx_trajs_.lock();
+  bool result = true;
+  for (auto traj : trajs_)
+  {
+    if (traj.time_received > time_init_opt)
+    {
+      if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
+      {
+        result = false;  // will have to redo the optimization
+        break;
+      }
+    }
+  }
+  mtx_trajs_.unlock();
+  return result;
+  // traj_compiled.time_received = ros::Time::now().toSec();
+}
+
 bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E<Polyhedron<3>>& poly_safe_out,
                     vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out,
                     std::vector<state>& X_whole_out, pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps,
@@ -821,7 +892,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   */
   if (initializedStateAndTermGoal() == false)
   {
-    std::cout << "Not Replanning" << std::endl;
+    // std::cout << "Not Replanning" << std::endl;
     return false;
   }
 
@@ -882,6 +953,30 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
   std::cout << bold << on_white << "******************************************************" << reset << std::endl;
+
+  /////////////////////////////////// DEBUGGING ///////////////////////////////////
+  mtx_trajs_.lock();
+  std::cout << bold << blue << "Using these trajectories" << reset << std::endl;
+  /*  traj_compiled.id = traj.id;
+    trajs_.push_back(traj_compiled);*/
+  int tmp_index_traj = 0;
+  for (auto traj : trajs_)
+  {
+    double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+
+    t_ = time_now;
+
+    Eigen::Vector3d center_obs;
+    center_obs << trajs_[tmp_index_traj].function[0].value(),  ////////////////////
+        trajs_[tmp_index_traj].function[1].value(),            ////////////////
+        trajs_[tmp_index_traj].function[2].value();            /////////////////
+
+    std::cout << traj.id << ", which is in " << center_obs.transpose() << std::endl;
+
+    tmp_index_traj = tmp_index_traj + 1;
+  }
+  std::cout << std::endl;
+  mtx_trajs_.unlock();
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Select state A /////////////////////////////////
@@ -1137,6 +1232,8 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   */
   // std::cout << bold << red << "[replan] Locking" << reset << std::endl;
   mtx_trajs_.lock();
+
+  double time_init_opt = ros::Time::now().toSec();
   // std::cout << bold << red << "[replan] Locked" << reset << std::endl;
 
   MyTimer convex_hulls_timer(true);
@@ -1236,6 +1333,15 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   solutions_found_++;
 
+  PieceWisePol pwp_now;
+  snlopt.getSolution(pwp_now);
+
+  if (safetyCheckAfterOpt(time_init_opt, pwp_now) == false)
+  {
+    std::cout << bold << red << "safetyCheckAfterOpt is not satisfied!" << reset << std::endl;
+    return false;
+  }
+
   // std::cout << "Below of loop\n";
 
   /////// END OF DEBUGGING
@@ -1280,9 +1386,6 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   {
     return false;
   }
-
-  PieceWisePol pwp_now;
-  snlopt.getSolution(pwp_now);
 
   std::cout << std::setprecision(30) << "pwp_now.times[0]=" << pwp_now.times[0] << std::endl;
   std::cout << "t_min= " << t_min << std::endl;
@@ -1500,7 +1603,9 @@ void Faster::getDesiredYaw(state& next_goal)
   {
     case DroneStatus::YAWING:
       desired_yaw = atan2(G_term_.pos[1] - next_goal.pos[1], G_term_.pos[0] - next_goal.pos[0]);
+      // std::cout << bold << green << "[Faster] state_.yaw=" << state_.yaw << reset << std::endl;
       diff = desired_yaw - state_.yaw;
+      // std::cout << bold << green << "[Faster] desired_yaw=" << desired_yaw << reset << std::endl;
       // std::cout << "diff1= " << diff << std::endl;
       break;
     case DroneStatus::TRAVELING:
@@ -1533,7 +1638,7 @@ bool Faster::getNextGoal(state& next_goal)
     }*/
   if (initializedStateAndTermGoal() == false)
   {
-    std::cout << "Not publishing new goal!!" << std::endl;
+    // std::cout << "Not publishing new goal!!" << std::endl;
     return false;
   }
 
@@ -1542,6 +1647,9 @@ bool Faster::getNextGoal(state& next_goal)
 
   next_goal.setZero();
   next_goal = plan_.front();
+
+  // std::cout << bold << green << "[Faster] next_goal.yaw=" << next_goal.yaw << reset << std::endl;
+
   if (plan_.size() > 1)
   {
     plan_.pop_front();

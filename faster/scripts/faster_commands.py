@@ -73,6 +73,7 @@ class Behavior_Selector:
         goal.pos.x = self.pose.position.x;
         goal.pos.y = self.pose.position.y;
         goal.pos.z = self.pose.position.z;
+        goal.yaw = quat2yaw(self.pose.orientation)
         #Note that self.pose.position is being updated in the parallel callback
         while(  abs(self.pose.position.z-self.alt_taken_off)>0.1  ): 
             goal.pos.z = min(goal.pos.z+0.0035, self.alt_taken_off);
@@ -87,6 +88,7 @@ class Behavior_Selector:
         goal.pos.x = self.pose.position.x;
         goal.pos.y = self.pose.position.y;
         goal.pos.z = self.pose.position.z;
+        goal.yaw = quat2yaw(self.pose.orientation)
 
         #Note that self.pose.position is being updated in the parallel callback
         while(abs(self.pose.position.z-self.alt_ground)>0.1):
@@ -106,8 +108,9 @@ class Behavior_Selector:
         self.sendMode()
 
     def sendGoal(self, goal):
-        goal.yaw = quat2yaw(self.pose.orientation)
+        # goal.yaw = quat2yaw(self.pose.orientation)
         goal.header.stamp = rospy.get_rostime()
+        # print("[faster_cmds.py] Sending goal.yaw=",goal.yaw);
         self.pubGoal.publish(goal)
 
     def pubFirstGoal(self):
@@ -115,6 +118,7 @@ class Behavior_Selector:
         msg.pose.position.x=self.pose.position.x
         msg.pose.position.y=self.pose.position.y
         msg.pose.position.z=1.0
+        msg.pose.orientation = self.pose.orientation
         msg.header.frame_id="world"
         msg.header.stamp = rospy.get_rostime()
         self.pubClickedPoint.publish(msg)

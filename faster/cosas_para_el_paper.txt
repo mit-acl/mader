@@ -17,6 +17,8 @@
 ------> Run 
 ------> My algorithm
 
+--> Que la primera figura del paper sea una simulacion donde haya obstaculos est'aticos, dinamicos y agents
+
 Should I optimize further the initial guess, or should I go with the last feasible solution?
 
 

@@ -160,13 +160,15 @@ if __name__ == '__main__':
 
     ns = rospy.get_namespace()
     try:
-        rospy.init_node('relay')
-        if str(ns) == '/':
-            rospy.logfatal("Need to specify namespace as vehicle name.")
-            rospy.logfatal("This is tyipcally accomplished in a launch file.")
-            rospy.logfatal("Command line: ROS_NAMESPACE=mQ01 $ rosrun quad_control joy.py")
-        else:
-            print "Starting joystick teleop node for: " + ns
-            startNode()
+        # rospy.init_node('relay')
+        # if str(ns) == '/':
+        #     rospy.logfatal("Need to specify namespace as vehicle name.")
+        #     rospy.logfatal("This is tyipcally accomplished in a launch file.")
+        #     rospy.logfatal("Command line: ROS_NAMESPACE=mQ01 $ rosrun quad_control joy.py")
+        # else:
+        #     print "Starting joystick teleop node for: " + ns
+        #     startNode()
+        rospy.init_node('dynamic_obstacles')
+        startNode()
     except rospy.ROSInterruptException:
         pass

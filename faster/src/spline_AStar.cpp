@@ -759,15 +759,15 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
             }
       */
 
-      std::cout << "index_interv= " << index_interv << std::endl;
+      // std::cout << "index_interv= " << index_interv << std::endl;
       if (solved == false)
       {
-        std::cout << "\nThis does NOT satisfy the LP: " << std::endl;
+        // std::cout << "\nThis does NOT satisfy the LP: " << std::endl;
 
-        std::cout << last4Cps[0].transpose() << std::endl;
-        std::cout << last4Cps[1].transpose() << std::endl;
-        std::cout << last4Cps[2].transpose() << std::endl;
-        std::cout << last4Cps[3].transpose() << std::endl;
+        // std::cout << last4Cps[0].transpose() << std::endl;
+        // std::cout << last4Cps[1].transpose() << std::endl;
+        // std::cout << last4Cps[2].transpose() << std::endl;
+        // std::cout << last4Cps[3].transpose() << std::endl;
 
         std::cout << bold << red << "The node provided doesn't satisfy LPs" << reset << std::endl;
         return false;
@@ -780,20 +780,20 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
       d[obst_index * num_of_segments_ + index_interv] = d_i;
     }
 
-    std::cout << "\nThis satisfies the LP: " << std::endl;
-    std::cout << last4Cps[0].transpose() << std::endl;
-    std::cout << last4Cps[1].transpose() << std::endl;
-    std::cout << last4Cps[2].transpose() << std::endl;
-    std::cout << last4Cps[3].transpose() << std::endl;
+    // std::cout << "\nThis satisfies the LP: " << std::endl;
+    // std::cout << last4Cps[0].transpose() << std::endl;
+    // std::cout << last4Cps[1].transpose() << std::endl;
+    // std::cout << last4Cps[2].transpose() << std::endl;
+    // std::cout << last4Cps[3].transpose() << std::endl;
 
-    std::cout << "(which, expressed in OV form, it is)" << std::endl;
+    // std::cout << "(which, expressed in OV form, it is)" << std::endl;
 
-    transformBSpline2Minvo(last4Cps);
-    std::cout << last4Cps[0].transpose() << std::endl;
-    std::cout << last4Cps[1].transpose() << std::endl;
-    std::cout << last4Cps[2].transpose() << std::endl;
-    std::cout << last4Cps[3].transpose() << std::endl;
-    transformMinvo2BSpline(last4Cps);
+    // transformBSpline2Minvo(last4Cps);
+    // std::cout << last4Cps[0].transpose() << std::endl;
+    // std::cout << last4Cps[1].transpose() << std::endl;
+    // std::cout << last4Cps[2].transpose() << std::endl;
+    // std::cout << last4Cps[3].transpose() << std::endl;
+    // transformMinvo2BSpline(last4Cps);
   }
   return true;
 }

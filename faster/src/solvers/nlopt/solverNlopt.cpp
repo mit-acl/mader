@@ -278,9 +278,9 @@ void SolverNlopt::generateAStarGuess()
 
   SplineAStar myAStarSolver(num_pol_, deg_pol_, hulls_.size(), t_min_, t_max_, hulls_);
 
-  std::cout << "q0_=" << q0_.transpose() << std::endl;
-  std::cout << "q1_=" << q1_.transpose() << std::endl;
-  std::cout << "q2_=" << q2_.transpose() << std::endl;
+  // std::cout << "q0_=" << q0_.transpose() << std::endl;
+  // std::cout << "q1_=" << q1_.transpose() << std::endl;
+  // std::cout << "q2_=" << q2_.transpose() << std::endl;
 
   myAStarSolver.setq0q1q2(q0_, q1_, q2_);
   myAStarSolver.setGoal(final_state_.pos);
@@ -1443,15 +1443,15 @@ bool SolverNlopt::optimize()
 
   qndtoX(q_guess_, n_guess_, d_guess_, x_);
 
-  std::cout << bold << blue << "GUESSES: " << reset << std::endl;
-  std::cout << "q_guess_ is\n" << std::endl;
-  printStd(q_guess_);
+  // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
+  // std::cout << "q_guess_ is\n" << std::endl;
+  // printStd(q_guess_);
 
-  std::cout << "n_guess_ is\n" << std::endl;
-  printStd(n_guess_);
+  // std::cout << "n_guess_ is\n" << std::endl;
+  // printStd(n_guess_);
 
-  std::cout << "d_guess_ is\n" << std::endl;
-  printStd(d_guess_);
+  // std::cout << "d_guess_ is\n" << std::endl;
+  // printStd(d_guess_);
 
   // toEigen(x_, q_guess_, n_guess_);
 
@@ -1511,7 +1511,7 @@ bool SolverNlopt::optimize()
     return false;
   }
 
-  printQND(q, n, d);
+  // printQND(q, n, d);
 
   /*  std::cout << on_green << bold << "Solution found: " << time_first_feasible_solution_ << "/" << opt_timer_ << reset
               << std::endl;*/

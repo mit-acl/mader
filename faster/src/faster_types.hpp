@@ -22,6 +22,7 @@ struct dynTrajCompiled
   std::vector<exprtk::expression<double>> function;
   std::vector<double> bbox;
   int id;
+  double time_received;  // time at which this trajectory was received from an agent
 };
 
 struct polytope
@@ -44,6 +45,8 @@ struct PieceWisePol
   std::vector<double> times;  // [t0,t1,t2,...,tn+1]
 
   // coefficients has n elements
+  // The coeffients are such that pol(t)=coeff_of_that_interval*[u^3 u^2 u 1]
+  // with u=(t-t_min_that_interval)/(t_max_that_interval- t_min_that_interval)
   std::vector<Eigen::Matrix<double, 4, 1>> coeff_x;  // [a b c d]' of Int0 , [a b c d]' of Int1,...
   std::vector<Eigen::Matrix<double, 4, 1>> coeff_y;  // [a b c d]' of Int0 , [a b c d]' of Int1,...
   std::vector<Eigen::Matrix<double, 4, 1>> coeff_z;  // [a b c d]' of Int0 , [a b c d]' of Int1,...
@@ -68,6 +71,16 @@ struct PieceWisePol
       result.x() = coeff_x.back().transpose() * tmp;
       result.y() = coeff_y.back().transpose() * tmp;
       result.z() = coeff_z.back().transpose() * tmp;
+      return result;
+    }
+    if (t < times[0])
+    {  // return the first value of the polynomial in the first interval
+      Eigen::Matrix<double, 4, 1> tmp;
+      double u = 0;
+      tmp << u * u * u, u * u, u, 1.0;
+      result.x() = coeff_x.front().transpose() * tmp;
+      result.y() = coeff_y.front().transpose() * tmp;
+      result.z() = coeff_z.front().transpose() * tmp;
       return result;
     }
     //(times - 1) is the number of intervals
@@ -119,6 +132,7 @@ struct parameters
   int N_safe;
 
   double Ra;
+  double R_consider_others;
   double w_max;
   double alpha_filter_dyaw;
 
@@ -174,6 +188,8 @@ struct parameters
   int a_star_samp_z = 7;
 
   std::string basis;
+
+  double res_plot_traj;
 
   /*  double kw;
     double kyaw;

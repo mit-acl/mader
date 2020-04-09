@@ -15,7 +15,7 @@
 
 
     <!-- Start dynamic obstacles -->
-	<node ns="SQ02" name="dynamic_obstacles" pkg="faster" type="dynamic_obstacles.py" output="screen"/>
+	<node name="dynamic_obstacles" pkg="faster" type="dynamic_obstacles.py" output="screen"/>
 	
 
 </launch>

@@ -3,6 +3,7 @@
 	<arg name="x" default="0" />
 	<arg name="y" default="0" />
 	<arg name="z" default="0" />
+	<arg name="yaw" default="0.0" />
 
 	
 	<!-- Start faster commands -->
@@ -15,6 +16,7 @@
         <arg name="x" value="$(arg x)"/>
         <arg name="y" value="$(arg y)"/>
         <arg name="z" value="$(arg z)"/>
+        <arg name="yaw" default="$(arg yaw)"/>
  	 </include> 
 
 

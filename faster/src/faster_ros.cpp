@@ -27,6 +27,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "N_whole", par_.N_whole);
 
   safeGetParam(nh_, "Ra", par_.Ra);
+  safeGetParam(nh_, "R_consider_others", par_.R_consider_others);
   safeGetParam(nh_, "w_max", par_.w_max);
   safeGetParam(nh_, "alpha_filter_dyaw", par_.alpha_filter_dyaw);
 
@@ -77,6 +78,8 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "a_star_samp_z", par_.a_star_samp_z);
 
   safeGetParam(nh_, "basis", par_.basis);
+
+  safeGetParam(nh_, "res_plot_traj", par_.res_plot_traj);
 
   // Parameters for the ground robot (jackal):
   /*  safeGetParam(nh_,"kw", par_.kw);
@@ -130,6 +133,13 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
               << std::endl;  // To decrease the probability of not finding a solution
     abort();
   }
+
+  if (par_.R_consider_others < 2 * par_.Ra)
+  {
+    std::cout << bold << red << "Needed: par_.R_consider_others < 2 * par_.Ra" << reset << std::endl;
+    abort();
+  }
+
   /*  if (par_.Ra_max > (par_.wdx / 2.0) || (par_.Ra_max > par_.wdy / 2.0))
     {
       std::cout << bold << red << "Needed: par_.Ra_max > par_.wdx/2.0|| par_.Ra_max > par_.wdy/2.0" << reset
@@ -276,7 +286,7 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   bool exists = (obs_ptr != std::end(trajs_));
 
   Eigen::Vector3d pos(msg.pos.x, msg.pos.y, msg.pos.z);
-  bool near_me = ((state_.pos - pos).norm() < 2 * par_.Ra);
+  bool near_me = ((state_.pos - pos).norm() < par_.R_consider_others);
   // std::cout << "dist= " << (state_.pos - pos).norm() << std::endl;
 
   dynTraj tmp;
@@ -305,7 +315,7 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   }
   else  // not near me
   {
-    if (exists)  // remove if from the list if it exists
+    if (exists)  // remove if fromg the list if it exists
     {
       trajs_.erase(obs_ptr);
       std::cout << red << "Erasing " << (*obs_ptr).id << reset << std::endl;
@@ -388,7 +398,7 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
     jsk_rviz_plugins::OverlayText text;
     text.width = 600;
-    text.height = 400;
+    text.height = 133;
     text.left = 10;
     text.top = 10;
     text.text_size = 17;
@@ -466,10 +476,12 @@ void FasterRos::stateCB(const snapstack_msgs::State& msg)
   state_tmp.setPos(msg.pos.x, msg.pos.y, msg.pos.z);
   state_tmp.setVel(msg.vel.x, msg.vel.y, msg.vel.z);
   state_tmp.setAccel(0.0, 0.0, 0.0);
+  // std::cout << bold << red << "MSG_QUAT= " << msg.quat << reset << std::endl;
   double roll, pitch, yaw;
   quaternion2Euler(msg.quat, roll, pitch, yaw);
   state_tmp.setYaw(yaw);
   state_ = state_tmp;
+  // std::cout << bold << red << "STATE_YAW= " << state_.yaw << reset << std::endl;
   faster_ptr_->updateState(state_tmp);
 }
 
@@ -488,7 +500,7 @@ void FasterRos::modeCB(const faster_msgs::Mode& msg)
     faster_ptr_->resetInitialization();
   }
   else
-  {  // The mode changed to GO
+  {  // The mode changed to GO (the mode changes to go when takeoff is finished)
     occup_grid_sub_.subscribe();
     unknown_grid_sub_.subscribe();
 
@@ -496,6 +508,23 @@ void FasterRos::modeCB(const faster_msgs::Mode& msg)
 
     pubCBTimer_.start();
     replanCBTimer_.start();
+
+    PieceWisePol pwp;
+    pwp.times = { ros::Time::now().toSec(), ros::Time::now().toSec() + 1e10 };
+
+    Eigen::Matrix<double, 4, 1> coeff_x_interv0;  // [a b c d]' of the interval 0
+    Eigen::Matrix<double, 4, 1> coeff_y_interv0;  // [a b c d]' of the interval 0
+    Eigen::Matrix<double, 4, 1> coeff_z_interv0;  // [a b c d]' of the interval 0
+
+    coeff_x_interv0 << 0.0, 0.0, 0.0, state_.pos.x();
+    coeff_y_interv0 << 0.0, 0.0, 0.0, state_.pos.y();
+    coeff_z_interv0 << 0.0, 0.0, 0.0, state_.pos.z();
+
+    pwp.coeff_x.push_back(coeff_x_interv0);
+    pwp.coeff_y.push_back(coeff_y_interv0);
+    pwp.coeff_z.push_back(coeff_z_interv0);
+
+    publishOwnTraj(pwp);
   }
 }
 
@@ -519,6 +548,7 @@ void FasterRos::pubCB(const ros::TimerEvent& e)
     quadGoal.header.stamp = ros::Time::now();
     quadGoal.header.frame_id = world_name_;
 
+    // std::cout << bold << blue << "[FasterRos] publishing goal= " << quadGoal.yaw << reset << std::endl;
     pub_goal_.publish(quadGoal);
 
     setpoint_.header.stamp = ros::Time::now();
@@ -610,9 +640,7 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
 
   geometry_msgs::PoseStamped temp_path;
 
-  double resolution = 10;  // higher --> more resolution when plotting the traj
-
-  int increm = (int)std::max(data.size() / resolution, 1.0);  // this is to speed up rviz
+  int increm = (int)std::max(data.size() / par_.res_plot_traj, 1.0);  // this is to speed up rviz
 
   for (int i = 0; i < data.size(); i = i + increm)
   {

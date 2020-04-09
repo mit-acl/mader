@@ -107,6 +107,10 @@ private:
 
   bool initializedStateAndTermGoal();
 
+  bool safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimized);
+
+  bool trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_init, double t_end);
+
   void removeTrajsThatWillNotAffectMe(state A, double t_start, double t_end);
 
   vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves);

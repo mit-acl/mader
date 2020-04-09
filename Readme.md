@@ -8,12 +8,11 @@ roslaunch faster faster.launch
 
 For many drones:
 ```
-roscore
 roslaunch faster faster_general.launch
-python launch_many_drones.py start
-python launch_many_drones.py faster
+roslaunch faster many_drones.launch action:=start
+roslaunch faster many_drones.launch action:=faster
 (Take off)
-python launch_many_drones.py send_goal
+roslaunch faster many_drones.launch action:=send_goal
 ```
 
 Code used for the paper **FASTER: Fast and Safe Trajectory Planner for Flights in Unknown Environments** (IROS 2019) ([pdf](https://arxiv.org/abs/1903.03558), [video](https://www.youtube.com/watch?v=gwV0YRs5IWs))

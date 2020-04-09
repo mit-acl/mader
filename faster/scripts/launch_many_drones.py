@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # coding=utf-8
 # author: thinkycx
 # date: 2018-01-11
@@ -12,48 +12,87 @@ import os
 import sys
 import time
 from random import *
+# import numpy as np
+# from pyquaternion import Quaternion
+from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
 def create_session(session_name, commands):
 
     os.system("tmux new -d -s "+str(session_name)+" -x 300 -y 300")
 
     for i in range(len(commands)):
-    	print('splitting ',i)
+        print('splitting ',i)
         os.system('tmux split-window ; tmux select-layout tiled')
    
     for i in range(len(commands)):
         os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m')
     print("Commands sent")
 
+
 if __name__ == '__main__':
     commands = []
-    num_of_agents=2;
+    num_of_agents=16; #even number
+    radius=6;
     half_of_agents=num_of_agents/2.0
     dist_bet_groups=6.0
     random_01=randint(0, 1)
     print("random_01= ", random_01)
 
+    positions=[];
+    angles=[];
+
+    z_value=0.0;
+
     for i in range(1,num_of_agents+1):
-    	group = (i>half_of_agents)
+        theta=(2*math.pi)*i/(1.0*num_of_agents)
+        angles.append(theta)
 
-    	x= i if group == 0 else (i-half_of_agents)
-    	y= dist_bet_groups*group   
-    	z=0
+    for i in range(1,num_of_agents+1):
 
-        goal_x=half_of_agents-x
-        goal_y=random_01*(dist_bet_groups-y) + (1-random_01)*y 
-        goal_z=0
+        # group = (i>half_of_agents)
 
-    	quad="SQ0" + str(i) + "s";
-    	print ("quad= ",quad)
+        # x= i if group == 0 else (i-half_of_agents)
+        # y= dist_bet_groups*group   
+        # z=0
+
+        # goal_x=half_of_agents-x
+        # goal_y=random_01*(dist_bet_groups-y) + (1-random_01)*y 
+        # goal_z=0
+
+        theta=angles[i-1];
+
+        x=radius*math.cos(theta)
+        y=radius*math.sin(theta)
+        z=z_value
+        z_value=1.0 #From now on, stay on z=1 meter
+
+        pitch=0.0;
+        roll=0.0;
+        yaw= theta+math.pi  
+
+        theta=theta+math.pi
+
+        goal_x=radius*math.cos(theta)
+        goal_y=radius*math.sin(theta)
+        goal_z=z
+
+        angles[i-1]=theta;
+
+      
+        # quat = quaternion_from_euler(yaw, pitch, roll, 'szyx')
+        # print (quat)
+
+
+        quad="SQ0" + str(i) + "s";
+        print ("quad= ",quad)
         print ("goal_y= ",goal_y)
         print ("goal_x= ",goal_x)
-    	if(sys.argv[1]=="start"):
-        	commands.append("roslaunch faster faster_specific.launch gazebo:=false quad:="+quad+" x:="+str(x)+" y:="+str(y)+" z:="+str(z))
-    	if(sys.argv[1]=="send_goal"):
-    		commands.append("rostopic pub /"+quad+"/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: 'world'}, pose: {position: {x: "+str(goal_x)+", y: "+str(goal_y)+", z: "+str(goal_z)+"}, orientation: {w: 1.0}}}'")
-    	if(sys.argv[1]=="faster"):
-    		commands.append("roslaunch faster faster.launch quad:="+quad)
+        if(sys.argv[1]=="start"):
+            commands.append("roslaunch faster faster_specific.launch gazebo:=false quad:="+quad+" x:="+str(x)+" y:="+str(y)+" z:="+str(z)+" yaw:="+str(yaw))
+        if(sys.argv[1]=="send_goal"):
+            commands.append("rostopic pub /"+quad+"/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: 'world'}, pose: {position: {x: "+str(goal_x)+", y: "+str(goal_y)+", z: "+str(goal_z)+"}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}}}'")
+        if(sys.argv[1]=="faster"):
+            commands.append("roslaunch faster faster.launch quad:="+quad)
     print("len(commands)= " , len(commands))
     session_name=sys.argv[1] + "_session"
     os.system("tmux kill-session -t" + session_name)
