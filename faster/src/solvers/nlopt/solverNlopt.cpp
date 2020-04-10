@@ -295,7 +295,7 @@ void SolverNlopt::generateAStarGuess()
   myAStarSolver.setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
   myAStarSolver.setGoalSize(goal_size);
 
-  myAStarSolver.setBias(1000000.0);
+  myAStarSolver.setBias(a_star_bias_);
   if (basis_ == MINVO)
   {
     myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);
@@ -986,6 +986,11 @@ void SolverNlopt::transformBSpline2Minvo(Eigen::Matrix<double, 4, 3> &Qbs, Eigen
 void SolverNlopt::setBasisUsedForCollision(int basis)
 {
   basis_ = basis;
+}
+
+void SolverNlopt::setAStarBias(double a_star_bias)
+{
+  a_star_bias_ = a_star_bias;
 }
 
 // m is the number of constraints, nn is the number of variables

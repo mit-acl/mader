@@ -31,8 +31,8 @@ def create_session(session_name, commands):
 
 if __name__ == '__main__':
     commands = []
-    num_of_agents=16; #even number
-    radius=6;
+    num_of_agents=4; #even number
+    radius=4.5;
     half_of_agents=num_of_agents/2.0
     dist_bet_groups=6.0
     random_01=randint(0, 1)
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     if(sys.argv[1]!="send_goal"):
         os.system("tmux attach") #comment if you don't want to visualize all the terminals
     else: ##if send_goal, kill after some time
-        time.sleep(1.5);
+        time.sleep(num_of_agents); #The more agents, the more I've to wait to make sure the goal is sent correctly
         os.system("tmux kill-session -t" + session_name)
 
 

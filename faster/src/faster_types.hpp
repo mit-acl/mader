@@ -187,6 +187,8 @@ struct parameters
   int a_star_samp_y = 7;
   int a_star_samp_z = 7;
 
+  double a_star_bias = 1.0;
+
   std::string basis;
 
   double res_plot_traj;

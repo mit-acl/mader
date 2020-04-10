@@ -1259,6 +1259,8 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   {
     snlopt.setBasisUsedForCollision(snlopt.B_SPLINE);
   }
+
+  snlopt.setAStarBias(par_.a_star_bias);
   snlopt.setHulls(hulls_std);
   snlopt.setDistanceToUseStraightLine(par_.Ra / 2.0);
   snlopt.setKappaAndMu(par_.kappa, par_.mu);

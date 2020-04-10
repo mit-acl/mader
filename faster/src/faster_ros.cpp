@@ -77,6 +77,8 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "a_star_samp_y", par_.a_star_samp_y);
   safeGetParam(nh_, "a_star_samp_z", par_.a_star_samp_z);
 
+  safeGetParam(nh_, "a_star_bias", par_.a_star_bias);
+
   safeGetParam(nh_, "basis", par_.basis);
 
   safeGetParam(nh_, "res_plot_traj", par_.res_plot_traj);
@@ -190,7 +192,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   pub_traj_whole_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_whole_colored", 1);
   pub_traj_safe_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
   pub_cloud_jps_ = nh_.advertise<sensor_msgs::PointCloud2>("cloud_jps", 1);
-  pub_traj_ = nh_.advertise<faster_msgs::DynTraj>("/trajs", 1);
+  pub_traj_ = nh_.advertise<faster_msgs::DynTraj>("/trajs", 1, true);  // The last parameter is latched or not
 
   // Subscribers
   occup_grid_sub_.subscribe(nh_, "occup_grid", 1);

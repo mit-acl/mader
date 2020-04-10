@@ -39,8 +39,8 @@ public:
   void setMaxRuntime(double deltaT);
 
   // Guesses
-  void useJPSGuess(vec_Vecf<3> &jps_path);
-  void useRRTGuess();
+  /*  void useJPSGuess(vec_Vecf<3> &jps_path);
+    void useRRTGuess();*/
 
   void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
 
@@ -60,6 +60,8 @@ public:
   double getTimeNeeded();
 
   void setBasisUsedForCollision(int basis);
+
+  void setAStarBias(double a_star_bias);
 
   int B_SPLINE = 1;  // B-Spline Basis
   int MINVO = 2;     // Minimum volume basis
@@ -276,5 +278,7 @@ private:
   // transformation between the B-spline control points and the optimal volume control points
   Eigen::Matrix<double, 4, 4> Mbs2mv_;
   Eigen::Matrix<double, 4, 4> Mbs2mv_inverse_;
+
+  double a_star_bias_ = 1.0;
 };
 #endif

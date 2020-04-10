@@ -55,7 +55,7 @@ else(GUROBI_FOUND)
 endif(GUROBI_FOUND)
 
 
-set(CMAKE_BUILD_TYPE RelWithDebInfo) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo) or Degub
+set(CMAKE_BUILD_TYPE Release) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo) or Debug
 
 include_directories(${GUROBI_INCLUDE_DIRS})
 #set(GUROBI_LIBRARIES "${GUROBI_CXX_LIBRARY};${GUROBI_LIBRARY}" )
