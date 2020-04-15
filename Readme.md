@@ -15,6 +15,8 @@ roslaunch faster many_drones.launch action:=faster
 roslaunch faster many_drones.launch action:=send_goal
 ```
 
+Note that 'CGal' takes a lot to compile if you use RelWithDebugInfo. Use Release instead (see [this](https://www.cgal.org/FAQ.html#compilation_speed)  )
+
 Code used for the paper **FASTER: Fast and Safe Trajectory Planner for Flights in Unknown Environments** (IROS 2019) ([pdf](https://arxiv.org/abs/1903.03558), [video](https://www.youtube.com/watch?v=gwV0YRs5IWs))
 
 ```
