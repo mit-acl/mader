@@ -175,10 +175,11 @@ vec_E<Polyhedron<3>> Faster::vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& con
 CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_start, double t_end)
 {
   int samples_per_interval = std::max(par_.samples_per_interval, 4);  // at least 4 samples per interval
-  double inc = (t_end - t_start) / (1.0 * samples_per_interval);
+  double inc = (t_end - t_start) / (1.0 * (samples_per_interval - 1));
 
   std::vector<Point_3> points;
 
+  // Will always have a sample at the beginning of the interval, and another at the end.
   for (int i = 0; i < samples_per_interval; i++)
   {
     // Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
