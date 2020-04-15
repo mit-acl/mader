@@ -380,7 +380,7 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
                                          planes_guesses, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
 
     // Delete markers to publish stuff
-    visual_tools_->deleteAllMarkers();
+    // visual_tools_->deleteAllMarkers();
     visual_tools_->enableBatchPublishing();
 
     pcl::PCLPointCloud2 pcloud_jps2;
@@ -511,6 +511,10 @@ void FasterRos::stateCB(const snapstack_msgs::State& msg)
 
     publishOwnTraj(pwp);
     published_initial_position_ = true;
+  }
+  if (faster_ptr_->hasReachedGoal() == false)
+  {
+    pubActualTraj();
   }
 }
 
@@ -680,7 +684,7 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
     pub_traj_safe_.publish(traj);
   }
 
-  clearMarkerColoredTraj();
+  // clearMarkerColoredTraj();
   clearMarkerArray(&traj_committed_colored_, &pub_traj_committed_colored_);
   clearMarkerArray(&traj_whole_colored_, &pub_traj_whole_colored_);
   clearMarkerArray(&traj_safe_colored_, &pub_traj_safe_colored_);
@@ -738,21 +742,35 @@ void FasterRos::pubActualTraj()
   visualization_msgs::Marker m;
   m.type = visualization_msgs::Marker::ARROW;
   m.action = visualization_msgs::Marker::ADD;
-  m.id = actual_trajID_ % 3000;  // Start the id again after 300 points published (if not RVIZ goes very slow)
+  m.id = actual_trajID_;  // % 3000;  // Start the id again after ___ points published (if not RVIZ goes very slow)
+  m.ns = "ActualTraj_" + name_drone_;
   actual_trajID_++;
-  m.color = color(RED_NORMAL);
+  m.color = getColorJet(current_state.vel.norm(), 0, par_.v_max);  // color(RED_NORMAL);
   m.scale.x = 0.15;
-  m.scale.y = 0;
-  m.scale.z = 0;
+  m.scale.y = 0.0001;
+  m.scale.z = 0.0001;
   m.header.stamp = ros::Time::now();
   m.header.frame_id = world_name_;
+
+  // pose is actually not used in the marker, but if not RVIZ complains about the quaternion
+  m.pose.position = pointOrigin();
+  m.pose.orientation.x = 0.0;
+  m.pose.orientation.y = 0.0;
+  m.pose.orientation.z = 0.0;
+  m.pose.orientation.w = 1.0;
 
   geometry_msgs::Point p;
   p = eigen2point(act_pos);
   m.points.push_back(p_last);
   m.points.push_back(p);
-  pub_actual_traj_.publish(m);
   p_last = p;
+
+  if (m.id == 0)
+  {
+    return;
+  }
+
+  pub_actual_traj_.publish(m);
 }
 
 /*void FasterRos::pubG(state G)

@@ -307,6 +307,11 @@ void Faster::removeTrajsThatWillNotAffectMe(state A, double t_start, double t_en
     }*/
 }
 
+bool Faster::hasReachedGoal()
+{
+  return (drone_status_ == DroneStatus::GOAL_REACHED);
+}
+
 ConvexHullsOfCurve Faster::convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end)
 {
   ConvexHullsOfCurve convexHulls;
