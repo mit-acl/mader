@@ -1,10 +1,8 @@
-#Params for CVX planner
-
 use_ff: true # use feedforward
 visual: true #publish visualization stuff
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.3    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
-drone_radius: 0.35  #(m) Used for collision checking
+drone_radius: 0.3  #(m) Used for collision checking
 
 N_whole: 6 #[-] Number of discretization points in the whole trajectory
 N_safe: 6 #[-] Number of discretization points in the safe path
@@ -20,9 +18,9 @@ inflation_jps: 0.35  #[m] The obstacles are inflated (to run JPS) by this amount
 factor_jps: 1  #[m] JPS is run with resolution=factor_jps*(resolution of the map)
 
 #For multi-agent simulations
-v_max: 6.5   #[m/s]  
-a_max: 15.0   #[m/s2] 
-j_max: 25.0  #[m/s3] 
+v_max: 6.0   #[m/s]  
+a_max: 10.0   #[m/s2] 
+j_max: 20.0  #[m/s3] 
 
 #For single-agent simulations
 # v_max: 7.0   #[m/s]  7.0

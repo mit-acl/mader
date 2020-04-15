@@ -134,7 +134,7 @@ void Faster::updateTrajObstacles(std::vector<dynTraj> trajs)
 
     traj_compiled.bbox = traj.bbox;
     traj_compiled.id = traj.id;
-    traj_compiled.time_received = ros::Time::now().toSec();
+    traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
     trajs_.push_back(traj_compiled);
   }
 
@@ -842,13 +842,13 @@ bool Faster::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_op
         min1.y() <= max2.y() && min2.y() <= max1.y() &&  /////////////////////
         min1.z() <= max2.z() && min2.z() <= max1.z())
     {
-      std::cout << bold << blue << "These two bounding boxes overlap" << reset << std::endl;
-      std::cout << "1 pos and diagonal:" << std::endl;
-      std::cout << bold << blue << pos_1.transpose() << reset << std::endl;
-      std::cout << bold << blue << positive_half_diagonal1.transpose() << reset << std::endl;
-      std::cout << "2 pos and diagonal:" << std::endl;
-      std::cout << bold << blue << pos_2.transpose() << reset << std::endl;
-      std::cout << bold << blue << positive_half_diagonal2.transpose() << reset << std::endl;
+      // std::cout << bold << blue << "These two bounding boxes overlap" << reset << std::endl;
+      // std::cout << "1 pos and diagonal:" << std::endl;
+      // std::cout << bold << blue << pos_1.transpose() << reset << std::endl;
+      // std::cout << bold << blue << positive_half_diagonal1.transpose() << reset << std::endl;
+      // std::cout << "2 pos and diagonal:" << std::endl;
+      // std::cout << bold << blue << pos_2.transpose() << reset << std::endl;
+      // std::cout << bold << blue << positive_half_diagonal2.transpose() << reset << std::endl;
       return true;  // the two bounding boxes overlap
     }
   }
@@ -866,6 +866,8 @@ bool Faster::safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimize
     {
       if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
       {
+        std::cout << "My traj collides with traj of " << traj.id << ", received at " << std::setprecision(12)
+                  << traj.time_received << ", opt at " << time_init_opt << reset << std::endl;
         result = false;  // will have to redo the optimization
         break;
       }
@@ -952,28 +954,29 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   }
 
   std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
-  std::cout << bold << on_white << "******************************************************" << reset << std::endl;
+  // std::cout << bold << on_white << "******************************************************" << reset << std::endl;
 
   /////////////////////////////////// DEBUGGING ///////////////////////////////////
   mtx_trajs_.lock();
-  std::cout << bold << blue << "Using these trajectories" << reset << std::endl;
+  std::cout << bold << blue << "Using these trajectories: " << reset << std::endl;
   /*  traj_compiled.id = traj.id;
     trajs_.push_back(traj_compiled);*/
   int tmp_index_traj = 0;
   for (auto traj : trajs_)
   {
-    double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+    std::cout << traj.id << ", ";
+    // double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
 
-    t_ = time_now;
+    // t_ = time_now;
 
-    Eigen::Vector3d center_obs;
-    center_obs << trajs_[tmp_index_traj].function[0].value(),  ////////////////////
-        trajs_[tmp_index_traj].function[1].value(),            ////////////////
-        trajs_[tmp_index_traj].function[2].value();            /////////////////
+    // Eigen::Vector3d center_obs;
+    // center_obs << trajs_[tmp_index_traj].function[0].value(),  ////////////////////
+    //     trajs_[tmp_index_traj].function[1].value(),            ////////////////
+    //     trajs_[tmp_index_traj].function[2].value();            /////////////////
 
-    std::cout << traj.id << ", which is in " << center_obs.transpose() << std::endl;
+    // std::cout << traj.id << ", which is in " << center_obs.transpose() << std::endl;
 
-    tmp_index_traj = tmp_index_traj + 1;
+    // tmp_index_traj = tmp_index_traj + 1;
   }
   std::cout << std::endl;
   mtx_trajs_.unlock();
@@ -1314,7 +1317,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   std::cout << on_cyan << bold << "Solved so far" << solutions_found_ << "/" << total_replannings_ << reset
             << std::endl;
 
-  std::cout << "Calling optimize" << std::endl;
+  std::cout << "[FA] Calling NL" << std::endl;
   bool result = snlopt.optimize();
 
   num_of_LPs_run += snlopt.getNumOfLPsRun();
@@ -1381,7 +1384,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   bool result_appending = appendToPlan(k_end_whole, sg_whole_.X_temp_, k_safe, snlopt.X_temp_);
 
-  std::cout << "After appendToPlan, plan_= " << std::endl;
+  // std::cout << "After appendToPlan, plan_= " << std::endl;
   // plan_.print();
 
   if (result_appending != true)
@@ -1389,26 +1392,26 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
     return false;
   }
 
-  std::cout << std::setprecision(30) << "pwp_now.times[0]=" << pwp_now.times[0] << std::endl;
-  std::cout << "t_min= " << t_min << std::endl;
+  // std::cout << std::setprecision(30) << "pwp_now.times[0]=" << pwp_now.times[0] << std::endl;
+  // std::cout << "t_min= " << t_min << std::endl;
 
   if (exists_previous_pwp_ == true)
   {
-    std::cout << "k_whole= " << k_whole << std::endl;
-    std::cout << "k_end_whole= " << k_end_whole << std::endl;
+    // std::cout << "k_whole= " << k_whole << std::endl;
+    // std::cout << "k_end_whole= " << k_end_whole << std::endl;
     pwp_out = composePieceWisePol(time_now, par_.dc, pwp_prev_, pwp_now);
     pwp_prev_ = pwp_out;
   }
   else
   {  //
-    std::cout << "exists_previous_pwp_ = false" << std::endl;
+    // std::cout << "exists_previous_pwp_ = false" << std::endl;
     pwp_out = pwp_now;
     pwp_prev_ = pwp_now;
     exists_previous_pwp_ = true;
   }
 
-  std::cout << std::setprecision(30) << "pwp_composed.times[0]=" << pwp_prev_.times[0] << std::endl;
-  std::cout << "t_min= " << t_min << std::endl;
+  // std::cout << std::setprecision(30) << "pwp_composed.times[0]=" << pwp_prev_.times[0] << std::endl;
+  // std::cout << "t_min= " << t_min << std::endl;
 
   X_safe_out = plan_.toStdVector();
   // novale_already_done_ = true;
@@ -1677,16 +1680,16 @@ void Faster::changeDroneStatus(int new_status)
   switch (drone_status_)
   {
     case DroneStatus::YAWING:
-      std::cout << bold << "status_=YAWING" << reset;
+      std::cout << bold << "YAWING" << reset;
       break;
     case DroneStatus::TRAVELING:
-      std::cout << bold << "status_=TRAVELING" << reset;
+      std::cout << bold << "TRAVELING" << reset;
       break;
     case DroneStatus::GOAL_SEEN:
-      std::cout << bold << "status_=GOAL_SEEN" << reset;
+      std::cout << bold << "GOAL_SEEN" << reset;
       break;
     case DroneStatus::GOAL_REACHED:
-      std::cout << bold << "status_=GOAL_REACHED" << reset;
+      std::cout << bold << "GOAL_REACHED" << reset;
       break;
   }
   std::cout << " to ";
@@ -1694,16 +1697,16 @@ void Faster::changeDroneStatus(int new_status)
   switch (new_status)
   {
     case DroneStatus::YAWING:
-      std::cout << bold << "status_=YAWING" << reset;
+      std::cout << bold << "YAWING" << reset;
       break;
     case DroneStatus::TRAVELING:
-      std::cout << bold << "status_=TRAVELING" << reset;
+      std::cout << bold << "TRAVELING" << reset;
       break;
     case DroneStatus::GOAL_SEEN:
-      std::cout << bold << "status_=GOAL_SEEN" << reset;
+      std::cout << bold << "GOAL_SEEN" << reset;
       break;
     case DroneStatus::GOAL_REACHED:
-      std::cout << bold << "status_=GOAL_REACHED" << reset;
+      std::cout << bold << "GOAL_REACHED" << reset;
       break;
   }
 

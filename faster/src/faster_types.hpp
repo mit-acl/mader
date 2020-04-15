@@ -15,6 +15,7 @@ struct dynTraj
   std::vector<std::string> function;
   std::vector<double> bbox;
   int id;
+  double time_received;  // time at which this trajectory was received from an agent
 };
 
 struct dynTrajCompiled

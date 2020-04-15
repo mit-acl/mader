@@ -264,8 +264,7 @@ void SolverNlopt::setAStarSamples(int a_star_samp_x, int a_star_samp_y, int a_st
 
 void SolverNlopt::generateAStarGuess()
 {
-  std::cout << bold << red << "Running A*, allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << reset
-            << std::endl;
+  std::cout << "[NL] Running A*, allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << std::endl;
   n_guess_.clear();
   q_guess_.clear();
   d_guess_.clear();
@@ -313,8 +312,8 @@ void SolverNlopt::generateAStarGuess()
   bool solved = myAStarSolver.run(q, n, d);
 
   num_of_LPs_run_ = myAStarSolver.getNumOfLPsRun();
-  std::cout << "After Running solved, n= " << std::endl;
-  printStd(n);
+  // std::cout << "After Running solved, n= " << std::endl;
+  // printStd(n);
 
   if (solved == true)
   {
@@ -325,7 +324,7 @@ void SolverNlopt::generateAStarGuess()
   }
   else
   {
-    std::cout << bold << red << "A* didn't find a solution, using straight line guess" << reset << std::endl;
+    std::cout << bold << red << "[NL] A* didn't find a solution, using straight line guess" << reset << std::endl;
   }
 
   return;
@@ -352,7 +351,7 @@ void SolverNlopt::generateRandomN(std::vector<Eigen::Vector3d> &n)
     n.push_back(Eigen::Vector3d(r1, r2, r3));
   }
 
-  std::cout << "After Generating RandomN, n has size= " << n.size() << std::endl;
+  // std::cout << "After Generating RandomN, n has size= " << n.size() << std::endl;
 }
 
 void SolverNlopt::generateRandomQ(std::vector<Eigen::Vector3d> &q)
@@ -432,12 +431,12 @@ void SolverNlopt::setTminAndTmax(double t_min, double t_max)
   t_min_ = t_min;
   t_max_ = t_max;
 
-  std::cout << "t_min_= " << t_min_ << std::endl;
-  std::cout << "t_max_= " << t_max_ << std::endl;
+  // std::cout << "t_min_= " << t_min_ << std::endl;
+  // std::cout << "t_max_= " << t_max_ << std::endl;
 
   deltaT_ = (t_max_ - t_min_) / (1.0 * (M_ - 2 * p_ - 1 + 1));
 
-  std::cout << "deltaT_" << deltaT_ << std::endl;
+  // std::cout << "deltaT_" << deltaT_ << std::endl;
 
   Eigen::RowVectorXd knots(M_ + 1);
   for (int i = 0; i <= p_; i++)
@@ -593,7 +592,7 @@ bool SolverNlopt::isFeasible(const T x)
   toEigen(x, q, n, d);
   computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
 
-  std::cout << "The Infeasible Constraints are these ones:\n";
+  // std::cout << "The Infeasible Constraints are these ones:\n";
   for (int i = 0; i < num_of_constraints_; i++)
   {
     if (constraints_[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
@@ -644,8 +643,8 @@ void SolverNlopt::qndtoX(const std::vector<Eigen::Vector3d> &q, const std::vecto
 {
   x.clear();
 
-  std::cout << "q has size= " << q.size() << std::endl;
-  std::cout << "n has size= " << n.size() << std::endl;
+  // std::cout << "q has size= " << q.size() << std::endl;
+  // std::cout << "n has size= " << n.size() << std::endl;
 
   for (int i = 3; i <= lastDecCP(); i++)
   {
@@ -703,12 +702,12 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
 
   weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
 
-  std::cout << "initial_state= " << std::endl;
-  initial_state.printHorizontal();
+  /*  std::cout << "initial_state= " << std::endl;
+    initial_state.printHorizontal();
 
-  std::cout << "final_state= " << std::endl;
-  final_state.printHorizontal();
-
+    std::cout << "final_state= " << std::endl;
+    final_state.printHorizontal();
+  */
   double t1 = knots_(1);
   double t2 = knots_(2);
   double tpP1 = knots_(p_ + 1);
@@ -1463,10 +1462,10 @@ bool SolverNlopt::optimize()
   // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
   // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
-  printIndexesConstraints();
+  //  printIndexesConstraints();
 
   opt_timer_.Reset();
-  std::cout << "Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
+  std::cout << "[NL] Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
   int result = opt_->optimize(x_, minf);
   time_needed_ = opt_timer_.ElapsedMs() / 1000;
 
@@ -1487,13 +1486,13 @@ bool SolverNlopt::optimize()
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
 
-  std::cout << "result= " << getResultCode(result) << std::endl;
+  // std::cout << "[NL] result= " << getResultCode(result) << std::endl;
 
   if (failed)
   {
-    printf("nlopt failed or maximum time was reached!\n");
+    printf("[NL] nlopt failed or maximum time was reached!\n");
 
-    std::cout << on_red << bold << "Solution not found" << opt_timer_ << reset << std::endl;
+    std::cout << on_red << bold << "[NL] Solution not found" << opt_timer_ << reset << std::endl;
 
     toEigen(x_, q, n, d);
     // printInfeasibleConstraints(q, n, d);
@@ -1502,17 +1501,17 @@ bool SolverNlopt::optimize()
   }
   else if (optimal)
   {
-    std::cout << on_green << bold << "Optimal Solution found" << opt_timer_ << reset << std::endl;
+    std::cout << on_green << bold << "[NL] Optimal Solution found" << opt_timer_ << reset << std::endl;
     toEigen(x_, q, n, d);
   }
   else if (feasible_but_not_optimal)
   {
-    std::cout << on_green << bold << "Feasible Solution found" << opt_timer_ << reset << std::endl;
+    std::cout << on_green << bold << "[NL] Feasible Solution found" << opt_timer_ << reset << std::endl;
     toEigen(x_, q, n, d);  // was best_feasible_sol_so_far_
   }
   else
   {
-    std::cout << on_red << bold << "not implemented yet" << opt_timer_ << reset << std::endl;
+    std::cout << on_red << bold << "[NL] not implemented yet" << opt_timer_ << reset << std::endl;
     return false;
   }
 
@@ -1629,7 +1628,7 @@ void SolverNlopt::saturateQ(std::vector<Eigen::Vector3d> &q)
 
 void SolverNlopt::generateStraightLineGuess()
 {
-  std::cout << "Using StraightLineGuess" << std::endl;
+  // std::cout << "Using StraightLineGuess" << std::endl;
   q_guess_.clear();
   n_guess_.clear();
   d_guess_.clear();

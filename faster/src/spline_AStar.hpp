@@ -160,5 +160,7 @@ private:
   Eigen::Matrix<double, 4, 4> Mbs2ov_;
   Eigen::Matrix<double, 4, 4> Mbs2ov_inverse_;
 
+  Eigen::Vector3d epsilons_;
+
   // bool matrixExpandedNodes_[40][40][40];
 };

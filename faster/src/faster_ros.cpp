@@ -302,6 +302,8 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 
   tmp.id = msg.id;
 
+  tmp.time_received = ros::Time::now().toSec();
+
   // First let's check if the object is near me:
   if (near_me)
   {
@@ -485,6 +487,27 @@ void FasterRos::stateCB(const snapstack_msgs::State& msg)
   state_ = state_tmp;
   // std::cout << bold << red << "STATE_YAW= " << state_.yaw << reset << std::endl;
   faster_ptr_->updateState(state_tmp);
+
+  if (published_initial_position_ == false)
+  {
+    PieceWisePol pwp;
+    pwp.times = { ros::Time::now().toSec(), ros::Time::now().toSec() + 1e10 };
+
+    Eigen::Matrix<double, 4, 1> coeff_x_interv0;  // [a b c d]' of the interval 0
+    Eigen::Matrix<double, 4, 1> coeff_y_interv0;  // [a b c d]' of the interval 0
+    Eigen::Matrix<double, 4, 1> coeff_z_interv0;  // [a b c d]' of the interval 0
+
+    coeff_x_interv0 << 0.0, 0.0, 0.0, state_.pos.x();
+    coeff_y_interv0 << 0.0, 0.0, 0.0, state_.pos.y();
+    coeff_z_interv0 << 0.0, 0.0, 0.0, state_.pos.z();
+
+    pwp.coeff_x.push_back(coeff_x_interv0);
+    pwp.coeff_y.push_back(coeff_y_interv0);
+    pwp.coeff_z.push_back(coeff_z_interv0);
+
+    publishOwnTraj(pwp);
+    published_initial_position_ = true;
+  }
 }
 
 void FasterRos::modeCB(const faster_msgs::Mode& msg)
@@ -510,23 +533,6 @@ void FasterRos::modeCB(const faster_msgs::Mode& msg)
 
     pubCBTimer_.start();
     replanCBTimer_.start();
-
-    PieceWisePol pwp;
-    pwp.times = { ros::Time::now().toSec(), ros::Time::now().toSec() + 1e10 };
-
-    Eigen::Matrix<double, 4, 1> coeff_x_interv0;  // [a b c d]' of the interval 0
-    Eigen::Matrix<double, 4, 1> coeff_y_interv0;  // [a b c d]' of the interval 0
-    Eigen::Matrix<double, 4, 1> coeff_z_interv0;  // [a b c d]' of the interval 0
-
-    coeff_x_interv0 << 0.0, 0.0, 0.0, state_.pos.x();
-    coeff_y_interv0 << 0.0, 0.0, 0.0, state_.pos.y();
-    coeff_z_interv0 << 0.0, 0.0, 0.0, state_.pos.z();
-
-    pwp.coeff_x.push_back(coeff_x_interv0);
-    pwp.coeff_y.push_back(coeff_y_interv0);
-    pwp.coeff_z.push_back(coeff_z_interv0);
-
-    publishOwnTraj(pwp);
   }
 }
 

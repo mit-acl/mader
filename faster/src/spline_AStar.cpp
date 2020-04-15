@@ -10,6 +10,8 @@ using namespace termcolor;
 #define WITHOUT_NUMPY  // for matplotlibcpp
 #include "matplotlibcpp.h"
 
+#include <random>
+
 typedef JPS::Timer MyTimer;
 
 namespace plt = matplotlibcpp;
@@ -56,6 +58,15 @@ SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, d
   Mbs2ov_ = (1.0 / 960.0) * Mbs2ov_;
   // Mbs2ov_ = Eigen::Matrix<double, 4, 4>::Identity();
   Mbs2ov_inverse_ = Mbs2ov_.inverse();
+
+  // std::default_random_engine eng{ static_cast<long unsigned int>(time(0)) };
+  // double delta = 0.0;
+  // std::uniform_real_distribution<> disx(1 - delta, 1 + delta);
+  // std::uniform_real_distribution<> disy(1 - delta, 1 + delta);
+  // std::uniform_real_distribution<> disz(1 - delta, 1 + delta);
+  // epsilons_ << disx(eng), disy(eng), disz(eng);
+
+  // std::cout << bold << red << "EPSILONS= " << epsilons_.transpose() << reset << std::endl;
 
   // computeInverses();
 }
@@ -111,13 +122,14 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   voxel_size_ = std::max(voxel_size_, min_voxel_size);
   voxel_size_ = std::min(voxel_size, max_voxel_size);
 
-  std::cout << red << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", " << max_voxel_size
-            << ")" << reset << std::endl;
+  // std::cout << red << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", " <<
+  // max_voxel_size
+  //           << ")" << reset << std::endl;
 
   // Make sure voxel_size_<= (min_voxel_size + max_voxel_size) / 2.0  (if not, very few nodes are expanded)
   // voxel_size_ = (min_voxel_size + max_voxel_size) / 2.0;
 
-  std::cout << "Using voxel_size_= " << voxel_size_ << std::endl;
+  // std::cout << "Using voxel_size_= " << voxel_size_ << std::endl;
 
   // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of voxel_size_
 
@@ -170,19 +182,19 @@ void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_vox
   int i = 2;
   double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
 
-  std::cout << "Computing upper and lower, qiM1=" << q1_.transpose() << ", and qi=" << q2_.transpose() << std::endl;
+  // std::cout << "Computing upper and lower, qiM1=" << q1_.transpose() << ", and qi=" << q2_.transpose() << std::endl;
 
   computeUpperAndLowerConstraints(i, q1_, q2_, constraint_xL, constraint_xU, constraint_yL, constraint_yU,
                                   constraint_zL, constraint_zU);
 
-  std::cout << "constraint_xL= " << constraint_xL << std::endl;
-  std::cout << "constraint_xU= " << constraint_xU << std::endl;
+  /*  std::cout << "constraint_xL= " << constraint_xL << std::endl;
+    std::cout << "constraint_xU= " << constraint_xU << std::endl;
 
-  std::cout << "constraint_yL= " << constraint_yL << std::endl;
-  std::cout << "constraint_yU= " << constraint_yU << std::endl;
+    std::cout << "constraint_yL= " << constraint_yL << std::endl;
+    std::cout << "constraint_yU= " << constraint_yU << std::endl;
 
-  std::cout << "constraint_zL= " << constraint_zL << std::endl;
-  std::cout << "constraint_zU= " << constraint_zU << std::endl;
+    std::cout << "constraint_zL= " << constraint_zL << std::endl;
+    std::cout << "constraint_zU= " << constraint_zU << std::endl;*/
 
   min_voxel_size = std::numeric_limits<double>::max();
   max_voxel_size = std::numeric_limits<double>::min();
@@ -506,6 +518,8 @@ double SplineAStar::h(Node& node)
     }*/
 
   double heuristics = (node.qi - goal_).norm();  // hack
+  // Eigen::Vector3d deltas2 = (node.qi - goal_).array().square();  //[Deltax^2  Deltay^2  Deltaz^2]''
+  // double heuristics = sqrt(epsilons_.dot(deltas2));              // hack
   return heuristics;
 }
 
@@ -527,10 +541,15 @@ double SplineAStar::weightEdge(Node& node1, Node& node2)  // edge cost when addi
   /*  if (node1.index == 2)
     {
       return (node2.qi - 2 * node1.qi + q1_).squaredNorm();
-    }*/
-
-  return (node2.qi - node1.qi).norm();  // / (node2.index);  // hack Comment this and comment out the other stuff
+    }
   // return (node2.qi - 2 * node1.qi + node1.previous->qi).squaredNorm();
+    */
+
+  double weight_edge = (node2.qi - node1.qi).norm();
+  // Eigen::Vector3d deltas2 = (node2.qi - node1.qi).array().square();  //[Deltax^2  Deltay^2  Deltaz^2]''
+  // double weight_edge = sqrt(epsilons_.dot(deltas2));                 // hack
+
+  return weight_edge;
 }
 
 void SplineAStar::printPath(Node& node1)
@@ -547,7 +566,7 @@ void SplineAStar::printPath(Node& node1)
 
 void SplineAStar::recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& result)
 {
-  std::cout << "Recovering path" << std::endl;
+  // std::cout << "Recovering path" << std::endl;
   result.clear();
 
   Node* tmp = node1_ptr;
@@ -557,7 +576,7 @@ void SplineAStar::recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& res
 
   while (tmp != NULL)
   {
-    std::cout << "index= " << tmp->index << ", tmp->qi=" << tmp->qi.transpose() << std::endl;
+    // std::cout << "index= " << tmp->index << ", tmp->qi=" << tmp->qi.transpose() << std::endl;
     result.insert(result.begin(), tmp->qi);
     tmp = tmp->previous;
   }
@@ -769,7 +788,7 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
         // std::cout << last4Cps[2].transpose() << std::endl;
         // std::cout << last4Cps[3].transpose() << std::endl;
 
-        std::cout << bold << red << "The node provided doesn't satisfy LPs" << reset << std::endl;
+        std::cout << bold << red << "[A*] The node provided doesn't satisfy LPs" << reset << std::endl;
         return false;
       }
 
@@ -803,7 +822,7 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
   expanded_nodes_.clear();
 
   MyTimer timer_astar(true);
-  std::cout << "this->bias_ =" << this->bias_ << std::endl;
+  // std::cout << "this->bias_ =" << this->bias_ << std::endl;
   auto cmp = [&](Node& left, Node& right) {
     return (left.g + this->bias_ * left.h) > (right.g + this->bias_ * right.h);
   };
@@ -915,12 +934,14 @@ exitloop:
       Node* node_ptr = new Node;
       node_ptr->qi = closest_result_so_far_ptr_->qi;
       node_ptr->index = j;
-      std::cout << "Filling " << j << " with " << node_ptr->qi.transpose() << std::endl;
+      std::cout << "Filled " << j << ", ";
+      // << node_ptr->qi.transpose() << std::endl;
       node_ptr->previous = closest_result_so_far_ptr_;
       closest_result_so_far_ptr_ = node_ptr;
     }
+    std::cout << std::endl;
 
-    std::cout << " and the best solution found has dist=" << closest_dist_so_far_ << std::endl;
+    // std::cout << " best solution has dist=" << closest_dist_so_far_ << std::endl;
     recoverPath(closest_result_so_far_ptr_, result);
 
     if (visual_)

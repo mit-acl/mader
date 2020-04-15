@@ -31,7 +31,7 @@ def create_session(session_name, commands):
 
 if __name__ == '__main__':
     commands = []
-    num_of_agents=4; #even number
+    num_of_agents=8; #even number
     radius=4.5;
     half_of_agents=num_of_agents/2.0
     dist_bet_groups=6.0

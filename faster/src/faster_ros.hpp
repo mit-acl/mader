@@ -225,4 +225,6 @@ private:
   int num_of_QCQPs_run_ = 0;
 
   int id_;  // id of the drone
+
+  bool published_initial_position_ = false;
 };
