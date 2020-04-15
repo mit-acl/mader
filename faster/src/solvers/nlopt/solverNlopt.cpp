@@ -14,11 +14,11 @@
 // CGAL
 #include <iostream>
 #include <list>
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/AABB_tree.h>
-#include <CGAL/AABB_traits.h>
-#include <CGAL/Polyhedron_3.h>
-#include <CGAL/AABB_face_graph_triangle_primitive.h>
+//#include <CGAL/Simple_cartesian.h>
+//#include <CGAL/AABB_tree.h>
+//#include <CGAL/AABB_traits.h>
+//#include <CGAL/Polyhedron_3.h>
+//#include <CGAL/AABB_face_graph_triangle_primitive.h>
 
 //#define DEBUG_MODE_NLOPT 1  // any value will make the debug output appear (comment line if you don't want debug)
 using namespace termcolor;
@@ -147,7 +147,7 @@ int SolverNlopt::getNumOfQCQPsRun()
   return num_of_QCQPs_run_;
 }
 
-bool SolverNlopt::intersects()
+/*bool SolverNlopt::intersects()
 {
   typedef CGAL::Simple_cartesian<double> K;
   typedef K::Point_3 Point;
@@ -180,7 +180,7 @@ bool SolverNlopt::intersects()
     std::cout << "intersection(s)" << std::endl;
   else
     std::cout << "no intersection" << std::endl;
-}
+}*/
 
 /*
 Correlated 3D Gaussian distribution

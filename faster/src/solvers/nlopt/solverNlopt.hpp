@@ -10,7 +10,7 @@
 #include "./../../utils.hpp"
 #include "./../../timer.hpp"
 //#include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
-#include <decomp_geometry/polyhedron.h>  //For Polyhedron definition
+#include <decomp_geometry/polyhedron.h>  //For Polyhedron  and Hyperplane definition
 //#include "separator.hpp"
 
 typedef JPS::Timer MyTimer;
@@ -164,7 +164,7 @@ private:
 
   int lastDecCP();
 
-  bool intersects();
+  // bool intersects();
 
   // void computeVeli(Eigen::Vector3d &vel, std::vector<Eigen::Vector3d> &q);
 
