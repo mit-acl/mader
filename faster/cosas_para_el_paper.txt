@@ -21,6 +21,7 @@
 
 Should I optimize further the initial guess, or should I go with the last feasible solution?
 
+--> Para avoid infinite loops en los checks, al final va un check en el que asumes que tarda 0 segundos
 
 La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
 
@@ -28,3 +29,5 @@ La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
 (ver lo de abajo)
 
 --> extenderlo a surfaces la MINVO basis?
+
+--> Explicar la relaci'on entre MINVO basis y probabilidad

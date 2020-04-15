@@ -1,6 +1,7 @@
 clc; close all;clear;
 set(0,'DefaultFigureWindowStyle','docked');
 
+global sol1 sol2 sol3 sol5 T1 T2 T3 T5
 global t
 syms t real
 T1=[t 1]';
@@ -20,42 +21,67 @@ sol3=load('solutionDeg3.mat');
 sol5=load('solutionDeg5.mat');
 sol7=load('solutionDeg7.mat');
 
+sol1.A=double(vpa(sol1.A,4));
+sol2.A=double(vpa(sol2.A,4));
+sol3.A=double(vpa(sol3.A,4));
+sol5.A=double(vpa(sol5.A,4));
+sol7.A=double(vpa(sol7.A,4));
+
+
+
+%%
+Abz=computeMatrixForBezier(3)
 %%
 
 % sol1=transformStructureTo01(sol1);
 % sol2=transformStructureTo01(sol2);
 % sol3=transformStructureTo01(sol3);
 % sol5=transformStructureTo01(sol5);
+% sol7=transformStructureTo01(sol7);
+
+sol1.Ai=inv(sol1.A);
+sol2.Ai=inv(sol2.A);
+sol3.Ai=inv(sol3.A);
+sol5.Ai=inv(sol5.A);
+sol7.Ai=inv(sol7.A);
+
+%Note that these are defined for [0 1]
+sol1.Abz=computeMatrixForBezier(1);
+sol2.Abz=computeMatrixForBezier(2);
+sol3.Abz=computeMatrixForBezier(3);
+sol5.Abz=computeMatrixForBezier(5);
+sol7.Abz=computeMatrixForBezier(7);
 
 %%Swap stuff
-% tmp1=sol2.A(1,:);
-% tmp3=sol2.A(3,:);
-% sol2.A(1,:)=tmp3;
-% sol2.A(3,:)=tmp1;
-% 
-% tmp1=sol3.A(1,:);
-% tmp2=sol3.A(2,:);
-% tmp3=sol3.A(3,:);
-% tmp4=sol3.A(4,:);
-% sol3.A=[tmp2; tmp3; tmp1; tmp4];
-% 
-% tmp1=sol5.A(1,:);
-% tmp2=sol5.A(2,:);
-% tmp3=sol5.A(3,:);
-% tmp4=sol5.A(4,:);
-% tmp5=sol5.A(5,:);
-% tmp6=sol5.A(6,:);
+tmp1=sol2.A(1,:);
+tmp3=sol2.A(3,:);
+sol2.A(1,:)=tmp3;
+sol2.A(3,:)=tmp1;
+
+tmp1=sol3.A(1,:);
+tmp2=sol3.A(2,:);
+tmp3=sol3.A(3,:);
+tmp4=sol3.A(4,:);
+sol3.A=[tmp2; tmp3; tmp1; tmp4];
+
+tmp1=sol5.A(1,:);
+tmp2=sol5.A(2,:);
+tmp3=sol5.A(3,:);
+tmp4=sol5.A(4,:);
+tmp5=sol5.A(5,:);
+tmp6=sol5.A(6,:);
+sol5.A=[tmp3; tmp4; tmp2; tmp5; tmp1; tmp6];
 % sol5.A=[tmp4; tmp1; tmp5; tmp3; tmp2; tmp6];
-% 
-% tmp1=sol7.A(1,:);
-% tmp2=sol7.A(2,:);
-% tmp3=sol7.A(3,:);
-% tmp4=sol7.A(4,:);
-% tmp5=sol7.A(5,:);
-% tmp6=sol7.A(6,:);
-% tmp7=sol7.A(7,:);
-% tmp8=sol7.A(8,:);
-% sol7.A=[tmp1;tmp7;tmp4;tmp6;tmp2;tmp8;tmp3;tmp5;];
+
+tmp1=sol7.A(1,:);
+tmp2=sol7.A(2,:);
+tmp3=sol7.A(3,:);
+tmp4=sol7.A(4,:);
+tmp5=sol7.A(5,:);
+tmp6=sol7.A(6,:);
+tmp7=sol7.A(7,:);
+tmp8=sol7.A(8,:);
+sol7.A=[tmp1;tmp7;tmp4;tmp6;tmp2;tmp8;tmp3;tmp5;];
 %%
 
 % 
@@ -116,6 +142,19 @@ polys1=vpa(sol1.A*T1,4);
 polys2=vpa(sol2.A*T2,4);
 polys3=vpa(sol3.A*T3,4);
 %%
+clc
+figure; hold on;
+syms a b c d real
+comb=(a*t+b)*polys1(1) + (c*t+d)*polys2(1);
+coeff_comb=vpa(coeffs(comb,t,'All'),4);
+sol=solve(coeff_comb(1:4)==sol3.A(1,1:4))
+
+a=sol.a; b=sol.b; c=sol.c; d=sol.d;
+comb=(a*t+b)*polys1(1) + (c*t+d)*polys2(1);
+
+fplot(comb,[0 1])
+% coeff_comb=vpa(coeffs(comb,t,'All'),4);
+%%
 
 % disp("=======================================")
 % comb=(a*t +b)*(sol2.A(1,:)*T2) + (c*t+d)*(sol2.A(2,:)*T2 );
@@ -172,16 +211,21 @@ sol3.AT=sol3.A';
 sol5.AT=sol5.A(1:3,:);
 sol7.AT=sol7.A(1:4,:);
 
-tmp=[zeros(1,2); sol1.AT(1,:)];
-line(tmp(:,1),tmp(:,2),'Color','red','LineStyle','--' )
-tmp=[zeros(1,2); sol1.AT(2,:)];
-line(tmp(:,1),tmp(:,2),'Color','red','LineStyle','--' )
+tmp=[zeros(1,3); [0 normalize(sol1.AT(1,:))]];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','red','LineStyle','--')
+tmp=[zeros(1,3); [0 normalize(sol1.AT(2,:))]];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','red','LineStyle','--')
 
-tmp=[zeros(1,3); sol2.AT(1,:)];
+% tmp=[zeros(1,2); sol1.AT(1,:)];
+% line(tmp(:,1),tmp(:,2),'Color','red','LineStyle','--' )
+% tmp=[zeros(1,2); sol1.AT(2,:)];
+% line(tmp(:,1),tmp(:,2),'Color','red','LineStyle','--' )
+
+tmp=[zeros(1,3); normalize(sol2.AT(1,:))];
 line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','black','LineWidth',2 )
-tmp=[zeros(1,3); sol2.AT(2,:)];
+tmp=[zeros(1,3); normalize(sol2.AT(2,:))];
 line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','black','LineWidth',2 )
-tmp=[zeros(1,3); sol2.AT(3,:)];
+tmp=[zeros(1,3); normalize(sol2.AT(3,:))];
 line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','black','LineWidth',2 )
 
 xlabel('x'); ylabel('y'); zlabel('z');
@@ -189,21 +233,21 @@ xlabel('x'); ylabel('y'); zlabel('z');
 % 1:3
 % end-2:end 
 
-tmp=[zeros(1,3); sol3.AT(1,1:3)];
+tmp=[zeros(1,3); normalize(sol3.AT(1,1:3))];
 line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','green','LineStyle','-','LineWidth',2 )
-tmp=[zeros(1,3); sol3.AT(2,1:3)];
+tmp=[zeros(1,3); normalize(sol3.AT(2,1:3))];
 line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','green','LineStyle','-')
-tmp=[zeros(1,3); sol3.AT(3,1:3)];
+tmp=[zeros(1,3); normalize(sol3.AT(3,1:3))];
 line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','green','LineStyle','-','LineWidth',2  )
-tmp=[zeros(1,3); sol3.AT(4,1:3)];
+tmp=[zeros(1,3); normalize(sol3.AT(4,1:3))];
 line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','green','LineStyle','-' )
 
-% tmp=[zeros(1,3); sol5.AT(1,end-2:end)];
-% line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','blue','LineStyle','--' )
-% tmp=[zeros(1,3); sol5.AT(2,end-2:end)];
-% line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','blue','LineStyle','--' )
-% tmp=[zeros(1,3); sol5.AT(3,end-2:end)];
-% line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','blue','LineStyle','--' )
+tmp=[zeros(1,3); normalize(sol5.AT(1,1:3))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','blue','LineStyle','--' )
+tmp=[zeros(1,3); normalize(sol5.AT(2,1:3))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','blue','LineStyle','--' )
+tmp=[zeros(1,3); normalize(sol5.AT(3,1:3))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','blue','LineStyle','--' )
 % % tmp=[zeros(1,3); sol5.AT(4,end-2:end)];
 % % line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','blue','LineStyle','--' )
 % % tmp=[zeros(1,3); sol5.AT(5,end-2:end)];
@@ -211,14 +255,14 @@ line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','green','LineStyle','-' )
 % % tmp=[zeros(1,3); sol5.AT(6,end-2:end)];
 % % line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','blue','LineStyle','--' )
 % 
-% tmp=[zeros(1,3); sol7.AT(1,end-2:end)];
-% line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','magenta','LineStyle','-' )
-% tmp=[zeros(1,3); sol7.AT(2,end-2:end)];
-% line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','magenta','LineStyle','-' )
-% tmp=[zeros(1,3); sol7.AT(3,end-2:end)];
-% line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','magenta','LineStyle','-' )
-% tmp=[zeros(1,3); sol7.AT(4,end-2:end)];
-% line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','magenta','LineStyle','-' )
+tmp=[zeros(1,3); normalize(sol7.AT(1,1:3))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','magenta','LineStyle','-' )
+tmp=[zeros(1,3); normalize(sol7.AT(2,1:3))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','magenta','LineStyle','-' )
+tmp=[zeros(1,3); normalize(sol7.AT(3,1:3))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','magenta','LineStyle','-' )
+tmp=[zeros(1,3); normalize(sol7.AT(4,1:3))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','magenta','LineStyle','-' )
 
 % coord=[sol2.AT(1,:); sol2.AT(2,:); sol3.AT(2,1:3)];
 % patch(coord(:,1),coord(:,2),coord(:,3),0.5)
@@ -238,6 +282,77 @@ alpha 0.2
 axis equal
  grid on;
  
+ 
+ %% Let us try now to do sth similar to Legrende polynomials (i.e. define
+ %%them from a 2nd order differencial equation)
+ close all;
+ figure; hold on; 
+  fplot(diff(sol1.A*T1,1), interv);
+ 
+ figure; hold on;
+%  fplot(diff(sol2.A*T2,1), interv);
+ fplot(diff(sol2.A*T2,2), interv);
+ 
+ 
+  figure; hold on;
+%  fplot(diff(sol3.A*T3,1), interv);
+%  fplot(diff(sol3.A*T3,2), interv);
+  fplot(diff(sol3.A*T3,3), interv);
+ 
+  figure; hold on;
+    fplot(diff(sol5.A*T5,5), interv);
+    
+      figure; hold on;
+    fplot(diff(sol7.A*T7,7), interv);
+    
+    %% Trying now with the inverses
+    figure; hold on;
+    sol5.Ai=inv(sol5.A);
+    plot(sol5.Ai(:,1),'o');
+    
+        sol7.Ai=inv(sol7.A);
+    plot(sol7.Ai(:,1),'o');
+%     plot(sol5.Ai(:,2),'o');
+%     plot(sol5.Ai(:,3),'o');
+    
+     sol3.Ai=inv(sol3.A);
+    plot(sol3.Ai(:,1),'o');
+%     plot(sol3.Ai(:,2),'o');
+    
+       p=polyfit([1:5]',sol5.Ai(1:end-1,1),1);
+    plot(linspace(1,6),polyval(p,linspace(1,6)))
+  %%  
+    figure; hold on;
+    sol3.Ai=inv(sol3.A);
+    plot(sol3.Ai(:,1),'o');
+    plot(sol3.Ai(:,2),'o');
+    plot(sol5.Ai(:,3),'o');
+    
+    
+
+ 
+    %%
+    figure;
+    plot(sol3.A(ceil(si,1)))
+ %%
+ figure
+ Tinv1=[(1-t);1];
+ Tinv2=[(1-t)^2 ;Tinv1];
+ 
+ result=int((sol1.A(2,:)*T1)*sol2.A(1,:)*Tinv2,-1,t)
+ fplot(result,interv)
+ %%
+ figure; hold on;
+ tmp=eig(sol1.A);
+ plot(real(tmp),imag(tmp),'o')
+  tmp=eig(sol2.A);
+ plot(real(tmp),imag(tmp),'o')
+  tmp=eig(sol3.A);
+ plot(real(tmp),imag(tmp),'o')
+  tmp=eig(sol5.A);
+ plot(real(tmp),imag(tmp),'o')
+ 
+
  %%
  a=sol2.AT(1,end-2:end-1);
  b=sol2.AT(2,end-2:end-1);
@@ -368,9 +483,12 @@ coeff_comb=vpa(coeffs(subs(comb,a, sol),t,'All'),3)
 
 
 %%
+solut(1,2)
+%% POR AHORA ESTA ES LA QUE FUNCIONA MEJOR
 figure
 clf; hold on;
 
+%%%%%%%% a        b         c       d       f        g       h
 sol=[ 0.1383, -4.194e-6, 0.1687, 0.8036, 0.4745, -0.8036, 0.4746];
 a=sol(1);
 b=sol(2);
@@ -379,15 +497,26 @@ d=sol(4);
 f=sol(5);
 g=sol(6);
 h=sol(7);
-comb=(a*t^2+ b*t +c)*sol1.A(2,:)*T1   +  (d*t +f)*sol2.A(2,:)*T2  +  (g*t +h)*sol2.A(3,:)*T2;
-fplot(comb,interv)
-comb=(a*t^2+ b*t +c)*sol1.A(1,:)*T1   +  (d*t +f)*sol2.A(1,:)*T2  +  (g*t +h)*sol2.A(2,:)*T2;
-fplot(comb,interv)
-comb=(a*t^2+ b*t +c)*sol2.A(2,:)*T2   +  (d*t +f)*sol3.A(2,:)*T3  +  (g*t +h)*sol3.A(3,:)*T3;
-fplot(comb,interv)
 
-comb=(a*t^2+ b*t +c)*sol2.A(3,:)*T2   +  (d*t +f)*sol3.A(3,:)*T3  +  (g*t +h)*sol3.A(4,:)*T3;
-fplot(comb,interv)
+comb=(a*t^2+ b*t +c)*solut(1,2)  +  (d*t +f)*solut(2,2)  +  (g*t +h)*solut(2,3);
+fplot(comb,interv);
+comb=(a*t^2+ b*t +c)*solut(1,1)  +  (d*t +f)*solut(2,1)  +  (g*t +h)*solut(2,2);
+fplot(comb,interv);
+
+
+comb=(a*t^2+ b*t +c)*solut(2,3)  +  (d*t +f)*solut(3,3)  +  0.0*(g*t +h)*solut(3,4);
+fplot(comb,interv);
+
+
+% comb=(a*t^2+ b*t +c)*solut(1,1)  +  (d*t +f)*(0.5-0.8*t)  + (g*t +h)*solut(2,1);
+fplot(comb,2*interv,'-','LineWidth',4)
+
+
+% comb=(a*t^2+ b*t +c)*solut(2,2)  +  (d*t +f)*solut(3,2) +  (g*t +h)*solut(3,3);
+% fplot(comb,interv)
+
+% comb=(a*t^2+ b*t +c)*solut(3,2)   +  (d*t +f)*solut(3,3)  +  (g*t +h)*solut(3,4);
+% fplot(comb,interv)
 
 % comb=0*(a*t^2+ b*t +c)*sol2.A(2,:)*T2   +  1*(d*t +f)*sol2.A(2,:)*T2  +  (g*t +h)*sol2.A(1,:)*T2;
 % fplot(comb,interv)
@@ -402,11 +531,11 @@ fplot(comb,interv)
 % comb=0*(a*t^2+ b*t +c)*sol1.A(1,:)*T1   +  0*(d*t +f)*sol2.A(1,:)*T2  +  (g*t +h)*sol1.A(1,:)*T1;
 % fplot(comb,interv)
 % 
-comb=0*(a*t^2+ b*t +c)*sol1.A(1,:)*T1   +  (d*t +f)*sol1.A(1,:)*T1  +  (g*t +h)*sol1.A(2,:)*T1;
-fplot(comb,interv)
-
-comb=0*(a*t^2+ b*t +c)*sol1.A(1,:)*T1   +  (d*t +f)*sol1.A(1,:)*T1  +  (g*t +h)*sol1.A(2,:)*T1;
-fplot(comb,interv)
+% comb=0*(a*t^2+ b*t +c)*sol1.A(1,:)*T1   +  (d*t +f)*sol1.A(1,:)*T1  +  (g*t +h)*sol1.A(2,:)*T1;
+% fplot(comb,interv)
+% 
+% comb=0*(a*t^2+ b*t +c)*sol1.A(1,:)*T1   +  (d*t +f)*sol1.A(1,:)*T1  +  (g*t +h)*sol1.A(2,:)*T1;
+% fplot(comb,interv)
 
 fplot(sol3.A*T3 ,'--', interv)
 fplot(sol3.A*T3 ,'--', interv)
@@ -482,7 +611,25 @@ fplot(-0.5*(t-1),interv,'m');
 fplot(-0.5*(-t-1),interv,'m');
 
 %%
+clc;
+figure; hold on
+syms a b c real
+comb=c*solut(2,1)+(b*t^2+a*t)*solut(1,1);%a*solut(2,1)+
+coeff_comb=vpa(coeffs(comb,t,'All'),3);
+sol=solve(coeff_comb(1:3)==sol3.A(1,1:3))
 
+a=sol.a;
+b=sol.b;
+c=sol.c'
+comb=(b*t^2+a*t+c)*solut(1,1);
+coeff_comb=vpa(coeffs(comb,t,'All'),3);
+
+fplot(solut(3,1),interv,'--')
+
+fplot(comb,interv);
+s=solve(comb==0);
+vpa(s,4)
+%%
 % close all
 
 figure; hold on
@@ -545,7 +692,16 @@ fplot(sqrt(sol3.A*T3) + sqrt(sol3.A(3,:)*T3),sqrt(sol3.A(2,:))+sqrt(sol3.A(4,:)*
 
 axis equal
 
+%% Note that the objective function we're trying to minimize is the same one as the wronskian of the polynomials
+figure; hold on;
 
+comb=solut(3,1)+ diff(solut(3,1)) + diff(solut(3,1),2) + diff(solut(3,1),3);
+vpa(comb)
+fplot(comb,interv)
+
+comb=solut(3,2)+ diff(solut(3,2)) + diff(solut(3,2),2) + diff(solut(3,2),3);
+vpa(comb)
+fplot(comb,interv)
 %%
 
 figure;
@@ -564,6 +720,147 @@ polarplot(theta,subs(sol2.A*T2,tmp),'k');
 
 polarplot(theta,subs(sol5.A*T5,tmp),'b'); 
 %%
+w1=wronMatrix(1);
+w2=wronMatrix(2);
+w3=wronMatrix(3);
+w5=wronMatrix(5);
+% w3=double(subs(w3,t,0));
+
+w2=subs(w2,t,0.0); 
+w3=subs(w3,t,0.0); %shouldn't depend on t (the wronskian does NOT depend on t)
+
+det(subs(w,t,2));
+%%
+figure; hold on;
+
+fplot(w2(1,3)/w2(1,2))
+
+solve(w2(1,3)==0)
+solve(w2(1,2)==0)
+
+
+fplot(w3(1,4)/w3(1,3))
+solve(w3(1,4)==0)
+solve(w3(1,3)==0)
+
+%
+figure
+fplot(diff(solut(3,2)/(solut(3,2)+solut(3,1))),interv)
+
+tmp=[zeros(1,3); normalize(w2(1,:))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','green','LineStyle','-','LineWidth',2 )
+tmp=[zeros(1,3); normalize(sol3.AT(2,1:3))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','green','LineStyle','-')
+tmp=[zeros(1,3); normalize(sol3.AT(3,1:3))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','green','LineStyle','-','LineWidth',2  )
+tmp=[zeros(1,3); normalize(sol3.AT(4,1:3))];
+line(tmp(:,1),tmp(:,2),tmp(:,3),'Color','green','LineStyle','-' )
+%%
+clc
+% interv=[0,1];
+figure; hold on;
+% syms theta
+% a=cos(theta)
+T3cos=[sin(t)^3 sin(t)^2 sin(t)^1 1]';
+
+T5cos=[sin(t)^5 sin(t)^4  T3cos']';
+
+% fplot(sol3.A*T3cos,10*interv,'--');
+
+T2cos=[cos(t)^2 cos(t)^1 1]';
+
+fplot(sol5.A*T5cos,interv,'--');
+% figure;
+% fplot(sol3.Abz*T3cos,10*interv,'--');
+%%
+figure; hold on
+% fplot(solut(3,1)+solut(3,3),interv)
+fplot(solut(3,2)+solut(3,4),interv)
+% fplot(0.5*(legendreP(3,t)+1),interv,'--')
+
+
+a=0.50
+offset=gegenbauerC(3,a,-1);
+scaling=1/(gegenbauerC(3,a,1)-offset);
+fplot(scaling*(gegenbauerC(3,a,t)-offset),interv,'--')
+
+fplot(solut(2,1)+solut(2,3),interv)
+% fplot(0.5*(legendreP(2,t)+1),interv,'--')
+
+offset=gegenbauerC(5,a,-1);
+scaling=1/(gegenbauerC(5,a,1)-offset);
+fplot(scaling*(gegenbauerC(5,a,t)-offset),interv,'--')
+
+fplot(solut(5,2)+solut(5,4)+solut(5,6),interv)
+% fplot(0.5*(legendreP(5,t)+1),interv,'--')
+%%
+figure; hold on;
+
+
+fplot(solut(3,1)+solut(3,4),interv)
+
+fplot(solut(3,2)+solut(3,3),interv)
+
+fplot(solut(5,1)+solut(5,6),interv,'--')
+% fplot(0.5*(legendreP(5,t)+1),interv,'--')
+% fplot(solut(3,2)+solut(3,4),interv)
+%%
+sol5.A_mod=[sol5.A(1,:);sol5.A(3,:);sol5.A(5,:)];
+
+sol3.A_mod=[sol3.A(1,:);sol3.A(3,:)];
+%%
+
+function result=wronMatrix(n)
+
+global sol1 sol2 sol3 sol5 sol7 T1 T2 T3 T5
+
+
+result=[];
+switch n
+    case 1
+        tmp=sol1.A*T1;
+    case 2
+        tmp=sol2.A*T2;
+    case 3
+        tmp=sol3.A*T3;
+    case 5
+        tmp=sol5.A*T5;
+    case 7
+        tmp=sol7.A*T7;
+    otherwise
+        disp('NOT IMPLEMENTED')
+        tmp="NOT IMPLEMENTED" 
+end
+
+for i=0:n
+    disp('here');
+    result=[diff(tmp,i),result];
+end
+
+result=vpa(result,3);
+
+end
+
+function result=solut(n,i)
+global sol1 sol2 sol3 sol5 sol7 T1 T2 T3 T5
+
+switch n
+    case 1
+        result=sol1.A(i,:)*T1;
+    case 2
+        result=sol2.A(i,:)*T2;
+    case 3
+        result=sol3.A(i,:)*T3;
+    case 5
+        result=sol5.A(i,:)*T5;
+    case 7
+        result=sol7.A(i,:)*T7;
+    otherwise
+        disp('NOT IMPLEMENTED')
+        result="NOT IMPLEMENTED" 
+end
+
+end
 
 function roots_transformed=transformTo01(roots)
     roots_transformed=zeros(size(roots));
@@ -612,4 +909,17 @@ result.A=A;
 result.rootsA=rootsA;
 
 
+end
+
+function an=normalize(a)
+an= a/norm(a);
+end
+function Abz=computeMatrixForBezier(degree)
+syms t
+ Abz=[];
+tmp=bernsteinMatrix(degree, t);
+    for i=1:length(tmp)
+        Abz=[Abz; coeffs(tmp(i),t,'All')];
+
+    end
 end

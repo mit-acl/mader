@@ -2,7 +2,7 @@ clear all ; close all ; clc;
 
 global deg_pol  dim coeff_pol
 
-deg_pol=3;
+deg_pol=1;
 dim=deg_pol; %The control points are in R^dim
 %Note that only the first $(echo deg_pol) numbers of coeff_pol_ will be
 %used

@@ -3,7 +3,7 @@ syms t
 
 % global R B_solved determ
 
-deg=2;
+deg=3;
 
 W=[];
 
