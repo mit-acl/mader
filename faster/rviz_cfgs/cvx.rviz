@@ -66,68 +66,22 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 1000
       Frames:
-        0:
-          Value: true
-        1:
-          Value: true
-        10:
-          Value: true
-        11:
-          Value: true
-        12:
-          Value: true
-        13:
-          Value: true
-        14:
-          Value: true
-        15:
-          Value: true
-        16:
-          Value: true
-        17:
-          Value: true
-        18:
-          Value: true
-        19:
-          Value: true
-        2:
-          Value: true
-        20:
-          Value: true
-        21:
-          Value: true
-        22:
-          Value: true
-        23:
-          Value: true
-        24:
-          Value: true
-        25:
-          Value: true
-        26:
-          Value: true
-        27:
-          Value: true
-        28:
-          Value: true
-        29:
-          Value: true
-        3:
-          Value: true
-        4:
-          Value: true
-        5:
-          Value: true
-        6:
-          Value: true
-        7:
-          Value: true
-        8:
-          Value: true
-        9:
-          Value: true
         All Enabled: false
         SQ01s:
+          Value: true
+        SQ02s:
+          Value: true
+        SQ03s:
+          Value: true
+        SQ04s:
+          Value: true
+        SQ05s:
+          Value: true
+        SQ06s:
+          Value: true
+        SQ07s:
+          Value: true
+        SQ08s:
           Value: true
         vicon:
           Value: false
@@ -140,68 +94,22 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
-          0:
-            {}
-          1:
-            {}
-          10:
-            {}
-          11:
-            {}
-          12:
-            {}
-          13:
-            {}
-          14:
-            {}
-          15:
-            {}
-          16:
-            {}
-          17:
-            {}
-          18:
-            {}
-          19:
-            {}
-          2:
-            {}
-          20:
-            {}
-          21:
-            {}
-          22:
-            {}
-          23:
-            {}
-          24:
-            {}
-          25:
-            {}
-          26:
-            {}
-          27:
-            {}
-          28:
-            {}
-          29:
-            {}
-          3:
-            {}
-          4:
-            {}
-          5:
-            {}
-          6:
-            {}
-          7:
-            {}
-          8:
-            {}
-          9:
-            {}
           vicon:
             SQ01s:
+              {}
+            SQ02s:
+              {}
+            SQ03s:
+              {}
+            SQ04s:
+              {}
+            SQ05s:
+              {}
+            SQ06s:
+              {}
+            SQ07s:
+              {}
+            SQ08s:
               {}
       Update Interval: 0
       Value: true
@@ -410,7 +318,7 @@ Visualization Manager:
       Marker Topic: /shapes
       Name: RViz_Obstacles
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -488,6 +396,14 @@ Visualization Manager:
       duration: 10
       frame: SQ01s
       line_width: 0.009999999776482582
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ01s/faster/actual_traj
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -523,18 +439,18 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.6600515842437744
-        Y: 4.126889228820801
+        X: 1.3502047061920166
+        Y: 0.27484989166259766
         Z: 8.820221410132945e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.1947973668575287
+      Pitch: 0.33479729294776917
       Target Frame: LQ01s
       Value: ThirdPersonFollower (rviz)
-      Yaw: 4.142493724822998
+      Yaw: 4.127493381500244
     Saved: ~
 Window Geometry:
   Displays:
