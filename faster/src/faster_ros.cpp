@@ -235,8 +235,11 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   // If you want another thread for the replanCB: replanCBTimer_ = nh_.createTimer(ros::Duration(par_.dc),
   // &FasterRos::replanCB, this);
 
-  name_drone_ = ros::this_node::getNamespace();
-  name_drone_.erase(0, 2);  // Erase slashes
+  name_drone_ = ros::this_node::getNamespace();  // Return also the slashes (2 in Kinetic, 1 in Melodic)
+
+  name_drone_.erase(std::remove(name_drone_.begin(), name_drone_.end(), '/'), name_drone_.end());  // Remove the slashes
+
+  // name_drone_.erase(0, 2);  // Erase slashes
 
   std::string id = name_drone_;
   id.erase(0, 2);  // Erase SQ or HX i.e. SQ12 --> 12  HX8621 --> 8621
@@ -309,6 +312,7 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   {
     if (exists)
     {  // if that object already exists, substitute its trajectory
+      std::cout << red << "Updating " << tmp.id << reset << std::endl;
       *obs_ptr = tmp;
     }
     else
@@ -599,6 +603,8 @@ void FasterRos::clearMarkerArray(visualization_msgs::MarkerArray* tmp, ros::Publ
   for (int i = 0; i < (*tmp).markers.size(); i++)
   {
     visualization_msgs::Marker m;
+    m.header.frame_id = "world";
+    m.header.stamp = ros::Time::now();
     m.type = visualization_msgs::Marker::ARROW;
     m.action = visualization_msgs::Marker::DELETE;
     m.id = i + id_begin;
@@ -683,19 +689,19 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
 
   if (type == COMMITTED_COLORED)
   {
-    traj_committed_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm);
+    traj_committed_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_);
     pub_traj_committed_colored_.publish(traj_committed_colored_);
   }
 
   if (type == WHOLE_COLORED)
   {
-    traj_whole_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm);
+    traj_whole_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_);
     pub_traj_whole_colored_.publish(traj_whole_colored_);
   }
 
   if (type == SAFE_COLORED)
   {
-    traj_safe_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm);
+    traj_safe_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_);
     pub_traj_safe_colored_.publish(traj_safe_colored_);
   }
 

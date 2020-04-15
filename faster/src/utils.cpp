@@ -1305,7 +1305,7 @@ vec_Vecf<3> copyJPS(vec_Vecf<3> path)
 }
 
 visualization_msgs::MarkerArray stateVector2ColoredMarkerArray(const std::vector<state>& data, int type,
-                                                               double max_value, int increm)
+                                                               double max_value, int increm, std::string ns)
 {
   visualization_msgs::MarkerArray marker_array;
 
@@ -1327,6 +1327,7 @@ visualization_msgs::MarkerArray stateVector2ColoredMarkerArray(const std::vector
     m.type = visualization_msgs::Marker::ARROW;
     m.header.frame_id = "world";
     m.header.stamp = ros::Time::now();
+    m.ns = ns;
     m.action = visualization_msgs::Marker::ADD;
     m.id = j;
     m.color = getColorJet(vel, 0, max_value);  // note that par_.v_max is per axis!

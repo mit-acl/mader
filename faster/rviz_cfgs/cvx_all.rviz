@@ -205,14 +205,14 @@ Visualization Manager:
     - Alpha: 0.20000000298023224
       BoundColor: 61; 255; 116
       Class: decomp_rviz_plugins/PolyhedronArray
-      Enabled: true
+      Enabled: false
       MeshColor: 255; 255; 0
       Name: PolySafe
       Scale: 0.009999999776482582
-      State: Bound
+      State: Both
       Topic: /SQ03s/faster/poly_safe
       Unreliable: false
-      Value: true
+      Value: false
       VsColor: 0; 255; 0
       VsScale: 1
     - Alpha: 1
@@ -522,25 +522,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 15.237067222595215
+      Distance: 13.857028007507324
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.7240476608276367
-        Y: 0.2518935203552246
-        Z: 1.0727570042945445e-5
+        X: 0.6769541501998901
+        Y: 0.6323227882385254
+        Z: 1.311175583396107e-5
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4197973906993866
+      Pitch: 0.35979631543159485
       Target Frame: LQ01s
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.518650770187378
+      Yaw: 1.6236598491668701
     Saved: ~
 Window Geometry:
   Displays:
