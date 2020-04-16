@@ -155,7 +155,6 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   }
 
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-
   shuffle(all_combinations_.begin(), all_combinations_.end(), std::default_random_engine(seed));
 
   //  std::random_shuffle(all_combinations_.begin(), all_combinations_.end());
@@ -338,6 +337,15 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
 
   constraint_zL = std::max(-v_max_.z(), -a_max_.z() * tmp + viM1.z());  // lower bound
   constraint_zU = std::min(v_max_.z(), a_max_.z() * tmp + viM1.z());    // upper bound
+
+  /*  std::cout << "constraint_xL= " << constraint_xL << std::endl;
+    std::cout << "constraint_xU= " << constraint_xU << std::endl;
+
+    std::cout << "constraint_yL= " << constraint_yL << std::endl;
+    std::cout << "constraint_yU= " << constraint_yU << std::endl;
+
+    std::cout << "constraint_zL= " << constraint_zL << std::endl;
+    std::cout << "constraint_zU= " << constraint_zU << std::endl;*/
 }
 
 void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
@@ -393,7 +401,7 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
     jy = std::get<1>(comb);
     jz = std::get<2>(comb);
 
-    //  std::cout << "using " << jx << ", " << jy << ", " << jz << std::endl;
+    // std::cout << "using " << jx << ", " << jy << ", " << jz << std::endl;
 
     /*  for (int jx : indexes_samples_x_)
       {
@@ -406,9 +414,10 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
         constraint_yL + jy * delta_y,    //((constraint_yU - constraint_yL) / (num_samples_y_ - 1)),    /////////
         constraint_zL + jz * delta_z;    // ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));    /////////
 
-    /*        std::cout << "Velocity sampled is" << vi.transpose() << std::endl;
-            std::cout << "constraint_zL=" << constraint_zL << std::endl;
-            std::cout << "constraint_zU=" << constraint_zU << std::endl;*/
+    // std::cout << "Velocity sampled is" << vi.transpose() << std::endl;
+
+    /*       std::cout << "constraint_zL=" << constraint_zL << std::endl;
+         std::cout << "constraint_zU=" << constraint_zU << std::endl;*/
 
     neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
 
