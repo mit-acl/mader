@@ -144,7 +144,7 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
 
     if (exists)
     {  // if that object already exists, substitute its trajectory
-      std::cout << red << "Updating " << traj_compiled.id << reset << std::endl;
+      // std::cout << red << "Updating " << traj_compiled.id << reset << std::endl;
       *obs_ptr = traj_compiled;
     }
     else
@@ -172,7 +172,7 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
 
   mtx_trajs_.unlock();
 
-  std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
+  // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
 
 vec_E<Polyhedron<3>> Faster::vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves)

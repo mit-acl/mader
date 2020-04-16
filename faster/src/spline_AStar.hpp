@@ -5,6 +5,8 @@
 #include "separator.hpp"
 #include <unordered_map>
 
+#include <tuple>
+
 typedef struct Node Node;  // neede to be able to have a pointer inside the struct
 
 struct Node
@@ -41,11 +43,11 @@ public:
   SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls);
   ~SplineAStar();
 
-  void setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int samples_x, int samples_y,
-                              int samples_z, double voxel_size);
+  void setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int num_samples_x, int num_samples_y,
+                              int num_samples_z, double voxel_size);
   void setq0q1q2(Eigen::Vector3d& q0, Eigen::Vector3d& q1, Eigen::Vector3d& q2);
   void setGoal(Eigen::Vector3d& goal);
-  void setSamples(int samples_x, int samples_y, int samples_z);
+  void setSamples(int num_samples_x, int num_samples_y, int num_samples_z);
 
   void setRunTime(double max_runtime);
   void setGoalSize(double goal_size);
@@ -104,9 +106,15 @@ private:
   std::vector<double> vy_;
   std::vector<double> vz_;
 
-  int samples_x_ = 3;
-  int samples_y_ = 3;
-  int samples_z_ = 3;
+  int num_samples_x_ = 3;
+  int num_samples_y_ = 3;
+  int num_samples_z_ = 3;
+
+  std::vector<int> indexes_samples_x_;
+  std::vector<int> indexes_samples_y_;
+  std::vector<int> indexes_samples_z_;
+
+  std::vector<std::tuple<int, int, int>> all_combinations_;
 
   int p_;
   int N_;

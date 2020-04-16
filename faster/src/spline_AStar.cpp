@@ -97,19 +97,91 @@ void SplineAStar::setBBoxSearch(double x, double y, double z)
   bbox_z_ = z;
 }
 
-void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int samples_x, int samples_y,
-                                         int samples_z, double voxel_size)
+void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int num_samples_x,
+                                         int num_samples_y, int num_samples_z, double voxel_size)
 {
   v_max_ = v_max;
   a_max_ = a_max;
 
   // ensure they are odd numbers (so that vx=0 is included in the samples)
-  samples_x_ = (samples_x % 2 == 0) ? ceil(samples_x) : samples_x;
-  samples_y_ = (samples_y % 2 == 0) ? ceil(samples_y) : samples_y;
-  samples_z_ = (samples_z % 2 == 0) ? ceil(samples_z) : samples_z;
+  num_samples_x_ = (num_samples_x % 2 == 0) ? ceil(num_samples_x) : num_samples_x;
+  num_samples_y_ = (num_samples_y % 2 == 0) ? ceil(num_samples_y) : num_samples_y;
+  num_samples_z_ = (num_samples_z % 2 == 0) ? ceil(num_samples_z) : num_samples_z;
 
   ////////////
 
+  for (int i = 0; i < num_samples_x; i++)
+  {
+    indexes_samples_x_.push_back(i);
+  }
+
+  for (int i = 0; i < num_samples_y; i++)
+  {
+    indexes_samples_y_.push_back(i);
+  }
+
+  for (int i = 0; i < num_samples_z; i++)
+  {
+    indexes_samples_z_.push_back(i);
+  }
+
+  // std::srand(unsigned(std::time(0)));
+  /*  std::srand(unsigned(std::time(0)));
+
+    if (rand() % 2 == 1)  // o or 1
+    {
+      std::reverse(indexes_samples_x_.begin(), indexes_samples_x_.end());
+    }
+
+    if (rand() % 2 == 1)
+    {
+      std::reverse(indexes_samples_y_.begin(), indexes_samples_y_.end());
+    }
+
+    if (rand() % 2 == 1)
+    {
+      std::reverse(indexes_samples_z_.begin(), indexes_samples_z_.end());
+    }*/
+
+  for (int jx : indexes_samples_x_)
+  {
+    for (int jy : indexes_samples_y_)
+    {
+      for (int jz : indexes_samples_z_)
+      {
+        all_combinations_.push_back(std::tuple<int, int, int>(jx, jy, jz));
+      }
+    }
+  }
+
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+  shuffle(all_combinations_.begin(), all_combinations_.end(), std::default_random_engine(seed));
+
+  //  std::random_shuffle(all_combinations_.begin(), all_combinations_.end());
+
+  /*  std::random_shuffle(indexes_samples_x_.begin(), indexes_samples_x_.end());
+    std::random_shuffle(indexes_samples_y_.begin(), indexes_samples_y_.end());
+    std::random_shuffle(indexes_samples_z_.begin(), indexes_samples_z_.end());*/
+  /*
+    std::cout << "indexes_samples_x_" << std::endl;
+    for (auto index : indexes_samples_x_)
+    {
+      std::cout << index << ", " << std::endl;
+    }
+    std::cout << "indexes_samples_y_" << std::endl;
+
+    for (auto index : indexes_samples_y_)
+    {
+      std::cout << index << ", " << std::endl;
+    }
+
+    std::cout << "indexes_samples_z_" << std::endl;
+    for (auto index : indexes_samples_z_)
+    {
+      std::cout << index << ", " << std::endl;
+    }
+  */
   // TODO: remove hand-coded stuff
   // int i = 6;
   // voxel_size_ = v_max_(0) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
@@ -201,17 +273,17 @@ void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_vox
 
   Eigen::Vector3d neighbor_of_q2;
 
-  for (int jx = 0; jx < samples_x_; jx++)
+  for (int jx : indexes_samples_x_)
   {
-    for (int jy = 0; jy < samples_y_; jy++)
+    for (int jy : indexes_samples_y_)
     {
-      for (int jz = 0; jz < samples_z_; jz++)
+      for (int jz : indexes_samples_z_)
       {
         // sample a velocity
         Eigen::Vector3d vi;
-        vi << constraint_xL + jx * ((constraint_xU - constraint_xL) / (samples_x_ - 1)),  /////////
-            constraint_yL + jy * ((constraint_yU - constraint_yL) / (samples_y_ - 1)),    /////////
-            constraint_zL + jz * ((constraint_zU - constraint_zL) / (samples_z_ - 1));    /////////
+        vi << constraint_xL + jx * ((constraint_xU - constraint_xL) / (num_samples_x_ - 1)),  /////////
+            constraint_yL + jy * ((constraint_yU - constraint_yL) / (num_samples_y_ - 1)),    /////////
+            constraint_zL + jz * ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));    /////////
 
         if (vi.norm() < 0.000001)  // remove the cases where vi is very small
         {
@@ -308,59 +380,79 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
   Node neighbor;
   // Eigen::Vector3d aiM1;
   unsigned int ix, iy, iz;
-  for (int jx = 0; jx < samples_x_; jx++)
+
+  int jx, jy, jz;
+
+  double delta_x = ((constraint_xU - constraint_xL) / (num_samples_x_ - 1));
+  double delta_y = ((constraint_yU - constraint_yL) / (num_samples_y_ - 1));
+  double delta_z = ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));
+
+  for (auto comb : all_combinations_)
   {
-    for (int jy = 0; jy < samples_y_; jy++)
-    {
-      for (int jz = 0; jz < samples_z_; jz++)
+    jx = std::get<0>(comb);
+    jy = std::get<1>(comb);
+    jz = std::get<2>(comb);
+
+    //  std::cout << "using " << jx << ", " << jy << ", " << jz << std::endl;
+
+    /*  for (int jx : indexes_samples_x_)
       {
-        // sample a velocity
-        vi << constraint_xL + jx * ((constraint_xU - constraint_xL) / (samples_x_ - 1)),  /////////
-            constraint_yL + jy * ((constraint_yU - constraint_yL) / (samples_y_ - 1)),    /////////
-            constraint_zL + jz * ((constraint_zU - constraint_zL) / (samples_z_ - 1));    /////////
-
-        neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
-
-        neighbor.g = current.g + weightEdge(current, neighbor);
-        neighbor.h = h(neighbor);
-
-        ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
-        iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
-        iz = round((neighbor.qi.z() - orig_.z()) / voxel_size_);
-
-        auto ptr_to_voxel = mapExpandedNodes_.find(Eigen::Vector3i(ix, iy, iz));
-
-        bool already_exist = (ptr_to_voxel != mapExpandedNodes_.end());
-        bool already_exists_with_lower_cost = false;
-
-        if (already_exist)
+        for (int jy : indexes_samples_y_)
         {
-          // std::cout << "(*ptr_to_voxel).second" << (*ptr_to_voxel).second << std::endl;
-          // std::cout << "(current.index + 1)" << (current.index + 1) << std::endl;
-          already_exists_with_lower_cost = ((*ptr_to_voxel).second < (neighbor.g + bias_ * neighbor.h));
-        }
+          for (int jz : indexes_samples_z_)
+          {*/
+    // sample a velocity
+    vi << constraint_xL + jx * delta_x,  // ((constraint_xU - constraint_xL) / (num_samples_x_ - 1)),  /////////
+        constraint_yL + jy * delta_y,    //((constraint_yU - constraint_yL) / (num_samples_y_ - 1)),    /////////
+        constraint_zL + jz * delta_z;    // ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));    /////////
 
-        if ((vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||             // Not wanna use v=[0,0,0]
-            (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_) ||  /// Outside the limits
-            (ix >= bbox_x_ / voxel_size_ ||                            // Out. the search box
-             iy >= bbox_y_ / voxel_size_ ||                            // Out. the search box
-             iz >= bbox_z_ / voxel_size_) ||                           // Out. the search box
-            already_exists_with_lower_cost)                            // Element already exists in the search box
+    /*        std::cout << "Velocity sampled is" << vi.transpose() << std::endl;
+            std::cout << "constraint_zL=" << constraint_zL << std::endl;
+            std::cout << "constraint_zU=" << constraint_zU << std::endl;*/
 
-        {
-          continue;
-        }
-        else
-        {  // element does not exist
+    neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
 
-          neighbor.index = current.index + 1;
-          neighbor.previous = &current;
-          neighbors_va.push_back(neighbor);
+    neighbor.g = current.g + weightEdge(current, neighbor);
+    neighbor.h = h(neighbor);
 
-          mapExpandedNodes_[Eigen::Vector3i(ix, iy, iz)] = neighbor.g + bias_ * neighbor.h;
-        }
-      }
+    ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
+    iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
+    iz = round((neighbor.qi.z() - orig_.z()) / voxel_size_);
+
+    auto ptr_to_voxel = mapExpandedNodes_.find(Eigen::Vector3i(ix, iy, iz));
+
+    bool already_exist = (ptr_to_voxel != mapExpandedNodes_.end());
+    bool already_exists_with_lower_cost = false;
+
+    if (already_exist)
+    {
+      // std::cout << "(*ptr_to_voxel).second" << (*ptr_to_voxel).second << std::endl;
+      // std::cout << "(current.index + 1)" << (current.index + 1) << std::endl;
+      already_exists_with_lower_cost = ((*ptr_to_voxel).second < (neighbor.g + bias_ * neighbor.h));
     }
+
+    if ((vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||             // Not wanna use v=[0,0,0]
+        (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_) ||  /// Outside the limits
+        (ix >= bbox_x_ / voxel_size_ ||                            // Out. the search box
+         iy >= bbox_y_ / voxel_size_ ||                            // Out. the search box
+         iz >= bbox_z_ / voxel_size_) ||                           // Out. the search box
+        already_exists_with_lower_cost)                            // Element already exists in the search box
+
+    {
+      continue;
+    }
+    else
+    {  // element does not exist
+
+      neighbor.index = current.index + 1;
+      neighbor.previous = &current;
+      neighbors_va.push_back(neighbor);
+
+      mapExpandedNodes_[Eigen::Vector3i(ix, iy, iz)] = neighbor.g + bias_ * neighbor.h;
+    }
+    // }
+    // }
+    // }
   }
 
   // And now select the ones that satisfy the LP with all the obstacles
@@ -971,17 +1063,17 @@ exitloop:
   vy_.clear();
   vz_.clear();
 
-  for (int i = 0; i < samples_x_; i++)
+  for (int i = 0; i < num_samples_x_; i++)
   {
-    vx_.push_back(-v_max_.x() + i * ((2.0 * v_max_.x()) / (samples_x_ - 1)));
+    vx_.push_back(-v_max_.x() + i * ((2.0 * v_max_.x()) / (num_samples_x_ - 1)));
   }
-  for (int i = 0; i < samples_y_; i++)
+  for (int i = 0; i < num_samples_y_; i++)
   {
-    vy_.push_back(-v_max_.y() + i * ((2.0 * v_max_.y()) / (samples_y_ - 1)));
+    vy_.push_back(-v_max_.y() + i * ((2.0 * v_max_.y()) / (num_samples_y_ - 1)));
   }
-  for (int i = 0; i < samples_z_; i++)
+  for (int i = 0; i < num_samples_z_; i++)
   {
-    vz_.push_back(-v_max_.z() + i * ((2.0 * v_max_.z()) / (samples_z_ - 1)));
+    vz_.push_back(-v_max_.z() + i * ((2.0 * v_max_.z()) / (num_samples_z_ - 1)));
   }
 
   std::cout << "vx is: " << std::endl;
@@ -995,17 +1087,17 @@ exitloop:
   vy_.clear();
   vz_.clear();
 
-  for (int i = 0; i < samples_x_; i++)
+  for (int i = 0; i < num_samples_x_; i++)
   {
-    vx_.push_back(constraint_xL + i * ((constraint_xU - constraint_xL) / (samples_x_ - 1)));
+    vx_.push_back(constraint_xL + i * ((constraint_xU - constraint_xL) / (num_samples_x_ - 1)));
   }
-  for (int i = 0; i < samples_y_; i++)
+  for (int i = 0; i < num_samples_y_; i++)
   {
-    vy_.push_back(constraint_yL + i * ((constraint_yU - constraint_yL) / (samples_y_ - 1)));
+    vy_.push_back(constraint_yL + i * ((constraint_yU - constraint_yL) / (num_samples_y_ - 1)));
   }
-  for (int i = 0; i < samples_z_; i++)
+  for (int i = 0; i < num_samples_z_; i++)
   {
-    vz_.push_back(constraint_zL + i * ((constraint_zU - constraint_zL) / (samples_z_ - 1)));
+    vz_.push_back(constraint_zL + i * ((constraint_zU - constraint_zL) / (num_samples_z_ - 1)));
   }*/
 
 /*  std::cout << "vx is: " << std::endl;

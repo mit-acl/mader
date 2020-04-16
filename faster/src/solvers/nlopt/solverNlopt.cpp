@@ -265,6 +265,9 @@ void SolverNlopt::setAStarSamples(int a_star_samp_x, int a_star_samp_y, int a_st
 void SolverNlopt::generateAStarGuess()
 {
   std::cout << "[NL] Running A*, allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << std::endl;
+
+  std::cout << bold << blue << "z_max_= " << z_max_ << reset << std::endl;
+
   n_guess_.clear();
   q_guess_.clear();
   d_guess_.clear();
@@ -287,8 +290,8 @@ void SolverNlopt::generateAStarGuess()
   // double runtime = 0.05;   //[seconds]
   double goal_size = 0.05;  //[meters]
 
-  myAStarSolver.setZminZmax(z_ground_, z_max_);   // z limits for the search, in world frame
-  myAStarSolver.setBBoxSearch(20.0, 20.0, 20.0);  // limits for the search, centered on q2
+  myAStarSolver.setZminZmax(z_ground_, z_max_);         // z limits for the search, in world frame
+  myAStarSolver.setBBoxSearch(2000.0, 2000.0, 2000.0);  // limits for the search, centered on q2
   myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_, 0.3);
 
   myAStarSolver.setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
