@@ -7,7 +7,7 @@ drone_radius: 0.1  #(m) Used for collision checking
 N_whole: 6 #[-] Number of discretization points in the whole trajectory
 N_safe: 6 #[-] Number of discretization points in the safe path
 
-Ra: 6.0            # [m] Radius of my planning sphere (planning horizon)
+Ra: 3.0            # [m] Radius of my planning sphere (planning horizon)
 R_consider_others: 900.0       # [m] Other agents are considered if they are closer than Rothers. Should satify R_consider_others>=2*Ra (because this ensures that the other agent hasn't planned a trajetory that enters my sphere of radius Ra)
 w_max: 1           # [rd/s] Maximum angular velocity. 0.4 for Hardware
 alpha_filter_dyaw: 0 #was 0.92  #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
@@ -68,9 +68,9 @@ kappa: 0.25 #% of time spent to find initial guess
 mu: 0.4    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
-a_star_samp_x: 15
-a_star_samp_y: 15 
-a_star_samp_z: 15 
+a_star_samp_x: 7
+a_star_samp_y: 7 
+a_star_samp_z: 7 
 
 a_star_bias: 1.0 #Bias (cost=g+bias*h) in the A* search 
 

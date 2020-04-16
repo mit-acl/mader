@@ -282,7 +282,6 @@ void vectorOfVectors2MarkerArray(vec_Vecf<3> traj, visualization_msgs::MarkerArr
 
   for (const auto& it : traj)
   {
-    i++;
     if (first_element and type == visualization_msgs::Marker::ARROW)  // skip the first element
     {
       first_element = false;
@@ -293,6 +292,8 @@ void vectorOfVectors2MarkerArray(vec_Vecf<3> traj, visualization_msgs::MarkerArr
     m.type = type;
     m.action = visualization_msgs::Marker::ADD;
     m.id = i;
+    i++;
+
     m.color = color;
     // m.scale.z = 1;
 
@@ -1321,7 +1322,6 @@ visualization_msgs::MarkerArray stateVector2ColoredMarkerArray(const std::vector
   int j = type * 9000;
   for (int i = 0; i < data.size(); i = i + increm)
   {
-    j = j + 1;
     double vel = data[i].vel.norm();
     visualization_msgs::Marker m;
     m.type = visualization_msgs::Marker::ARROW;
@@ -1344,6 +1344,7 @@ visualization_msgs::MarkerArray stateVector2ColoredMarkerArray(const std::vector
     // std::cout << "pushing marker\n" << m << std::endl;
     p_last = p;
     marker_array.markers.push_back(m);
+    j = j + 1;
   }
   return marker_array;
 }

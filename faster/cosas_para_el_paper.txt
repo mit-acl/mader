@@ -33,3 +33,11 @@ La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
 --> Explicar la relaci'on entre MINVO basis y probabilidad
 
 --> Cuidado porque si las multi agent simulations las hago muy cerca del suelo, puedo estar impidiendo a los agentes a planificar cerca del suelo
+
+
+
+TODOs:
+0.6?? aqu'i:  double t_max = t_min + (goal - q0).norm() / (0.6 * v_max(0));
+
+creo que el A* ahora mismo tiene un bias (mirar el plot que sale, siempre tiende hacia el mismo lado). Creo que es porque, una vez 
+te mueves para y<0 (por ejempo), la constraint en velocidad [yL yU] tambi'en se mueve en esa direccti'on, y se va a samplear en esa direcci'on m'as. 
