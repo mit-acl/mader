@@ -31,3 +31,5 @@ La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
 --> extenderlo a surfaces la MINVO basis?
 
 --> Explicar la relaci'on entre MINVO basis y probabilidad
+
+--> Cuidado porque si las multi agent simulations las hago muy cerca del suelo, puedo estar impidiendo a los agentes a planificar cerca del suelo
