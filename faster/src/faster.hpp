@@ -87,7 +87,7 @@ public:
   void resetInitialization();
 
   bool IsTranslating();
-  void updateTrajObstacles(std::vector<dynTraj> trajs);
+  void updateTrajObstacles(dynTraj traj, bool near_me);
 
 private:
   state M_;
@@ -105,6 +105,8 @@ private:
 
   int n_pol_ = 7;
   int deg_ = 3;
+
+  void dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compiled);
 
   bool initializedStateAndTermGoal();
 

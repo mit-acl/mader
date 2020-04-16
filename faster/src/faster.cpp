@@ -101,50 +101,78 @@ Faster::Faster(parameters par) : par_(par)
   deg_ = 3;
 }
 
-void Faster::updateTrajObstacles(std::vector<dynTraj> trajs)
+void Faster::dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compiled)
 {
-  //  std::cout << bold << red << "[updateTrajObstacles] locking" << reset << std::endl;
+  for (auto function_i : traj.function)
+  {
+    typedef exprtk::symbol_table<double> symbol_table_t;
+    typedef exprtk::expression<double> expression_t;
+    typedef exprtk::parser<double> parser_t;
+
+    symbol_table_t symbol_table;
+    symbol_table.add_variable("t", t_);
+    symbol_table.add_constants();
+    expression_t expression;
+    expression.register_symbol_table(symbol_table);
+    // std::cout << "function_i=" << function_i << std::endl;
+
+    parser_t parser;
+    parser.compile(function_i, expression);
+
+    traj_compiled.function.push_back(expression);
+  }
+  traj_compiled.bbox = traj.bbox;
+  traj_compiled.id = traj.id;
+  traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
+}
+// Note that we need to compile the trajectories inside faster.cpp because t_ is in faster.hpp
+void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
+{
+  MyTimer tmp_t(true);
+
   mtx_trajs_.lock();
-  //  std::cout << bold << red << "[updateTrajObstacles] Locked" << reset << std::endl;
 
-  trajs_.clear();
+  std::vector<dynTrajCompiled>::iterator obs_ptr = std::find_if(
+      trajs_.begin(), trajs_.end(), [=](const dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
+  bool exists = (obs_ptr != std::end(trajs_));
 
-  for (auto traj : trajs)
+  // First let's check if the object is near me:
+  if (near_me)
   {
     dynTrajCompiled traj_compiled;
-    for (auto function_i : traj.function)
-    {
-      typedef exprtk::symbol_table<double> symbol_table_t;
-      typedef exprtk::expression<double> expression_t;
-      typedef exprtk::parser<double> parser_t;
-
-      symbol_table_t symbol_table;
-      symbol_table.add_variable("t", t_);
-      symbol_table.add_constants();
-      expression_t expression;
-      expression.register_symbol_table(symbol_table);
-      // std::cout << "function_i=" << function_i << std::endl;
-
-      parser_t parser;
-      parser.compile(function_i, expression);
-      traj_compiled.function.push_back(expression);
+    if (exists)
+    {  // if that object already exists, substitute its trajectory
+      dynTraj2dynTrajCompiled(traj, traj_compiled);
+      std::cout << red << "Updating " << traj_compiled.id << reset << std::endl;
+      *obs_ptr = traj_compiled;
     }
-
-    // std::cout << "traj_compiled.function.size()= " << traj_compiled.function.size() << std::endl;
-
-    traj_compiled.bbox = traj.bbox;
-    traj_compiled.id = traj.id;
-    traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
-    trajs_.push_back(traj_compiled);
+    else
+    {  // if it doesn't exist, create it
+      dynTraj2dynTrajCompiled(traj, traj_compiled);
+      trajs_.push_back(traj_compiled);
+      std::cout << red << "Adding " << traj_compiled.id << reset << std::endl;
+    }
+  }
+  else  // not near me
+  {
+    if (exists)  // remove if from the list if it exists
+    {
+      trajs_.erase(obs_ptr);
+      std::cout << red << "Erasing " << (*obs_ptr).id << reset << std::endl;
+    }
   }
 
-  // std::cout << "end of updateTrajObstacles" << std::endl;
+  /// Debugging
+  /*  std::cout << "[FA] Ids que tengo:" << std::endl;
+    for (auto traj : trajs_)
+    {
+      std::cout << traj.id << ", ";
+    }
+    std::cout << std::endl;*/
 
-  // std::cout << bold << red << "[updateTrajObstacles] unlocking" << reset << std::endl;
   mtx_trajs_.unlock();
-  // std::cout << bold << red << "[updateTrajObstacles] unlocked" << reset << std::endl;
 
-  // std::cout << "end of updateTrajObstacles" << std::endl;
+  std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
 
 vec_E<Polyhedron<3>> Faster::vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves)
@@ -460,8 +488,8 @@ void Faster::setTerminalGoal(state& term_goal)
   }
   terminal_goal_initialized_ = true;
 
-  std::cout << bold << red << "[FA] Received Term Goal=" << G_term_.pos.transpose() << reset << std::endl;
-  std::cout << bold << red << "[FA] Received Proj Goal=" << G_.pos.transpose() << reset << std::endl;
+  // std::cout << bold << red << "[FA] Received Term Goal=" << G_term_.pos.transpose() << reset << std::endl;
+  // std::cout << bold << red << "[FA] Received Proj Goal=" << G_.pos.transpose() << reset << std::endl;
 
   mtx_state.unlock();
   mtx_G.unlock();
@@ -1350,7 +1378,11 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   PieceWisePol pwp_now;
   snlopt.getSolution(pwp_now);
 
-  if (safetyCheckAfterOpt(time_init_opt, pwp_now) == false)
+  MyTimer check_t(true);
+  bool is_safe_after_opt = safetyCheckAfterOpt(time_init_opt, pwp_now);
+  std::cout << bold << "Check Timer=" << check_t << std::endl;
+
+  if (is_safe_after_opt == false)
   {
     std::cout << bold << red << "safetyCheckAfterOpt is not satisfied!" << reset << std::endl;
     return false;

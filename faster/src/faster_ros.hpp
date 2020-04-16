@@ -124,7 +124,7 @@ private:
   void publishPoly(const vec_E<Polyhedron<3>>& poly, int type);
   // visualization_msgs::MarkerArray Matrix2ColoredMarkerArray(Eigen::MatrixXd& X, int type);
 
-  std::vector<dynTraj> trajs_;
+  // std::vector<dynTraj> trajs_;
   state state_;
 
   std::string world_name_ = "world";

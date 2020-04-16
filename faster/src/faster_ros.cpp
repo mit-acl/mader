@@ -286,10 +286,6 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
     return;
   }
 
-  std::vector<dynTraj>::iterator obs_ptr =
-      std::find_if(trajs_.begin(), trajs_.end(), [=](const dynTraj& traj) { return traj.id == msg.id; });
-  bool exists = (obs_ptr != std::end(trajs_));
-
   Eigen::Vector3d pos(msg.pos.x, msg.pos.y, msg.pos.z);
   bool near_me = ((state_.pos - pos).norm() < par_.R_consider_others);
   // std::cout << "dist= " << (state_.pos - pos).norm() << std::endl;
@@ -307,41 +303,7 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 
   tmp.time_received = ros::Time::now().toSec();
 
-  // First let's check if the object is near me:
-  if (near_me)
-  {
-    if (exists)
-    {  // if that object already exists, substitute its trajectory
-      std::cout << red << "Updating " << tmp.id << reset << std::endl;
-      *obs_ptr = tmp;
-    }
-    else
-    {  // if it doesn't exist, create it
-      trajs_.push_back(tmp);
-      std::cout << red << "Adding " << tmp.id << reset << std::endl;
-    }
-  }
-  else  // not near me
-  {
-    if (exists)  // remove if fromg the list if it exists
-    {
-      trajs_.erase(obs_ptr);
-      std::cout << red << "Erasing " << (*obs_ptr).id << reset << std::endl;
-    }
-  }
-
-  // print elements for debugging:
-  // std::cout << red << bold << "========================" << reset << std::endl;
-  // std::cout << "trajs_ has " << trajs_.size() << " obstacles:" << std::endl;
-  /*  for (auto traj : trajs_)
-    {
-      std::cout << traj.id << ", " << std::endl;
-    }*/
-  // std::cout << red << bold << "========================" << reset << std::endl;
-
-  faster_ptr_->updateTrajObstacles(trajs_);
-
-  // std::cout << "End of trajCB" << reset << std::endl;
+  faster_ptr_->updateTrajObstacles(tmp, near_me);
 }
 
 // This trajectory is published when the agent arrives at A
