@@ -75,11 +75,14 @@ class Behavior_Selector:
         goal.pos.z = self.pose.position.z;
         goal.yaw = quat2yaw(self.pose.orientation)
         #Note that self.pose.position is being updated in the parallel callback
-        while(  abs(self.pose.position.z-self.alt_taken_off)>0.1  ): 
-            goal.pos.z = min(goal.pos.z+0.0035, self.alt_taken_off);
-            #rospy.sleep(0.004) #TODO hard-coded
-            self.sendGoal(goal)
-        rospy.sleep(1.5) 
+
+        ######## Commented for multi-agend simulations
+        # while(  abs(self.pose.position.z-self.alt_taken_off)>0.1  ): 
+        #     goal.pos.z = min(goal.pos.z+0.0035, self.alt_taken_off);
+        #     #rospy.sleep(0.004) #TODO hard-coded
+        #     self.sendGoal(goal)
+        ######## End of commented
+        rospy.sleep(0.1) 
         self.mode.mode=self.mode.GO
         self.sendMode();
 

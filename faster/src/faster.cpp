@@ -307,9 +307,9 @@ void Faster::removeTrajsThatWillNotAffectMe(state A, double t_start, double t_en
     }*/
 }
 
-bool Faster::hasReachedGoal()
+bool Faster::IsTranslating()
 {
-  return (drone_status_ == DroneStatus::GOAL_REACHED);
+  return (drone_status_ == DroneStatus::GOAL_SEEN || drone_status_ == DroneStatus::TRAVELING);
 }
 
 ConvexHullsOfCurve Faster::convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end)
@@ -459,6 +459,9 @@ void Faster::setTerminalGoal(state& term_goal)
     changeDroneStatus(DroneStatus::TRAVELING);
   }
   terminal_goal_initialized_ = true;
+
+  std::cout << bold << red << "[FA] Received Term Goal=" << G_term_.pos.transpose() << reset << std::endl;
+  std::cout << bold << red << "[FA] Received Proj Goal=" << G_.pos.transpose() << reset << std::endl;
 
   mtx_state.unlock();
   mtx_G.unlock();

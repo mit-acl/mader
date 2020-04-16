@@ -512,7 +512,7 @@ void FasterRos::stateCB(const snapstack_msgs::State& msg)
     publishOwnTraj(pwp);
     published_initial_position_ = true;
   }
-  if (faster_ptr_->hasReachedGoal() == false)
+  if (faster_ptr_->IsTranslating() == true)
   {
     pubActualTraj();
   }
@@ -836,7 +836,16 @@ void FasterRos::pubState(const state& data, const ros::Publisher pub)
 void FasterRos::terminalGoalCB(const geometry_msgs::PoseStamped& msg)
 {
   state G_term;
-  G_term.setPos(msg.pose.position.x, msg.pose.position.y, 1.0);  // TODO
+  double z;
+  if (fabs(msg.pose.position.z) < 1e-5)  // This happens when you click in RVIZ (msg.z is 0.0)
+  {
+    z = 1.0;
+  }
+  else  // This happens when you publish by yourself the goal (should always be above the ground)
+  {
+    z = msg.pose.position.z;
+  }
+  G_term.setPos(msg.pose.position.x, msg.pose.position.y, z);
   faster_ptr_->setTerminalGoal(G_term);
 
   state G;  // projected goal

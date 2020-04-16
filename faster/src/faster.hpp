@@ -86,7 +86,7 @@ public:
   void setTerminalGoal(state& term_goal);
   void resetInitialization();
 
-  bool hasReachedGoal();
+  bool IsTranslating();
   void updateTrajObstacles(std::vector<dynTraj> trajs);
 
 private:
