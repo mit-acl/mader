@@ -140,15 +140,15 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
   if (near_me)
   {
     dynTrajCompiled traj_compiled;
+    dynTraj2dynTrajCompiled(traj, traj_compiled);
+
     if (exists)
     {  // if that object already exists, substitute its trajectory
-      dynTraj2dynTrajCompiled(traj, traj_compiled);
       std::cout << red << "Updating " << traj_compiled.id << reset << std::endl;
       *obs_ptr = traj_compiled;
     }
     else
     {  // if it doesn't exist, create it
-      dynTraj2dynTrajCompiled(traj, traj_compiled);
       trajs_.push_back(traj_compiled);
       std::cout << red << "Adding " << traj_compiled.id << reset << std::endl;
     }
