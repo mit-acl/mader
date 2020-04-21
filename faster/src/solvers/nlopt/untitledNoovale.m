@@ -32,7 +32,7 @@ sol7.A=double(vpa(sol7.A,4));
 %%
 Abz=computeMatrixForBezier(3)
 %%
-
+% 
 % sol1=transformStructureTo01(sol1);
 % sol2=transformStructureTo01(sol2);
 % sol3=transformStructureTo01(sol3);
@@ -82,6 +82,15 @@ tmp6=sol7.A(6,:);
 tmp7=sol7.A(7,:);
 tmp8=sol7.A(8,:);
 sol7.A=[tmp1;tmp7;tmp4;tmp6;tmp2;tmp8;tmp3;tmp5;];
+
+%Compute now the matrix for the Lagrange polynomials, which are very
+%similar:
+sol1.Al=lagrangePoly(linspace(-1,1,2));
+sol2.Al=lagrangePoly(linspace(-1,1,3));
+sol3.Al=lagrangePoly(linspace(-1,1,4));
+% sol4.Al=lagrangePoly(linspace(-1,1,5));
+sol5.Al=lagrangePoly(linspace(-1,1,6));
+
 %%
 
 % 
@@ -808,7 +817,299 @@ fplot(solut(5,1)+solut(5,6),interv,'--')
 sol5.A_mod=[sol5.A(1,:);sol5.A(3,:);sol5.A(5,:)];
 
 sol3.A_mod=[sol3.A(1,:);sol3.A(3,:)];
+
 %%
+inv5=inv(sol5.A)
+x=1:6;
+x=x-(max(x)-min(x)+2)/2
+y=inv5(:,4)
+
+p=polyfit(x,y,6)
+
+x1 = linspace(min(x),max(x));
+y1 = polyval(p,x1);
+figure
+plot(x,y,'o')
+hold on
+plot(x1,y1)
+hold off
+
+
+%%
+figure; hold on;
+
+derivadas=[]
+for i=1:5
+    derivadas=[derivadas (1/factorial(i))*diff(solut(5,3),i)];
+end
+
+fplot(sum(derivadas),interv)
+% 
+% p1=solut(5,1);
+% p1p=diff(p1);
+% p1pp=0.5*diff(p1,2);
+% p1ppp=(1/6)*diff(p1,3);
+% p1pppp=(1/factorial(4))*diff(p1,4);
+% p1ppppp=(1/factorial(5))*diff(p1,5);
+% 
+% p10=double(subs(p1,t,0));
+% p1p0=double(subs(p1p,t,0));
+% p1pp0=double(subs(p1pp,t,0));
+% p1ppp0=double(subs(p1ppp,t,0));
+% p1pppp0=double(subs(p1pppp,t,0));
+% p1ppppp0=double(subs(p1ppppp,t,0));
+% 
+% 
+% suma1=p10+p1p0+p1pp0+p1ppp0+p1pppp0+p1ppppp0;
+
+
+
+% suma2=p1p+p1ppp;
+% fplot(p1,interv)
+% fplot(p1p,interv)
+% fplot(p1pp,interv)
+% fplot(p1ppp,interv)
+% fplot(p1pppp,interv)
+
+% fplot(p1,interv);
+% fplot(p1p,interv);
+% fplot(p1pp,interv);
+% fplot(p1ppp,interv);
+% fplot(p1pppp,interv);
+% fplot(p1ppppp,interv);
+
+% fplot(p1p+p1pp+p1ppp+p1pppp+p1ppppp,interv,'--');
+
+%%
+figure; hold on
+p1=sol5.A(1,:);
+
+fplot(solut(3,1),interv)
+
+fplot(p1*T5,interv)
+permut1=[p1(1) p1(3) p1(5) p1(2) p1(4) p1(6)];
+fplot(permut*T5,interv,'--');
+fplot(permut*T5,interv,'--');
+% fplot(suma2)
+%%
+figure;
+fplot((-0.5*t+0.5)*sol2.Al(2,:)*T2+(0.5*t+0.5)*sol2.Al(1,:)*T2,interv);
+hold on;
+fplot(sol3.A(2,:)*T3,interv,'--')
+%%
+figure; syms tt; hold on
+fplot(0.501*subs(sol3.Al(3,:)*T3+0.31,t,tt+0.0745),interv);
+fplot(sol3.A(3,:)*T3,interv,'--')
+ylim([0,1])
+
+%%
+figure; hold on; fplot(sol3.A(3,:)*T3,interv,'--')
+local_extr_x=solve(diff(sol3.Al(3,:)*T3)==0)
+local_min_x=double(vpa(min(local_extr_x)))
+local_min_y=polyval(sol3.Al(3,:),local_min_x);
+tmp=solve(sol3.Al(3,:)*T3==local_min_y, 'maxdegree', 5)
+shift=max(tmp)-1;
+fplot(subs(sol3.Al(3,:)*T3-local_min_y,t,tt+shift),interv);
+
+%%
+delta_x=-0.773548602-local_min_x;
+
+factor_x=(-0.773548602)/local_min_x
+
+%%
+
+
+%%
+%%vamos ahora a por el 4
+local_extr_x=solve(diff(sol3.Al(4,:)*T3)==0);
+local_min_x=double(vpa(max(local_extr_x)));
+
+delta_x+local_min_x
+factor_x*local_min_x
+%%
+
+
+
+pol_x=[0 0 1 0]';%[a b c d]
+pol_y=[0 1 0 0]';%[a b c d]
+pol_z=[1 0 0 0]';%[a b c d]
+
+plot_convex_hull(pol_x,pol_y,pol_z,sol3.A','red')
+fplot3(pol_x'*T3, pol_y'*T3, pol_z'*T3,[0 1],'r','LineWidth',3)
+%  axis equal
+%%
+sol5.A_norm=sol5.Ai./repmat(sol5.Ai(:,1),1,6)
+plot(sol5.A_norm,'o')
+%%
+
+%%
+close all
+vtet_x = [1 0 1; 0 0 0; 0 0 0]*1.5;
+vtet_y = [0 0 0; 1 0 1; 0 0 0]*1.5;
+vtet_z = [0 1 0; 0 0 0; 1 0 1]*1.5;
+
+v1=[vtet_x(1) vtet_y(1) vtet_z(1)]';
+v2=[vtet_x(2) vtet_y(2) vtet_z(2)]';  
+v3=[vtet_x(3) vtet_y(3) vtet_z(3)]';
+v4=[vtet_x(4) vtet_y(4) vtet_z(4)]'; 
+
+vx=[1 0 0 0]';
+vy=[0 1 0 0]';
+vz=[0 0 1 0]';
+% 
+vx=[1           -1          0         0 ]';
+vy=[-1/sqrt(3)  -1/sqrt(3)  2/sqrt(3)         0]';
+% vz=[-1/sqrt(6)  -1/sqrt(6)   -1/sqrt(6)       3/sqrt(6)]';
+vz=[0  0   0       4/sqrt(6)]';
+
+    v1=[vx(1) vy(1) vz(1)]'
+    v2=[vx(2) vy(2) vz(2)]'  
+    v3=[vx(3) vy(3) vz(3)]'
+    v4=[vx(4) vy(4) vz(4)]'  
+
+pol_x=sol3.A'*vx;
+pol_y=sol3.A'*vy;
+pol_z=sol3.A'*vz;
+
+plot_convex_hull(pol_x,pol_y,pol_z,sol3.A','red')
+fplot3(pol_x'*T3, pol_y'*T3, pol_z'*T3,[-1 1],'r','LineWidth',3)
+axis equal
+
+poly=[pol_x'*T3; pol_y'*T3; pol_z'*T3];
+
+center=[mean(vx),mean(vy),mean(vz)]';
+
+center_side=(v2+v3)/2
+
+scatter3(center(1),center(2),center(3),450,'Filled','red')
+scatter3(center_side(1),center_side(2),center_side(3),45,'Filled')
+
+poly_0=double(subs(poly,t,0.0));
+
+poly_05=double(subs(poly,t,0.5));
+poly_m05=double(subs(poly,t,-0.5));
+
+scatter3(poly_0(1),poly_0(2),poly_0(3),460)
+scatter3(poly_05(1),poly_05(2),poly_05(3),100,'Filled','green')
+scatter3(poly_m05(1),poly_m05(2),poly_m05(3),100,'Filled','green')
+
+samples_t=-1:0.001:1;
+samples_poly=subs(poly,t,samples_t);
+centroid_curve=sum(samples_poly,2)/length(samples_t);
+scatter3(centroid_curve(1),centroid_curve(2),centroid_curve(3),405,'Filled','blue'); 
+
+% [azimuth,elevation,r] = cart2sph(samples_poly(1,:),samples_poly(2,:),samples_poly(3,:));
+
+% [theta,rho,z] = cart2pol(samples_poly(1,:),samples_poly(2,:),samples_poly(3,:));
+
+
+
+M=double([coeffs(poly(1,:),'All');coeffs(poly(2,:),'All'); coeffs(poly(3,:),'All') ]);
+
+% M=M./repmat(M(:,1),1,4)
+
+xp=(v2-center_side); xp=xp/norm(xp);
+yp=(center-center_side); yp=yp/norm(yp);
+zp=cross(xp,yp); zp=zp/norm(zp);
+
+% quiver(xp(1),p1(2),dp(1),dp(2),0)
+arrow3d(center_side',(center_side+xp)')
+arrow3d(center_side',(center_side+yp)')
+arrow3d(center_side',(center_side+zp)')
+
+% arrow3d(center_side',(center_side+double(subs(diff(poly,t),t,0)))')
+
+R=[xp yp zp ]; %transformation matrix
+o_T_n=[R center_side]; o_T_n=[o_T_n; [0 0 0 1]];  %n_P=n_T_o*o_P  new and old basis
+
+n_polyhomog=inv(o_T_n)*[poly; 1];
+n_poly=n_polyhomog(1:3);
+
+M=double([coeffs(n_poly(1,:),'All');coeffs(n_poly(2,:),'All'); coeffs(n_poly(3,:),'All') ]);
+
+figure;
+fplot((1/0.9144)*n_poly,interv)
+
+
+%Si uso este sistema de coordenadas, aparece la basis!!!
+xpp=v1-center; xpp=xpp/norm(xpp);
+ypp=v2-center;  ypp=ypp/norm(ypp);
+zpp=v3-center;  zpp=zpp/norm(zpp);
+
+%en uno de los vertices
+% xpp=v2-v1; xpp=xpp/norm(xpp);
+% ypp=v3-v1;  ypp=ypp/norm(ypp);
+% zpp=v4-v1;  zpp=zpp/norm(zpp);
+
+% apuntando a cada plano
+% xpp=sum([v1,v2,v3],2)/3-center; xpp=xpp/norm(xpp);
+% ypp=sum([v1,v2,v4],2)/3-center;  ypp=ypp/norm(ypp);
+% zpp=sum([v1,v3,v4],2)/3-center;  zpp=zpp/norm(zpp);
+
+figure; hold on;
+plot(samples_t, dot(repmat(xpp,1,size(samples_poly,2)),samples_poly+center))
+plot(samples_t, dot(repmat(ypp,1,size(samples_poly,2)),samples_poly+center))
+plot(samples_t, dot(repmat(zpp,1,size(samples_poly,2)),samples_poly+center))
+
+syms a1 c1 a2 d2 a3 c3;
+
+n_poly_unk=[a1*t^3+c1*t; a2*t+d2; a3*t^3+c3*t];
+n_v3= inv(o_T_n) *[v3; 1];n_v3=n_v3(1:3);
+n_v2= inv(o_T_n) *[v2; 1];n_v2=n_v2(1:3);
+
+n_poly_0=vpa(subs(n_poly,t,0));
+solve([n_poly_0==subs(n_poly_unk,t,0), subs(diff(n_poly_unk,t),t,0.0)==(n_v3-n_v2)])
+
+
+
+function volume=plot_convex_hull(pol_x,pol_y,pol_z,A,color)
+    cx=pol_x;
+    cy=pol_y;
+    cz=pol_z;
+
+    vx=inv(A)*cx;
+    vy=inv(A)*cy;
+    vz=inv(A)*cz;
+
+    v1=[vx(1) vy(1) vz(1)]'
+    v2=[vx(2) vy(2) vz(2)]'  
+    v3=[vx(3) vy(3) vz(3)]'
+    v4=[vx(4) vy(4) vz(4)]'  
+
+    %Hack to see what happens if I choose the first and last control points
+%     if color=='b'
+%         v1=[1 6 -4]';
+%         v4=[3.5 3.7 -4.1]';
+%         vx(1)=v1(1);
+%         vy(1)=v1(2);
+%         vz(1)=v1(3);
+%         vx(4)=v4(1);
+%         vy(4)=v4(2);
+%         vz(4)=v4(3);
+figure; hold on;
+  
+    plot3(v1(1),v1(2),v1(3),'-o','Color',color,'MarkerSize',10)
+    plot3(v2(1),v2(2),v2(3),'-o','Color',color,'MarkerSize',10)
+    plot3(v3(1),v3(2),v3(3),'-o','Color',color,'MarkerSize',10)
+    plot3(v4(1),v4(2),v4(3),'-o','Color',color,'MarkerSize',10)
+  %  end
+    
+         [k1,volume] = convhull(vx,vy,vz);
+ 
+%     if color=='b'
+    trisurf(k1,vx,vy,vz,'FaceColor',color)
+   
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+    alpha 0.1
+%      end
+    plot3(v1(1),v1(2),v1(3),'-o','Color',color,'MarkerSize',10)
+    plot3(v2(1),v2(2),v2(3),'-o','Color',color,'MarkerSize',10)
+    plot3(v3(1),v3(2),v3(3),'-o','Color',color,'MarkerSize',10)
+    plot3(v4(1),v4(2),v4(3),'-o','Color',color,'MarkerSize',10)
+%    
+end
 
 function result=wronMatrix(n)
 

@@ -230,7 +230,19 @@ function volume=plot_convex_hull(pol_x,pol_y,pol_z,A,color)
 %         vy(1)=v1(2);
 %         vz(1)=v1(3);
 %         vx(4)=v4(1);
-%         vy(4)=v4(2);
+%         vy(4)=v4(2);onvhull(vx,vy,vz);
+ 
+%     if color=='b'
+    trisurf(k1,vx,vy,vz,'FaceColor',color)
+   
+    xlabel('x')
+    ylabel('y')
+    zlabel('z')
+    alpha 0.2
+%      end
+    %axis equal
+end
+
 %         vz(4)=v4(3);
   
     plot3(v1(1),v1(2),v1(3),'-o','Color',color,'MarkerSize',10)
