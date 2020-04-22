@@ -8,7 +8,8 @@ N_whole: 6 #[-] Number of discretization points in the whole trajectory
 N_safe: 6 #[-] Number of discretization points in the safe path
 
 Ra: 6            # [m] Radius of my planning sphere (planning horizon)
-R_consider_others: 900.0       # [m] Other agents are considered if they are closer than Rothers. Should satify R_consider_others>=2*Ra (because this ensures that the other agent hasn't planned a trajetory that enters my sphere of radius Ra)
+R_consider_agents: 900       # [m] Other agents are considered if they are closer than Rothers. Should be >=2*Ra (because this ensures that the other agent hasn't planned a trajectory that enters my sphere of radius Ra)
+R_consider_obstacles: 7.0    # [m] Other obstacles are considered if they are closer than Rothers.
 w_max: 1           # [rd/s] Maximum angular velocity. 0.4 for Hardware
 alpha_filter_dyaw: 0 #was 0.92  #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
 
@@ -55,8 +56,8 @@ deg: 3
 samples_per_interval: 1
 weight: 10000.0 #The .0 is needed #10000  #1000000
 epsilon_tol_constraints: 0.1
-xtol_rel: 0.00001 #negative value --> stopping criterion not used
-ftol_rel: 0.000001 #negative value --> stopping criterion not used
+xtol_rel: 0.0001 #negative value --> stopping criterion not used
+ftol_rel: 0.00001 #negative value --> stopping criterion not used
 solver: "LD_MMA"
 
 #  // work:  //LD_MMA (fastest) // //LN_NELDERMEAD // LN_SBPLX //LN_PRAXIS //LD_AUGLAG //LD_AUGLAG_EQ
@@ -77,7 +78,6 @@ a_star_bias: 3.0 #Bias (cost=g+bias*h) in the A* search
 basis: "MINVO"  #MINVO OR B_SPLINE  This is the basis used only for collision checking
 
 res_plot_traj: 6.0  #Higher --> More resolution when plotting the trajectory 
-
 
 factor_v_max: 0.6 #\in [0,1]. Used to find the total duration of a given trajectory.
 

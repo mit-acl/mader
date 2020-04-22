@@ -48,13 +48,19 @@ class FakeSim:
         self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
         self.num_of_objects = 0;
 
+   
+
         self.x_all=[];
         self.y_all=[];
         self.z_all=[];
+        self.offset_all=[];
+        self.slower=[];
         for i in range(self.num_of_objects):
             self.x_all.append(50*random.random());
             self.y_all.append(self.x_all[i]+2*random.random());
             self.z_all.append(1);
+            self.offset_all.append(random.uniform(-2*math.pi, 2*math.pi));
+            self.slower.append(random.uniform(1, 1.5));
             # self.x_all.append(random.random());
             # self.y_all.append(4*random.random());
             # self.z_all.append(2);
@@ -89,11 +95,13 @@ class FakeSim:
         for i in range(self.num_of_objects):
             t_ros=rospy.Time.now()
             t=rospy.get_time(); #Same as before, but it's float
-            [x_string, y_string, z_string] = self.trefoil(self.x_all[i], self.y_all[i], self.z_all[i], 1, 1, 1, self.x_all[i]) #offset=x
+            [x_string, y_string, z_string] = self.trefoil(self.x_all[i], self.y_all[i], self.z_all[i], 1, 1, 1, self.offset_all[i], self.slower[i]) 
             x = eval(x_string)
             y = eval(y_string)
             z = eval(z_string)
             dynamic_trajectory_msg=DynTraj(); 
+
+            dynamic_trajectory_msg.is_agent=False;
 
             dynamic_trajectory_msg.header.stamp= t_ros;
             dynamic_trajectory_msg.function = [x_string, y_string, z_string]
@@ -102,7 +110,7 @@ class FakeSim:
             dynamic_trajectory_msg.pos.y=y #Current position
             dynamic_trajectory_msg.pos.z=z #Current position
 
-            dynamic_trajectory_msg.id = 4000+ i #Current id 4000 to avoid interference with ids from agents TODO
+            dynamic_trajectory_msg.id = 4000+ i #Current id 4000 to avoid interference with ids from agents #TODO
 
             self.pubTraj.publish(dynamic_trajectory_msg)
             br.sendTransform((x, y, z), (0,0,0,1), t_ros, self.name+str(i), "world")
@@ -133,9 +141,9 @@ class FakeSim:
 
 
     # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
-    def trefoil(self,x,y,z,scale_x, scale_y, scale_z, offset):
+    def trefoil(self,x,y,z,scale_x, scale_y, scale_z, offset, slower):
 
-        slower=1.0; #The higher, the slower the obstacles move" 
+        #slower=1.0; #The higher, the slower the obstacles move" 
         tt='t/' + str(slower)+'+';
 
         x_string='(sin('+tt +str(offset)+') + 2 * sin(2 * '+tt +str(offset)+'))/' + str(scale_x) +'+' + str(x); #'2*sin(t)' 

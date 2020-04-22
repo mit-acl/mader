@@ -27,7 +27,8 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "N_whole", par_.N_whole);
 
   safeGetParam(nh_, "Ra", par_.Ra);
-  safeGetParam(nh_, "R_consider_others", par_.R_consider_others);
+  safeGetParam(nh_, "R_consider_agents", par_.R_consider_agents);
+  safeGetParam(nh_, "R_consider_obstacles", par_.R_consider_obstacles);
   safeGetParam(nh_, "w_max", par_.w_max);
   safeGetParam(nh_, "alpha_filter_dyaw", par_.alpha_filter_dyaw);
 
@@ -151,9 +152,9 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
     abort();
   }
 
-  if (par_.R_consider_others < 2 * par_.Ra)
+  if (par_.R_consider_agents < 2 * par_.Ra)
   {
-    std::cout << bold << red << "Needed: par_.R_consider_others < 2 * par_.Ra" << reset << std::endl;
+    std::cout << bold << red << "Needed: par_.R_consider_agents > 2 * par_.Ra" << reset << std::endl;
     abort();
   }
 
@@ -302,7 +303,9 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   }
 
   Eigen::Vector3d pos(msg.pos.x, msg.pos.y, msg.pos.z);
-  bool near_me = ((state_.pos - pos).norm() < par_.R_consider_others);
+  double dist = (state_.pos - pos).norm();
+  bool near_me = (msg.is_agent == true && (dist < par_.R_consider_agents)) ||
+                 (msg.is_agent == false && (dist < par_.R_consider_obstacles));
   // std::cout << "dist= " << (state_.pos - pos).norm() << std::endl;
 
   dynTraj tmp;
@@ -315,6 +318,8 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   tmp.bbox.push_back(msg.bbox[2]);
 
   tmp.id = msg.id;
+
+  tmp.is_agent = msg.is_agent;
 
   tmp.time_received = ros::Time::now().toSec();
 
@@ -335,6 +340,8 @@ void FasterRos::publishOwnTraj(const PieceWisePol& pwp)
   msg.pos.y = state_.pos.y();
   msg.pos.z = state_.pos.z();
   msg.id = id_;
+
+  msg.is_agent = true;
 
   pub_traj_.publish(msg);
 }

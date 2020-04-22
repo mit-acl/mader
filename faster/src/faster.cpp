@@ -130,7 +130,7 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
 {
   MyTimer tmp_t(true);
 
-  if (started_check_ == true && near_me)
+  if (started_check_ == true && near_me && traj.is_agent == true)
   {
     have_received_trajectories_while_checking_ = true;
   }
@@ -149,15 +149,15 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
 
     if (exists)
     {  // if that object already exists, substitute its trajectory
-      std::cout << red << "Updating " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
-                << reset << std::endl;
+      // std::cout << red << "Updating " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
+      //           << reset << std::endl;
       *obs_ptr = traj_compiled;
     }
     else
     {  // if it doesn't exist, create it
       trajs_.push_back(traj_compiled);
-      std::cout << red << "Adding " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
-                << reset << std::endl;
+      // std::cout << red << "Adding " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
+      //           << reset << std::endl;
     }
   }
   else  // not near me
@@ -165,8 +165,8 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
     if (exists)  // remove if from the list if it exists
     {
       trajs_.erase(obs_ptr);
-      std::cout << red << "Erasing " << (*obs_ptr).id << " at t=" << std::setprecision(12) << traj.time_received
-                << reset << std::endl;
+      // std::cout << red << "Erasing " << (*obs_ptr).id << " at t=" << std::setprecision(12) << traj.time_received
+      //           << reset << std::endl;
     }
   }
 
@@ -909,7 +909,7 @@ bool Faster::safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimize
   bool result = true;
   for (auto traj : trajs_)
   {
-    if (traj.time_received > time_init_opt)
+    if (traj.time_received > time_init_opt && traj.is_agent == true)
     {
       if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
       {

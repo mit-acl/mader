@@ -2,7 +2,7 @@
 	<arg name="quad" default="SQ01s"/>
 	<arg name="x" default="0" />
 	<arg name="y" default="0" />
-	<arg name="z" default="0" />
+	<arg name="z" default="1.0" />
 	<arg name="yaw" default="0.0" />
 
 	

@@ -16,6 +16,7 @@ struct dynTraj
   std::vector<double> bbox;
   int id;
   double time_received;  // time at which this trajectory was received from an agent
+  bool is_agent;         // true for a trajectory of an agent, false for an obstacle
 };
 
 struct dynTrajCompiled
@@ -24,6 +25,7 @@ struct dynTrajCompiled
   std::vector<double> bbox;
   int id;
   double time_received;  // time at which this trajectory was received from an agent
+  bool is_agent;         // true for a trajectory of an agent, false for an obstacle
 };
 
 struct polytope
@@ -133,7 +135,8 @@ struct parameters
   int N_safe;
 
   double Ra;
-  double R_consider_others;
+  double R_consider_agents;
+  double R_consider_obstacles;
   double w_max;
   double alpha_filter_dyaw;
 
