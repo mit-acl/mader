@@ -59,7 +59,7 @@ xtol_rel: 0.00001 #negative value --> stopping criterion not used
 ftol_rel: 0.000001 #negative value --> stopping criterion not used
 solver: "LD_MMA"
 
-#  // work:  //LD_MMA // //LN_NELDERMEAD // LN_SBPLX(fastest) //LN_PRAXIS(fastest) //LD_AUGLAG //LD_AUGLAG_EQ
+#  // work:  //LD_MMA (fastest) // //LN_NELDERMEAD // LN_SBPLX //LN_PRAXIS //LD_AUGLAG //LD_AUGLAG_EQ
 #  // don't work: LN_BOBYQA // LD_SLSQP //LN_NEWUOA //LN_NEWUOA_BOUND //LN_COBYLA
 #  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1 //LD_VAR2 //LD_LBFGS_NOCEDAL
 
