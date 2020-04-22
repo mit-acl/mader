@@ -130,6 +130,11 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
 {
   MyTimer tmp_t(true);
 
+  if (started_check_ == true && near_me)
+  {
+    have_received_trajectories_while_checking_ = true;
+  }
+
   mtx_trajs_.lock();
 
   std::vector<dynTrajCompiled>::iterator obs_ptr = std::find_if(
@@ -144,13 +149,15 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
 
     if (exists)
     {  // if that object already exists, substitute its trajectory
-      // std::cout << red << "Updating " << traj_compiled.id << reset << std::endl;
+      std::cout << red << "Updating " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
+                << reset << std::endl;
       *obs_ptr = traj_compiled;
     }
     else
     {  // if it doesn't exist, create it
       trajs_.push_back(traj_compiled);
-      std::cout << red << "Adding " << traj_compiled.id << reset << std::endl;
+      std::cout << red << "Adding " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
+                << reset << std::endl;
     }
   }
   else  // not near me
@@ -158,7 +165,8 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
     if (exists)  // remove if from the list if it exists
     {
       trajs_.erase(obs_ptr);
-      std::cout << red << "Erasing " << (*obs_ptr).id << reset << std::endl;
+      std::cout << red << "Erasing " << (*obs_ptr).id << " at t=" << std::setprecision(12) << traj.time_received
+                << reset << std::endl;
     }
   }
 
@@ -171,7 +179,7 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
     std::cout << std::endl;*/
 
   mtx_trajs_.unlock();
-
+  have_received_trajectories_while_checking_ = false;
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
 
@@ -895,6 +903,8 @@ bool Faster::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_op
 // Checks that I have not received new trajectories that affect me while doing the optimization
 bool Faster::safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimized)
 {
+  started_check_ = true;
+
   mtx_trajs_.lock();
   bool result = true;
   for (auto traj : trajs_)
@@ -910,6 +920,15 @@ bool Faster::safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimize
       }
     }
   }
+
+  // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
+  if (have_received_trajectories_while_checking_ == true)
+  {
+    std::cout << "Received a trajectory while I was checking" << std::endl;
+    result = false;
+  }
+  started_check_ = false;
+
   mtx_trajs_.unlock();
   return result;
   // traj_compiled.time_received = ros::Time::now().toSec();
@@ -1064,6 +1083,9 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   int li1;  // last index inside the sphere of JPSk
   state E;
   // std::cout << bold << std::setprecision(3) << "A.pos= " << A.pos.transpose() << reset << std::endl;
+  std::cout << "A= " << A.pos.transpose() << std::endl;
+  std::cout << "G= " << G.pos.transpose() << std::endl;
+  std::cout << "ra= " << ra << std::endl;
   E.pos = getFirstIntersectionWithSphere(JPSk, ra, JPSk[0], &li1, &noPointsOutsideS);
   if (noPointsOutsideS == true)  // if G is inside the sphere
   {
@@ -1259,10 +1281,17 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   state initial = A;
   state final = E;
 
+  std::cout << "Initial.pos= " << initial.pos << std::endl;
+  std::cout << "Final.pos= " << final.pos << std::endl;
+  std::cout << "norm= " << (initial.pos - final.pos).norm() << std::endl;
+
   double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
 
   double t_min = k_whole * par_.dc + time_now;
-  double t_max = t_min + (initial.pos - final.pos).norm() / (0.6 * par_.v_max);  // time to execute the optimized path
+  // double t_max = t_min + (initial.pos - final.pos).norm() / (0.6 * par_.v_max);  // time to execute the optimized
+  // path
+  double t_max = t_min + (initial.pos - final.pos).array().abs().maxCoeff() /
+                             (par_.factor_v_max * par_.v_max);  // time to execute the optimized path
 
   /*  std::cout << "Going to compute the convex hulls, t_min= " << t_min << std::endl;
     std::cout << "Going to compute the convex hulls, t_max= " << t_max << std::endl;
@@ -1311,10 +1340,12 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   snlopt.setTminAndTmax(t_min, t_max);
   if (k_whole != 0)
   {
+    std::cout << bold << red << "Using MaxRuntime=" << k_whole * par_.dc << reset << std::endl;
     snlopt.setMaxRuntime(k_whole * par_.dc);  // 0.8 * deltaT_ * par_.dc to take into account other computations
   }
   else
   {
+    std::cout << bold << red << "Using MaxRuntime=" << 1.0 << reset << std::endl;
     snlopt.setMaxRuntime(1.0);  // I'm stopped at the end of the trajectory --> take my time to replan
   }
   snlopt.setInitAndFinalStates(initial, final);

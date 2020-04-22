@@ -194,6 +194,8 @@ struct parameters
 
   double res_plot_traj;
 
+  double factor_v_max = 0.6;
+
   /*  double kw;
     double kyaw;
     double kdalpha;

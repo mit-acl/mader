@@ -40,6 +40,8 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "a_max", par_.a_max);
   safeGetParam(nh_, "j_max", par_.j_max);
 
+  safeGetParam(nh_, "factor_v_max", par_.factor_v_max);
+
   safeGetParam(nh_, "gamma_whole", par_.gamma_whole);
   safeGetParam(nh_, "gammap_whole", par_.gammap_whole);
   safeGetParam(nh_, "increment_whole", par_.increment_whole);
@@ -92,9 +94,16 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
     safeGetParam(nh_,"kalpha", par_.kalpha);*/
 
   // And now obtain the parameters from the mapper
-  std::vector<double> world_dimensions;
-  safeGetParam(nh_, "mapper/world_dimensions", world_dimensions);
-  safeGetParam(nh_, "mapper/resolution", par_.res);
+
+  // MODIFICATION to be able to work without the mapper
+  // std::vector<double> world_dimensions;
+  // safeGetParam(nh_, "mapper/world_dimensions", world_dimensions);
+  // safeGetParam(nh_, "mapper/resolution", par_.res);
+  std::vector<double> world_dimensions = { 15, 15, 15 };
+
+  par_.res = 0.15;
+
+  /// End of MODIFICATION
 
   par_.wdx = world_dimensions[0];
   par_.wdy = world_dimensions[1];
@@ -108,6 +117,12 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   std::cout << bold << green << "resolution=" << par_.res << reset << std::endl;
 
   std::cout << "Parameters obtained" << std::endl;
+
+  if (par_.factor_v_max > 1.0 || par_.factor_v_max < 0.0)
+  {
+    std::cout << bold << red << "Needed: 0<=factor_v_max<=1  " << reset << std::endl;
+    abort();
+  }
 
   if (par_.N_safe <= par_.max_poly_safe + 2)
   {

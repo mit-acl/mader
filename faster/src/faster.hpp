@@ -270,6 +270,10 @@ private:
   PieceWisePol pwp_prev_;
 
   bool exists_previous_pwp_ = false;
+
+  bool started_check_ = false;
+
+  bool have_received_trajectories_while_checking_ = false;
 };
 
 #endif
