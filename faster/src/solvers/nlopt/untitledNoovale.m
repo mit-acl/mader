@@ -963,15 +963,21 @@ vy=[-1/sqrt(3)  -1/sqrt(3)  2/sqrt(3)         0]';
 vz=[0  0   0       4/sqrt(6)]';
 
 %With these ones its aliged in the good axis
+tmp=2 %sqrt(3)*sqrt(2)
+vx=tmp*[1 -1  -1   1 ]';
+vy=tmp*[1 -1  1   -1 ]';
+vz=tmp*[1  1  -1  -1 ]';
+
+%With these ones its aliged in the good axis
 % vx=[0           1         -1         0 ]';
 % vy=[sqrt(2)     0         0         sqrt(2)]';%0.5468*sqrt(2)*
 % vz=[-1 0 0 1]';
 
-%to have volume=1
-a=2.03964 %raiz cubica de 6raiz2
-vx=a/2*[0           1         -1         0 ]';
-vy=a/2*[sqrt(2)     0         0         sqrt(2)]';%0.5468*sqrt(2)*
-vz=a/2*[-1 0 0 1]';
+%(to have volume=1) With these ones its aliged in the good axis
+% a=2.03964 %raiz cubica de 6raiz2
+% vx=a/2*[0           1         -1         0 ]';
+% vy=a/2*[sqrt(2)     0         0         sqrt(2)]';%0.5468*sqrt(2)*
+% vz=a/2*[-1 0 0 1]';
 
     v1=[vx(1) vy(1) vz(1)]'
     v2=[vx(2) vy(2) vz(2)]'  
@@ -985,6 +991,7 @@ pol_z=sol3.A'*vz;
 plot_convex_hull(pol_x,pol_y,pol_z,sol3.A','red')
 fplot3(pol_x'*T3, pol_y'*T3, pol_z'*T3,[-1 1],'r','LineWidth',3)
 axis equal
+grid
 % fplot3(-pol_x'*T3, pol_y'*T3, pol_z'*T3,[-1 1],'-r','LineWidth',3)
 % fplot3(-pol_x'*T3, -pol_y'*T3, pol_z'*T3,[-1 1],'-r','LineWidth',3)
 % fplot3(-pol_x'*T3, -pol_y'*T3, -pol_z'*T3,[-1 1],'-r','LineWidth',3)
