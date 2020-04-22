@@ -962,6 +962,17 @@ vy=[-1/sqrt(3)  -1/sqrt(3)  2/sqrt(3)         0]';
 % vz=[-1/sqrt(6)  -1/sqrt(6)   -1/sqrt(6)       3/sqrt(6)]';
 vz=[0  0   0       4/sqrt(6)]';
 
+%With these ones its aliged in the good axis
+% vx=[0           1         -1         0 ]';
+% vy=[sqrt(2)     0         0         sqrt(2)]';%0.5468*sqrt(2)*
+% vz=[-1 0 0 1]';
+
+%to have volume=1
+a=2.03964 %raiz cubica de 6raiz2
+vx=a/2*[0           1         -1         0 ]';
+vy=a/2*[sqrt(2)     0         0         sqrt(2)]';%0.5468*sqrt(2)*
+vz=a/2*[-1 0 0 1]';
+
     v1=[vx(1) vy(1) vz(1)]'
     v2=[vx(2) vy(2) vz(2)]'  
     v3=[vx(3) vy(3) vz(3)]'
@@ -974,10 +985,17 @@ pol_z=sol3.A'*vz;
 plot_convex_hull(pol_x,pol_y,pol_z,sol3.A','red')
 fplot3(pol_x'*T3, pol_y'*T3, pol_z'*T3,[-1 1],'r','LineWidth',3)
 axis equal
+% fplot3(-pol_x'*T3, pol_y'*T3, pol_z'*T3,[-1 1],'-r','LineWidth',3)
+% fplot3(-pol_x'*T3, -pol_y'*T3, pol_z'*T3,[-1 1],'-r','LineWidth',3)
+% fplot3(-pol_x'*T3, -pol_y'*T3, -pol_z'*T3,[-1 1],'-r','LineWidth',3)
+% fplot3(-pol_x'*T3, pol_y'*T3, -pol_z'*T3,[-1 1],'-r','LineWidth',3)
 
 poly=[pol_x'*T3; pol_y'*T3; pol_z'*T3];
 
 center=[mean(vx),mean(vy),mean(vz)]';
+
+
+
 
 center_side=(v2+v3)/2
 
@@ -986,25 +1004,68 @@ scatter3(center_side(1),center_side(2),center_side(3),45,'Filled')
 
 poly_0=double(subs(poly,t,0.0));
 
+poly_1=double(subs(poly,t,1));
+poly_m1=double(subs(poly,t,-1));
+
 poly_05=double(subs(poly,t,0.5));
 poly_m05=double(subs(poly,t,-0.5));
+
+
+tmp=[poly_m1 poly_1 center_side];
+
+patch(tmp(1,:), tmp(2,:), tmp(3,:),[0.5, 0.5, 0.5],'FaceAlpha',.2)
+
+for i=1:numel(sol3.rootsA)
+    tmp=sol3.rootsA(:);
+    poly_tg=double(subs(poly,t,tmp(i)))
+    scatter3(poly_tg(1),poly_tg(2),poly_tg(3),100,'Filled','blue')
+end
+
+poly_tg1=double(subs(sol5.rootsA,t,0.5));
 
 scatter3(poly_0(1),poly_0(2),poly_0(3),460)
 scatter3(poly_05(1),poly_05(2),poly_05(3),100,'Filled','green')
 scatter3(poly_m05(1),poly_m05(2),poly_m05(3),100,'Filled','green')
 
-samples_t=-1:0.001:1;
+
+
+samples_t=-1:0.01:1;
 samples_poly=subs(poly,t,samples_t);
 centroid_curve=sum(samples_poly,2)/length(samples_t);
 scatter3(centroid_curve(1),centroid_curve(2),centroid_curve(3),405,'Filled','blue'); 
+
+
+vecnorm(double(samples_poly-centroid_curve));
 
 % [azimuth,elevation,r] = cart2sph(samples_poly(1,:),samples_poly(2,:),samples_poly(3,:));
 
 % [theta,rho,z] = cart2pol(samples_poly(1,:),samples_poly(2,:),samples_poly(3,:));
 
+coeff_x=coeffs(poly(1,:),'All'); coeff_x=[zeros(1,4-length(coeff_x)),coeff_x];
+coeff_y=coeffs(poly(2,:),'All'); coeff_y=[zeros(1,4-length(coeff_y)),coeff_y];
+coeff_z=coeffs(poly(3,:),'All'); coeff_z=[zeros(1,4-length(coeff_z)),coeff_z];
+
+M=double([coeff_x;  coeff_y; coeff_z]);
 
 
-M=double([coeffs(poly(1,:),'All');coeffs(poly(2,:),'All'); coeffs(poly(3,:),'All') ]);
+%%
+a1=M(1,1); c1=M(1,3);
+a2=M(2,2); d2=M(2,4);
+a3=M(3,1); c3=M(3,3);
+
+
+ax=a3/a2;
+bx=-(a3/a2)*d2+c3;
+ay=(a1/a2);
+by=-(a1/a2)*d2+c1;
+
+% x(ax*ybx)=z(ay*y+by);
+% syms x y
+% f = @(x,y,z) x.^2 + y.^2 - z.^2;
+fimplicit3( @(x,y,z) x.*(ax*y+bx)-z.*(ay*y+by));
+xlim([-2 2])
+%%
+
 
 % M=M./repmat(M(:,1),1,4)
 
@@ -1013,9 +1074,9 @@ yp=(center-center_side); yp=yp/norm(yp);
 zp=cross(xp,yp); zp=zp/norm(zp);
 
 % quiver(xp(1),p1(2),dp(1),dp(2),0)
-arrow3d(center_side',(center_side+xp)')
-arrow3d(center_side',(center_side+yp)')
-arrow3d(center_side',(center_side+zp)')
+% arrow3d(center_side',(center_side+xp)')
+% arrow3d(center_side',(center_side+yp)')
+% arrow3d(center_side',(center_side+zp)')
 
 % arrow3d(center_side',(center_side+double(subs(diff(poly,t),t,0)))')
 
@@ -1025,16 +1086,115 @@ o_T_n=[R center_side]; o_T_n=[o_T_n; [0 0 0 1]];  %n_P=n_T_o*o_P  new and old ba
 n_polyhomog=inv(o_T_n)*[poly; 1];
 n_poly=n_polyhomog(1:3);
 
-M=double([coeffs(n_poly(1,:),'All');coeffs(n_poly(2,:),'All'); coeffs(n_poly(3,:),'All') ]);
+% M=double([coeffs(n_poly(1,:),'All');coeffs(n_poly(2,:),'All'); coeffs(n_poly(3,:),'All') ]);
 
-figure;
-fplot((1/0.9144)*n_poly,interv)
+center12=(v1+v2)/2.0;
+x_line=[center12(1) v4(1)];
+y_line=[center12(2) v4(2)];
+z_line=[center12(3) v4(3)];
+plot3(x_line,y_line,z_line)
+
+tmp_proj=center;
+for i=1:(length(samples_poly)-1)
+    tmp1=samples_poly(:,i);
+    tmp2=samples_poly(:,length(samples_poly)-i);
+   direc=(tmp1-tmp2);
+   vertex_line=tmp2+direc;
+   x_line=[tmp_proj(1) vertex_line(1)];
+   y_line=[tmp_proj(2) vertex_line(2)];
+   z_line=[tmp_proj(3) vertex_line(3)];
+   plot3(x_line,y_line,z_line,'b')
+end
+
+% figure; hold on;
+% tmp_proj=center;
+% scale=r
+% for i=1:length(samples_poly)
+%    direc=(samples_poly(:,i)-tmp_proj);
+%    vertex_line=tmp_proj+scale*direc/norm(direc);
+%    x_line=[tmp_proj(1) vertex_line(1)];
+%    y_line=[tmp_proj(2) vertex_line(2)];
+%    z_line=[tmp_proj(3) vertex_line(3)];
+%    plot3(x_line,y_line,z_line,'b')
+%    
+% %       vertex_line=tmp_proj-scale*direc/norm(direc);
+% %    x_line=[tmp_proj(1) vertex_line(1)];
+% %    y_line=[tmp_proj(2) vertex_line(2)];
+% %    z_line=[tmp_proj(3) vertex_line(3)];
+% %    plot3(x_line,y_line,z_line,'ob')
+% end
+
+% tmp_proj=v4;
+% for i=1:length(samples_poly)
+%    direc=(samples_poly(:,i)-tmp_proj);
+%    vertex_line=tmp_proj+scale*direc/norm(direc);
+%    x_line=[tmp_proj(1) vertex_line(1)];
+%    y_line=[tmp_proj(2) vertex_line(2)];
+%    z_line=[tmp_proj(3) vertex_line(3)];
+%    plot3(x_line,y_line,z_line,'g')
+% end
+
+% [X,Y,Z] = sphere;
+% hold on
+% r = 0.6473;
+% X2 = X * r;
+% Y2 = Y * r;
+% Z2 = Z * r;
+% surf(X2+center(1),Y2+center(2),Z2+center(3))
+% alpha 0.2
+axis equal
+
+n_v1=inv(o_T_n)*[v1;1]; n_v1=n_v1(1:3);
+n_v2=inv(o_T_n)*[v2;1]; n_v2=n_v2(1:3);
+n_v3=inv(o_T_n)*[v3;1]; n_v3=n_v3(1:3);
+n_v4=inv(o_T_n)*[v4;1]; n_v4=n_v4(1:3);
+
+[n_v1 n_v2 n_v3 n_v4];
 
 
-%Si uso este sistema de coordenadas, aparece la basis!!!
+% figure; hold on;
+% fplot(n_poly,interv)
+% legend('x','y','z')
+% 
+% x=(n_poly(2,:)-1.227)./1.226;
+% y=n_poly(1,:)*0.648;
+% fplot(x,y,interv);
+% z=n_poly(3,:);
+% 
+% % fplot(x*x*x*x+1*(y*y-x*x),interv)
+% figure;hold on
+% % fplot(y*y-x*x*(1-x*x),interv)
+% fplot(x,y,interv);
+% fimplicit(@(x,y) (y*y)-x*x*(x+1));
+% xlim([-1,0])
+% ylim([-0.5,0.5])
+
+n_samples_poly=[];
+for i=1:size(samples_poly,2)
+    o_tmp=[samples_poly(:,i); 1];
+    n_samples_poly=[n_samples_poly double(inv(o_T_n)*o_tmp)];
+end
+
+
+figure;hold on;
+tmp_x=n_samples_poly(2,:);
+tmp_y=n_samples_poly(1,:);
+% tmp_z=abs(sqrt(1-tmp_x.*tmp_x-tmp_y.*tmp_y));
+% plot3(tmp_x,tmp_y,tmp_z);
+plot(tmp_x,tmp_y);
+% fimplicit(@(x,y) y*y-x*x*(x+1));
+axis equal
+
+% [theta,rho,z] = cart2pol(n_samples_poly(1,:),n_samples_poly(2,:),n_samples_poly(3,:));
+% figure;
+% plot(theta)
+
+%%
+% Si uso este sistema de coordenadas, aparece la basis!!!
 xpp=v1-center; xpp=xpp/norm(xpp);
 ypp=v2-center;  ypp=ypp/norm(ypp);
 zpp=v3-center;  zpp=zpp/norm(zpp);
+kpp=v4-center;  kpp=kpp/norm(kpp);
 
 %en uno de los vertices
 % xpp=v2-v1; xpp=xpp/norm(xpp);
@@ -1045,11 +1205,31 @@ zpp=v3-center;  zpp=zpp/norm(zpp);
 % xpp=sum([v1,v2,v3],2)/3-center; xpp=xpp/norm(xpp);
 % ypp=sum([v1,v2,v4],2)/3-center;  ypp=ypp/norm(ypp);
 % zpp=sum([v1,v3,v4],2)/3-center;  zpp=zpp/norm(zpp);
+% 
+% xpp=(v2-center_side); xpp=xpp/norm(xpp);
+% ypp=(v1-center_side); ypp=ypp/norm(ypp);
+% zpp=(v4-center_side); zpp=zpp/norm(zpp);
+
+% center_poly1_and_m1=(poly_1+poly_m1)/2.0;
+% xpp=(poly_1-poly_m1); xpp=xpp/norm(xpp);
+% ypp=(center-center_side);  ypp=ypp/norm(ypp);
+% zpp=cross(xpp,ypp);  zpp=zpp/norm(zpp);
+
 
 figure; hold on;
-plot(samples_t, dot(repmat(xpp,1,size(samples_poly,2)),samples_poly+center))
-plot(samples_t, dot(repmat(ypp,1,size(samples_poly,2)),samples_poly+center))
-plot(samples_t, dot(repmat(zpp,1,size(samples_poly,2)),samples_poly+center))
+nn_x= dot(repmat(xpp,1,size(samples_poly,2)),samples_poly-center);
+nn_y= dot(repmat(ypp,1,size(samples_poly,2)),samples_poly-center);
+nn_z= dot(repmat(zpp,1,size(samples_poly,2)),samples_poly-center);
+nn_k= dot(repmat(kpp,1,size(samples_poly,2)),samples_poly-center);
+plot(samples_t, nn_x)
+plot(samples_t, nn_y)
+plot(samples_t, nn_z)
+plot(samples_t, nn_k)
+plot(samples_t, nn_x+nn_y+nn_z+nn_k)
+
+figure;
+
+plot3(nn_x,nn_y,nn_z)
 
 syms a1 c1 a2 d2 a3 c3;
 
@@ -1058,9 +1238,43 @@ n_v3= inv(o_T_n) *[v3; 1];n_v3=n_v3(1:3);
 n_v2= inv(o_T_n) *[v2; 1];n_v2=n_v2(1:3);
 
 n_poly_0=vpa(subs(n_poly,t,0));
+
 solve([n_poly_0==subs(n_poly_unk,t,0), subs(diff(n_poly_unk,t),t,0.0)==(n_v3-n_v2)])
 
+global x y z
+syms x y z
 
+curvem1=subs(n_poly_unk,t,-1);
+curve1=subs(n_poly_unk,t,1);
+eq1=plane_eq_from_three_points(v1,v3,v4,curvem1(1),curvem1(2),curvem1(3));
+eq2=plane_eq_from_three_points(v1,v2,v3,curvem1(1),curvem1(2),curvem1(3));
+
+eq3=plane_eq_from_three_points(v1,v2,v4,curve1(1),curve1(2),curve1(3));
+eq4=plane_eq_from_three_points(v2,v3,v4,curve1(1),curve1(2),curve1(3));
+
+s=solve([eq1==0, eq2==0])
+
+%%
+figure; hold on;
+% vx=[sol3.A(1,1:3) 0]; vy=[sol3.A(2,1:3) 0]; vz=[sol3.A(3,1:3) 0];
+vx=[sol3.A(1:3,1); 0]/sol3.A(1,4); vy=[sol3.A(1:3,2); 0]/sol3.A(2,4); vz=[sol3.A(1:3,3); 0]/sol3.A(3,4);
+[k1,volume] = convhull(vx,vy,vz);
+trisurf(k1,vx,vy,vz,'FaceColor','red','FaceAlpha',0.2)
+
+
+% vx=sol2.A(1,:); vy=sol2.A(2,:);
+% [k1,volume] = convhull(vx,vy);
+% trisurf(k1,vx,vy,vz,'FaceColor','red','FaceAlpha',0.2)
+% axis equal;
+
+% https://math.stackexchange.com/questions/2686606/equation-of-a-plane-passing-through-3-points
+function result=plane_eq_from_three_points(a,b,c,x,y,z)
+%     global x y z
+%     syms x y z
+%     normal=cross((b-a),(c-a));
+    A=[x y z 1; [a' 1]; [b' 1]; [c' 1] ];
+    result=det(A)
+end
 
 function volume=plot_convex_hull(pol_x,pol_y,pol_z,A,color)
     cx=pol_x;
