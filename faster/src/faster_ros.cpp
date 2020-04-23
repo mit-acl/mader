@@ -209,6 +209,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   pub_traj_safe_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
   pub_cloud_jps_ = nh_.advertise<sensor_msgs::PointCloud2>("cloud_jps", 1);
   pub_traj_ = nh_.advertise<faster_msgs::DynTraj>("/trajs", 1, true);  // The last parameter is latched or not
+  pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
 
   // Subscribers
   occup_grid_sub_.subscribe(nh_, "occup_grid", 1);
@@ -363,52 +364,59 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     bool replanned = faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole, pcloud_jps,
                                          planes_guesses, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
 
-    // Delete markers to publish stuff
-    // visual_tools_->deleteAllMarkers();
-    visual_tools_->enableBatchPublishing();
+    if (par_.visual)
+    {
+      // Delete markers to publish stuff
+      // visual_tools_->deleteAllMarkers();
+      visual_tools_->enableBatchPublishing();
 
-    pcl::PCLPointCloud2 pcloud_jps2;
-    pcl::toPCLPointCloud2(*pcloud_jps.get(), pcloud_jps2);
-    sensor_msgs::PointCloud2 cloud_jps_msg;
-    pcl_conversions::fromPCL(pcloud_jps2, cloud_jps_msg);
-    // cloud_jps_msg.header = mesh_cloud_msg_->header;
-    cloud_jps_msg.header.frame_id = "world";
-    pub_cloud_jps_.publish(cloud_jps_msg);
+      pcl::PCLPointCloud2 pcloud_jps2;
+      pcl::toPCLPointCloud2(*pcloud_jps.get(), pcloud_jps2);
+      sensor_msgs::PointCloud2 cloud_jps_msg;
+      pcl_conversions::fromPCL(pcloud_jps2, cloud_jps_msg);
+      // cloud_jps_msg.header = mesh_cloud_msg_->header;
+      cloud_jps_msg.header.frame_id = "world";
+      pub_cloud_jps_.publish(cloud_jps_msg);
 
-    clearJPSPathVisualization(2);
-    publishJPSPath(JPS_safe, JPS_SAFE);
-    publishJPSPath(JPS_whole, JPS_WHOLE);
+      clearJPSPathVisualization(2);
+      publishJPSPath(JPS_safe, JPS_SAFE);
+      publishJPSPath(JPS_whole, JPS_WHOLE);
 
-    publishPoly(poly_safe, SAFE);
-    publishPoly(poly_whole, WHOLE);
-    pubTraj(X_safe, SAFE_COLORED);
+      publishPoly(poly_safe, SAFE);
+      publishPoly(poly_whole, WHOLE);
+      pubTraj(X_safe, SAFE_COLORED);
 
-    pubTraj(X_whole, WHOLE_COLORED);
-    // std::cout << "Plane Guesses has" << planes_guesses.size() << std::endl;
-    publishPlanes(planes_guesses);
+      pubTraj(X_whole, WHOLE_COLORED);
+      // std::cout << "Plane Guesses has" << planes_guesses.size() << std::endl;
+      publishPlanes(planes_guesses);
 
-    pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
-    jsk_rviz_plugins::OverlayText text;
-    text.width = 600;
-    text.height = 133;
-    text.left = 10;
-    text.top = 10;
-    text.text_size = 17;
-    text.line_width = 2;
-    text.font = "DejaVu Sans Mono";
-    text.text = "Num of LPs run= " + std::to_string(num_of_LPs_run_) + "\n" +  ///////////////////
-                "Num of QCQPs run= " + std::to_string(num_of_QCQPs_run_);
-
-    text.fg_color = color(TEAL_NORMAL);
-    text.bg_color = color(BLACK_TRANS);
+      publishText();
+    }
 
     if (replanned)
     {
       publishOwnTraj(pwp);
     }
-
-    pub_text_.publish(text);
   }
+}
+
+void FasterRos::publishText()
+{
+  jsk_rviz_plugins::OverlayText text;
+  text.width = 600;
+  text.height = 133;
+  text.left = 10;
+  text.top = 10;
+  text.text_size = 17;
+  text.line_width = 2;
+  text.font = "DejaVu Sans Mono";
+  text.text = "Num of LPs run= " + std::to_string(num_of_LPs_run_) + "\n" +  ///////////////////
+              "Num of QCQPs run= " + std::to_string(num_of_QCQPs_run_);
+
+  text.fg_color = color(TEAL_NORMAL);
+  text.bg_color = color(BLACK_TRANS);
+
+  pub_text_.publish(text);
 }
 
 void FasterRos::publishPlanes(std::vector<Hyperplane3D>& planes)
@@ -496,7 +504,7 @@ void FasterRos::stateCB(const snapstack_msgs::State& msg)
     publishOwnTraj(pwp);
     published_initial_position_ = true;
   }
-  if (faster_ptr_->IsTranslating() == true)
+  if (faster_ptr_->IsTranslating() == true && par_.visual)
   {
     pubActualTraj();
   }
