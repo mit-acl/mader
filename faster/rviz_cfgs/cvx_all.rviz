@@ -65,41 +65,47 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 1000
       Frames:
+        0:
+          Value: true
+        1:
+          Value: true
+        10:
+          Value: true
+        11:
+          Value: true
+        12:
+          Value: true
+        13:
+          Value: true
+        14:
+          Value: true
+        15:
+          Value: true
+        16:
+          Value: true
+        17:
+          Value: true
+        18:
+          Value: true
+        19:
+          Value: true
+        2:
+          Value: true
+        3:
+          Value: true
+        4:
+          Value: true
+        5:
+          Value: true
+        6:
+          Value: true
+        7:
+          Value: true
+        8:
+          Value: true
+        9:
+          Value: true
         All Enabled: false
-        SQ010s:
-          Value: true
-        SQ011s:
-          Value: true
-        SQ012s:
-          Value: true
-        SQ013s:
-          Value: true
-        SQ014s:
-          Value: true
-        SQ015s:
-          Value: true
-        SQ016s:
-          Value: true
-        SQ01s:
-          Value: true
-        SQ02s:
-          Value: true
-        SQ03s:
-          Value: true
-        SQ04s:
-          Value: true
-        SQ05s:
-          Value: true
-        SQ06s:
-          Value: true
-        SQ07s:
-          Value: true
-        SQ08s:
-          Value: true
-        SQ09s:
-          Value: true
-        vicon:
-          Value: false
         world:
           Value: false
       Marker Scale: 2
@@ -109,39 +115,46 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
-          vicon:
-            SQ010s:
-              {}
-            SQ011s:
-              {}
-            SQ012s:
-              {}
-            SQ013s:
-              {}
-            SQ014s:
-              {}
-            SQ015s:
-              {}
-            SQ016s:
-              {}
-            SQ01s:
-              {}
-            SQ02s:
-              {}
-            SQ03s:
-              {}
-            SQ04s:
-              {}
-            SQ05s:
-              {}
-            SQ06s:
-              {}
-            SQ07s:
-              {}
-            SQ08s:
-              {}
-            SQ09s:
-              {}
+          0:
+            {}
+          1:
+            {}
+          10:
+            {}
+          11:
+            {}
+          12:
+            {}
+          13:
+            {}
+          14:
+            {}
+          15:
+            {}
+          16:
+            {}
+          17:
+            {}
+          18:
+            {}
+          19:
+            {}
+          2:
+            {}
+          3:
+            {}
+          4:
+            {}
+          5:
+            {}
+          6:
+            {}
+          7:
+            {}
+          8:
+            {}
+          9:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -199,7 +212,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/setpoint
       Name: Setpoint
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -345,10 +358,18 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /shapes
-      Name: RViz_Obstacles
+      Marker Topic: /shapes_static
+      Name: RViz_Static_Obstacles
       Namespaces:
-        {}
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /shapes_dynamic
+      Name: RViz_Dynamic_Obstacles
+      Namespaces:
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -423,7 +444,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ01s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -431,7 +452,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ02s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -439,7 +460,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ03s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -447,7 +468,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ04s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -455,7 +476,7 @@ Visualization Manager:
       Marker Topic: /SQ05s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ05s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -463,7 +484,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ06s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -471,7 +492,7 @@ Visualization Manager:
       Marker Topic: /SQ07s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ07s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -479,7 +500,7 @@ Visualization Manager:
       Marker Topic: /SQ08s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ08s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -487,7 +508,7 @@ Visualization Manager:
       Marker Topic: /SQ09s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ09s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -495,7 +516,7 @@ Visualization Manager:
       Marker Topic: /SQ010s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ010s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -503,7 +524,7 @@ Visualization Manager:
       Marker Topic: /SQ011s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ011s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -511,7 +532,7 @@ Visualization Manager:
       Marker Topic: /SQ012s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ012s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -519,7 +540,7 @@ Visualization Manager:
       Marker Topic: /SQ013s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ013s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -527,7 +548,7 @@ Visualization Manager:
       Marker Topic: /SQ014s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ014s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -535,7 +556,7 @@ Visualization Manager:
       Marker Topic: /SQ015s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ015s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -543,7 +564,7 @@ Visualization Manager:
       Marker Topic: /SQ016s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ016s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: jsk_rviz_plugin/TFTrajectory
@@ -615,7 +636,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ01s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -623,7 +644,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ02s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -631,7 +652,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ03s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -639,7 +660,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ04s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -647,7 +668,7 @@ Visualization Manager:
       Marker Topic: /SQ05s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ05s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -655,7 +676,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ06s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -663,7 +684,7 @@ Visualization Manager:
       Marker Topic: /SQ07s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ07s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -671,7 +692,7 @@ Visualization Manager:
       Marker Topic: /SQ08s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ08s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -679,7 +700,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ06s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -687,7 +708,7 @@ Visualization Manager:
       Marker Topic: /SQ07s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ07s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -695,7 +716,7 @@ Visualization Manager:
       Marker Topic: /SQ08s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ08s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -703,7 +724,7 @@ Visualization Manager:
       Marker Topic: /SQ09s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ09s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -711,7 +732,7 @@ Visualization Manager:
       Marker Topic: /SQ010s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ010s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -719,7 +740,7 @@ Visualization Manager:
       Marker Topic: /SQ011s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ011s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -727,7 +748,7 @@ Visualization Manager:
       Marker Topic: /SQ012s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ012s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -735,7 +756,7 @@ Visualization Manager:
       Marker Topic: /SQ013s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ013s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -743,7 +764,7 @@ Visualization Manager:
       Marker Topic: /SQ014s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ014s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -751,7 +772,7 @@ Visualization Manager:
       Marker Topic: /SQ015s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ015s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
