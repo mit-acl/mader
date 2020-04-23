@@ -11,7 +11,7 @@ int main()
   int samples_y = 7;  // odd number
   int samples_z = 7;  // odd number
 
-  double voxel_size = 0.3;  // grid used to prune nodes that are on the same cell
+  double fraction_voxel_size = 0.3;  // grid used to prune nodes that are on the same cell
 
   double runtime = 0.1;     //[seconds]
   double goal_size = 0.01;  //[meters]
@@ -56,7 +56,7 @@ int main()
 
   myAStarSolver.setZminZmax(-1.0, 10.0);          // z limits for the search, in world frame
   myAStarSolver.setBBoxSearch(30.0, 30.0, 30.0);  // limits for the search, centered on q2
-  myAStarSolver.setMaxValuesAndSamples(v_max, a_max, samples_x, samples_y, samples_z, voxel_size);
+  myAStarSolver.setMaxValuesAndSamples(v_max, a_max, samples_x, samples_y, samples_z, fraction_voxel_size);
 
   myAStarSolver.setRunTime(runtime);
   myAStarSolver.setGoalSize(goal_size);

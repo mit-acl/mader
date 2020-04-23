@@ -98,7 +98,7 @@ void SplineAStar::setBBoxSearch(double x, double y, double z)
 }
 
 void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int num_samples_x,
-                                         int num_samples_y, int num_samples_z, double voxel_size)
+                                         int num_samples_y, int num_samples_z, double fraction_voxel_size)
 {
   v_max_ = v_max;
   a_max_ = a_max;
@@ -190,8 +190,14 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   double max_voxel_size;
   computeLimitsVoxelSize(min_voxel_size, max_voxel_size);
 
-  voxel_size_ = std::max(voxel_size_, min_voxel_size);
-  voxel_size_ = std::min(voxel_size, max_voxel_size);
+  // voxel_size_ = std::max(voxel_size_, min_voxel_size);
+  // voxel_size_ = std::min(voxel_size, max_voxel_size);
+
+  // Ensure  fraction_voxel_size is in [0,1]
+  fraction_voxel_size = (fraction_voxel_size > 1) ? 1 : fraction_voxel_size;
+  fraction_voxel_size = (fraction_voxel_size < 0) ? 0 : fraction_voxel_size;
+
+  voxel_size_ = min_voxel_size + fraction_voxel_size * (max_voxel_size - min_voxel_size);
 
   // std::cout << red << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", " <<
   // max_voxel_size
@@ -671,6 +677,9 @@ void SplineAStar::recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& res
   result.clear();
 
   Node* tmp = node1_ptr;
+
+  std::cout << "Pushing qN= " << tmp->qi.transpose() << std::endl;
+  std::cout << "Pushing qN-1= " << tmp->qi.transpose() << std::endl;
 
   result.insert(result.begin(), tmp->qi);  // qN
   result.insert(result.begin(), tmp->qi);  // qN-1

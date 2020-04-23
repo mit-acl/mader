@@ -215,6 +215,8 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_s
 
   std::vector<Point_3> points;
 
+  double side_box_drone = (2 * sqrt(2) * par_.drone_radius);
+
   // Will always have a sample at the beginning of the interval, and another at the end.
   for (int i = 0; i < samples_per_interval; i++)
   {
@@ -226,19 +228,21 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_s
     double y = traj.function[1].value();  // cos(t) - 2 * cos(2 * t);
     double z = traj.function[2].value();  //-sin(3 * t);
 
-    double half_side = par_.drone_radius / 2.0;
+    double delta_x = (traj.bbox[0] / 2.0) + (side_box_drone / 2.0);
+    double delta_y = (traj.bbox[1] / 2.0) + (side_box_drone / 2.0);
+    double delta_z = (traj.bbox[2] / 2.0) + (side_box_drone / 2.0);
 
     //"Minkowski sum along the trajectory: box centered on the trajectory"
 
-    Point_3 p0(x + traj.bbox[0] / 2.0, y + traj.bbox[1] / 2.0, z + traj.bbox[2] / 2.0);
-    Point_3 p1(x + traj.bbox[0] / 2.0, y - traj.bbox[1] / 2.0, z - traj.bbox[2] / 2.0);
-    Point_3 p2(x + traj.bbox[0] / 2.0, y + traj.bbox[1] / 2.0, z - traj.bbox[2] / 2.0);
-    Point_3 p3(x + traj.bbox[0] / 2.0, y - traj.bbox[1] / 2.0, z + traj.bbox[2] / 2.0);
+    Point_3 p0(x + delta_x, y + delta_y, z + delta_z);
+    Point_3 p1(x + delta_x, y - delta_y, z - delta_z);
+    Point_3 p2(x + delta_x, y + delta_y, z - delta_z);
+    Point_3 p3(x + delta_x, y - delta_y, z + delta_z);
 
-    Point_3 p4(x - traj.bbox[0] / 2.0, y - traj.bbox[1] / 2.0, z - traj.bbox[2] / 2.0);
-    Point_3 p5(x - traj.bbox[0] / 2.0, y + traj.bbox[1] / 2.0, z + traj.bbox[2] / 2.0);
-    Point_3 p6(x - traj.bbox[0] / 2.0, y + traj.bbox[1] / 2.0, z - traj.bbox[2] / 2.0);
-    Point_3 p7(x - traj.bbox[0] / 2.0, y - traj.bbox[1] / 2.0, z + traj.bbox[2] / 2.0);
+    Point_3 p4(x - delta_x, y - delta_y, z - delta_z);
+    Point_3 p5(x - delta_x, y + delta_y, z + delta_z);
+    Point_3 p6(x - delta_x, y + delta_y, z - delta_z);
+    Point_3 p7(x - delta_x, y - delta_y, z + delta_z);
 
     points.push_back(p0);
     points.push_back(p1);
@@ -1331,10 +1335,11 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   snlopt.setAStarBias(par_.a_star_bias);
   snlopt.setHulls(hulls_std);
-  snlopt.setDistanceToUseStraightLine(par_.Ra / 2.0);
+  snlopt.setDistanceToUseStraightLine(par_.goal_radius);
   snlopt.setKappaAndMu(par_.kappa, par_.mu);
   snlopt.setZminZmax(par_.z_ground, par_.z_max);
-  snlopt.setAStarSamples(par_.a_star_samp_x, par_.a_star_samp_y, par_.a_star_samp_z);
+  snlopt.setAStarSamplesAndFractionVoxel(par_.a_star_samp_x, par_.a_star_samp_y, par_.a_star_samp_z,
+                                         par_.a_star_fraction_voxel_size);
   snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
   snlopt.setDC(par_.dc);                        // dc
   snlopt.setTminAndTmax(t_min, t_max);

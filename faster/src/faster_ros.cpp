@@ -79,6 +79,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "a_star_samp_x", par_.a_star_samp_x);
   safeGetParam(nh_, "a_star_samp_y", par_.a_star_samp_y);
   safeGetParam(nh_, "a_star_samp_z", par_.a_star_samp_z);
+  safeGetParam(nh_, "a_star_fraction_voxel_size", par_.a_star_fraction_voxel_size);
 
   safeGetParam(nh_, "a_star_bias", par_.a_star_bias);
 
@@ -155,6 +156,12 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   if (par_.R_consider_agents < 2 * par_.Ra)
   {
     std::cout << bold << red << "Needed: par_.R_consider_agents > 2 * par_.Ra" << reset << std::endl;
+    abort();
+  }
+
+  if (par_.a_star_fraction_voxel_size < 0.0 || par_.a_star_fraction_voxel_size > 1.0)
+  {
+    std::cout << bold << red << "Needed: 0<=a_star_fraction_voxel_size<=1  " << reset << std::endl;
     abort();
   }
 
@@ -334,9 +341,9 @@ void FasterRos::publishOwnTraj(const PieceWisePol& pwp)
 
   faster_msgs::DynTraj msg;
   msg.function = s;
-  msg.bbox.push_back(2 * par_.drone_radius);
-  msg.bbox.push_back(2 * par_.drone_radius);
-  msg.bbox.push_back(2 * par_.drone_radius);
+  msg.bbox.push_back(2 * sqrt(2) * par_.drone_radius);
+  msg.bbox.push_back(2 * sqrt(2) * par_.drone_radius);
+  msg.bbox.push_back(2 * sqrt(2) * par_.drone_radius);
   msg.pos.x = state_.pos.x();
   msg.pos.y = state_.pos.y();
   msg.pos.z = state_.pos.z();

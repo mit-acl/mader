@@ -93,7 +93,7 @@ int main()
     snlopt.setDistanceToUseStraightLine(Ra / 2.0);
     snlopt.setKappaAndMu(kappa, mu);
     snlopt.setZminZmax(z_ground, z_max);
-    snlopt.setAStarSamples(a_star_samp_x, a_star_samp_y, a_star_samp_z);
+    snlopt.setAStarSamplesAndFractionVoxel(a_star_samp_x, a_star_samp_y, a_star_samp_z, 0.5);
     snlopt.setMaxValues(v_max.x(), a_max.x());  // v_max and a_max
     snlopt.setDC(dc);                           // dc
     snlopt.setTminAndTmax(t_min, t_max);

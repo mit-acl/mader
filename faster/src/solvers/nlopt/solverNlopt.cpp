@@ -255,16 +255,20 @@ void SolverNlopt::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const st
   }
 }
 
-void SolverNlopt::setAStarSamples(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z)
+void SolverNlopt::setAStarSamplesAndFractionVoxel(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z,
+                                                  double a_star_fraction_voxel_size)
 {
   a_star_samp_x_ = a_star_samp_x;
   a_star_samp_y_ = a_star_samp_y;
   a_star_samp_z_ = a_star_samp_z;
+
+  a_star_fraction_voxel_size_ = a_star_fraction_voxel_size;
 }
 
 void SolverNlopt::generateAStarGuess()
 {
-  std::cout << "[NL] Running A*, allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << std::endl;
+  std::cout << "[NL] Running A* from" << q0_.transpose() << " to " << final_state_.pos.transpose()
+            << ", allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << std::endl;
 
   std::cout << bold << blue << "z_max_= " << z_max_ << reset << std::endl;
 
@@ -292,7 +296,8 @@ void SolverNlopt::generateAStarGuess()
 
   myAStarSolver.setZminZmax(z_ground_, z_max_);         // z limits for the search, in world frame
   myAStarSolver.setBBoxSearch(2000.0, 2000.0, 2000.0);  // limits for the search, centered on q2
-  myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_, 0.3);
+  myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
+                                       a_star_fraction_voxel_size_);
 
   myAStarSolver.setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
   myAStarSolver.setGoalSize(goal_size);
@@ -1451,21 +1456,21 @@ bool SolverNlopt::optimize()
   qndtoX(q_guess_, n_guess_, d_guess_, x_);
 
   // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
-  // std::cout << "q_guess_ is\n" << std::endl;
-  // printStd(q_guess_);
+  std::cout << "q_guess_ is\n" << std::endl;
+  printStd(q_guess_);
 
-  // std::cout << "n_guess_ is\n" << std::endl;
-  // printStd(n_guess_);
+  std::cout << "n_guess_ is\n" << std::endl;
+  printStd(n_guess_);
 
-  // std::cout << "d_guess_ is\n" << std::endl;
-  // printStd(d_guess_);
+  std::cout << "d_guess_ is\n" << std::endl;
+  printStd(d_guess_);
 
   // toEigen(x_, q_guess_, n_guess_);
 
   // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
-  // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
+  printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
-  //  printIndexesConstraints();
+  printIndexesConstraints();
 
   opt_timer_.Reset();
   std::cout << "[NL] Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;

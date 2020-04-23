@@ -53,7 +53,8 @@ public:
 
   void getSolution(PieceWisePol &solution);
 
-  void setAStarSamples(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z);
+  void setAStarSamplesAndFractionVoxel(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z,
+                                       double a_star_fraction_voxel_size);
 
   void setDistanceToUseStraightLine(double dist_to_use_straight_guess);
 
@@ -280,5 +281,6 @@ private:
   Eigen::Matrix<double, 4, 4> Mbs2mv_inverse_;
 
   double a_star_bias_ = 1.0;
+  double a_star_fraction_voxel_size_ = 0.5;
 };
 #endif

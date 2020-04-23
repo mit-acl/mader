@@ -190,6 +190,7 @@ struct parameters
   int a_star_samp_x = 7;
   int a_star_samp_y = 7;
   int a_star_samp_z = 7;
+  double a_star_fraction_voxel_size = 0.5;
 
   double a_star_bias = 1.0;
 
