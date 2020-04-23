@@ -115,6 +115,8 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
   Mbs2mv_ = (1.0 / 960.0) * Mbs2mv_;
   // Mbs2ov_ = Eigen::Matrix<double, 4, 4>::Identity();
   Mbs2mv_inverse_ = Mbs2mv_.inverse();
+
+  separator_solver_ = new separator::Separator(1.0, 1.0, 1.0);
 }
 
 SolverNlopt::~SolverNlopt()
@@ -323,12 +325,13 @@ void SolverNlopt::generateAStarGuess()
   // std::cout << "After Running solved, n= " << std::endl;
   // printStd(n);
 
+  fillPlanesFromNDQ(planes_, n_guess_, d_guess_, q_guess_);
+
   if (solved == true)
   {
     q_guess_ = q;
     n_guess_ = n;
     d_guess_ = d;
-    fillPlanesFromNDQ(planes_, n_guess_, d_guess_, q_guess_);
   }
   else
   {
@@ -1456,21 +1459,21 @@ bool SolverNlopt::optimize()
   qndtoX(q_guess_, n_guess_, d_guess_, x_);
 
   // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
-  std::cout << "q_guess_ is\n" << std::endl;
-  printStd(q_guess_);
+  /*  std::cout << "q_guess_ is\n" << std::endl;
+    printStd(q_guess_);
 
-  std::cout << "n_guess_ is\n" << std::endl;
-  printStd(n_guess_);
+    std::cout << "n_guess_ is\n" << std::endl;
+    printStd(n_guess_);
 
-  std::cout << "d_guess_ is\n" << std::endl;
-  printStd(d_guess_);
+    std::cout << "d_guess_ is\n" << std::endl;
+    printStd(d_guess_);*/
 
   // toEigen(x_, q_guess_, n_guess_);
 
   // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
-  printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
+  // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
-  printIndexesConstraints();
+  // printIndexesConstraints();
 
   opt_timer_.Reset();
   std::cout << "[NL] Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
@@ -1636,7 +1639,7 @@ void SolverNlopt::saturateQ(std::vector<Eigen::Vector3d> &q)
 
 void SolverNlopt::generateStraightLineGuess()
 {
-  // std::cout << "Using StraightLineGuess" << std::endl;
+  std::cout << "Using StraightLineGuess" << std::endl;
   q_guess_.clear();
   n_guess_.clear();
   d_guess_.clear();
@@ -1657,8 +1660,110 @@ void SolverNlopt::generateStraightLineGuess()
 
   saturateQ(q_guess_);  // make sure is inside the bounds specified
 
-  generateRandomD(d_guess_);
-  generateRandomN(n_guess_);
+  std::vector<Eigen::Vector3d> q_guess_with_qNm1N = q_guess_;
+  q_guess_with_qNm1N.push_back(qNm1_);
+  q_guess_with_qNm1N.push_back(qN_);
+  //////////////////////
+
+  for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+  {
+    for (int i = 0; i < num_of_segments_; i++)
+    {
+      std::vector<Eigen::Vector3d> last4Cps(4);
+      if (basis_ == MINVO)
+      {
+        Eigen::Matrix<double, 4, 3> Qbs;  // b-spline
+        Eigen::Matrix<double, 4, 3> Qmv;  // minvo
+        Qbs.row(0) = q_guess_with_qNm1N[i].transpose();
+        Qbs.row(1) = q_guess_with_qNm1N[i + 1].transpose();
+        Qbs.row(2) = q_guess_with_qNm1N[i + 2].transpose();
+        Qbs.row(3) = q_guess_with_qNm1N[i + 3].transpose();
+
+        transformBSpline2Minvo(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
+
+        std::vector<Eigen::Vector3d> last4Cps(4);
+        last4Cps[0] = Qmv.row(0).transpose();
+        last4Cps[1] = Qmv.row(1).transpose();
+        last4Cps[2] = Qmv.row(2).transpose();
+        last4Cps[3] = Qmv.row(3).transpose();
+      }
+      else
+      {
+        last4Cps[0] = q_guess_with_qNm1N[i].transpose();
+        last4Cps[1] = q_guess_with_qNm1N[i + 1].transpose();
+        last4Cps[2] = q_guess_with_qNm1N[i + 2].transpose();
+        last4Cps[3] = q_guess_with_qNm1N[i + 3].transpose();
+      }
+
+      Eigen::Vector3d n_i;
+      double d_i;
+      // std::cout << "===================================" << std::endl;
+
+      bool satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][i], last4Cps);
+      /*      std::cout << "satisfies_LP= " << satisfies_LP << std::endl;
+            std::cout << "last4Cps[0]=" << last4Cps[0].transpose() << std::endl;
+            std::cout << "last4Cps[1]=" << last4Cps[1].transpose() << std::endl;
+            std::cout << "last4Cps[2]=" << last4Cps[2].transpose() << std::endl;
+            std::cout << "last4Cps[3]=" << last4Cps[3].transpose() << std::endl;
+
+            std::cout << "hulls_[obst_index][i][0]= " << hulls_[obst_index][i][0].transpose() << std::endl;
+            std::cout << "hulls_[obst_index][i][1]= " << hulls_[obst_index][i][1].transpose() << std::endl;
+            std::cout << "hulls_[obst_index][i][2]= " << hulls_[obst_index][i][2].transpose() << std::endl;
+            std::cout << "hulls_[obst_index][i][3]= " << hulls_[obst_index][i][3].transpose() << std::endl;
+            std::cout << "hulls_[obst_index][i][4]= " << hulls_[obst_index][i][4].transpose() << std::endl;
+            std::cout << "hulls_[obst_index][i][5]= " << hulls_[obst_index][i][5].transpose() << std::endl;
+            std::cout << "hulls_[obst_index][i][6]= " << hulls_[obst_index][i][6].transpose() << std::endl;
+            std::cout << "hulls_[obst_index][i][7]= " << hulls_[obst_index][i][7].transpose() << std::endl;*/
+
+      n_guess_.push_back(n_i);
+      d_guess_.push_back(d_i);
+
+      /*      Eigen::Vector3d centroid_hull;
+            findCentroidHull(hulls_[obst_index][i], centroid_hull);
+
+            Eigen::Vector3d n_i =
+                (centroid_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
+
+            double alpha = 0.01;  // the smaller, the higher the chances the plane is outside the obstacle. Should be <1
+
+            Eigen::Vector3d point_in_middle = q[i] + (centroid_hull - q[i]) * alpha;
+
+            double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
+
+            int sign_d_i = (d_i >= 0) ? 1 : -1;
+
+            signs_.push_back(sign_d_i);
+            n.push_back(n_i);  // n'x + 1 = 0
+            d.push_back(d_i);  // n'x + 1 = 0
+
+            Hyperplane3D plane(point_in_middle, n_i);
+            planes_.push_back(plane);
+      */
+      // d.push_back(d_i);
+    }
+  }
+
+  // for (int seg_index = 0; seg_index < num_of_segments_; seg_index++)
+  // {
+  //   for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+  //   {
+  //     Eigen::Vector3d n_i;
+  //     double d_i;
+
+  //     bool satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][current.index + 1 - 3],
+  //     last4Cps);
+
+  //     /*      if (satisfies_LP == false)
+  //           {
+  //             // std::cout << neighbor_va.qi.transpose() << " does not satisfy constraints" << std::endl;
+  //             break;
+  //           }*/
+  //   }
+  // }
+  //////////////////////
+
+  /*  generateRandomD(d_guess_);
+    generateRandomN(n_guess_);*/
   // generateGuessNDFromQ(q_guess_, n_guess_, d_guess_);
   // generateRandomN(n_guess_);
   // Guesses for the planes

@@ -11,7 +11,7 @@
 #include "./../../timer.hpp"
 //#include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
 #include <decomp_geometry/polyhedron.h>  //For Polyhedron  and Hyperplane definition
-//#include "separator.hpp"
+#include "separator.hpp"
 
 typedef JPS::Timer MyTimer;
 
@@ -282,5 +282,7 @@ private:
 
   double a_star_bias_ = 1.0;
   double a_star_fraction_voxel_size_ = 0.5;
+
+  separator::Separator *separator_solver_;
 };
 #endif
