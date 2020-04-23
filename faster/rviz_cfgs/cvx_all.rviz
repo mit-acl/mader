@@ -71,13 +71,113 @@ Visualization Manager:
           Value: true
         10:
           Value: true
+        100:
+          Value: true
+        101:
+          Value: true
+        102:
+          Value: true
+        103:
+          Value: true
+        104:
+          Value: true
+        105:
+          Value: true
+        106:
+          Value: true
+        107:
+          Value: true
+        108:
+          Value: true
+        109:
+          Value: true
         11:
+          Value: true
+        110:
+          Value: true
+        111:
+          Value: true
+        112:
+          Value: true
+        113:
+          Value: true
+        114:
+          Value: true
+        115:
+          Value: true
+        116:
+          Value: true
+        117:
+          Value: true
+        118:
+          Value: true
+        119:
           Value: true
         12:
           Value: true
+        120:
+          Value: true
+        121:
+          Value: true
+        122:
+          Value: true
+        123:
+          Value: true
+        124:
+          Value: true
+        125:
+          Value: true
+        126:
+          Value: true
+        127:
+          Value: true
+        128:
+          Value: true
+        129:
+          Value: true
         13:
           Value: true
+        130:
+          Value: true
+        131:
+          Value: true
+        132:
+          Value: true
+        133:
+          Value: true
+        134:
+          Value: true
+        135:
+          Value: true
+        136:
+          Value: true
+        137:
+          Value: true
+        138:
+          Value: true
+        139:
+          Value: true
         14:
+          Value: true
+        140:
+          Value: true
+        141:
+          Value: true
+        142:
+          Value: true
+        143:
+          Value: true
+        144:
+          Value: true
+        145:
+          Value: true
+        146:
+          Value: true
+        147:
+          Value: true
+        148:
+          Value: true
+        149:
           Value: true
         15:
           Value: true
@@ -91,21 +191,185 @@ Visualization Manager:
           Value: true
         2:
           Value: true
+        20:
+          Value: true
+        21:
+          Value: true
+        22:
+          Value: true
+        23:
+          Value: true
+        24:
+          Value: true
+        25:
+          Value: true
+        26:
+          Value: true
+        27:
+          Value: true
+        28:
+          Value: true
+        29:
+          Value: true
         3:
+          Value: true
+        30:
+          Value: true
+        31:
+          Value: true
+        32:
+          Value: true
+        33:
+          Value: true
+        34:
+          Value: true
+        35:
+          Value: true
+        36:
+          Value: true
+        37:
+          Value: true
+        38:
+          Value: true
+        39:
           Value: true
         4:
           Value: true
+        40:
+          Value: true
+        41:
+          Value: true
+        42:
+          Value: true
+        43:
+          Value: true
+        44:
+          Value: true
+        45:
+          Value: true
+        46:
+          Value: true
+        47:
+          Value: true
+        48:
+          Value: true
+        49:
+          Value: true
         5:
+          Value: true
+        50:
+          Value: true
+        51:
+          Value: true
+        52:
+          Value: true
+        53:
+          Value: true
+        54:
+          Value: true
+        55:
+          Value: true
+        56:
+          Value: true
+        57:
+          Value: true
+        58:
+          Value: true
+        59:
           Value: true
         6:
           Value: true
+        60:
+          Value: true
+        61:
+          Value: true
+        62:
+          Value: true
+        63:
+          Value: true
+        64:
+          Value: true
+        65:
+          Value: true
+        66:
+          Value: true
+        67:
+          Value: true
+        68:
+          Value: true
+        69:
+          Value: true
         7:
+          Value: true
+        70:
+          Value: true
+        71:
+          Value: true
+        72:
+          Value: true
+        73:
+          Value: true
+        74:
+          Value: true
+        75:
+          Value: true
+        76:
+          Value: true
+        77:
+          Value: true
+        78:
+          Value: true
+        79:
           Value: true
         8:
           Value: true
+        80:
+          Value: true
+        81:
+          Value: true
+        82:
+          Value: true
+        83:
+          Value: true
+        84:
+          Value: true
+        85:
+          Value: true
+        86:
+          Value: true
+        87:
+          Value: true
+        88:
+          Value: true
+        89:
+          Value: true
         9:
           Value: true
+        90:
+          Value: true
+        91:
+          Value: true
+        92:
+          Value: true
+        93:
+          Value: true
+        94:
+          Value: true
+        95:
+          Value: true
+        96:
+          Value: true
+        97:
+          Value: true
+        98:
+          Value: true
+        99:
+          Value: true
         All Enabled: false
+        SQ01s:
+          Value: true
+        vicon:
+          Value: true
         world:
           Value: false
       Marker Scale: 2
@@ -121,13 +385,113 @@ Visualization Manager:
             {}
           10:
             {}
+          100:
+            {}
+          101:
+            {}
+          102:
+            {}
+          103:
+            {}
+          104:
+            {}
+          105:
+            {}
+          106:
+            {}
+          107:
+            {}
+          108:
+            {}
+          109:
+            {}
           11:
+            {}
+          110:
+            {}
+          111:
+            {}
+          112:
+            {}
+          113:
+            {}
+          114:
+            {}
+          115:
+            {}
+          116:
+            {}
+          117:
+            {}
+          118:
+            {}
+          119:
             {}
           12:
             {}
+          120:
+            {}
+          121:
+            {}
+          122:
+            {}
+          123:
+            {}
+          124:
+            {}
+          125:
+            {}
+          126:
+            {}
+          127:
+            {}
+          128:
+            {}
+          129:
+            {}
           13:
             {}
+          130:
+            {}
+          131:
+            {}
+          132:
+            {}
+          133:
+            {}
+          134:
+            {}
+          135:
+            {}
+          136:
+            {}
+          137:
+            {}
+          138:
+            {}
+          139:
+            {}
           14:
+            {}
+          140:
+            {}
+          141:
+            {}
+          142:
+            {}
+          143:
+            {}
+          144:
+            {}
+          145:
+            {}
+          146:
+            {}
+          147:
+            {}
+          148:
+            {}
+          149:
             {}
           15:
             {}
@@ -141,20 +505,183 @@ Visualization Manager:
             {}
           2:
             {}
+          20:
+            {}
+          21:
+            {}
+          22:
+            {}
+          23:
+            {}
+          24:
+            {}
+          25:
+            {}
+          26:
+            {}
+          27:
+            {}
+          28:
+            {}
+          29:
+            {}
           3:
+            {}
+          30:
+            {}
+          31:
+            {}
+          32:
+            {}
+          33:
+            {}
+          34:
+            {}
+          35:
+            {}
+          36:
+            {}
+          37:
+            {}
+          38:
+            {}
+          39:
             {}
           4:
             {}
+          40:
+            {}
+          41:
+            {}
+          42:
+            {}
+          43:
+            {}
+          44:
+            {}
+          45:
+            {}
+          46:
+            {}
+          47:
+            {}
+          48:
+            {}
+          49:
+            {}
           5:
+            {}
+          50:
+            {}
+          51:
+            {}
+          52:
+            {}
+          53:
+            {}
+          54:
+            {}
+          55:
+            {}
+          56:
+            {}
+          57:
+            {}
+          58:
+            {}
+          59:
             {}
           6:
             {}
+          60:
+            {}
+          61:
+            {}
+          62:
+            {}
+          63:
+            {}
+          64:
+            {}
+          65:
+            {}
+          66:
+            {}
+          67:
+            {}
+          68:
+            {}
+          69:
+            {}
           7:
+            {}
+          70:
+            {}
+          71:
+            {}
+          72:
+            {}
+          73:
+            {}
+          74:
+            {}
+          75:
+            {}
+          76:
+            {}
+          77:
+            {}
+          78:
+            {}
+          79:
             {}
           8:
             {}
+          80:
+            {}
+          81:
+            {}
+          82:
+            {}
+          83:
+            {}
+          84:
+            {}
+          85:
+            {}
+          86:
+            {}
+          87:
+            {}
+          88:
+            {}
+          89:
+            {}
           9:
             {}
+          90:
+            {}
+          91:
+            {}
+          92:
+            {}
+          93:
+            {}
+          94:
+            {}
+          95:
+            {}
+          96:
+            {}
+          97:
+            {}
+          98:
+            {}
+          99:
+            {}
+          vicon:
+            SQ01s:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -212,7 +739,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/setpoint
       Name: Setpoint
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -444,7 +971,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        SQ01s: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -636,7 +1163,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        {}
+        ActualTraj_SQ01s: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -818,18 +1345,18 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.29543423652648926
-        Y: 2.5682950019836426
-        Z: 1.788012741599232e-5
+        X: 8.780550003051758
+        Y: -0.002360701560974121
+        Z: 1.692645309958607e-5
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.33979612588882446
+      Pitch: 0.3497958481311798
       Target Frame: LQ01s
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.548661231994629
+      Yaw: 3.643658399581909
     Saved: ~
 Window Geometry:
   Displays:
