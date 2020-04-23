@@ -11,7 +11,7 @@ int main()
   int samples_y = 7;  // odd number
   int samples_z = 7;  // odd number
 
-  double fraction_voxel_size = 0.3;  // grid used to prune nodes that are on the same cell
+  double fraction_voxel_size = 0.5;  // grid used to prune nodes that are on the same cell
 
   double runtime = 0.1;     //[seconds]
   double goal_size = 0.01;  //[meters]
@@ -31,15 +31,15 @@ int main()
   ConvexHullsOfCurve_Std hulls_curve;
   Polyhedron_Std hull;
 
-  hull.push_back(Eigen::Vector3d(-0.5, -0.5, -70.0));
-  hull.push_back(Eigen::Vector3d(-0.5, -0.5, 70.0));
-  hull.push_back(Eigen::Vector3d(-0.5, 0.5, 70.0));
-  hull.push_back(Eigen::Vector3d(-0.5, 0.5, -70.0));
+  hull.push_back(Eigen::Vector3d(-1.0, -1.0, -700.0));
+  hull.push_back(Eigen::Vector3d(-1.0, -1.0, 700.0));
+  hull.push_back(Eigen::Vector3d(-1.0, 1.0, 700.0));
+  hull.push_back(Eigen::Vector3d(-1.0, 1.0, -700.0));
 
-  hull.push_back(Eigen::Vector3d(0.5, 0.5, 70.0));
-  hull.push_back(Eigen::Vector3d(0.5, 0.5, -70.0));
-  hull.push_back(Eigen::Vector3d(0.5, -0.5, 70.0));
-  hull.push_back(Eigen::Vector3d(0.5, -0.5, -70.0));
+  hull.push_back(Eigen::Vector3d(1.0, 1.0, 700.0));
+  hull.push_back(Eigen::Vector3d(1.0, 1.0, -700.0));
+  hull.push_back(Eigen::Vector3d(1.0, -1.0, 700.0));
+  hull.push_back(Eigen::Vector3d(1.0, -1.0, -700.0));
 
   // Assummes static obstacle
   for (int i = 0; i < num_pol; i++)
@@ -62,7 +62,7 @@ int main()
   myAStarSolver.setGoalSize(goal_size);
 
   myAStarSolver.setBias(2.0);
-  myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);
+  myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);  // MINVO //B_SPLINE
   myAStarSolver.setVisual(true);
 
   std::vector<Eigen::Vector3d> q;

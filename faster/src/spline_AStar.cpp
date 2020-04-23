@@ -7,7 +7,7 @@
 #include "termcolor.hpp"
 using namespace termcolor;
 
-#define WITHOUT_NUMPY  // for matplotlibcpp
+#define WITHOUT_NUMPY  // for matplotlibcpp   TODO(move from here!)
 #include "matplotlibcpp.h"
 
 #include <random>
@@ -49,7 +49,7 @@ SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, d
   knots_ = knots;
   // std::cout << "knots_=" << knots_ << std::endl;
 
-  separator_solver_ = new separator::Separator(1.0, 1.0, 1.0);
+  separator_solver_ = new separator::Separator(0.0, 0.0, 0.0);
 
   Mbs2ov_ << 182, 685, 100, -7,  //////////////////
       56, 640, 280, -16,         //////////////////
@@ -497,10 +497,39 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
   {
     last4Cps[3] = neighbor_va.qi;
 
+    /*    std::cout << "====================================================================" << std::endl;
+
+        std::cout << "[BSpline] last4Cps = " << std::endl;
+        std::cout << last4Cps[0].transpose() << std::endl;
+        std::cout << last4Cps[1].transpose() << std::endl;
+        std::cout << last4Cps[2].transpose() << std::endl;
+        std::cout << last4Cps[3].transpose() << std::endl;*/
+
     if (basis_ == MINVO)
     {
       transformBSpline2Minvo(last4Cps);
+      // now last4CPs are in MINVO BASIS
     }
+
+    /*    std::cout << "[basis_chosen] last4Cps = " << std::endl;
+        std::cout << last4Cps[0].transpose() << std::endl;
+        std::cout << last4Cps[1].transpose() << std::endl;
+        std::cout << last4Cps[2].transpose() << std::endl;
+        std::cout << last4Cps[3].transpose() << std::endl;*/
+    /*
+        /////////////////////QUITAR///////////////////////
+        if (basis_ == MINVO)
+        {
+          transformMinvo2BSpline(last4Cps);
+          // now last4CPs are in MINVO BASIS
+        }
+
+        std::cout << "[BSpline] last4Cps = " << std::endl;
+        std::cout << last4Cps[0].transpose() << std::endl;
+        std::cout << last4Cps[1].transpose() << std::endl;
+        std::cout << last4Cps[2].transpose() << std::endl;
+        std::cout << last4Cps[3].transpose() << std::endl;
+        ///////////////////////////////////////////////*/
 
     bool satisfies_LP = true;
     // std::cout << "num_of_obst_=" << num_of_obst_ << std::endl;
@@ -511,15 +540,20 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
 
       MyTimer timer_lp(true);
 
-      /*      std::cout << "last4Cps BEFORE = " << std::endl;
-            std::cout << last4Cps[0].transpose() << std::endl;
-            std::cout << last4Cps[1].transpose() << std::endl;
-            std::cout << last4Cps[2].transpose() << std::endl;
-            std::cout << last4Cps[3].transpose() << std::endl;*/
+      /*      if (basis_ == MINVO)
+            {
+              transformBSpline2Minvo(last4Cps);
+              // now last4CPs are in MINVO BASIS
+            }*/
 
-      // transformBSpline2Minvo(last4Cps);
       satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][current.index + 1 - 3], last4Cps);
       // transformMinvo2BSpline(last4Cps);
+
+      /*      if (basis_ == MINVO)
+            {
+              transformMinvo2BSpline(last4Cps);
+              // now last4CPs are in MINVO BASIS
+            }*/
 
       /*
             std::cout << "last4Cps AFTER = " << std::endl;
@@ -539,10 +573,27 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
 
       if (satisfies_LP == false)
       {
-        // std::cout << neighbor_va.qi.transpose() << " does not satisfy constraints" << std::endl;
+        // std::cout << "[BSpline]" << neighbor_va.qi.transpose() << " does not satisfy constraints" << std::endl;
         break;
       }
+
+      /*      std::cout << "Check for this obstacle (" << obst_index << ") is true" << std::endl;
+            std::cout << hulls_[obst_index][current.index + 1 - 3][0].transpose() << std::endl;
+            std::cout << hulls_[obst_index][current.index + 1 - 3][1].transpose() << std::endl;
+            std::cout << hulls_[obst_index][current.index + 1 - 3][2].transpose() << std::endl;
+            std::cout << hulls_[obst_index][current.index + 1 - 3][3].transpose() << std::endl;
+            std::cout << hulls_[obst_index][current.index + 1 - 3][4].transpose() << std::endl;
+            std::cout << hulls_[obst_index][current.index + 1 - 3][5].transpose() << std::endl;
+            std::cout << hulls_[obst_index][current.index + 1 - 3][6].transpose() << std::endl;
+            std::cout << hulls_[obst_index][current.index + 1 - 3][7].transpose() << std::endl;*/
     }
+
+    if (basis_ == MINVO)
+    {
+      transformMinvo2BSpline(last4Cps);
+      // now last4CPs are in BSpline Basis (needed for the next iteration)
+    }
+
     if (satisfies_LP == true)  // this is true also when num_of_obst_=0;
     {
       // std::cout << neighbor_va.qi.transpose() << "Satisfies the LP!" << std::endl;
@@ -745,7 +796,7 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
         last4Cps[1] = path[i - 2];
         last4Cps[2] = path[i - 1];
         last4Cps[3] = path[i];
-        std::cout << "Plotting these last4Cps (in OV) with color=" << colors[counter_color] << std::endl;
+        std::cout << "[BSpline] Plotting these last4Cps" << std::endl;
         std::cout << last4Cps[0].transpose() << std::endl;
         std::cout << last4Cps[1].transpose() << std::endl;
         std::cout << last4Cps[2].transpose() << std::endl;
@@ -755,7 +806,7 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
 
         transformBSpline2Minvo(last4Cps);
 
-        std::cout << "(which in OV are) " << std::endl;
+        std::cout << "[MINVO]  with color=" << colors[counter_color] << std::endl;
         std::cout << last4Cps[0].transpose() << std::endl;
         std::cout << last4Cps[1].transpose() << std::endl;
         std::cout << last4Cps[2].transpose() << std::endl;
@@ -851,6 +902,7 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
      std::cout << "N_= " << N_ << std::endl;
      std::cout << "p_= " << p_ << std::endl;
    */
+
   for (int index_interv = 0; index_interv < (result.size() - 3); index_interv++)
   {
     last4Cps[0] = result[index_interv];
@@ -891,15 +943,41 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
       // std::cout << "index_interv= " << index_interv << std::endl;
       if (solved == false)
       {
-        // std::cout << "\nThis does NOT satisfy the LP: " << std::endl;
+        std::cout << "\nThis does NOT satisfy the LP: (in basis_chosen form) " << std::endl;
 
-        // std::cout << last4Cps[0].transpose() << std::endl;
-        // std::cout << last4Cps[1].transpose() << std::endl;
-        // std::cout << last4Cps[2].transpose() << std::endl;
-        // std::cout << last4Cps[3].transpose() << std::endl;
+        std::cout << last4Cps[0].transpose() << std::endl;
+        std::cout << last4Cps[1].transpose() << std::endl;
+        std::cout << last4Cps[2].transpose() << std::endl;
+        std::cout << last4Cps[3].transpose() << std::endl;
+        /*
+                std::cout << "(which, expressed in OV form, it is)" << std::endl;
 
+                transformBSpline2Minvo(last4Cps);
+                std::cout << last4Cps[0].transpose() << std::endl;
+                std::cout << last4Cps[1].transpose() << std::endl;
+                std::cout << last4Cps[2].transpose() << std::endl;
+                std::cout << last4Cps[3].transpose() << std::endl;
+                transformMinvo2BSpline(last4Cps);*/
         std::cout << bold << red << "[A*] The node provided doesn't satisfy LPs" << reset << std::endl;
         return false;
+      }
+      else
+      {
+        /*        std::cout << "\nThis satisfies the LP: (in basis_chosen form) " << std::endl;
+
+                std::cout << last4Cps[0].transpose() << std::endl;
+                std::cout << last4Cps[1].transpose() << std::endl;
+                std::cout << last4Cps[2].transpose() << std::endl;
+                std::cout << last4Cps[3].transpose() << std::endl;
+        */
+        /*        std::cout << "(which, expressed in OV form, it is)" << std::endl;
+
+                transformBSpline2Minvo(last4Cps);
+                std::cout << last4Cps[0].transpose() << std::endl;
+                std::cout << last4Cps[1].transpose() << std::endl;
+                std::cout << last4Cps[2].transpose() << std::endl;
+                std::cout << last4Cps[3].transpose() << std::endl;
+                transformMinvo2BSpline(last4Cps);*/
       }
 
       /*      std::cout << "solved with ni=" << n_i.transpose() << std::endl;
@@ -908,21 +986,6 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
       n[obst_index * num_of_segments_ + index_interv] = n_i;
       d[obst_index * num_of_segments_ + index_interv] = d_i;
     }
-
-    // std::cout << "\nThis satisfies the LP: " << std::endl;
-    // std::cout << last4Cps[0].transpose() << std::endl;
-    // std::cout << last4Cps[1].transpose() << std::endl;
-    // std::cout << last4Cps[2].transpose() << std::endl;
-    // std::cout << last4Cps[3].transpose() << std::endl;
-
-    // std::cout << "(which, expressed in OV form, it is)" << std::endl;
-
-    // transformBSpline2Minvo(last4Cps);
-    // std::cout << last4Cps[0].transpose() << std::endl;
-    // std::cout << last4Cps[1].transpose() << std::endl;
-    // std::cout << last4Cps[2].transpose() << std::endl;
-    // std::cout << last4Cps[3].transpose() << std::endl;
-    // transformMinvo2BSpline(last4Cps);
   }
   return true;
 }
