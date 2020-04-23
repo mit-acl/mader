@@ -34,10 +34,42 @@ La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
 
 --> Cuidado porque si las multi agent simulations las hago muy cerca del suelo, puedo estar impidiendo a los agentes a planificar cerca del suelo
 
+--> Explicar que como allocate el total time en, parte A*, parte NLoptimization
 
+
+
+
+Posibles results:
+--> Usar mi algoritmo, pero cogiendo todo el espacio como ocupado (i.e. no hacer intervalos) 
+--> Sequential? 
+--> 3D RVO (showing tracking error)
+[Matlab]--> MINVO vs Bezier vs Bspline Basis (en un example de una trajectory cualquiera)
+--> Graph showing the decrease in the cost done by the optimization wrt the cost of the initial guess
+
+Medir:
+--> Distancia total (can be obtained from rosbag, but maybe better to log)
+--> Tiempo (can be obtained from rosbag, but maybe easier to log it (from goal_received to goal_reached))
+--> Success rate??
+
+Computation times
+--> A*, NLOpt,
+
+
+Posibles escenarios de simulación:
+
+--> random forest con moving/stopped trees ("moving forest")
+--> same, but with several agents (starting from a sphere?)
+--> wild corridor
+--> moving gates 
+--> bounding balls (bolas que caen desde el cielo siguiendo una par'abola )
+--> sphere
 
 TODOs:
 0.6?? aqu'i:  double t_max = t_min + (goal - q0).norm() / (0.6 * v_max(0));
+Mejorar cost-to-go en la A* guess
+Usar MINVO basis tambien en velocity/acceleration space?
 
 creo que el A* ahora mismo tiene un bias (mirar el plot que sale, siempre tiende hacia el mismo lado). Creo que es porque, una vez 
 te mueves para y<0 (por ejempo), la constraint en velocidad [yL yU] tambi'en se mueve en esa direccti'on, y se va a samplear en esa direcci'on m'as. 
+
+--> Si, en el escenario tipo sphere, los de arriba tienen un planning horizon corto, es porque la box del mapa (wdx,wdy,wdz) no es un cubo de lados iguales
