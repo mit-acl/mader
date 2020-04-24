@@ -116,7 +116,7 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
   // Mbs2ov_ = Eigen::Matrix<double, 4, 4>::Identity();
   Mbs2mv_inverse_ = Mbs2mv_.inverse();
 
-  separator_solver_ = new separator::Separator(1.0, 1.0, 1.0);
+  separator_solver_ = new separator::Separator();
 }
 
 SolverNlopt::~SolverNlopt()

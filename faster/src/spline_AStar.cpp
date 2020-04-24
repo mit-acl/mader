@@ -49,7 +49,7 @@ SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, d
   knots_ = knots;
   // std::cout << "knots_=" << knots_ << std::endl;
 
-  separator_solver_ = new separator::Separator(0.0, 0.0, 0.0);
+  separator_solver_ = new separator::Separator();  // 0.0, 0.0, 0.0
 
   Mbs2ov_ << 182, 685, 100, -7,  //////////////////
       56, 640, 280, -16,         //////////////////
