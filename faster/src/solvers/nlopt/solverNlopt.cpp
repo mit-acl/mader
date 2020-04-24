@@ -1028,6 +1028,10 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
    std::cout << "num_of_obst_ " << num_of_obst_ << std::endl;
    std::cout << "num_of_segments_ " << num_of_segments_ << std::endl;*/
 
+  // See here why we can use an epsilon of 1.0:
+  // http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
+  double epsilon = 1.0;
+
   for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
   {
     for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
@@ -1041,7 +1045,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
 
       for (Eigen::Vector3d vertex : hulls_[obst_index][i])  // opt->hulls_[i].size()
       {
-        constraints[r] = -(n[ip].dot(vertex) + d[ip]);  //+d[ip] // f<=0
+        constraints[r] = -(n[ip].dot(vertex) + d[ip] - epsilon);  //+d[ip] // f<=0
 
         /*        if (constraints[r] > epsilon_tol_constraints_)
                 {
@@ -1075,8 +1079,8 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         Eigen::Vector3d q_ipu;
         for (int u = 0; u <= 3; u++)
         {
-          q_ipu = Qmv.row(u).transpose();               // if using the MINVO basis
-          constraints[r] = (n[ip].dot(q_ipu) + d[ip]);  //  // fi<=0
+          q_ipu = Qmv.row(u).transpose();                         // if using the MINVO basis
+          constraints[r] = (n[ip].dot(q_ipu) + d[ip] + epsilon);  //  // fi<=0
 
           if (grad)
           {
@@ -1099,7 +1103,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
       {
         for (int u = 0; u <= 3; u++)
         {
-          constraints[r] = (n[ip].dot(q[i + u]) + d[ip]);  //  // f<=0
+          constraints[r] = (n[ip].dot(q[i + u]) + d[ip] + epsilon);  //  // f<=0
           if (grad)
           {
             toGradSameConstraintDiffVariables(gIndexN(ip), q[i + u], grad, r, nn);
