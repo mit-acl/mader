@@ -940,10 +940,86 @@ fplot3(pol_x'*T3, pol_y'*T3, pol_z'*T3,[0 1],'r','LineWidth',3)
 %%
 sol5.A_norm=sol5.Ai./repmat(sol5.Ai(:,1),1,6)
 plot(sol5.A_norm,'o')
-%%
+%% Vamos a por el caso 2D:
+% clc;close all; figure; hold on
+% figure; hold on
+a=1.0;
 
-%%
+alpha=120; 
+beta=alpha-90
+% v1=[-a*cosd(beta), -a*sind(beta)];
+% v2=[0  a];
+% v3=[a*cosd(beta),  -a*sind(beta)]; 
+
+v1=[-a 0];
+v3=[a 0];
+v2=[0 a];
+
+tmp=5.6568542494923801952067548968388;
+v2=[-tmp/2.0, 0.0];
+v1=[0.0, 4.0];
+v3=[tmp/2.0, 0.0];
+
+
+vx=[v1(1)  v2(1)  v3(1)]';
+vy=[v1(2)  v2(2)  v3(2)]';
+
+P=[v1; v2; v3];
+[k,av] = convhull(P);
+
+plot(P(:,1),P(:,2),'*');plot(P(k,1),P(k,2))
+
+pol_x=sol2.A'*vx;
+pol_y=sol2.A'*vy;
+
+fplot(pol_x'*T2, pol_y'*T2,[-1 1],'r','LineWidth',3)
+axis equal
+poly=[pol_x'*T2; pol_y'*T2]
+
+for i=1:numel(sol2.rootsA)
+    tmp=sol2.rootsA(:);
+    poly_tg=double(subs(poly,t,tmp(i)))
+    scatter(poly_tg(1),poly_tg(2),100,'Filled','blue')
+end
+
+med12=(v1+v2)/2.0;
+scatter(med12(1),med12(2), 'Filled','green');
+med13=(v1+v3)/2.0;
+scatter(med13(1),med13(2), 'Filled','green');
+med23=(v2+v3)/2.0;
+scatter(med23(1),med23(2), 'Filled','green');
+
+centroid_vertexes=(v1+v2+v3)/3.0;
+scatter(centroid_vertexes(1),centroid_vertexes(2), 'Filled','green');
+
+scatter(0.0,centroid_vertexes(2), 'Filled','green');
+
+
+samples_t=-1:0.01:1;
+samples_poly=double(subs(poly,t,samples_t));
+centroid_curve=sum(samples_poly,2)/length(samples_t);
+scatter(centroid_curve(1),centroid_curve(2),405,'Filled','blue'); 
+
+
+
+polyin=polyshape(samples_poly(1,:),samples_poly(2,:))
+[x,y] = centroid(polyin); centroid_area=[x,y]';
+scatter(centroid_area(1),centroid_area(2),405,'*','blue'); 
+plot(polyin)
+
+
+figure; hold on;
+fplot(dot(poly,v2-v1),interv);
+fplot(pol_x'*T2,interv);
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 close all
+
 vtet_x = [1 0 1; 0 0 0; 0 0 0]*1.5;
 vtet_y = [0 0 0; 1 0 1; 0 0 0]*1.5;
 vtet_z = [0 1 0; 0 0 0; 1 0 1]*1.5;
@@ -963,10 +1039,15 @@ vy=[-1/sqrt(3)  -1/sqrt(3)  2/sqrt(3)         0]';
 vz=[0  0   0       4/sqrt(6)]';
 
 %With these ones its aliged in the good axis
-tmp=2 %sqrt(3)*sqrt(2)
-vx=tmp*[1 -1  -1   1 ]';
-vy=tmp*[1 -1  1   -1 ]';
-vz=tmp*[1  1  -1  -1 ]';
+a=2 %sqrt(3)*sqrt(2)
+vx=a*[1 -1  -1   1 ]';
+vy=a*[1 -1  1   -1 ]';
+vz=a*[1  1  -1  -1 ]';
+
+% L=1;
+% vx=[0               L/2.0                -L/2.0             0 ]';
+% vy=[L*sqrt(3)/4.0   -L*sqrt(3)/4.0        -L*sqrt(3)/4.0    0 ]';
+% vz=[0               0                    0                  L ]';
 
 %With these ones its aliged in the good axis
 % vx=[0           1         -1         0 ]';
@@ -988,8 +1069,14 @@ pol_x=sol3.A'*vx;
 pol_y=sol3.A'*vy;
 pol_z=sol3.A'*vz;
 
-plot_convex_hull(pol_x,pol_y,pol_z,sol3.A','red')
-fplot3(pol_x'*T3, pol_y'*T3, pol_z'*T3,[-1 1],'r','LineWidth',3)
+plot_convex_hull(pol_x,pol_y,pol_z,sol3.A','red'); hold on;
+fplot3(pol_x'*T3, pol_y'*T3, pol_z'*T3,[-1 1],'r','LineWidth',3);hold on;
+% fplot3(pol_y'*T3, pol_x'*T3, pol_z'*T3,[-1 1],'b','LineWidth',3)
+% fplot3(pol_z'*T3, pol_x'*T3, pol_y'*T3,[-1 1],'g','LineWidth',3)
+% fplot3(pol_x'*T3, pol_z'*T3, pol_y'*T3,[-1 1],'k','LineWidth',3)
+% fplot3(pol_y'*T3, pol_z'*T3, pol_x'*T3,[-1 1],'LineWidth',3)
+% fplot3(-pol_z'*T3, pol_y'*T3, -pol_x'*T3,[-1 1],'LineWidth',3)
+% fplot3(pol_z'*T3, pol_x'*T3, pol_y'*T3,[-1 1],'r','LineWidth',3)
 axis equal
 grid
 % fplot3(-pol_x'*T3, pol_y'*T3, pol_z'*T3,[-1 1],'-r','LineWidth',3)
@@ -1001,8 +1088,18 @@ poly=[pol_x'*T3; pol_y'*T3; pol_z'*T3];
 
 center=[mean(vx),mean(vy),mean(vz)]';
 
+arrow3d([0 0 0],[1 0 0])
+arrow3d([0 0 0],[0 1 0])
+arrow3d([0 0 0],[0 0 1])
 
 
+text(v1(1),v1(2),v1(3),'v1','FontSize',14)
+text(v2(1),v2(2),v2(3),'v2','FontSize',14)
+text(v3(1),v3(2),v3(3),'v3','FontSize',14)
+text(v4(1),v4(2),v4(3),'v4','FontSize',14)
+
+% figure
+% fplot(poly'*v1,interv)
 
 center_side=(v2+v3)/2
 
@@ -1018,6 +1115,9 @@ poly_05=double(subs(poly,t,0.5));
 poly_m05=double(subs(poly,t,-0.5));
 
 
+text(poly_1(1),poly_1(2),poly_1(3),'t = 1','FontSize',14)
+text(poly_m1(1),poly_m1(2),poly_m1(3),'t=-1','FontSize',14)
+
 tmp=[poly_m1 poly_1 center_side];
 
 patch(tmp(1,:), tmp(2,:), tmp(3,:),[0.5, 0.5, 0.5],'FaceAlpha',.2)
@@ -1025,6 +1125,15 @@ patch(tmp(1,:), tmp(2,:), tmp(3,:),[0.5, 0.5, 0.5],'FaceAlpha',.2)
 for i=1:numel(sol3.rootsA)
     tmp=sol3.rootsA(:);
     poly_tg=double(subs(poly,t,tmp(i)))
+    scatter3(poly_tg(1),poly_tg(2),poly_tg(3),100,'Filled','blue')
+end
+
+
+poly_mod=[pol_z'*T3; pol_x'*T3; pol_y'*T3];
+
+for i=1:numel(sol3.rootsA)
+    tmp=sol3.rootsA(:);
+    poly_tg=double(subs(poly_mod,t,tmp(i)))
     scatter3(poly_tg(1),poly_tg(2),poly_tg(3),100,'Filled','blue')
 end
 
@@ -1037,10 +1146,22 @@ scatter3(poly_m05(1),poly_m05(2),poly_m05(3),100,'Filled','green')
 
 
 samples_t=-1:0.01:1;
-samples_poly=subs(poly,t,samples_t);
+samples_poly=double(subs(poly,t,samples_t));
 centroid_curve=sum(samples_poly,2)/length(samples_t);
 scatter3(centroid_curve(1),centroid_curve(2),centroid_curve(3),405,'Filled','blue'); 
 
+
+[k1,av1] = convhull(samples_poly(1,:)',samples_poly(2,:)',samples_poly(3,:)');
+trisurf(k1,samples_poly(1,:)',samples_poly(2,:)',samples_poly(3,:)','FaceColor','cyan','EdgeColor','k')
+%  alpha 0.1
+[k2,av2] = convhull(samples_poly(2,:)',samples_poly(1,:)',samples_poly(3,:)');
+trisurf(k2,samples_poly(2,:)',samples_poly(1,:)',samples_poly(3,:)','FaceColor','cyan','EdgeColor','k')
+[k2,av2] = convhull(samples_poly(3,:)',samples_poly(1,:)',samples_poly(2,:)');
+trisurf(k2,samples_poly(3,:)',samples_poly(1,:)',samples_poly(2,:)','FaceColor','cyan','EdgeColor','k')
+[k2,av2] = convhull(samples_poly(3,:)',samples_poly(2,:)',samples_poly(1,:)');
+trisurf(k2,samples_poly(3,:)',samples_poly(2,:)',samples_poly(1,:)','FaceColor','cyan','EdgeColor','k')
+[k2,av2] = convhull(samples_poly(1,:)',samples_poly(3,:)',samples_poly(2,:)');
+trisurf(k2,samples_poly(1,:)',samples_poly(3,:)',samples_poly(2,:)','FaceColor','cyan','EdgeColor','k')
 
 vecnorm(double(samples_poly-centroid_curve));
 
@@ -1054,6 +1175,116 @@ coeff_z=coeffs(poly(3,:),'All'); coeff_z=[zeros(1,4-length(coeff_z)),coeff_z];
 
 M=double([coeff_x;  coeff_y; coeff_z]);
 
+
+p1=sol3.A(1:3,1);
+p2=sol3.A(1:3,2);
+p3=sol3.A(1:3,3);
+% [k1,av1] = convhull(x,y,z);
+% trisurf(k1,x,y,z,'FaceColor','cyan')
+
+scatter3(p1(1),p1(2),p1(3),405,'Filled','red'); 
+scatter3(p2(1),p2(2),p2(3),405,'Filled','red'); 
+scatter3(p3(1),p3(2),p3(3),405,'Filled','red'); 
+
+%%%%%%%%%%%%%%%%%%%%%%
+
+% figure; hold on;
+% 
+% lambda1=(poly'*v1+a*a)/(4*a*a);
+% lambda2=(poly'*v2+a*a)/(4*a*a);
+% lambda3=(poly'*v3+a*a)/(4*a*a);
+% lambda4=(poly'*v4+a*a)/(4*a*a);
+% 
+% fplot(lambda1,interv)
+% fplot(lambda2,interv)
+% fplot(lambda3,interv)
+% fplot(lambda4,interv)
+% fplot(lambda1+lambda2+lambda3+lambda4,interv)
+
+%%%%%%%%%%%%%%%%%%%%
+%Check that it's tangent
+%dot((cross(v1-v3,v4-v3)),subs(vpa(diff(poly,t)),t,0.7735486020393007))
+syms b1 d1 real
+syms a2 c2 real
+syms a3 c3 real
+syms t1 t2 real
+syms t real
+% t1=-0.773548589;
+% t2=-0.03088255459;
+
+t1=-0.9;
+t2=-0.2;
+
+poly_unk=[b1*t^2 + d1; a2*t^3+c2*t; a3*t^3+c3*t];
+
+poly_unk1=subs(poly_unk,t,1);
+poly_unkt1=subs(poly_unk,t,t1);
+poly_unkt2=subs(poly_unk,t,t2);
+
+eq=[];
+
+%impose that at t=1, it has to be in the intersection of two faces
+eq=[eq 0==plane_eq_from_three_points(v1,v2,v4,poly_unk1(1),poly_unk1(2),poly_unk1(3))];
+eq=[eq 0==plane_eq_from_three_points(v2,v3,v4,poly_unk1(1),poly_unk1(2),poly_unk1(3))];
+
+%impose that, at t1, it has to be in the plane v1,v2,v4 and tangent to it
+eq=[eq 0==plane_eq_from_three_points(v1,v2,v4,poly_unkt1(1),poly_unkt1(2),poly_unkt1(3))];
+tangent=subs(vpa(diff(poly_unk,t)),t,t1); normal=cross(v1-v2,v1-v4);
+eq=[eq 0==dot(tangent,normal)];
+
+%impose that, at t2, it has to be in the plane v1,v2,v3
+eq=[eq 0==plane_eq_from_three_points(v1,v2,v3,poly_unkt2(1),poly_unkt2(2),poly_unkt2(3))];
+tangent=subs(vpa(diff(poly_unk,t)),t,t2); normal=cross(v1-v2,v2-v3);
+eq=[eq 0==dot(tangent,normal)];
+
+s=solve(eq)  %DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+M_unk=[0.0 s.b1 0.0 s.d1  ;  s.a2  0.0  s.c2 0.0 ;  s.a3  0.0  s.c3 0.0   ];
+
+poly_unk_x=M_unk(1,:)';
+poly_unk_y=M_unk(2,:)';
+poly_unk_z=M_unk(3,:)';
+
+poly_unk=[poly_unk_x'*T3;  poly_unk_y'*T3;  poly_unk_z'*T3,];
+
+
+poly_unk1=subs(poly_unk,t,1);
+poly_unkm1=subs(poly_unk,t,-1)
+poly_unkt1=subs(poly_unk,t,t1);
+poly_unkmt1=subs(poly_unk,t,-t1);
+poly_unkt2=subs(poly_unk,t,t2);
+poly_unkmt2=subs(poly_unk,t,-t2);
+
+mean_inters=(poly_unkm1+poly_unk1+poly_unkt1+poly_unkmt1+poly_unkt2+poly_unkmt2)/6.0;
+scatter3(mean_inters(1),mean_inters(2),mean_inters(3),300,'Filled')
+
+
+
+fplot3(poly_unk_x'*T3, poly_unk_y'*T3, poly_unk_z'*T3,[-1 1],'--b','LineWidth',1)
+
+figure; hold on
+
+lambda1=dot(poly_unk,v1-center);
+lambda2=dot(poly_unk,v2-center);
+lambda3=dot(poly_unk,v3-center);
+lambda4=dot(poly_unk,v4-center);
+
+fplot(lambda1,interv);
+fplot(lambda2,interv);
+fplot(lambda3,interv);
+fplot(lambda4,interv);
+
+fplot(lambda1+lambda2+lambda3+lambda4,interv)
+
+
+A_solve=[coeffs(lambda1,t,'All');coeffs(lambda2,t,'All');coeffs(lambda3,t,'All');coeffs(lambda4,t,'All');];
+
+vpa(A_solve,4)
+
+figure; hold on;
+fplot(dot(poly_unk,v1-v2),interv);
+fplot(dot(poly_unk,v3-v2),interv);
+fplot(dot(poly_unk,v4-v2),interv);
 
 %%
 a1=M(1,1); c1=M(1,3);
@@ -1268,6 +1499,10 @@ vx=[sol3.A(1:3,1); 0]/sol3.A(1,4); vy=[sol3.A(1:3,2); 0]/sol3.A(2,4); vz=[sol3.A
 [k1,volume] = convhull(vx,vy,vz);
 trisurf(k1,vx,vy,vz,'FaceColor','red','FaceAlpha',0.2)
 
+
+
+
+% fplot3()
 
 % vx=sol2.A(1,:); vy=sol2.A(2,:);
 % [k1,volume] = convhull(vx,vy);
