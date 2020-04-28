@@ -178,8 +178,8 @@ std::ostream& operator<<(std::ostream& out, const std::vector<T>& v)
   return out;
 }
 
-visualization_msgs::MarkerArray stateVector2ColoredMarkerArray(const std::vector<state>& data, int type,
-                                                               double max_value, int increm, std::string ns);
+visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& data, int type, double max_value,
+                                                              int increm, std::string ns, double scale);
 
 // P1-P2 is the direction used for projection. P2 is the goal clicked. wdx, wdy and wdz are the widths of a 3D box
 // centered on P1

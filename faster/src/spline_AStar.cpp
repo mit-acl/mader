@@ -1,4 +1,5 @@
 #include "spline_AStar.hpp"
+#include "bspline_utils.hpp"
 
 #include <queue>
 #include <vector>
@@ -25,6 +26,7 @@ SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, d
   num_of_obst_ = num_obst;
   num_of_segments_ = (M_ - 2 * p_);
   num_of_normals_ = num_of_segments_ * num_of_obst_;
+  num_pol_ = num_pol;
 
   hulls_ = hulls;
 
@@ -83,6 +85,37 @@ int SplineAStar::getNumOfLPsRun()
 void SplineAStar::setVisual(bool visual)
 {
   visual_ = visual;
+}
+
+void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
+{
+  all_trajs_found.clear();
+
+  for (auto node : expanded_nodes_)
+  {
+    // std::cout << "using expanded_node= " << node.qi.transpose() << std::endl;
+
+    std::vector<Eigen::Vector3d> cps;
+
+    Node* tmp = &node;
+
+    while (tmp != NULL)
+    {
+      cps.push_back(Eigen::Vector3d(tmp->qi.x(), tmp->qi.y(), tmp->qi.z()));
+      tmp = tmp->previous;
+    }
+
+    cps.push_back(q1_);
+    cps.push_back(q0_);  // cps = [....q4 q3 q2 q1 q0}
+
+    std::reverse(std::begin(cps), std::end(cps));  // cps=[q0 q1 q2 q3 q4 ...]
+
+    trajectory traj;
+    PieceWisePol pwp;
+    CPs2TrajAndPwp(cps, traj, pwp, N_, p_, num_pol_, knots_, 0.1);  // Last number is the resolution
+
+    all_trajs_found.push_back(traj);
+  }
 }
 
 void SplineAStar::setBasisUsedForCollision(int basis)
@@ -749,6 +782,8 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
 {
   for (auto node : expanded_nodes)
   {
+    // std::cout << "using expanded_node= " << node.qi.transpose() << std::endl;
+
     Node* tmp = &node;
 
     std::vector<double> x, y, z;
@@ -1064,7 +1099,7 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
       }
       if (visual_)
       {
-        plotExpandedNodesAndResult(expanded_nodes_, current_ptr);
+        // plotExpandedNodesAndResult(expanded_nodes_, current_ptr);
       }
 
       return true;

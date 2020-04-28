@@ -94,6 +94,10 @@ set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;$ENV{GUROBI_HOME}/li
 #For precompile headers see example here
 #https://gitlab.kitware.com/cmake/cmake/tree/375d01c6808713a0cfeef9ea092c8236ba063525/Tests/PrecompileHeaders
 
+add_library(cgal_utils STATIC src/cgal_utils)
+target_include_directories (cgal_utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(cgal_utils PUBLIC ${DECOMP_UTIL_LIBRARIES} ${catkin_LIBRARIES})
+
 add_library(utils STATIC src/utils.cpp src/utils.hpp)
 #set_property(TARGET utils PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -105,11 +109,11 @@ target_include_directories (spline_AStar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(spline_AStar PUBLIC ${catkin_LIBRARIES})
 
 
-add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp)
+add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp src/bspline_utils.cpp )
 #set_property(TARGET solverNlopt PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 #target_precompile_headers(utils PUBLIC src/solvers/nlopt/solverNlopt.hpp)
 target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
-target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils spline_AStar ${catkin_LIBRARIES})
+target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils spline_AStar ${catkin_LIBRARIES} cgal_utils)
 
 
 add_library(jps_manager STATIC src/jps_manager.cpp)
@@ -158,9 +162,9 @@ add_executable(${PROJECT_NAME}_node src/main.cpp)
 target_link_libraries(${PROJECT_NAME}_node PUBLIC faster_ros)
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
-add_executable(astar_example src/testSplineAStar.cpp src/spline_AStar.cpp )
+add_executable(astar_example src/testSplineAStar.cpp src/spline_AStar.cpp src/bspline_utils.cpp)
 add_dependencies(astar_example ${catkin_EXPORTED_TARGETS} )
-target_link_libraries(astar_example ${catkin_LIBRARIES})
+target_link_libraries(astar_example ${catkin_LIBRARIES} utils cgal_utils)
 
 add_executable(test_utils src/test_utils.cpp)
 add_dependencies(test_utils ${catkin_EXPORTED_TARGETS})
@@ -178,9 +182,9 @@ target_link_libraries(test_utils ${catkin_LIBRARIES} utils)
 
 
 
-add_executable(test_nlopt src/solvers/nlopt/test_nlopt.cpp src/solvers/nlopt/solverNlopt.cpp)
+add_executable(test_nlopt src/solvers/nlopt/test_nlopt.cpp) #src/solvers/nlopt/solverNlopt.cpp
 add_dependencies(test_nlopt ${catkin_EXPORTED_TARGETS} )
-target_link_libraries(test_nlopt ${NLOPT_LIBRARIES} spline_AStar)
+target_link_libraries(test_nlopt ${NLOPT_LIBRARIES} spline_AStar solverNlopt)
 
 
 #add_executable(gurobi_continuous_exec gurobi_continuous.cpp)

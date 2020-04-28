@@ -13,6 +13,8 @@
 #include <decomp_geometry/polyhedron.h>  //For Polyhedron  and Hyperplane definition
 #include "separator.hpp"
 
+//#include "./../../cgal_utils.hpp"
+
 typedef JPS::Timer MyTimer;
 
 class SolverNlopt
@@ -34,7 +36,7 @@ public:
 
   void setDC(double dc);
 
-  std::vector<state> X_temp_;
+  trajectory X_temp_;
 
   void setMaxRuntime(double deltaT);
 

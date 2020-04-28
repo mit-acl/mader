@@ -1,9 +1,22 @@
 #include <Eigen/Dense>
 #include "spline_AStar.hpp"
 #include "faster_types.hpp"
+#include "utils.hpp"
+#include "ros/ros.h"
+#include "visualization_msgs/MarkerArray.h"
+#include "visualization_msgs/Marker.h"
+#include "decomp_ros_msgs/PolyhedronArray.h"
+#include <decomp_ros_utils/data_ros_utils.h>  //For DecompROS::polyhedron_array_to_ros
 
-int main()
+int main(int argc, char **argv)
 {
+  ros::init(argc, argv, "testSplineAStar");
+  ros::NodeHandle nh;
+  ros::Publisher trajectories_found_pub =
+      nh.advertise<visualization_msgs::MarkerArray>("A_star_trajectories_found", 1000, true);
+
+  ros::Publisher jps_poly_pub = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_jps", 1, true);
+
   int num_pol = 7;
   int deg_pol = 3;
 
@@ -13,7 +26,7 @@ int main()
 
   double fraction_voxel_size = 0.5;  // grid used to prune nodes that are on the same cell
 
-  double runtime = 0.1;     //[seconds]
+  double runtime = 0.3;     //[seconds]
   double goal_size = 0.01;  //[meters]
 
   Eigen::Vector3d v_max(7.0, 7.0, 7.0);
@@ -27,29 +40,55 @@ int main()
   double t_min = 0.0;
   double t_max = t_min + (goal - q0).norm() / (0.6 * v_max(0));
 
-  ConvexHullsOfCurves_Std hulls_curves;
-  ConvexHullsOfCurve_Std hulls_curve;
-  Polyhedron_Std hull;
+  ConvexHullsOfCurves hulls_curves;
+  ConvexHullsOfCurve hulls_curve;
 
-  hull.push_back(Eigen::Vector3d(-1.0, -1.0, -700.0));
-  hull.push_back(Eigen::Vector3d(-1.0, -1.0, 700.0));
-  hull.push_back(Eigen::Vector3d(-1.0, 1.0, 700.0));
-  hull.push_back(Eigen::Vector3d(-1.0, 1.0, -700.0));
+  ConvexHullsOfCurves_Std hulls_curves_std;
+  ConvexHullsOfCurve_Std hulls_curve_std;
+  Polyhedron_Std hull_std;
 
-  hull.push_back(Eigen::Vector3d(1.0, 1.0, 700.0));
-  hull.push_back(Eigen::Vector3d(1.0, 1.0, -700.0));
-  hull.push_back(Eigen::Vector3d(1.0, -1.0, 700.0));
-  hull.push_back(Eigen::Vector3d(1.0, -1.0, -700.0));
+  std::vector<Point_3> points;
 
-  // Assummes static obstacle
+  points.push_back(Point_3(-1.0, -1.0, -3.0));
+  points.push_back(Point_3(-1.0, -1.0, 3.0));
+  points.push_back(Point_3(-1.0, 1.0, 3.0));
+  points.push_back(Point_3(-1.0, 1.0, -3.0));
+
+  points.push_back(Point_3(1.0, 1.0, 3.0));
+  points.push_back(Point_3(1.0, 1.0, -3.0));
+  points.push_back(Point_3(1.0, -1.0, 3.0));
+  points.push_back(Point_3(1.0, -1.0, -3.0));
+
+  CGAL_Polyhedron_3 hull_interval = convexHullOfPoints(points);
+
   for (int i = 0; i < num_pol; i++)
   {
-    hulls_curve.push_back(hull);
+    hulls_curve.push_back(hull_interval);  // static obstacle
   }
+  hulls_curves.push_back(hulls_curve);  // only one obstacle
 
-  hulls_curves.push_back(hulls_curve);
+  ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
+  vec_E<Polyhedron<3>> jps_poly = vectorGCALPol2vectorJPSPol(hulls_curves);
 
-  SplineAStar myAStarSolver(num_pol, deg_pol, hulls_curves.size(), t_min, t_max, hulls_curves);
+  // hull.push_back(Eigen::Vector3d(-1.0, -1.0, -700.0));
+  // hull.push_back(Eigen::Vector3d(-1.0, -1.0, 700.0));
+  // hull.push_back(Eigen::Vector3d(-1.0, 1.0, 700.0));
+  // hull.push_back(Eigen::Vector3d(-1.0, 1.0, -700.0));
+
+  // hull.push_back(Eigen::Vector3d(1.0, 1.0, 700.0));
+  // hull.push_back(Eigen::Vector3d(1.0, 1.0, -700.0));
+  // hull.push_back(Eigen::Vector3d(1.0, -1.0, 700.0));
+  // hull.push_back(Eigen::Vector3d(1.0, -1.0, -700.0));
+
+  // Assummes static obstacle
+  /*  for (int i = 0; i < num_pol; i++)
+    {
+      hulls_curve.push_back(hull);
+    }
+
+    hulls_curves.push_back(hulls_curve);*/
+
+  SplineAStar myAStarSolver(num_pol, deg_pol, hulls_std.size(), t_min, t_max, hulls_std);
 
   myAStarSolver.setq0q1q2(q0, q1, q2);
   myAStarSolver.setGoal(goal);
@@ -63,12 +102,53 @@ int main()
 
   myAStarSolver.setBias(2.0);
   myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);  // MINVO //B_SPLINE
-  myAStarSolver.setVisual(true);
+  myAStarSolver.setVisual(false);
 
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
   bool solved = myAStarSolver.run(q, n, d);
+
+  std::vector<trajectory> all_trajs_found;
+  myAStarSolver.getAllTrajsFound(all_trajs_found);
+
+  visualization_msgs::MarkerArray marker_array_all_trajs;
+  int increm = 1;
+  int type = 6;
+  double scale = 0.01;
+  int j = 0;
+
+  std::cout << "*********************************" << std::endl;
+
+  std::cout << "size of all_trajs_found= " << all_trajs_found.size() << std::endl;
+
+  for (auto traj : all_trajs_found)
+  {
+    visualization_msgs::MarkerArray marker_array_traj =
+        trajectory2ColoredMarkerArray(traj, type, v_max.maxCoeff(), increm, "traj" + std::to_string(j), scale);
+    // std::cout << "size of marker_array_traj= " << marker_array_traj.markers.size() << std::endl;
+    for (auto marker : marker_array_traj.markers)
+    {
+      marker_array_all_trajs.markers.push_back(marker);
+    }
+    j++;
+    type++;
+  }
+
+  std::cout << "size of marker_array_all_trajs.markers" << marker_array_all_trajs.markers.size() << std::endl;
+
+  decomp_ros_msgs::PolyhedronArray poly_msg = DecompROS::polyhedron_array_to_ros(jps_poly);
+  poly_msg.header.frame_id = "world";
+  jps_poly_pub.publish(poly_msg);
+
+  trajectories_found_pub.publish(marker_array_all_trajs);
+  ros::spinOnce();
+
+  /*
+    vectorOfNodes2vectorOfStates()
+
+        traj_committed_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_);
+    pub_traj_committed_colored_.publish(traj_committed_colored_);*/
 
   if (solved == true)
   {
@@ -94,6 +174,8 @@ int main()
   {
     std::cout << di << std::endl;
   }
+
+  ros::spin();
 
   return 0;
 }

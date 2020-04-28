@@ -690,21 +690,23 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
 
   // std::cout << "here5" << std::endl;
 
+  double scale = 0.15;
+
   if (type == COMMITTED_COLORED)
   {
-    traj_committed_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_);
+    traj_committed_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_, scale);
     pub_traj_committed_colored_.publish(traj_committed_colored_);
   }
 
   if (type == WHOLE_COLORED)
   {
-    traj_whole_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_);
+    traj_whole_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_, scale);
     pub_traj_whole_colored_.publish(traj_whole_colored_);
   }
 
   if (type == SAFE_COLORED)
   {
-    traj_safe_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_);
+    traj_safe_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_, scale);
     pub_traj_safe_colored_.publish(traj_safe_colored_);
   }
 

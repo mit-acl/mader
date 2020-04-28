@@ -11,6 +11,8 @@
 #include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
 #include <unsupported/Eigen/Splines>
 
+#include "./../../bspline_utils.hpp"
+
 // CGAL
 #include <iostream>
 #include <list>
@@ -1535,9 +1537,9 @@ bool SolverNlopt::optimize()
   /*  std::cout << on_green << bold << "Solution found: " << time_first_feasible_solution_ << "/" << opt_timer_ << reset
               << std::endl;*/
 
-  // Construct now the B-Spline
-  // See example at https://github.com/libigl/eigen/blob/master/unsupported/test/splines.cpp#L37
-  fillXTempFromCPs(q);
+  CPs2TrajAndPwp(q, X_temp_, solution_, N_, p_, num_pol_, knots_, dc_);
+
+  //  fillXTempFromCPs(q);
 
   // Force the last position to be the final_state_ (it's not guaranteed to be because of the discretization with dc_)
   if (force_final_state_ == true)
@@ -1558,78 +1560,6 @@ bool SolverNlopt::optimize()
 void SolverNlopt::getSolution(PieceWisePol &solution)
 {
   solution = solution_;
-}
-
-void SolverNlopt::fillXTempFromCPs(std::vector<Eigen::Vector3d> &q)
-{
-  Eigen::MatrixXd control_points(3, N_ + 1);
-
-  for (int i = 0; i < q.size(); i++)
-  {
-    control_points.col(i) = q[i];
-  }
-
-  Eigen::Matrix<double, 4, 4> M;
-  M << 1, 4, 1, 0,   //////
-      -3, 0, 3, 0,   //////
-      3, -6, 3, 0,   //////
-      -1, 3, -3, 1;  //////
-  M = M / 6.0;       // *1/3!
-
-  // std::cout << "Control Points used are\n" << control_points << std::endl;
-  // std::cout << "====================" << std::endl;
-
-  solution_.clear();
-
-  for (int i = p_; i < (knots_.size() - p_); i++)
-  {
-    solution_.times.push_back(knots_(i));
-  }
-
-  for (int j = 0; j < num_pol_; j++)
-  {
-    Eigen::Matrix<double, 4, 1> cps_x = (control_points.block(0, j, 1, 4).transpose());
-    Eigen::Matrix<double, 4, 1> cps_y = (control_points.block(1, j, 1, 4).transpose());
-    Eigen::Matrix<double, 4, 1> cps_z = (control_points.block(2, j, 1, 4).transpose());
-
-    solution_.coeff_x.push_back((M * cps_x).reverse());  // at^3 + bt^2 + ct + d --> [a b c d]'
-    solution_.coeff_y.push_back((M * cps_y).reverse());  // at^3 + bt^2 + ct + d --> [a b c d]'
-    solution_.coeff_z.push_back((M * cps_z).reverse());  // at^3 + bt^2 + ct + d --> [a b c d]'
-  }
-  /*
-
-  Eigen::Matrix<double, 1, 4> tmp;
-  double u = 0.5;
-  tmp << 1.0, u, u * u, u * u * u;
-
-  double evaluation = tmp * M * cps;
-
-
-    // std::cout << "Knots= " << knots_ << std::endl;
-    // std::cout << "t_min_= " << t_min_ << std::endl;
-
-    std::cout << "evaluation by my method: " << evaluation << std::endl;
-    Eigen::MatrixXd novale = spline.derivatives(t_min_ + deltaT_ / 2.0, 4);
-    std::cout << "evaluation by Eigen: " << novale.col(0).x() << std::endl;*/
-
-  Eigen::Spline<double, 3, Eigen::Dynamic> spline(knots_, control_points);
-  X_temp_.clear();
-
-  for (double t = t_min_; t <= t_max_; t = t + dc_)
-  {
-    // std::cout << "t= " << t << std::endl;
-    Eigen::MatrixXd derivatives = spline.derivatives(t, 4);  // Compute all the derivatives up to order 4
-
-    state state_i;
-
-    state_i.setPos(derivatives.col(0));  // First column
-    state_i.setVel(derivatives.col(1));
-    state_i.setAccel(derivatives.col(2));
-    state_i.setJerk(derivatives.col(3));
-    X_temp_.push_back(state_i);
-    // std::cout << "Aceleration= " << derivatives.col(2).transpose() << std::endl;
-    // state_i.printHorizontal();
-  }
 }
 
 void SolverNlopt::saturateQ(std::vector<Eigen::Vector3d> &q)

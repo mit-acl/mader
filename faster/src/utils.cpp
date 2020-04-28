@@ -1305,8 +1305,8 @@ vec_Vecf<3> copyJPS(vec_Vecf<3> path)
   return tmp;
 }
 
-visualization_msgs::MarkerArray stateVector2ColoredMarkerArray(const std::vector<state>& data, int type,
-                                                               double max_value, int increm, std::string ns)
+visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& data, int type, double max_value,
+                                                              int increm, std::string ns, double scale)
 {
   visualization_msgs::MarkerArray marker_array;
 
@@ -1331,9 +1331,11 @@ visualization_msgs::MarkerArray stateVector2ColoredMarkerArray(const std::vector
     m.action = visualization_msgs::Marker::ADD;
     m.id = j;
     m.color = getColorJet(vel, 0, max_value);  // note that par_.v_max is per axis!
-    m.scale.x = 0.15;
-    m.scale.y = 0;
-    m.scale.z = 0;
+    m.scale.x = scale;
+    m.scale.y = 0.0000001;  // rviz complains if not
+    m.scale.z = 0.0000001;  // rviz complains if not
+
+    m.pose.orientation.w = 1.0;
     // std::cout << "Mandando bloque" << X.block(i, 0, 1, 3) << std::endl;
     geometry_msgs::Point p;
     p.x = data[i].pos(0);

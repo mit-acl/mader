@@ -2,12 +2,15 @@
 #include <vector>
 #include <Eigen/Dense>
 #include "faster_types.hpp"
+
 #include "separator.hpp"
 #include <unordered_map>
 
+#include "cgal_utils.hpp"
+
 #include <tuple>
 
-typedef struct Node Node;  // neede to be able to have a pointer inside the struct
+typedef struct Node Node;  // needed to be able to have a pointer inside the struct
 
 struct Node
 {
@@ -59,6 +62,8 @@ public:
   bool run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d);
 
   void recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& result);
+
+  void getAllTrajsFound(std::vector<trajectory>& all_trajs_found);
 
   void computeInverses();
 
@@ -169,6 +174,8 @@ private:
   Eigen::Matrix<double, 4, 4> Mbs2ov_inverse_;
 
   Eigen::Vector3d epsilons_;
+
+  int num_pol_;
 
   // bool matrixExpandedNodes_[40][40][40];
 };

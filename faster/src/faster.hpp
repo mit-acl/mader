@@ -4,10 +4,8 @@
 
 #include <pcl/kdtree/kdtree.h>
 #include <vector>
-#include <CGAL/Polyhedron_3.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-//#include <CGAL/algorithm.h>
-#include <CGAL/Convex_hull_traits_3.h>
+
+#include "cgal_utils.hpp"
 
 #include "faster_types.hpp"
 // Solvers includes
@@ -34,20 +32,6 @@
 
 #define RETURN_LAST_VERTEX 0
 #define RETURN_INTERSECTION 1
-
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef CGAL::Convex_hull_traits_3<K> Traits;
-typedef Traits::Polyhedron_3 CGAL_Polyhedron_3;
-typedef K::Segment_3 Segment_3;
-typedef K::Plane_3 Plane_3;
-// define point creator
-typedef K::Point_3 Point_3;
-typedef K::Vector_3 Vector_3;
-typedef CGAL::Creator_uniform_3<double, Point_3> PointCreator;
-
-// Custom typedefs
-typedef std::vector<CGAL_Polyhedron_3> ConvexHullsOfCurve;
-typedef std::vector<ConvexHullsOfCurve> ConvexHullsOfCurves;
 
 // status_ : YAWING-->TRAVELING-->GOAL_SEEN-->GOAL_REACHED-->YAWING-->TRAVELING-->...
 
@@ -91,7 +75,7 @@ public:
 
 private:
   state M_;
-  trajectory plan_;
+  committedTrajectory plan_;
 
   double previous_yaw_ = 0.0;
 
@@ -116,8 +100,8 @@ private:
 
   void removeTrajsThatWillNotAffectMe(state A, double t_start, double t_end);
 
-  vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves);
-  ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls);
+  /*  vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves);
+    ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls);*/
   ConvexHullsOfCurves convexHullsOfCurves(double t_start, double t_end);
   ConvexHullsOfCurve convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end);
 

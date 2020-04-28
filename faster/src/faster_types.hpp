@@ -5,6 +5,7 @@
 #include <deque>
 #include "exprtk.hpp"
 #include "termcolor.hpp"
+#include <Eigen/Dense>
 
 typedef std::vector<Eigen::Vector3d> Polyhedron_Std;
 typedef std::vector<Polyhedron_Std> ConvexHullsOfCurve_Std;
@@ -299,7 +300,9 @@ struct state
   }
 };
 
-struct trajectory
+typedef std::vector<state> trajectory;
+
+struct committedTrajectory
 {
   std::deque<state> content;
 
