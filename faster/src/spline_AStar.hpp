@@ -138,8 +138,13 @@ private:
 
   Eigen::RowVectorXd knots_;
 
+  // stores the closest node found
   double closest_dist_so_far_ = std::numeric_limits<double>::max();
   Node* closest_result_so_far_ptr_ = NULL;
+
+  // stores the closest node found that has full length (i.e. its index == (N_ - 2) )
+  double complete_closest_dist_so_far_ = std::numeric_limits<double>::max();
+  Node* complete_closest_result_so_far_ptr_ = NULL;
 
   double goal_size_ = 0.5;    //[m]
   double max_runtime_ = 0.5;  //[s]

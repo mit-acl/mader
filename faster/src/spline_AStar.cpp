@@ -1098,6 +1098,13 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     // log the closest solution so far
     // if ((*current_ptr).index == (N_ - 2))
     // {
+
+    if ((*current_ptr).index == (N_ - 2) && dist < complete_closest_dist_so_far_)
+    {
+      complete_closest_dist_so_far_ = dist;
+      complete_closest_result_so_far_ptr_ = current_ptr;
+    }
+
     if (dist < closest_dist_so_far_)
     {
       closest_dist_so_far_ = dist;
@@ -1155,7 +1162,15 @@ exitloop:
   else if (status == RUNTIME_REACHED)
   {
     std::cout << "[A*] Max Runtime was reached" << std::endl;
-    best_node_ptr = closest_result_so_far_ptr_;
+
+    if (complete_closest_result_so_far_ptr_ != NULL)
+    {
+      best_node_ptr = complete_closest_result_so_far_ptr_;
+    }
+    else
+    {
+      best_node_ptr = closest_result_so_far_ptr_;
+    }
   }
   else
   {
