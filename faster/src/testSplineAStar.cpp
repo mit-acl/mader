@@ -52,20 +52,20 @@ int main(int argc, char **argv)
 
   std::cout << "Basis= " << basis << std::endl;
 
-  int num_pol = 7;
+  int num_pol = 15;
   int deg_pol = 3;
 
   int samples_x = 11;  // odd number
   int samples_y = 11;  // odd number
   int samples_z = 11;  // odd number
 
-  double fraction_voxel_size = 0.5;  // grid used to prune nodes that are on the same cell
+  double fraction_voxel_size = 0.0;  // grid used to prune nodes that are on the same cell
 
-  double runtime = 0.2;     //[seconds]
+  double runtime = 5.0;     //[seconds]
   double goal_size = 0.01;  //[meters]
 
   Eigen::Vector3d v_max(7.0, 7.0, 7.0);
-  Eigen::Vector3d a_max(50.0, 50.0, 50.0);
+  Eigen::Vector3d a_max(40.0, 40.0, 40.0);
 
   Eigen::Vector3d q0(-1.5, 0, 0);
   Eigen::Vector3d q1 = q0;
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   double bbox_z = 6.0;
 
   int num_of_obs = 5;  // odd number
-  double separation = 0.7;
+  double separation = 0.4;
 
   int num_of_obs_up = (num_of_obs - 1) / 2.0;
 

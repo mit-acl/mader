@@ -89,6 +89,7 @@ void SplineAStar::setVisual(bool visual)
 
 void SplineAStar::getBestTrajFound(trajectory& best_traj_found)
 {
+  std::cout << "******************BEST_TRAJ_FOUND**************" << std::endl;
   trajectory traj;
   PieceWisePol pwp;
   CPs2TrajAndPwp(result_, best_traj_found, pwp, N_, p_, num_pol_, knots_, 0.1);  // Last number is the resolution
@@ -440,6 +441,10 @@ void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
   double delta_x = ((constraint_xU - constraint_xL) / (num_samples_x_ - 1));
   double delta_y = ((constraint_yU - constraint_yL) / (num_samples_y_ - 1));
   double delta_z = ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));
+
+  // std::cout << "constraint_xU= " << constraint_xU << std::endl;
+  // std::cout << "constraint_xL= " << constraint_xL << std::endl;
+  // std::cout << "delta_x= " << delta_x << std::endl;
 
   for (auto comb : all_combinations_)
   {
@@ -1122,6 +1127,7 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
 
     if (timer_astar.ElapsedMs() > (max_runtime_ * 1000))
     {
+      std::cout << "[A*] Max Runtime was reached" << std::endl;
       status = RUNTIME_REACHED;
       goto exitloop;
     }
@@ -1129,6 +1135,7 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     // check if we are already in the goal
     if ((dist < goal_size_) && (*current_ptr).index == (N_ - 2))
     {
+      std::cout << "[A*] Goal was reached!" << std::endl;
       status = GOAL_REACHED;
       goto exitloop;
     }
@@ -1147,34 +1154,40 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     }
   }
 
+  std::cout << "[A*] openList is empty" << std::endl;
   status = EMPTY_OPENLIST;
   goto exitloop;
 
 exitloop:
 
+  std::cout << "status= " << status << std::endl;
+  std::cout << "expanded_nodes_.size()= " << expanded_nodes_.size() << std::endl;
+  std::cout << "complete_closest_dist_so_far_= " << complete_closest_dist_so_far_ << std::endl;
+
   Node* best_node_ptr = NULL;
+
+  bool have_a_solution = (complete_closest_result_so_far_ptr_ != NULL) || (closest_result_so_far_ptr_ != NULL);
 
   if (status == GOAL_REACHED)
   {
-    std::cout << "[A*] Goal was reached!" << std::endl;
+    std::cout << "[A*] choosing current_ptr as solution" << std::endl;
     best_node_ptr = current_ptr;
   }
-  else if (status == RUNTIME_REACHED)
+  else if ((status == RUNTIME_REACHED || status == EMPTY_OPENLIST) && have_a_solution)
   {
-    std::cout << "[A*] Max Runtime was reached" << std::endl;
-
     if (complete_closest_result_so_far_ptr_ != NULL)
     {
+      std::cout << "[A*] choosing closest complete path as solution" << std::endl;
       best_node_ptr = complete_closest_result_so_far_ptr_;
     }
     else
     {
+      std::cout << "[A*] choosing closest path as solution" << std::endl;
       best_node_ptr = closest_result_so_far_ptr_;
     }
   }
   else
   {
-    std::cout << "[A*] openList is empty" << std::endl;
     return false;
   }
 
