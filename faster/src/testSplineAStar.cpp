@@ -58,13 +58,13 @@ int main(int argc, char **argv)
 
   double fraction_voxel_size = 0.5;  // grid used to prune nodes that are on the same cell
 
-  double runtime = 0.5;     //[seconds]
+  double runtime = 0.2;     //[seconds]
   double goal_size = 0.01;  //[meters]
 
   Eigen::Vector3d v_max(7.0, 7.0, 7.0);
-  Eigen::Vector3d a_max(20.0, 20.0, 20.0);
+  Eigen::Vector3d a_max(50.0, 50.0, 50.0);
 
-  Eigen::Vector3d q0(-2.0, 0, 0);
+  Eigen::Vector3d q0(-1.5, 0, 0);
   Eigen::Vector3d q1 = q0;
   Eigen::Vector3d q2 = q1;
   Eigen::Vector3d goal(2.0, 0, 0);
