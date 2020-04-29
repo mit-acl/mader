@@ -87,6 +87,13 @@ void SplineAStar::setVisual(bool visual)
   visual_ = visual;
 }
 
+void SplineAStar::getBestTrajFound(trajectory& best_traj_found)
+{
+  trajectory traj;
+  PieceWisePol pwp;
+  CPs2TrajAndPwp(result_, best_traj_found, pwp, N_, p_, num_pol_, knots_, 0.1);  // Last number is the resolution
+}
+
 void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
 {
   all_trajs_found.clear();
@@ -755,27 +762,44 @@ void SplineAStar::printPath(Node& node1)
   std::cout << std::endl;
 }
 
-void SplineAStar::recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& result)
+void SplineAStar::recoverPath(Node* result_ptr)
 {
   // std::cout << "Recovering path" << std::endl;
-  result.clear();
+  result_.clear();
 
-  Node* tmp = node1_ptr;
+  if (result_ptr == NULL)
+  {
+    result_.push_back(q0_);
+    result_.push_back(q1_);
+    return;
+  }
+
+  Node* tmp = result_ptr;
 
   std::cout << "Pushing qN= " << tmp->qi.transpose() << std::endl;
   std::cout << "Pushing qN-1= " << tmp->qi.transpose() << std::endl;
 
-  result.insert(result.begin(), tmp->qi);  // qN
-  result.insert(result.begin(), tmp->qi);  // qN-1
+  std::cout << "qi is" << std::endl;
+  std::cout << tmp->qi.transpose() << std::endl;
+
+  std::cout << "qi is" << tmp->qi.transpose() << std::endl;
+  result_.push_back(tmp->qi);  // qN
+  result_.push_back(tmp->qi);  // qN-1
 
   while (tmp != NULL)
   {
-    // std::cout << "index= " << tmp->index << ", tmp->qi=" << tmp->qi.transpose() << std::endl;
-    result.insert(result.begin(), tmp->qi);
+    result_.push_back(tmp->qi);
+    std::cout << "pushing" << tmp->qi.transpose() << std::endl;
+
     tmp = tmp->previous;
   }
-  result.insert(result.begin(), q1_);
-  result.insert(result.begin(), q0_);
+  std::cout << "going to push q0 and q1" << std::endl;
+  result_.push_back(q1_);
+  result_.push_back(q0_);
+
+  std::cout << "reverse" << std::endl;
+
+  std::reverse(std::begin(result_), std::end(result_));  // result_ is [q0 q1 q2 q3 ...]
 }
 
 void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, Node* result_ptr)
@@ -802,35 +826,36 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
   int counter_color = 0;
   if (result_ptr != NULL)
   {
-    std::vector<Eigen::Vector3d> path;
-    recoverPath(result_ptr, path);
+    std::cout << "calling recoverPath1" << std::endl;
+    recoverPath(result_ptr);  // saved in result_
+    std::cout << "called recoverPath1" << std::endl;
 
     std::vector<double> x_result, y_result, z_result;
 
-    for (auto node : path)
+    for (auto q_i : result_)
     {
-      x_result.push_back(node.x());
-      y_result.push_back(node.y());
-      z_result.push_back(node.z());
+      x_result.push_back(q_i.x());
+      y_result.push_back(q_i.y());
+      z_result.push_back(q_i.z());
     }
 
     plt::plot(x_result, y_result, "or-");
 
     std::cout << "Path is:" << std::endl;
-    for (auto node : path)
+    for (auto q_i : result_)
     {
-      std::cout << node.transpose() << std::endl;
+      std::cout << q_i.transpose() << std::endl;
     }
 
     if (basis_ == MINVO)  // Plot the control points using the MINVO basis
     {
-      for (int i = 3; i < path.size(); i++)
+      for (int i = 3; i < result_.size(); i++)
       {
         std::vector<Eigen::Vector3d> last4Cps(4);
-        last4Cps[0] = path[i - 3];
-        last4Cps[1] = path[i - 2];
-        last4Cps[2] = path[i - 1];
-        last4Cps[3] = path[i];
+        last4Cps[0] = result_[i - 3];
+        last4Cps[1] = result_[i - 2];
+        last4Cps[2] = result_[i - 1];
+        last4Cps[3] = result_[i];
         std::cout << "[BSpline] Plotting these last4Cps" << std::endl;
         std::cout << last4Cps[0].transpose() << std::endl;
         std::cout << last4Cps[1].transpose() << std::endl;
@@ -1048,6 +1073,12 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
 
   Node* current_ptr;
 
+  int status;
+
+  int RUNTIME_REACHED = 0;
+  int GOAL_REACHED = 1;
+  int EMPTY_OPENLIST = 2;
+
   while (openList.size() > 0)
   {
     // std::cout << red << "=============================" << reset << std::endl;
@@ -1084,25 +1115,15 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
 
     if (timer_astar.ElapsedMs() > (max_runtime_ * 1000))
     {
-      std::cout << "[A*] Max Runtime was reached" << std::endl;
+      status = RUNTIME_REACHED;
       goto exitloop;
     }
 
     // check if we are already in the goal
     if ((dist < goal_size_) && (*current_ptr).index == (N_ - 2))
     {
-      std::cout << "[A*] Goal was reached!" << std::endl;
-      recoverPath(current_ptr, result);
-      if (checkFeasAndFillND(result, n, d) == false)  // This should always be true
-      {
-        return false;
-      }
-      if (visual_)
-      {
-        // plotExpandedNodesAndResult(expanded_nodes_, current_ptr);
-      }
-
-      return true;
+      status = GOAL_REACHED;
+      goto exitloop;
     }
     ////////////////////////////////////////////////////
     ////////////////////////////////////////////////////
@@ -1119,53 +1140,127 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     }
   }
 
-  std::cout << "openList is empty" << std::endl;
+  status = EMPTY_OPENLIST;
+  goto exitloop;
 
 exitloop:
 
-  if (closest_result_so_far_ptr_ == NULL || (closest_result_so_far_ptr_->index == 2))
+  Node* best_node_ptr = NULL;
+
+  if (status == GOAL_REACHED)
   {
-    std::cout << " and couldn't find any solution" << std::endl;
-    if (visual_)
-    {
-      plotExpandedNodesAndResult(expanded_nodes_, closest_result_so_far_ptr_);
-    }
+    std::cout << "[A*] Goal was reached!" << std::endl;
+    best_node_ptr = current_ptr;
+  }
+  else if (status == RUNTIME_REACHED)
+  {
+    std::cout << "[A*] Max Runtime was reached" << std::endl;
+    best_node_ptr = closest_result_so_far_ptr_;
+  }
+  else
+  {
+    std::cout << "[A*] openList is empty" << std::endl;
+    return false;
+  }
+
+  // Fill (until we arrive to N_-2), with the same qi
+  // Note that, by doing this, it's not guaranteed feasibility wrt a dynamic obstacle
+  // and hence the need of the function checkFeasAndFillND()
+  for (int j = (best_node_ptr->index) + 1; j <= N_ - 2; j++)
+  {
+    Node* node_ptr = new Node;
+    node_ptr->qi = best_node_ptr->qi;
+    node_ptr->index = j;
+    std::cout << "Filled " << j << ", ";
+    // << node_ptr->qi.transpose() << std::endl;
+    node_ptr->previous = best_node_ptr;
+    best_node_ptr = node_ptr;
+  }
+
+  std::cout << "calling recoverPath3" << std::endl;
+  recoverPath(best_node_ptr);  // saved in result_
+  std::cout << "called recoverPath3" << std::endl;
+
+  if (visual_)
+  {
+    plotExpandedNodesAndResult(expanded_nodes_, best_node_ptr);
+  }
+
+  if (checkFeasAndFillND(result_, n, d) == false)  // This may be true or false, depending on the case
+  {
     return false;
   }
   else
   {
-    // Fill the until we arrive to N_-2, with the same qi
-    // Note that, by doing this, it's not guaranteed feasibility wrt a dynamic obstacle
-    // and hence the need of the function checkFeasAndFillND()
-    for (int j = (closest_result_so_far_ptr_->index) + 1; j <= N_ - 2; j++)
-    {
-      Node* node_ptr = new Node;
-      node_ptr->qi = closest_result_so_far_ptr_->qi;
-      node_ptr->index = j;
-      std::cout << "Filled " << j << ", ";
-      // << node_ptr->qi.transpose() << std::endl;
-      node_ptr->previous = closest_result_so_far_ptr_;
-      closest_result_so_far_ptr_ = node_ptr;
-    }
-    std::cout << std::endl;
-
-    // std::cout << " best solution has dist=" << closest_dist_so_far_ << std::endl;
-    recoverPath(closest_result_so_far_ptr_, result);
-
-    if (visual_)
-    {
-      plotExpandedNodesAndResult(expanded_nodes_, closest_result_so_far_ptr_);
-    }
-
-    if (checkFeasAndFillND(result, n, d) == false)  // This may be true or false, depending on the case
-    {
-      return false;
-    }
-
     return true;
   }
 
-  return false;
+  /*
+    return false;
+
+    switch (status)
+    {
+      case GOAL_REACHED:
+        recoverPath(current_ptr);                       // saved in result_
+        if (checkFeasAndFillND(result, n, d) == false)  // This should always be true
+        {
+          return false;
+        }
+        if (visual_)
+        {
+          // plotExpandedNodesAndResult(expanded_nodes_, current_ptr);
+        }
+        return true;
+
+      case RUNTIME_REACHED:
+    }
+
+    if (closest_result_so_far_ptr_ == NULL || (closest_result_so_far_ptr_->index == 2))
+    {
+      std::cout << " and couldn't find any solution" << std::endl;
+      if (visual_)
+      {
+        plotExpandedNodesAndResult(expanded_nodes_, closest_result_so_far_ptr_);
+      }
+      return false;
+    }
+    else
+    {
+      // Fill the until we arrive to N_-2, with the same qi
+      // Note that, by doing this, it's not guaranteed feasibility wrt a dynamic obstacle
+      // and hence the need of the function checkFeasAndFillND()
+      for (int j = (closest_result_so_far_ptr_->index) + 1; j <= N_ - 2; j++)
+      {
+        Node* node_ptr = new Node;
+        node_ptr->qi = closest_result_so_far_ptr_->qi;
+        node_ptr->index = j;
+        std::cout << "Filled " << j << ", ";
+        // << node_ptr->qi.transpose() << std::endl;
+        node_ptr->previous = closest_result_so_far_ptr_;
+        closest_result_so_far_ptr_ = node_ptr;
+      }
+      std::cout << std::endl;
+
+      // std::cout << " best solution has dist=" << closest_dist_so_far_ << std::endl;
+
+      std::cout << "calling recoverPath3" << std::endl;
+      recoverPath(closest_result_so_far_ptr_);  // saved in result_
+      std::cout << "called recoverPath3" << std::endl;
+
+      if (visual_)
+      {
+        plotExpandedNodesAndResult(expanded_nodes_, closest_result_so_far_ptr_);
+      }
+
+      if (checkFeasAndFillND(result_, n, d) == false)  // This may be true or false, depending on the case
+      {
+        return false;
+      }
+
+      return true;
+    }
+
+    return false;*/
 }
 
 /*          std::cout << "ix= " << ix << " is outside, max= " << matrixExpandedNodes_.size() << std::endl;

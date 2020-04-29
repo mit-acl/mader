@@ -61,7 +61,7 @@ public:
 
   bool run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d);
 
-  void recoverPath(Node* node1_ptr, std::vector<Eigen::Vector3d>& result);
+  void recoverPath(Node* node1_ptr);
 
   void getAllTrajsFound(std::vector<trajectory>& all_trajs_found);
 
@@ -74,6 +74,8 @@ public:
   void setZminZmax(double z_min, double z_max);
 
   int getNumOfLPsRun();
+
+  void getBestTrajFound(trajectory& best_traj_found);
 
   int B_SPLINE = 1;  // B-Spline Basis
   int MINVO = 2;     // Minimum volume basis
@@ -176,6 +178,8 @@ private:
   Eigen::Vector3d epsilons_;
 
   int num_pol_;
+
+  std::vector<Eigen::Vector3d> result_;
 
   // bool matrixExpandedNodes_[40][40][40];
 };

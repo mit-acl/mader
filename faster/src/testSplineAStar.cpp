@@ -41,6 +41,9 @@ int main(int argc, char **argv)
   ros::Publisher trajectories_found_pub =
       nh.advertise<visualization_msgs::MarkerArray>("A_star_trajectories_found", 1000, true);
 
+  ros::Publisher best_trajectory_found_pub =
+      nh.advertise<visualization_msgs::MarkerArray>("A_star_best_trajectory_found", 1000, true);
+
   ros::Publisher jps_poly_pub = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_jps", 1, true);
 
   std::string basis;
@@ -145,19 +148,21 @@ int main(int argc, char **argv)
   std::vector<double> d;
   bool solved = myAStarSolver.run(q, n, d);
 
+  // Recover all the trajectories found and the best trajectory
   std::vector<trajectory> all_trajs_found;
   myAStarSolver.getAllTrajsFound(all_trajs_found);
 
-  visualization_msgs::MarkerArray marker_array_all_trajs;
+  trajectory best_traj_found;
+  myAStarSolver.getBestTrajFound(best_traj_found);
+
+  // Convert to marker arrays
+  //---> all the trajectories found
   int increm = 1;
   int type = 6;
   double scale = 0.01;
   int j = 0;
 
-  std::cout << "*********************************" << std::endl;
-
-  std::cout << "size of all_trajs_found= " << all_trajs_found.size() << std::endl;
-
+  visualization_msgs::MarkerArray marker_array_all_trajs;
   for (auto traj : all_trajs_found)
   {
     visualization_msgs::MarkerArray marker_array_traj =
@@ -171,13 +176,21 @@ int main(int argc, char **argv)
     type++;
   }
 
-  std::cout << "size of marker_array_all_trajs.markers" << marker_array_all_trajs.markers.size() << std::endl;
+  //---> the best trajectory found
+  scale = 0.1;
+  visualization_msgs::MarkerArray marker_array_best_traj;
+  marker_array_best_traj =
+      trajectory2ColoredMarkerArray(best_traj_found, type, v_max.maxCoeff(), increm, "traj" + std::to_string(j), scale);
 
+  // publish the trajectories
+  trajectories_found_pub.publish(marker_array_all_trajs);
+  best_trajectory_found_pub.publish(marker_array_best_traj);
+
+  // convert the obstacles polyhedron arrays
   decomp_ros_msgs::PolyhedronArray poly_msg = DecompROS::polyhedron_array_to_ros(jps_poly);
   poly_msg.header.frame_id = "world";
   jps_poly_pub.publish(poly_msg);
 
-  trajectories_found_pub.publish(marker_array_all_trajs);
   ros::spinOnce();
 
   /*
