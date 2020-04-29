@@ -233,4 +233,6 @@ private:
   int id_;  // id of the drone
 
   bool published_initial_position_ = false;
+
+  Eigen::Affine3d W_T_B_;
 };

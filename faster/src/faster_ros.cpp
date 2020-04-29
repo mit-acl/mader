@@ -320,8 +320,8 @@ void FasterRos::publishFOV()
   marker_fov.action = marker_fov.ADD;
   marker_fov.pose = identityGeometryMsgsPose();
 
-  double delta_y = par_.fov_depth / cos((par_.fov_horiz_deg * M_PI / 180) / 2.0);
-  double delta_z = par_.fov_depth / cos((par_.fov_vert_deg * M_PI / 180) / 2.0);
+  double delta_y = par_.fov_depth * fabs(tan((par_.fov_horiz_deg * M_PI / 180) / 2.0));
+  double delta_z = par_.fov_depth * fabs(tan((par_.fov_vert_deg * M_PI / 180) / 2.0));
 
   geometry_msgs::Point v0 = eigen2point(Eigen::Vector3d(0.0, 0.0, 0.0));
   geometry_msgs::Point v1 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, -delta_z));
@@ -363,7 +363,7 @@ void FasterRos::publishFOV()
   marker_fov.points.push_back(v4);
   marker_fov.points.push_back(v1);
 
-  marker_fov.scale.x = 0.1;
+  marker_fov.scale.x = 0.03;
   marker_fov.scale.y = 0.00001;
   marker_fov.scale.z = 0.00001;
   marker_fov.color.a = 1.0;  // Don't forget to set the alpha!
@@ -385,11 +385,38 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
     return;
   }
 
-  Eigen::Vector3d pos(msg.pos.x, msg.pos.y, msg.pos.z);
-  double dist = (state_.pos - pos).norm();
+  Eigen::Vector3d W_pos(msg.pos.x, msg.pos.y, msg.pos.z);  // position in world frame
+  double dist = (state_.pos - W_pos).norm();
   bool near_me = (msg.is_agent == true && (dist < par_.R_consider_agents)) ||
                  (msg.is_agent == false && (dist < par_.R_consider_obstacles));
   // std::cout << "dist= " << (state_.pos - pos).norm() << std::endl;
+
+  //  std::cout << "W_T_B_ is = " << W_T_B_.matrix() << std::endl;
+
+  // std::cout << "The w_position of the obstacle is " << W_pos.transpose() << std::endl;
+
+  Eigen::Vector3d B_pos = W_T_B_.inverse() * W_pos;  // position of the obstacle in body frame
+
+  // std::cout << "The B_position of the obstacle is " << B_pos.transpose() << std::endl;
+
+  bool isInFOV =
+      B_pos.x() < par_.fov_depth &&                                                       /////////////////////////////
+      fabs(atan2(B_pos.y(), B_pos.x())) < ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0) &&  /////////////////////////////
+      fabs(atan2(B_pos.z(), B_pos.x())) < ((par_.fov_vert_deg * M_PI / 180.0) / 2.0);     /////////////////////////////
+
+  // std::cout << "B_pos.x() < par_.fov_depth= " << (B_pos.x() < par_.fov_depth) << std::endl;
+  // std::cout << "Second= " << (fabs(atan2(B_pos.y(), B_pos.x())) < ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0))
+  //           << std::endl;
+  // std::cout << "Third= " << (fabs(atan2(B_pos.z(), B_pos.x())) < ((par_.fov_vert_deg * M_PI / 180.0) / 2.0))
+  //           << std::endl;
+
+  // std::cout << "Second1= " << fabs(atan2(B_pos.y(), B_pos.x())) << std::endl;
+  // std::cout << "Second2 " << ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0) << std::endl;
+
+  // std::cout << "Third1= " << (fabs(atan2(B_pos.z(), B_pos.x()))) << std::endl;
+  // std::cout << "Third2 " << ((par_.fov_vert_deg * M_PI / 180.0) / 2.0) << std::endl;
+
+  // std::cout << "isInFOV= " << isInFOV << std::endl;
 
   dynTraj tmp;
   tmp.function.push_back(msg.function[0]);
@@ -565,6 +592,9 @@ void FasterRos::stateCB(const snapstack_msgs::State& msg)
   state_ = state_tmp;
   // std::cout << bold << red << "STATE_YAW= " << state_.yaw << reset << std::endl;
   faster_ptr_->updateState(state_tmp);
+
+  W_T_B_ = Eigen::Translation3d(msg.pos.x, msg.pos.y, msg.pos.z) *
+           Eigen::Quaterniond(msg.quat.w, msg.quat.x, msg.quat.y, msg.quat.z);
 
   if (published_initial_position_ == false)
   {
