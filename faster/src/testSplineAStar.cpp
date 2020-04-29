@@ -8,25 +8,57 @@
 #include "decomp_ros_msgs/PolyhedronArray.h"
 #include <decomp_ros_utils/data_ros_utils.h>  //For DecompROS::polyhedron_array_to_ros
 
+ConvexHullsOfCurve createStaticObstacle(double x, double y, double z, int num_pol, double bbox_x, double bbox_y,
+                                        double bbox_z)
+{
+  ConvexHullsOfCurve hulls_curve;
+  std::vector<Point_3> points;
+
+  points.push_back(Point_3(x - bbox_x / 2.0, y - bbox_y / 2.0, z - bbox_z / 2.0));
+  points.push_back(Point_3(x - bbox_x / 2.0, y - bbox_y / 2.0, z + bbox_z / 2.0));
+  points.push_back(Point_3(x - bbox_x / 2.0, y + bbox_y / 2.0, z + bbox_z / 2.0));
+  points.push_back(Point_3(x - bbox_x / 2.0, y + bbox_y / 2.0, z - bbox_z / 2.0));
+
+  points.push_back(Point_3(x + bbox_x / 2.0, y + bbox_y / 2.0, z + bbox_z / 2.0));
+  points.push_back(Point_3(x + bbox_x / 2.0, y + bbox_y / 2.0, z - bbox_z / 2.0));
+  points.push_back(Point_3(x + bbox_x / 2.0, y - bbox_y / 2.0, z + bbox_z / 2.0));
+  points.push_back(Point_3(x + bbox_x / 2.0, y - bbox_y / 2.0, z - bbox_z / 2.0));
+
+  CGAL_Polyhedron_3 hull_interval = convexHullOfPoints(points);
+
+  for (int i = 0; i < num_pol; i++)
+  {
+    hulls_curve.push_back(hull_interval);  // static obstacle
+  }
+
+  return hulls_curve;
+}
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "testSplineAStar");
-  ros::NodeHandle nh;
+  ros::NodeHandle nh("~");
   ros::Publisher trajectories_found_pub =
       nh.advertise<visualization_msgs::MarkerArray>("A_star_trajectories_found", 1000, true);
 
   ros::Publisher jps_poly_pub = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_jps", 1, true);
 
+  std::string basis;
+
+  nh.getParam("basis", basis);
+
+  std::cout << "Basis= " << basis << std::endl;
+
   int num_pol = 7;
   int deg_pol = 3;
 
-  int samples_x = 7;  // odd number
-  int samples_y = 7;  // odd number
-  int samples_z = 7;  // odd number
+  int samples_x = 11;  // odd number
+  int samples_y = 11;  // odd number
+  int samples_z = 11;  // odd number
 
   double fraction_voxel_size = 0.5;  // grid used to prune nodes that are on the same cell
 
-  double runtime = 0.3;     //[seconds]
+  double runtime = 0.5;     //[seconds]
   double goal_size = 0.01;  //[meters]
 
   Eigen::Vector3d v_max(7.0, 7.0, 7.0);
@@ -38,34 +70,31 @@ int main(int argc, char **argv)
   Eigen::Vector3d goal(2.0, 0, 0);
 
   double t_min = 0.0;
-  double t_max = t_min + (goal - q0).norm() / (0.6 * v_max(0));
+  double t_max = t_min + (goal - q0).norm() / (0.3 * v_max(0));
 
   ConvexHullsOfCurves hulls_curves;
-  ConvexHullsOfCurve hulls_curve;
 
-  ConvexHullsOfCurves_Std hulls_curves_std;
-  ConvexHullsOfCurve_Std hulls_curve_std;
-  Polyhedron_Std hull_std;
+  double bbox_x = 1.0;
+  double bbox_y = 1.0;
+  double bbox_z = 6.0;
 
-  std::vector<Point_3> points;
+  int num_of_obs = 5;  // odd number
+  double separation = 0.7;
 
-  points.push_back(Point_3(-1.0, -1.0, -3.0));
-  points.push_back(Point_3(-1.0, -1.0, 3.0));
-  points.push_back(Point_3(-1.0, 1.0, 3.0));
-  points.push_back(Point_3(-1.0, 1.0, -3.0));
+  int num_of_obs_up = (num_of_obs - 1) / 2.0;
 
-  points.push_back(Point_3(1.0, 1.0, 3.0));
-  points.push_back(Point_3(1.0, 1.0, -3.0));
-  points.push_back(Point_3(1.0, -1.0, 3.0));
-  points.push_back(Point_3(1.0, -1.0, -3.0));
-
-  CGAL_Polyhedron_3 hull_interval = convexHullOfPoints(points);
-
-  for (int i = 0; i < num_pol; i++)
-  {
-    hulls_curve.push_back(hull_interval);  // static obstacle
-  }
+  ConvexHullsOfCurve hulls_curve = createStaticObstacle(0.0, 0.0, 0.0, num_pol, bbox_x, bbox_y, bbox_z);
   hulls_curves.push_back(hulls_curve);  // only one obstacle
+
+  for (int i = 1; i <= num_of_obs_up; i++)
+  {
+    ConvexHullsOfCurve hulls_curve =
+        createStaticObstacle(0.0, i * (bbox_y + separation), 0.0, num_pol, bbox_x, bbox_y, bbox_z);
+    hulls_curves.push_back(hulls_curve);  // only one obstacle
+
+    hulls_curve = createStaticObstacle(0.0, -i * (bbox_y + separation), 0.0, num_pol, bbox_x, bbox_y, bbox_z);
+    hulls_curves.push_back(hulls_curve);  // only one obstacle
+  }
 
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
   vec_E<Polyhedron<3>> jps_poly = vectorGCALPol2vectorJPSPol(hulls_curves);
@@ -101,7 +130,14 @@ int main(int argc, char **argv)
   myAStarSolver.setGoalSize(goal_size);
 
   myAStarSolver.setBias(2.0);
-  myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);  // MINVO //B_SPLINE
+  if (basis == "MINVO")
+  {
+    myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);  // MINVO //B_SPLINE
+  }
+  else
+  {
+    myAStarSolver.setBasisUsedForCollision(myAStarSolver.B_SPLINE);  // MINVO //B_SPLINE
+  }
   myAStarSolver.setVisual(false);
 
   std::vector<Eigen::Vector3d> q;
