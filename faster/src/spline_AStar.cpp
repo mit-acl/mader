@@ -776,28 +776,28 @@ void SplineAStar::recoverPath(Node* result_ptr)
 
   Node* tmp = result_ptr;
 
-  std::cout << "Pushing qN= " << tmp->qi.transpose() << std::endl;
-  std::cout << "Pushing qN-1= " << tmp->qi.transpose() << std::endl;
+  // std::cout << "Pushing qN= " << tmp->qi.transpose() << std::endl;
+  // std::cout << "Pushing qN-1= " << tmp->qi.transpose() << std::endl;
 
-  std::cout << "qi is" << std::endl;
+  // std::cout << "qi is" << std::endl;
   std::cout << tmp->qi.transpose() << std::endl;
 
-  std::cout << "qi is" << tmp->qi.transpose() << std::endl;
+  //  std::cout << "qi is" << tmp->qi.transpose() << std::endl;
   result_.push_back(tmp->qi);  // qN
   result_.push_back(tmp->qi);  // qN-1
 
   while (tmp != NULL)
   {
     result_.push_back(tmp->qi);
-    std::cout << "pushing" << tmp->qi.transpose() << std::endl;
+    // std::cout << "pushing" << tmp->qi.transpose() << std::endl;
 
     tmp = tmp->previous;
   }
-  std::cout << "going to push q0 and q1" << std::endl;
+  // std::cout << "going to push q0 and q1" << std::endl;
   result_.push_back(q1_);
   result_.push_back(q0_);
 
-  std::cout << "reverse" << std::endl;
+  // std::cout << "reverse" << std::endl;
 
   std::reverse(std::begin(result_), std::end(result_));  // result_ is [q0 q1 q2 q3 ...]
 }
@@ -1192,9 +1192,9 @@ exitloop:
     best_node_ptr = node_ptr;
   }
 
-  std::cout << "calling recoverPath3" << std::endl;
   recoverPath(best_node_ptr);  // saved in result_
-  std::cout << "called recoverPath3" << std::endl;
+
+  result = result_;
 
   if (visual_)
   {

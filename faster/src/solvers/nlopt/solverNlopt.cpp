@@ -71,7 +71,7 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
   /*  qNm2_ << 0, 0, 0;
     qNm1_ << 0, 0, 0;
     qN_ << 0, 0, 0;*/
-
+  std::cout << bold << "N_= " << N_ << reset << std::endl;
   /*  opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
     local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);*/
   //#ifdef DEBUG_MODE_NLOPT
@@ -285,6 +285,10 @@ void SolverNlopt::generateAStarGuess()
   /*  generateRandomN(n_guess_);
     generateRandomD(d_guess_);
     generateRandomQ(q_guess_);*/
+
+  std::cout << "The StraightLineGuess is" << std::endl;
+  printStd(q_guess_);
+  std::cout << "************" << std::endl;
 
   SplineAStar myAStarSolver(num_pol_, deg_pol_, hulls_.size(), t_min_, t_max_, hulls_);
 
@@ -1465,21 +1469,21 @@ bool SolverNlopt::optimize()
   qndtoX(q_guess_, n_guess_, d_guess_, x_);
 
   // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
-  /*  std::cout << "q_guess_ is\n" << std::endl;
-    printStd(q_guess_);
+  std::cout << "q_guess_ is\n" << std::endl;
+  printStd(q_guess_);
 
-    std::cout << "n_guess_ is\n" << std::endl;
-    printStd(n_guess_);
+  std::cout << "n_guess_ is\n" << std::endl;
+  printStd(n_guess_);
 
-    std::cout << "d_guess_ is\n" << std::endl;
-    printStd(d_guess_);*/
+  std::cout << "d_guess_ is\n" << std::endl;
+  printStd(d_guess_);
 
   // toEigen(x_, q_guess_, n_guess_);
 
-  // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
-  // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
+  std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
+  printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
-  // printIndexesConstraints();
+  printIndexesConstraints();
 
   opt_timer_.Reset();
   std::cout << "[NL] Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
@@ -1573,7 +1577,7 @@ void SolverNlopt::saturateQ(std::vector<Eigen::Vector3d> &q)
 
 void SolverNlopt::generateStraightLineGuess()
 {
-  std::cout << "Using StraightLineGuess" << std::endl;
+  // std::cout << "Using StraightLineGuess" << std::endl;
   q_guess_.clear();
   n_guess_.clear();
   d_guess_.clear();
@@ -1582,21 +1586,21 @@ void SolverNlopt::generateStraightLineGuess()
   q_guess_.push_back(q1_);  // Not a decision variable
   q_guess_.push_back(q2_);  // Not a decision variable
 
-  for (int i = 1; i < (N_ - 2 - 3); i++)
+  for (int i = 1; i < (N_ - 2 - 2); i++)
   {
-    Eigen::Vector3d q_i = q2_ + i * (final_state_.pos - q2_) / (N_ - 2 - 3);
+    Eigen::Vector3d q_i = q2_ + i * (final_state_.pos - q2_) / (N_ - 2 - 2);
     q_guess_.push_back(q_i);
   }
 
-  q_guess_.push_back(final_state_.pos);  // three last cps are the same because of the vel/accel final conditions
-  q_guess_.push_back(final_state_.pos);
-  q_guess_.push_back(final_state_.pos);
-
+  q_guess_.push_back(qNm2_);  // three last cps are the same because of the vel/accel final conditions
+  q_guess_.push_back(qNm1_);
+  q_guess_.push_back(qN_);
+  // Now q_guess_ should have (N_+1) elements
   saturateQ(q_guess_);  // make sure is inside the bounds specified
 
-  std::vector<Eigen::Vector3d> q_guess_with_qNm1N = q_guess_;
-  q_guess_with_qNm1N.push_back(qNm1_);
-  q_guess_with_qNm1N.push_back(qN_);
+  // std::vector<Eigen::Vector3d> q_guess_with_qNm1N = q_guess_;
+  // q_guess_with_qNm1N.push_back(qNm1_);
+  // q_guess_with_qNm1N.push_back(qN_);
   //////////////////////
 
   for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
@@ -1608,10 +1612,10 @@ void SolverNlopt::generateStraightLineGuess()
       {
         Eigen::Matrix<double, 4, 3> Qbs;  // b-spline
         Eigen::Matrix<double, 4, 3> Qmv;  // minvo
-        Qbs.row(0) = q_guess_with_qNm1N[i].transpose();
-        Qbs.row(1) = q_guess_with_qNm1N[i + 1].transpose();
-        Qbs.row(2) = q_guess_with_qNm1N[i + 2].transpose();
-        Qbs.row(3) = q_guess_with_qNm1N[i + 3].transpose();
+        Qbs.row(0) = q_guess_[i].transpose();
+        Qbs.row(1) = q_guess_[i + 1].transpose();
+        Qbs.row(2) = q_guess_[i + 2].transpose();
+        Qbs.row(3) = q_guess_[i + 3].transpose();
 
         transformBSpline2Minvo(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
 
@@ -1623,10 +1627,10 @@ void SolverNlopt::generateStraightLineGuess()
       }
       else
       {
-        last4Cps[0] = q_guess_with_qNm1N[i].transpose();
-        last4Cps[1] = q_guess_with_qNm1N[i + 1].transpose();
-        last4Cps[2] = q_guess_with_qNm1N[i + 2].transpose();
-        last4Cps[3] = q_guess_with_qNm1N[i + 3].transpose();
+        last4Cps[0] = q_guess_[i].transpose();
+        last4Cps[1] = q_guess_[i + 1].transpose();
+        last4Cps[2] = q_guess_[i + 2].transpose();
+        last4Cps[3] = q_guess_[i + 3].transpose();
       }
 
       Eigen::Vector3d n_i;
