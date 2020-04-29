@@ -41,6 +41,8 @@
 #define OCCUPIED_SPACE 1
 #define UNKOWN_AND_OCCUPIED_SPACE 2
 
+geometry_msgs::Pose identityGeometryMsgsPose();
+
 PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& p1, PieceWisePol& p2);
 
 bool boxIntersectsSphere(Eigen::Vector3d center, double r, Eigen::Vector3d c1, Eigen::Vector3d c2);

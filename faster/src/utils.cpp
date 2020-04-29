@@ -326,6 +326,19 @@ void vectorOfVectors2MarkerArray(vec_Vecf<3> traj, visualization_msgs::MarkerArr
   }
 }
 
+geometry_msgs::Pose identityGeometryMsgsPose()
+{
+  geometry_msgs::Pose pose;
+  pose.position.x = 0;
+  pose.position.y = 0;
+  pose.position.z = 0;
+  pose.orientation.x = 0;
+  pose.orientation.y = 0;
+  pose.orientation.z = 0;
+  pose.orientation.w = 1;
+  return pose;
+}
+
 std_msgs::ColorRGBA getColorJet(double v, double vmin, double vmax)
 {
   std_msgs::ColorRGBA c;

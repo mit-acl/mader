@@ -201,6 +201,10 @@ struct parameters
 
   double factor_v_max = 0.6;
 
+  double fov_horiz_deg = 60;  //[deg] angle between two faces of the tetrahedron
+  double fov_vert_deg = 60;   //[deg] angle between two faces of the tetrahedron
+  double fov_depth = 3.0;
+
   /*  double kw;
     double kyaw;
     double kdalpha;

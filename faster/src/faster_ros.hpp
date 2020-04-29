@@ -126,6 +126,8 @@ private:
 
   void publishText();
 
+  void publishFOV();
+
   // std::vector<dynTraj> trajs_;
   state state_;
 
@@ -177,6 +179,8 @@ private:
   ros::Publisher pub_log_;
   ros::Publisher poly_whole_pub_;
   ros::Publisher poly_safe_pub_;
+
+  ros::Publisher pub_fov_;
 
   // ros::Publisher cvx_decomp_poly_uo_pub_;
   ros::Subscriber sub_goal_;

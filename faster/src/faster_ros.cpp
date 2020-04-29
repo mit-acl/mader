@@ -87,6 +87,10 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "res_plot_traj", par_.res_plot_traj);
 
+  safeGetParam(nh_, "fov_horiz_deg", par_.fov_horiz_deg);
+  safeGetParam(nh_, "fov_vert_deg", par_.fov_vert_deg);
+  safeGetParam(nh_, "fov_depth", par_.fov_depth);
+
   // Parameters for the ground robot (jackal):
   /*  safeGetParam(nh_,"kw", par_.kw);
     safeGetParam(nh_,"kyaw", par_.kyaw);
@@ -218,6 +222,8 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   pub_traj_ = nh_.advertise<faster_msgs::DynTraj>("/trajs", 1, true);  // The last parameter is latched or not
   pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
 
+  pub_fov_ = nh_.advertise<visualization_msgs::Marker>("fov", 1);
+
   // Subscribers
   occup_grid_sub_.subscribe(nh_, "occup_grid", 1);
   unknown_grid_sub_.subscribe(nh_, "unknown_grid", 1);
@@ -301,6 +307,75 @@ FasterRos::~FasterRos()
   sub_state_.shutdown();
   pubCBTimer_.stop();
   replanCBTimer_.stop();
+}
+
+void FasterRos::publishFOV()
+{
+  visualization_msgs::Marker marker_fov;
+  marker_fov.header.frame_id = name_drone_;
+  marker_fov.header.stamp = ros::Time::now();
+  marker_fov.ns = "marker_fov";
+  marker_fov.id = 0;
+  marker_fov.type = marker_fov.LINE_LIST;
+  marker_fov.action = marker_fov.ADD;
+  marker_fov.pose = identityGeometryMsgsPose();
+
+  double delta_y = par_.fov_depth / cos((par_.fov_horiz_deg * M_PI / 180) / 2.0);
+  double delta_z = par_.fov_depth / cos((par_.fov_vert_deg * M_PI / 180) / 2.0);
+
+  geometry_msgs::Point v0 = eigen2point(Eigen::Vector3d(0.0, 0.0, 0.0));
+  geometry_msgs::Point v1 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, -delta_z));
+  geometry_msgs::Point v2 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, -delta_z));
+  geometry_msgs::Point v3 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, delta_z));
+  geometry_msgs::Point v4 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, delta_z));
+
+  marker_fov.points.clear();
+
+  // Line
+  marker_fov.points.push_back(v0);
+  marker_fov.points.push_back(v1);
+
+  // Line
+  marker_fov.points.push_back(v0);
+  marker_fov.points.push_back(v2);
+
+  // Line
+  marker_fov.points.push_back(v0);
+  marker_fov.points.push_back(v3);
+
+  // Line
+  marker_fov.points.push_back(v0);
+  marker_fov.points.push_back(v4);
+
+  // Line
+  marker_fov.points.push_back(v1);
+  marker_fov.points.push_back(v2);
+
+  // Line
+  marker_fov.points.push_back(v2);
+  marker_fov.points.push_back(v3);
+
+  // Line
+  marker_fov.points.push_back(v3);
+  marker_fov.points.push_back(v4);
+
+  // Line
+  marker_fov.points.push_back(v4);
+  marker_fov.points.push_back(v1);
+
+  marker_fov.scale.x = 0.1;
+  marker_fov.scale.y = 0.00001;
+  marker_fov.scale.z = 0.00001;
+  marker_fov.color.a = 1.0;  // Don't forget to set the alpha!
+  marker_fov.color.r = 0.0;
+  marker_fov.color.g = 1.0;
+  marker_fov.color.b = 0.0;
+
+  pub_fov_.publish(marker_fov);
+
+  // https://github.com/PickNikRobotics/rviz_visual_tools/blob/80212659be877f221cf23528b4e4887eaf0c08a4/src/rviz_visual_tools.cpp#L957
+
+  return;
 }
 
 void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
@@ -515,6 +590,8 @@ void FasterRos::stateCB(const snapstack_msgs::State& msg)
   {
     pubActualTraj();
   }
+
+  publishFOV();
 }
 
 void FasterRos::modeCB(const faster_msgs::Mode& msg)
