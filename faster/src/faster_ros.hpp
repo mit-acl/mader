@@ -128,6 +128,8 @@ private:
 
   void publishFOV();
 
+  void pubObstacles(faster_types::Edges edges_obstacles);
+
   // std::vector<dynTraj> trajs_;
   state state_;
 
@@ -181,6 +183,7 @@ private:
   ros::Publisher poly_safe_pub_;
 
   ros::Publisher pub_fov_;
+  ros::Publisher pub_obstacles_;
 
   // ros::Publisher cvx_decomp_poly_uo_pub_;
   ros::Subscriber sub_goal_;

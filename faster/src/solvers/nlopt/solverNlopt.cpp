@@ -1469,21 +1469,21 @@ bool SolverNlopt::optimize()
   qndtoX(q_guess_, n_guess_, d_guess_, x_);
 
   // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
-  std::cout << "q_guess_ is\n" << std::endl;
-  printStd(q_guess_);
+  // std::cout << "q_guess_ is\n" << std::endl;
+  // printStd(q_guess_);
 
-  std::cout << "n_guess_ is\n" << std::endl;
-  printStd(n_guess_);
+  // std::cout << "n_guess_ is\n" << std::endl;
+  // printStd(n_guess_);
 
-  std::cout << "d_guess_ is\n" << std::endl;
-  printStd(d_guess_);
+  // std::cout << "d_guess_ is\n" << std::endl;
+  // printStd(d_guess_);
 
-  // toEigen(x_, q_guess_, n_guess_);
+  // // toEigen(x_, q_guess_, n_guess_);
 
-  std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
-  printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
+  // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
+  // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
-  printIndexesConstraints();
+  // printIndexesConstraints();
 
   opt_timer_.Reset();
   std::cout << "[NL] Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;

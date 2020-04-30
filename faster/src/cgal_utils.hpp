@@ -27,3 +27,5 @@ ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convex
 vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves);
 
 CGAL_Polyhedron_3 convexHullOfPoints(const std::vector<Point_3>& points);
+
+faster_types::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls);

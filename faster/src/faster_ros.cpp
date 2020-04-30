@@ -27,10 +27,19 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "N_whole", par_.N_whole);
 
   safeGetParam(nh_, "Ra", par_.Ra);
-  safeGetParam(nh_, "R_consider_agents", par_.R_consider_agents);
-  safeGetParam(nh_, "R_consider_obstacles", par_.R_consider_obstacles);
+
   safeGetParam(nh_, "w_max", par_.w_max);
   safeGetParam(nh_, "alpha_filter_dyaw", par_.alpha_filter_dyaw);
+
+  safeGetParam(nh_, "impose_fov", par_.impose_fov);
+
+  safeGetParam(nh_, "fov_horiz_deg", par_.fov_horiz_deg);
+  safeGetParam(nh_, "fov_vert_deg", par_.fov_vert_deg);
+  safeGetParam(nh_, "fov_depth", par_.fov_depth);
+
+  safeGetParam(nh_, "R_local_map", par_.R_local_map);
+  // safeGetParam(nh_, "R_consider_agents", par_.R_consider_agents);
+  // safeGetParam(nh_, "R_consider_obstacles", par_.R_consider_obstacles);
 
   safeGetParam(nh_, "z_ground", par_.z_ground);
   safeGetParam(nh_, "z_max", par_.z_max);
@@ -86,10 +95,6 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "basis", par_.basis);
 
   safeGetParam(nh_, "res_plot_traj", par_.res_plot_traj);
-
-  safeGetParam(nh_, "fov_horiz_deg", par_.fov_horiz_deg);
-  safeGetParam(nh_, "fov_vert_deg", par_.fov_vert_deg);
-  safeGetParam(nh_, "fov_depth", par_.fov_depth);
 
   // Parameters for the ground robot (jackal):
   /*  safeGetParam(nh_,"kw", par_.kw);
@@ -157,9 +162,27 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
     abort();
   }
 
-  if (par_.R_consider_agents < 2 * par_.Ra)
+  // if (par_.R_consider_agents < 2 * par_.Ra)
+  // {
+  //   std::cout << bold << red << "Needed: par_.R_consider_agents > 2 * par_.Ra" << reset << std::endl;
+  //   abort();
+  // }
+
+  if (par_.impose_fov == true && (par_.R_local_map < par_.fov_depth))
   {
-    std::cout << bold << red << "Needed: par_.R_consider_agents > 2 * par_.Ra" << reset << std::endl;
+    std::cout << bold << red << "Needed: par_.R_local_map >= par_.fov_depth" << reset << std::endl;
+    abort();
+  }
+
+  if (par_.fov_depth < par_.Ra)
+  {
+    std::cout << bold << red << "Needed: par_.fov_depth >= par_.Ra  " << reset << std::endl;
+    abort();
+  }
+
+  if (par_.impose_fov && (par_.R_local_map < par_.fov_depth))
+  {
+    std::cout << bold << red << "Needed: par_.R_local_map >= par_.fov_depth" << reset << std::endl;
     abort();
   }
 
@@ -223,6 +246,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
 
   pub_fov_ = nh_.advertise<visualization_msgs::Marker>("fov", 1);
+  pub_obstacles_ = nh_.advertise<visualization_msgs::Marker>("obstacles", 1);
 
   // Subscribers
   occup_grid_sub_.subscribe(nh_, "occup_grid", 1);
@@ -309,6 +333,43 @@ FasterRos::~FasterRos()
   replanCBTimer_.stop();
 }
 
+void FasterRos::pubObstacles(faster_types::Edges edges_obstacles)
+{
+  if (edges_obstacles.size() == 0)  // there are no obstacles
+  {
+    return;
+  }
+
+  visualization_msgs::Marker marker_obstacles;
+  marker_obstacles.header.frame_id = world_name_;
+  marker_obstacles.header.stamp = ros::Time::now();
+  marker_obstacles.ns = "marker_obstaclestacles";
+  marker_obstacles.id = 0;
+  marker_obstacles.type = marker_obstacles.LINE_LIST;
+  marker_obstacles.action = marker_obstacles.ADD;
+  marker_obstacles.pose = identityGeometryMsgsPose();
+
+  marker_obstacles.points.clear();
+
+  for (auto edge : edges_obstacles)
+  {
+    marker_obstacles.points.push_back(eigen2point(edge.first));
+    marker_obstacles.points.push_back(eigen2point(edge.second));
+  }
+
+  marker_obstacles.scale.x = 0.03;
+  marker_obstacles.scale.y = 0.00001;
+  marker_obstacles.scale.z = 0.00001;
+  marker_obstacles.color.a = 1.0;  // Don't forget to set the alpha!
+  marker_obstacles.color.r = 0.0;
+  marker_obstacles.color.g = 1.0;
+  marker_obstacles.color.b = 0.0;
+
+  pub_obstacles_.publish(marker_obstacles);
+
+  return;
+}
+
 void FasterRos::publishFOV()
 {
   visualization_msgs::Marker marker_fov;
@@ -387,23 +448,25 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 
   Eigen::Vector3d W_pos(msg.pos.x, msg.pos.y, msg.pos.z);  // position in world frame
   double dist = (state_.pos - W_pos).norm();
-  bool near_me = (msg.is_agent == true && (dist < par_.R_consider_agents)) ||
-                 (msg.is_agent == false && (dist < par_.R_consider_obstacles));
-  // std::cout << "dist= " << (state_.pos - pos).norm() << std::endl;
 
-  //  std::cout << "W_T_B_ is = " << W_T_B_.matrix() << std::endl;
+  bool can_use_its_info;
 
-  // std::cout << "The w_position of the obstacle is " << W_pos.transpose() << std::endl;
+  if (par_.impose_fov == false)
+  {  // same as 360 deg of FOV
+    can_use_its_info = dist <= par_.R_local_map;
+  }
+  else
+  {  // impose_fov==true
 
-  Eigen::Vector3d B_pos = W_T_B_.inverse() * W_pos;  // position of the obstacle in body frame
+    Eigen::Vector3d B_pos = W_T_B_.inverse() * W_pos;  // position of the obstacle in body frame
+    // check if it's inside the field of view.
+    can_use_its_info =
+        B_pos.x() < par_.fov_depth &&                                                       //////////////////////
+        fabs(atan2(B_pos.y(), B_pos.x())) < ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0) &&  //////////////////////
+        fabs(atan2(B_pos.z(), B_pos.x())) < ((par_.fov_vert_deg * M_PI / 180.0) / 2.0);     ///////////////////////
 
-  // std::cout << "The B_position of the obstacle is " << B_pos.transpose() << std::endl;
-
-  bool isInFOV =
-      B_pos.x() < par_.fov_depth &&                                                       /////////////////////////////
-      fabs(atan2(B_pos.y(), B_pos.x())) < ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0) &&  /////////////////////////////
-      fabs(atan2(B_pos.z(), B_pos.x())) < ((par_.fov_vert_deg * M_PI / 180.0) / 2.0);     /////////////////////////////
-
+    // std::cout << "inFOV= " << can_use_its_info << std::endl;
+  }
   // std::cout << "B_pos.x() < par_.fov_depth= " << (B_pos.x() < par_.fov_depth) << std::endl;
   // std::cout << "Second= " << (fabs(atan2(B_pos.y(), B_pos.x())) < ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0))
   //           << std::endl;
@@ -417,6 +480,11 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   // std::cout << "Third2 " << ((par_.fov_vert_deg * M_PI / 180.0) / 2.0) << std::endl;
 
   // std::cout << "isInFOV= " << isInFOV << std::endl;
+
+  if (can_use_its_info == false)
+  {
+    return;
+  }
 
   dynTraj tmp;
   tmp.function.push_back(msg.function[0]);
@@ -433,7 +501,7 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 
   tmp.time_received = ros::Time::now().toSec();
 
-  faster_ptr_->updateTrajObstacles(tmp, near_me);
+  faster_ptr_->updateTrajObstacles(tmp);
 }
 
 // This trajectory is published when the agent arrives at A
@@ -462,15 +530,17 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
   {
     vec_Vecf<3> JPS_safe;
     vec_Vecf<3> JPS_whole;
-    vec_E<Polyhedron<3>> poly_safe;
-    vec_E<Polyhedron<3>> poly_whole;
+    /*    vec_E<Polyhedron<3>> poly_safe;
+        vec_E<Polyhedron<3>> poly_whole;*/
+
+    faster_types::Edges edges_obstacles;
     std::vector<state> X_safe;
     std::vector<state> X_whole;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pcloud_jps(new pcl::PointCloud<pcl::PointXYZ>);
     std::vector<Hyperplane3D> planes_guesses;
     PieceWisePol pwp;
 
-    bool replanned = faster_ptr_->replan(JPS_safe, JPS_whole, poly_safe, poly_whole, X_safe, X_whole, pcloud_jps,
+    bool replanned = faster_ptr_->replan(JPS_safe, JPS_whole, edges_obstacles, X_safe, X_whole, pcloud_jps,
                                          planes_guesses, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
 
     if (par_.visual)
@@ -491,8 +561,11 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
       publishJPSPath(JPS_safe, JPS_SAFE);
       publishJPSPath(JPS_whole, JPS_WHOLE);
 
-      publishPoly(poly_safe, SAFE);
-      publishPoly(poly_whole, WHOLE);
+      // publishPoly(poly_safe, SAFE);
+      // publishPoly(poly_whole, WHOLE);
+
+      pubObstacles(edges_obstacles);
+
       pubTraj(X_safe, SAFE_COLORED);
 
       pubTraj(X_whole, WHOLE_COLORED);

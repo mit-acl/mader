@@ -114,11 +114,11 @@ void Faster::dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compil
   traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
 }
 // Note that we need to compile the trajectories inside faster.cpp because t_ is in faster.hpp
-void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
+void Faster::updateTrajObstacles(dynTraj traj)
 {
   MyTimer tmp_t(true);
 
-  if (started_check_ == true && near_me && traj.is_agent == true)
+  if (started_check_ == true && traj.is_agent == true)
   {
     have_received_trajectories_while_checking_ = true;
   }
@@ -127,36 +127,82 @@ void Faster::updateTrajObstacles(dynTraj traj, bool near_me)
 
   std::vector<dynTrajCompiled>::iterator obs_ptr = std::find_if(
       trajs_.begin(), trajs_.end(), [=](const dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
-  bool exists = (obs_ptr != std::end(trajs_));
+
+  bool exists_in_local_map = (obs_ptr != std::end(trajs_));
+
+  dynTrajCompiled traj_compiled;
+  dynTraj2dynTrajCompiled(traj, traj_compiled);
+
+  if (exists_in_local_map)
+  {  // if that object already exists, substitute its trajectory
+    // std::cout << red << "Updating " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
+    //           << reset << std::endl;
+    *obs_ptr = traj_compiled;
+  }
+  else
+  {  // if it doesn't exist, add it to the local map
+    trajs_.push_back(traj_compiled);
+    // std::cout << red << "Adding " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
+    //           << reset << std::endl;
+  }
+
+  // and now let's delete those trajectories of the obs/agents whose current positions are outside the local map
+  // Note that these positions are obtained with the trajectory stored in the past in the local map
+  std::vector<int> ids_to_remove;
+
+  for (int index_traj = 0; index_traj < trajs_.size(); index_traj++)
+  {
+    bool traj_affects_me = false;
+
+    t_ = ros::Time::now().toSec();
+
+    Eigen::Vector3d center_obs;
+    center_obs << trajs_[index_traj].function[0].value(),  ////////////////////
+        trajs_[index_traj].function[1].value(),            ////////////////
+        trajs_[index_traj].function[2].value();            /////////////////
+
+    if ((center_obs - state_.pos).norm() > par_.R_local_map)
+    {
+      ids_to_remove.push_back(trajs_[index_traj].id);
+    }
+  }
+
+  for (auto id : ids_to_remove)
+  {
+    // std::cout << red << "Removing " << id << " at t=" << std::setprecision(12) << traj.time_received;
+
+    trajs_.erase(
+        std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
+        trajs_.end());
+  }
 
   // First let's check if the object is near me:
-  if (near_me)
-  {
-    dynTrajCompiled traj_compiled;
-    dynTraj2dynTrajCompiled(traj, traj_compiled);
+  // if (near_me)
+  // {
+  // }
+  // else  // not near me
+  // {
+  //   int distance =
 
-    if (exists)
-    {  // if that object already exists, substitute its trajectory
-      // std::cout << red << "Updating " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
-      //           << reset << std::endl;
-      *obs_ptr = traj_compiled;
-    }
-    else
-    {  // if it doesn't exist, create it
-      trajs_.push_back(traj_compiled);
-      // std::cout << red << "Adding " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
-      //           << reset << std::endl;
-    }
-  }
-  else  // not near me
-  {
-    if (exists)  // remove if from the list if it exists
-    {
-      trajs_.erase(obs_ptr);
-      // std::cout << red << "Erasing " << (*obs_ptr).id << " at t=" << std::setprecision(12) << traj.time_received
-      //           << reset << std::endl;
-    }
-  }
+  //       if (exists_in_local_map && ((par_.impose_fov == true && in_local_map == false) || (par_.impose_fov ==
+  //       false)))
+  //   {  // remove
+  //     trajs_.erase(obs_ptr);
+  //     std::cout << red << "Erasing " << (*obs_ptr).id << " at t=" << std::setprecision(12) << traj.time_received
+  //               << reset << std::endl;
+  //   }
+  //   else
+  //   {
+  //     // if it doesn't exist, don't do anything
+  //     // don't erase from trajs (but it hasn't been updated \implies it is local map)
+  //   }
+
+  //   // if (exists)  // remove if from the list if it exists
+  //   // {
+  //   //   trajs_.erase(obs_ptr);
+  //   //   std::cout << red << "Erasing " << (*obs_ptr).id << " at t=" << std::setprecision(12) << traj.time_received
+  //   //             << reset << std::endl;
+  //   // }
 
   /// Debugging
   /*  std::cout << "[FA] Ids que tengo:" << std::endl;
@@ -845,11 +891,12 @@ bool Faster::safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimize
   // traj_compiled.time_received = ros::Time::now().toSec();
 }
 
-bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E<Polyhedron<3>>& poly_safe_out,
-                    vec_E<Polyhedron<3>>& poly_whole_out, std::vector<state>& X_safe_out,
-                    std::vector<state>& X_whole_out, pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps,
-                    std::vector<Hyperplane3D>& planes_guesses, int& num_of_LPs_run, int& num_of_QCQPs_run,
-                    PieceWisePol& pwp_out)
+// vec_E<Polyhedron<3>>& poly_safe_out,
+// vec_E<Polyhedron<3>>& poly_whole_out
+bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faster_types::Edges& edges_obstacles_out,
+                    std::vector<state>& X_safe_out, std::vector<state>& X_whole_out,
+                    pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps, std::vector<Hyperplane3D>& planes_guesses,
+                    int& num_of_LPs_run, int& num_of_QCQPs_run, PieceWisePol& pwp_out)
 {
   MyTimer replanCB_t(true);
 
@@ -925,7 +972,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
 
   /////////////////////////////////// DEBUGGING ///////////////////////////////////
   mtx_trajs_.lock();
-  std::cout << bold << blue << "Using these trajectories: " << reset << std::endl;
+  std::cout << bold << blue << "Trajectories in the local map: " << reset << std::endl;
   /*  traj_compiled.id = traj.id;
     trajs_.push_back(traj_compiled);*/
   int tmp_index_traj = 0;
@@ -1222,7 +1269,8 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, vec_E
   // std::cout << "hulls.size()=" << hulls.size() << std::endl;
 
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
-  poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
+  // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
+  edges_obstacles_out = vectorGCALPol2edges(hulls);
 
   // std::cout << cyan << "Convex Hull time = " << convex_hulls_timer << reset << std::endl;
   // std::cout << bold << "hulls has size=" << hulls.size() << reset << std::endl;

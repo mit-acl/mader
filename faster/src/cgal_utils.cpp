@@ -1,5 +1,6 @@
 #include "cgal_utils.hpp"
 #include <CGAL/convex_hull_3.h>
+#include <CGAL/Triangulation_3.h>
 
 struct Plane_equation
 {
@@ -11,6 +12,47 @@ struct Plane_equation
     return Plane(h->vertex()->point(), h->next()->vertex()->point(), h->next()->next()->vertex()->point());
   }
 };
+
+// Convert several polyhedra to a vector that contains all the edges of all these polyhedra
+faster_types::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls)
+{
+  // See example here:
+  // http://cgal-discuss.949826.n4.nabble.com/Take-the-triangles-of-a-polyhedron-td4460275.html
+
+  // Other related questions:
+  // https://doc.cgal.org/5.0/Triangulation_3/Triangulation_3_2for_loop_8cpp-example.html
+  // https://stackoverflow.com/questions/4837179/getting-a-vertex-handle-from-an-edge-iterator
+
+  faster_types::Edges all_edges;
+
+  for (int index_curve = 0; index_curve < convexHulls.size(); index_curve++)
+  {
+    for (int i = 0; i < convexHulls[index_curve].size(); i++)  // for each interval along the curve
+    {
+      CGAL_Polyhedron_3 poly = convexHulls[index_curve][i];
+
+      for (CGAL_Polyhedron_3::Edge_iterator w = poly.edges_begin(); w != poly.edges_end();
+           ++w)  // for all the edges of that polyhedron
+      {
+        std::cout << "First Vertex of the edge" << w->opposite()->vertex()->point() << std::endl;
+        std::cout << "Second Vertex of the edge" << w->vertex()->point() << std::endl;
+
+        Eigen::Vector3d vertex1(w->opposite()->vertex()->point().x(), w->opposite()->vertex()->point().y(),
+                                w->opposite()->vertex()->point().z());
+
+        Eigen::Vector3d vertex2(w->vertex()->point().x(), w->vertex()->point().y(), w->vertex()->point().z());
+
+        std::pair<Eigen::Vector3d, Eigen::Vector3d> edge;
+        edge.first = vertex1;
+        edge.second = vertex2;
+
+        all_edges.push_back(edge);
+      }
+    }
+  }
+
+  return all_edges;
+}
 
 ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls)
 {

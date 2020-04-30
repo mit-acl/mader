@@ -11,6 +11,13 @@ typedef std::vector<Eigen::Vector3d> Polyhedron_Std;
 typedef std::vector<Polyhedron_Std> ConvexHullsOfCurve_Std;
 typedef std::vector<ConvexHullsOfCurve_Std> ConvexHullsOfCurves_Std;
 
+namespace faster_types
+{
+typedef std::pair<Eigen::Vector3d, Eigen::Vector3d> Edge;
+typedef std::vector<Edge> Edges;
+
+}  // namespace faster_types
+
 struct dynTraj
 {
   std::vector<std::string> function;
@@ -136,10 +143,17 @@ struct parameters
   int N_safe;
 
   double Ra;
-  double R_consider_agents;
-  double R_consider_obstacles;
+
   double w_max;
   double alpha_filter_dyaw;
+
+  bool impose_fov = false;
+
+  double fov_horiz_deg = 60;  //[deg] angle between two faces of the tetrahedron
+  double fov_vert_deg = 60;   //[deg] angle between two faces of the tetrahedron
+  double fov_depth = 3.0;
+
+  double R_local_map;
 
   double z_ground;
   double z_max;
@@ -200,10 +214,6 @@ struct parameters
   double res_plot_traj;
 
   double factor_v_max = 0.6;
-
-  double fov_horiz_deg = 60;  //[deg] angle between two faces of the tetrahedron
-  double fov_vert_deg = 60;   //[deg] angle between two faces of the tetrahedron
-  double fov_depth = 3.0;
 
   /*  double kw;
     double kyaw;
