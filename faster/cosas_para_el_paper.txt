@@ -36,6 +36,9 @@ La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
 
 --> Explicar que como allocate el total time en, parte A*, parte NLoptimization
 
+--> Explicar c'omo funciona el local map y las FOV constraints.
+
+--> El video/paper deberia empezar diciendo "FOV constraints + static obs + dyn obtacles + other agents".
 
 
 
@@ -72,6 +75,11 @@ Usar MINVO basis tambien en velocity/acceleration space?
 BUG TODO: cuando uso MINVO, estoy permitiendo que los B-Spline Control points est'en dentro del obstaculo (lo cual est'a bien, los control points de MINVO pueden estar perfectamente fuera)
 	      Sin embargo, cuando en A* me quedo con la soluci'on m'as cerca del goal, si esa soluci'on no tiene longitud m'axima, esto significa que puedo estar cogiendo un control point que est'a dentro del obstaculo. 
 
+--> Crear el separator problem al principio, no todo el rato (en separator.cpp)
+
+--> Por qu'e alguna vez se para justo en un obstaculo. Tolerance is very big??
+
+--> Eliminar todas las dependencias de jps (creo que ya no estoy usando ninguna)
 
 Ahora mismo, cuando genero straight line guess, n y d los calculo con la library "separator". Lo dejo as'i?, o pongo la opci'on de random?
 
@@ -79,4 +87,6 @@ creo que el A* ahora mismo tiene un bias (mirar el plot que sale, siempre tiende
 te mueves para y<0 (por ejempo), la constraint en velocidad [yL yU] tambi'en se mueve en esa direccti'on, y se va a samplear en esa direcci'on m'as. 
 
 --> Si, en el escenario tipo sphere, los de arriba tienen un planning horizon corto, es porque la box del mapa (wdx,wdy,wdz) no es un cubo de lados iguales
+--> Si en el dynamic forest no funciona bien, puede ser porque el radio del dron sea muy grande
+--> El bias en A* search era provocado por la constraint n1+n2+n3 <=3 que ten'ia en separator.cpp
 
