@@ -13,6 +13,8 @@
 
 #include "./../../bspline_utils.hpp"
 
+#include "ros/ros.h"  //Just for debugging, to be able to use ROS_INFO...
+
 // CGAL
 #include <iostream>
 #include <list>
@@ -338,9 +340,12 @@ void SolverNlopt::generateAStarGuess()
     q_guess_ = q;
     n_guess_ = n;
     d_guess_ = d;
+    ROS_INFO_STREAM("[NL] A* succeded");
   }
   else
   {
+    ROS_ERROR_STREAM("[NL] A* failed --> SLine");
+
     std::cout << bold << red << "[NL] A* didn't find a solution, using straight line guess" << reset << std::endl;
   }
 
@@ -1222,18 +1227,18 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
 
   index_const_normals_ = r;
   // Impose that the normals are not [0 0 0]
-  for (int i = 0; i < n.size(); i++)
-  {
-    double min_norm_squared = 1;  // normals should have at least module^2 min_norm_squared
+  // for (int i = 0; i < n.size(); i++)
+  // {
+  //   double min_norm_squared = 1;  // normals should have at least module^2 min_norm_squared
 
-    // std::cout << "n[i]= " << n[i].transpose() << std::endl;
-    constraints[r] = min_norm_squared - n[i].dot(n[i]);  // f<=0
-    if (grad)
-    {
-      toGradSameConstraintDiffVariables(gIndexN(i), -2 * n[i], grad, r, nn);
-    }
-    r++;
-  }
+  //   // std::cout << "n[i]= " << n[i].transpose() << std::endl;
+  //   constraints[r] = min_norm_squared - n[i].dot(n[i]);  // f<=0
+  //   if (grad)
+  //   {
+  //     toGradSameConstraintDiffVariables(gIndexN(i), -2 * n[i], grad, r, nn);
+  //   }
+  //   r++;
+  // }
 
 #ifdef DEBUG_MODE_NLOPT
 
@@ -1367,7 +1372,7 @@ void SolverNlopt::printIndexesConstraints()
   std::cout << "Obstacles: " << index_const_obs_ << "-->" << index_const_vel_ - 1 << std::endl;
   std::cout << "Velocity: " << index_const_vel_ << "-->" << index_const_accel_ - 1 << std::endl;
   std::cout << "Accel: " << index_const_accel_ << "-->" << index_const_normals_ - 1 << std::endl;
-  std::cout << "Normals: >" << index_const_normals_ << std::endl;
+  std::cout << "Normals: " << index_const_normals_ << "-->" << num_of_constraints_ << std::endl;
   std::cout << "_______________________" << std::endl;
 }
 
@@ -1480,10 +1485,10 @@ bool SolverNlopt::optimize()
 
   // // toEigen(x_, q_guess_, n_guess_);
 
-  // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
-  // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
+  std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
+  printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
-  // printIndexesConstraints();
+  printIndexesConstraints();
 
   opt_timer_.Reset();
   std::cout << "[NL] Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
@@ -1511,6 +1516,8 @@ bool SolverNlopt::optimize()
 
   if (failed)
   {
+    ROS_ERROR_STREAM("[NL] Failed, code=" << getResultCode(result));
+
     printf("[NL] nlopt failed or maximum time was reached!\n");
 
     std::cout << on_red << bold << "[NL] Solution not found" << opt_timer_ << reset << std::endl;
@@ -1522,11 +1529,15 @@ bool SolverNlopt::optimize()
   }
   else if (optimal)
   {
+    ROS_INFO_STREAM("[NL] Optimal, code=" << getResultCode(result));
+
     std::cout << on_green << bold << "[NL] Optimal Solution found" << opt_timer_ << reset << std::endl;
     toEigen(x_, q, n, d);
   }
   else if (feasible_but_not_optimal)
   {
+    ROS_INFO_STREAM("[NL] Feasible, code=" << getResultCode(result));
+
     std::cout << on_green << bold << "[NL] Feasible Solution found" << opt_timer_ << reset << std::endl;
     toEigen(x_, q, n, d);  // was best_feasible_sol_so_far_
   }

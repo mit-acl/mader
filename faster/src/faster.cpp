@@ -142,6 +142,7 @@ void Faster::updateTrajObstacles(dynTraj traj)
   else
   {  // if it doesn't exist, add it to the local map
     trajs_.push_back(traj_compiled);
+    ROS_WARN_STREAM("Adding " << traj_compiled.id);
     // std::cout << red << "Adding " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
     //           << reset << std::endl;
   }
@@ -170,6 +171,7 @@ void Faster::updateTrajObstacles(dynTraj traj)
   for (auto id : ids_to_remove)
   {
     // std::cout << red << "Removing " << id << " at t=" << std::setprecision(12) << traj.time_received;
+    ROS_WARN_STREAM("Removing " << id);
 
     trajs_.erase(
         std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
@@ -870,6 +872,8 @@ bool Faster::safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimize
     {
       if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
       {
+        ROS_ERROR_STREAM("Traj collides with " << traj.id);
+
         std::cout << "My traj collides with traj of " << traj.id << ", received at " << std::setprecision(12)
                   << traj.time_received << ", opt at " << time_init_opt << reset << std::endl;
         result = false;  // will have to redo the optimization
@@ -881,6 +885,8 @@ bool Faster::safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimize
   // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
   if (have_received_trajectories_while_checking_ == true)
   {
+    ROS_ERROR_STREAM("Recvd traj while checking ");
+
     std::cout << "Received a trajectory while I was checking" << std::endl;
     result = false;
   }
@@ -966,6 +972,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
     // print_status();
     return false;
   }
+  ROS_INFO_STREAM("_________________________");
 
   std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
   // std::cout << bold << on_white << "******************************************************" << reset << std::endl;
@@ -973,6 +980,8 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   /////////////////////////////////// DEBUGGING ///////////////////////////////////
   mtx_trajs_.lock();
   std::cout << bold << blue << "Trajectories in the local map: " << reset << std::endl;
+
+  std::vector<double> all_ids;
   /*  traj_compiled.id = traj.id;
     trajs_.push_back(traj_compiled);*/
   int tmp_index_traj = 0;
@@ -980,6 +989,9 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   {
     std::cout << traj.id << ", ";
     // double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+
+    all_ids.push_back(traj.id);
+    // all_ids = all_ids + " " + std::to_string(traj.id);
 
     // t_ = time_now;
 
@@ -992,6 +1004,29 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
     // tmp_index_traj = tmp_index_traj + 1;
   }
+
+  sort(all_ids.begin(), all_ids.end());
+
+  if (all_ids.size() >= 1)
+  {
+    std::ostringstream oss;
+
+    if (!all_ids.empty())
+    {
+      // Convert all but the last element to avoid a trailing ","
+      std::copy(all_ids.begin(), all_ids.end() - 1, std::ostream_iterator<double>(oss, ","));
+
+      // Now add the last element with no delimiter
+      oss << all_ids.back();
+    }
+
+    ROS_INFO_STREAM("Trajs used: " << oss.str());
+  }
+  else
+  {
+    ROS_INFO_STREAM("Trajs used: - ");
+  }
+
   std::cout << std::endl;
   mtx_trajs_.unlock();
 
@@ -1346,6 +1381,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
             << std::endl;
 
   std::cout << "[FA] Calling NL" << std::endl;
+
   bool result = snlopt.optimize();
 
   num_of_LPs_run += snlopt.getNumOfLPsRun();

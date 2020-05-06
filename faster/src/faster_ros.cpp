@@ -557,7 +557,7 @@ void FasterRos::publishText()
   jsk_rviz_plugins::OverlayText text;
   text.width = 600;
   text.height = 133;
-  text.left = 10;
+  text.left = 1600;
   text.top = 10;
   text.text_size = 17;
   text.line_width = 2;
