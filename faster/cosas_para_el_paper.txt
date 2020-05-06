@@ -40,6 +40,18 @@ La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
 
 --> El video/paper deberia empezar diciendo "FOV constraints + static obs + dyn obtacles + other agents".
 
+========================
+Opciones:
+--> 
+
+--> 
+========================
+
+=======================
+Params que afectan si se para todo el rato:
+--> radius of the local map (the bigger, the more computationally expensive it is)
+
+=======================
 
 
 Posibles results:
@@ -74,6 +86,8 @@ Usar MINVO basis tambien en velocity/acceleration space?
 
 BUG TODO: cuando uso MINVO, estoy permitiendo que los B-Spline Control points est'en dentro del obstaculo (lo cual est'a bien, los control points de MINVO pueden estar perfectamente fuera)
 	      Sin embargo, cuando en A* me quedo con la soluci'on m'as cerca del goal, si esa soluci'on no tiene longitud m'axima, esto significa que puedo estar cogiendo un control point que est'a dentro del obstaculo. 
+
+--> removeTrajsThatWillNotAffectMe doesn't seem to be working (it leads to collisions at the end of the trajectory in the scenario where multiple agents are on a sphere)
 
 --> Crear el separator problem al principio, no todo el rato (en separator.cpp)
 

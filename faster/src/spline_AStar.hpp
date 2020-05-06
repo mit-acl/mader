@@ -8,6 +8,8 @@
 
 #include "cgal_utils.hpp"
 
+#include <queue>
+
 #include <tuple>
 
 typedef struct Node Node;  // needed to be able to have a pointer inside the struct
@@ -19,6 +21,9 @@ struct Node
   double g = 0;
   double h = 0;
   int index = 2;  // Start with q2_
+  int idx;
+  int idy;
+  int idz;
 };
 
 // Taken from https://wjngkoh.wordpress.com/2015/03/04/c-hash-function-for-eigen-matrix-and-vector/
@@ -39,6 +44,58 @@ struct matrix_hash : std::unary_function<T, size_t>
     return seed;
   }
 };
+
+// https://stackoverflow.com/questions/19467485/how-to-remove-element-not-at-top-from-priority-queue
+// template <typename T>
+
+// template <typename T, typename Sequence = std::vector<T>, typename Compare = std::less<typename
+// Sequence::value_type>>
+
+// here it says that a priority_queue without a list is highly NOT recommended.
+// https://stackoverflow.com/questions/25877436/priority-que-with-a-list-container
+
+// template <typename T, typename Compare = std::less<typename std::list<T>::value_type>>
+
+// class custom_priority_queue
+//   : public std::priority_queue<T, std::list<T>, Compare>  // I need std::list, not std::vector (to be
+//                                                           // able to remove from the iterator). In std::vector, the
+//                                                           // iterators/pointers are invalid once the vector changes
+// {
+// public:
+//   bool remove(const typename std::list<T>::iterator& iterator_to_element)
+//   {
+//     // auto it = std::find(this->c.begin(), this->c.end(), value);
+//     if (iterator_to_element != this->c.end())
+//     {
+//       this->c.erase(iterator_to_element);
+//       std::make_heap(this->c.begin(), this->c.end(), this->comp);
+//       return true;
+//     }
+//     else
+//     {
+//       return false;
+//     }
+//   }
+
+//   // custom_priority_queue(const Compare& comparison_method)
+//   //   : std::priority_queue<T, std::list<T>, Compare>(comparison_method){};
+
+//   typename std::list<T>::iterator pushAndReturnIterator(const T& element)
+//   {
+//     this->c.push_back(element);
+
+//     /// typename std::list<T>::iterator it = (this->c).end();
+//     // std::advance(it, -1);  // iterator to the last element
+
+//     typename std::list<T>::iterator it = std::prev((this->c).end());
+
+//     // typename std::list<T>::iterator tmp = (this->c).end();
+//     // --tmp;  // iterator to the last element
+//     std::make_heap(this->c.begin(), this->c.end(), this->comp);
+
+//     return it;
+//   }
+// };
 
 class SplineAStar
 {
@@ -76,9 +133,21 @@ public:
   int getNumOfLPsRun();
 
   void getBestTrajFound(trajectory& best_traj_found);
+  void getEdgesConvexHulls(faster_types::Edges& edges_convex_hulls);
 
   int B_SPLINE = 1;  // B-Spline Basis
   int MINVO = 2;     // Minimum volume basis
+
+  struct CompareCost
+  {
+    double bias;
+    bool operator()(const Node& left, const Node& right)
+    {
+      return (left.g + bias * left.h) > (right.g + bias * right.h);
+    }
+  };
+
+  bool collidesWithObstacles(std::vector<Eigen::Vector3d>& last4Cps, int index_lastCP);
 
 protected:
 private:
@@ -91,7 +160,7 @@ private:
                                        double& constraint_yU, double& constraint_zL, double& constraint_zU);
 
   void plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, Node* result_ptr);
-  void expand(Node& current, std::vector<Node>& neighbors);
+  void expandAndAddToQueue(Node& current);
   void printPath(Node& node1);
   double h(Node& node);
   double g(Node& node);
@@ -99,6 +168,9 @@ private:
 
   bool checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n,
                           std::vector<double>& d);
+
+  // bias should be >=1.0
+  double bias_;  // page 34 of https://www.cs.cmu.edu/~motionplanning/lecture/Asearch_v8.pdf
 
   int basis_ = B_SPLINE;
 
@@ -149,9 +221,6 @@ private:
   double goal_size_ = 0.5;    //[m]
   double max_runtime_ = 0.5;  //[s]
 
-  // bias should be >=1.0
-  double bias_ = 1.0;  // page 34 of https://www.cs.cmu.edu/~motionplanning/lecture/Asearch_v8.pdf
-
   std::vector<Eigen::MatrixXd> Ainverses_;
 
   double time_solving_lps_ = 0.0;
@@ -159,11 +228,7 @@ private:
 
   double voxel_size_;
 
-  std::vector<Node> expanded_nodes_;
-
   // std::vector<std::vector<std::vector<bool>>> matrixExpandedNodes_;
-
-  std::unordered_map<Eigen::Vector3i, double, matrix_hash<Eigen::Vector3i>> mapExpandedNodes_;
 
   double bbox_x_;
   double bbox_y_;
@@ -185,6 +250,28 @@ private:
   int num_pol_;
 
   std::vector<Eigen::Vector3d> result_;
+
+  std::vector<Node> expanded_nodes_;
+
+  // std::unordered_map<Eigen::Vector3i, std::list<Node>::iterator, matrix_hash<Eigen::Vector3i>> map_open_list_;
+  std::unordered_map<Eigen::Vector3i, bool, matrix_hash<Eigen::Vector3i>> map_open_list_;
+
+  // OPTION 1 (Doesn't work)
+  // typedef std::multiset<Node, CompareCost> my_list;
+  // typedef std::multiset<Node, CompareCost>::iterator my_list_iterator;
+  // my_list openList_;  //= OpenSet, = Q
+  // my_list_iterator openList_it_;
+  //
+
+  // Option 2 (doesn't work)
+  std::priority_queue<Node, std::vector<Node>, CompareCost> openList_;  //= OpenSet, = Q
+
+  // Option 3
+  // custom_priority_queue<Node, CompareCost> openList_;
+
+  // auto cmp = [&](Node& left, Node& right) {
+  //   return (left.g + this->bias_ * left.h) > (right.g + this->bias_ * right.h);
+  // };
 
   // bool matrixExpandedNodes_[40][40][40];
 };

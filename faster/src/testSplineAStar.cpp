@@ -46,26 +46,28 @@ int main(int argc, char **argv)
 
   ros::Publisher jps_poly_pub = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_jps", 1, true);
 
+  ros::Publisher convex_hulls_pub = nh.advertise<visualization_msgs::Marker>("convex_hulls", 1, true);
+
   std::string basis;
 
   nh.getParam("basis", basis);
 
   std::cout << "Basis= " << basis << std::endl;
 
-  int num_pol = 15;
+  int num_pol = 7;
   int deg_pol = 3;
 
-  int samples_x = 11;  // odd number
-  int samples_y = 11;  // odd number
-  int samples_z = 11;  // odd number
+  int samples_x = 7;  // odd number
+  int samples_y = 7;  // odd number
+  int samples_z = 7;  // odd number
 
-  double fraction_voxel_size = 0.0;  // grid used to prune nodes that are on the same cell
+  double fraction_voxel_size = 0.5;  // grid used to prune nodes that are on the same cell
 
-  double runtime = 5.0;     //[seconds]
+  double runtime = 1.0;     //[seconds]
   double goal_size = 0.01;  //[meters]
 
   Eigen::Vector3d v_max(7.0, 7.0, 7.0);
-  Eigen::Vector3d a_max(40.0, 40.0, 40.0);
+  Eigen::Vector3d a_max(400000.0, 4000000.0, 4000000.0);
 
   Eigen::Vector3d q0(-1.5, 0, 0);
   Eigen::Vector3d q1 = q0;
@@ -73,7 +75,7 @@ int main(int argc, char **argv)
   Eigen::Vector3d goal(2.0, 0, 0);
 
   double t_min = 0.0;
-  double t_max = t_min + (goal - q0).norm() / (0.3 * v_max(0));
+  double t_max = t_min + (goal - q0).norm() / (0.6 * v_max(0));
 
   ConvexHullsOfCurves hulls_curves;
 
@@ -81,7 +83,7 @@ int main(int argc, char **argv)
   double bbox_y = 1.0;
   double bbox_z = 6.0;
 
-  int num_of_obs = 5;  // odd number
+  int num_of_obs = 1;  // odd number
   double separation = 0.4;
 
   int num_of_obs_up = (num_of_obs - 1) / 2.0;
@@ -182,6 +184,11 @@ int main(int argc, char **argv)
   marker_array_best_traj =
       trajectory2ColoredMarkerArray(best_traj_found, type, v_max.maxCoeff(), increm, "traj" + std::to_string(j), scale);
 
+  // Get the edges of the convex hulls and publish them
+  faster_types::Edges edges_convex_hulls;
+  myAStarSolver.getEdgesConvexHulls(edges_convex_hulls);
+  convex_hulls_pub.publish(edges2Marker(edges_convex_hulls, color(RED_NORMAL)));
+
   // publish the trajectories
   trajectories_found_pub.publish(marker_array_all_trajs);
   best_trajectory_found_pub.publish(marker_array_best_traj);
@@ -199,30 +206,30 @@ int main(int argc, char **argv)
         traj_committed_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_);
     pub_traj_committed_colored_.publish(traj_committed_colored_);*/
 
-  if (solved == true)
-  {
-    std::cout << "This is the result" << std::endl;
-    for (auto qi : q)
-    {
-      std::cout << qi.transpose() << std::endl;
-    }
-  }
-  else
-  {
-    std::cout << "A* didn't find a solution" << std::endl;
-  }
+  // if (solved == true)
+  // {
+  //   std::cout << "This is the result" << std::endl;
+  //   for (auto qi : q)
+  //   {
+  //     std::cout << qi.transpose() << std::endl;
+  //   }
+  // }
+  // else
+  // {
+  //   std::cout << "A* didn't find a solution" << std::endl;
+  // }
 
-  std::cout << "Normal Vectors: " << std::endl;
-  for (auto ni : n)
-  {
-    std::cout << ni.transpose() << std::endl;
-  }
+  // std::cout << "Normal Vectors: " << std::endl;
+  // for (auto ni : n)
+  // {
+  //   std::cout << ni.transpose() << std::endl;
+  // }
 
-  std::cout << "D coefficients: " << std::endl;
-  for (auto di : d)
-  {
-    std::cout << di << std::endl;
-  }
+  // std::cout << "D coefficients: " << std::endl;
+  // for (auto di : d)
+  // {
+  //   std::cout << di << std::endl;
+  // }
 
   ros::spin();
 

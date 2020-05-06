@@ -34,8 +34,8 @@ faster_types::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls)
       for (CGAL_Polyhedron_3::Edge_iterator w = poly.edges_begin(); w != poly.edges_end();
            ++w)  // for all the edges of that polyhedron
       {
-        std::cout << "First Vertex of the edge" << w->opposite()->vertex()->point() << std::endl;
-        std::cout << "Second Vertex of the edge" << w->vertex()->point() << std::endl;
+        // std::cout << "First Vertex of the edge" << w->opposite()->vertex()->point() << std::endl;
+        // std::cout << "Second Vertex of the edge" << w->vertex()->point() << std::endl;
 
         Eigen::Vector3d vertex1(w->opposite()->vertex()->point().x(), w->opposite()->vertex()->point().y(),
                                 w->opposite()->vertex()->point().z());

@@ -1,7 +1,6 @@
 #include "spline_AStar.hpp"
 #include "bspline_utils.hpp"
 
-#include <queue>
 #include <vector>
 
 #include "timer.hpp"
@@ -11,7 +10,11 @@ using namespace termcolor;
 #define WITHOUT_NUMPY  // for matplotlibcpp   TODO(move from here!)
 #include "matplotlibcpp.h"
 
+#include <boost/bind.hpp>
+
 #include <random>
+
+#include "ros/ros.h"  //Just for debugging, to be able to use ROS_INFO...
 
 typedef JPS::Timer MyTimer;
 
@@ -95,6 +98,48 @@ void SplineAStar::getBestTrajFound(trajectory& best_traj_found)
   CPs2TrajAndPwp(result_, best_traj_found, pwp, N_, p_, num_pol_, knots_, 0.1);  // Last number is the resolution
 }
 
+void SplineAStar::getEdgesConvexHulls(faster_types::Edges& edges_convex_hulls)
+{
+  for (int i = 3; i < result_.size(); i++)
+  {
+    std::vector<Eigen::Vector3d> last4Cps(4);
+    last4Cps[0] = result_[i - 3];
+    last4Cps[1] = result_[i - 2];
+    last4Cps[2] = result_[i - 1];
+    last4Cps[3] = result_[i];
+    // std::cout << "[BSpline] Plotting these last4Cps" << std::endl;
+    // std::cout << last4Cps[0].transpose() << std::endl;
+    // std::cout << last4Cps[1].transpose() << std::endl;
+    // std::cout << last4Cps[2].transpose() << std::endl;
+    // std::cout << last4Cps[3].transpose() << std::endl;
+    if (basis_ == MINVO)  // Plot the control points using the MINVO basis
+    {
+      transformBSpline2Minvo(last4Cps);
+    }
+    // std::cout << last4Cps[0].transpose() << std::endl;
+    // std::cout << last4Cps[1].transpose() << std::endl;
+    // std::cout << last4Cps[2].transpose() << std::endl;
+    // std::cout << last4Cps[3].transpose() << std::endl;
+    for (int j = 0; j < 4; j++)
+    {  // For every point in the convex hull
+      faster_types::Edge edge;
+      edge.first = last4Cps[j];
+      for (int i = 0; i < 4; i++)
+      {  // generate an edge from that point j to the other points i!=j
+        if (i == j)
+        {
+          continue;
+        }
+        else
+        {
+          edge.second = last4Cps[i];
+          edges_convex_hulls.push_back(edge);
+        }
+      }
+    }
+  }
+}
+
 void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
 {
   all_trajs_found.clear();
@@ -120,7 +165,7 @@ void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
 
     trajectory traj;
     PieceWisePol pwp;
-    CPs2TrajAndPwp(cps, traj, pwp, N_, p_, num_pol_, knots_, 0.1);  // Last number is the resolution
+    CPs2TrajAndPwp(cps, traj, pwp, N_, p_, num_pol_, knots_, 0.01);  // Last number is the resolution
 
     all_trajs_found.push_back(traj);
   }
@@ -190,6 +235,7 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
     {
       for (int jz : indexes_samples_z_)
       {
+        // std::cout << "Pushing combination " << jx << ", " << jy << ", " << jz << std::endl;
         all_combinations_.push_back(std::tuple<int, int, int>(jx, jy, jz));
       }
     }
@@ -240,9 +286,8 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
 
   voxel_size_ = min_voxel_size + fraction_voxel_size * (max_voxel_size - min_voxel_size);
 
-  // std::cout << red << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", " <<
-  // max_voxel_size
-  //           << ")" << reset << std::endl;
+  std::cout << red << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", " << max_voxel_size
+            << ")" << reset << std::endl;
 
   // Make sure voxel_size_<= (min_voxel_size + max_voxel_size) / 2.0  (if not, very few nodes are expanded)
   // voxel_size_ = (min_voxel_size + max_voxel_size) / 2.0;
@@ -393,260 +438,6 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
 
     std::cout << "constraint_zL= " << constraint_zL << std::endl;
     std::cout << "constraint_zU= " << constraint_zU << std::endl;*/
-}
-
-void SplineAStar::expand(Node& current, std::vector<Node>& neighbors)
-{
-  MyTimer timer_expand(true);
-
-  neighbors.clear();
-
-  if (current.index == (N_ - 2))
-  {
-    // std::cout << "can't expand more in this direction" << std::endl;  // can't expand more
-    return;  // neighbors = empty vector
-  }
-
-  // first expansion satisfying vmax and amax
-  std::vector<Node> neighbors_va;
-
-  int i = current.index;
-
-  Eigen::Vector3d qiM1;
-
-  if (current.index == 2)
-  {
-    qiM1 = q1_;
-  }
-  else
-  {
-    qiM1 = current.previous->qi;
-  }
-
-  double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
-
-  computeUpperAndLowerConstraints(i, qiM1, current.qi, constraint_xL, constraint_xU, constraint_yL, constraint_yU,
-                                  constraint_zL, constraint_zU);
-
-  //////////////////////////////
-
-  // stuff used in the loop (here to reduce time)
-  Eigen::Vector3d vi;
-  Node neighbor;
-  // Eigen::Vector3d aiM1;
-  unsigned int ix, iy, iz;
-
-  int jx, jy, jz;
-
-  double delta_x = ((constraint_xU - constraint_xL) / (num_samples_x_ - 1));
-  double delta_y = ((constraint_yU - constraint_yL) / (num_samples_y_ - 1));
-  double delta_z = ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));
-
-  // std::cout << "constraint_xU= " << constraint_xU << std::endl;
-  // std::cout << "constraint_xL= " << constraint_xL << std::endl;
-  // std::cout << "delta_x= " << delta_x << std::endl;
-
-  for (auto comb : all_combinations_)
-  {
-    jx = std::get<0>(comb);
-    jy = std::get<1>(comb);
-    jz = std::get<2>(comb);
-
-    // std::cout << "using " << jx << ", " << jy << ", " << jz << std::endl;
-
-    /*  for (int jx : indexes_samples_x_)
-      {
-        for (int jy : indexes_samples_y_)
-        {
-          for (int jz : indexes_samples_z_)
-          {*/
-    // sample a velocity
-    vi << constraint_xL + jx * delta_x,  // ((constraint_xU - constraint_xL) / (num_samples_x_ - 1)),  /////////
-        constraint_yL + jy * delta_y,    //((constraint_yU - constraint_yL) / (num_samples_y_ - 1)),    /////////
-        constraint_zL + jz * delta_z;    // ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));    /////////
-
-    // std::cout << "Velocity sampled is" << vi.transpose() << std::endl;
-
-    /*       std::cout << "constraint_zL=" << constraint_zL << std::endl;
-         std::cout << "constraint_zU=" << constraint_zU << std::endl;*/
-
-    neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
-
-    neighbor.g = current.g + weightEdge(current, neighbor);
-    neighbor.h = h(neighbor);
-
-    ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
-    iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
-    iz = round((neighbor.qi.z() - orig_.z()) / voxel_size_);
-
-    auto ptr_to_voxel = mapExpandedNodes_.find(Eigen::Vector3i(ix, iy, iz));
-
-    bool already_exist = (ptr_to_voxel != mapExpandedNodes_.end());
-    bool already_exists_with_lower_cost = false;
-
-    if (already_exist)
-    {
-      // std::cout << "(*ptr_to_voxel).second" << (*ptr_to_voxel).second << std::endl;
-      // std::cout << "(current.index + 1)" << (current.index + 1) << std::endl;
-      already_exists_with_lower_cost = ((*ptr_to_voxel).second < (neighbor.g + bias_ * neighbor.h));
-    }
-
-    if ((vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||             // Not wanna use v=[0,0,0]
-        (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_) ||  /// Outside the limits
-        (ix >= bbox_x_ / voxel_size_ ||                            // Out. the search box
-         iy >= bbox_y_ / voxel_size_ ||                            // Out. the search box
-         iz >= bbox_z_ / voxel_size_) ||                           // Out. the search box
-        already_exists_with_lower_cost)                            // Element already exists in the search box
-
-    {
-      continue;
-    }
-    else
-    {  // element does not exist
-
-      neighbor.index = current.index + 1;
-      neighbor.previous = &current;
-      neighbors_va.push_back(neighbor);
-
-      mapExpandedNodes_[Eigen::Vector3i(ix, iy, iz)] = neighbor.g + bias_ * neighbor.h;
-    }
-    // }
-    // }
-    // }
-  }
-
-  // And now select the ones that satisfy the LP with all the obstacles
-
-  std::vector<Eigen::Vector3d> last4Cps(4);
-
-  if (current.index == 2)
-  {
-    last4Cps[0] = q0_;
-    last4Cps[1] = q1_;
-    last4Cps[2] = current.qi;
-  }
-  else if (current.index == 3)
-  {
-    last4Cps[0] = q1_;
-    last4Cps[1] = current.previous->qi;
-    last4Cps[2] = current.qi;
-  }
-  else
-  {
-    last4Cps[0] = current.previous->previous->qi;
-    last4Cps[1] = current.previous->qi;
-    last4Cps[2] = current.qi;
-  }
-
-  for (auto neighbor_va : neighbors_va)
-  {
-    last4Cps[3] = neighbor_va.qi;
-
-    /*    std::cout << "====================================================================" << std::endl;
-
-        std::cout << "[BSpline] last4Cps = " << std::endl;
-        std::cout << last4Cps[0].transpose() << std::endl;
-        std::cout << last4Cps[1].transpose() << std::endl;
-        std::cout << last4Cps[2].transpose() << std::endl;
-        std::cout << last4Cps[3].transpose() << std::endl;*/
-
-    if (basis_ == MINVO)
-    {
-      transformBSpline2Minvo(last4Cps);
-      // now last4CPs are in MINVO BASIS
-    }
-
-    /*    std::cout << "[basis_chosen] last4Cps = " << std::endl;
-        std::cout << last4Cps[0].transpose() << std::endl;
-        std::cout << last4Cps[1].transpose() << std::endl;
-        std::cout << last4Cps[2].transpose() << std::endl;
-        std::cout << last4Cps[3].transpose() << std::endl;*/
-    /*
-        /////////////////////QUITAR///////////////////////
-        if (basis_ == MINVO)
-        {
-          transformMinvo2BSpline(last4Cps);
-          // now last4CPs are in MINVO BASIS
-        }
-
-        std::cout << "[BSpline] last4Cps = " << std::endl;
-        std::cout << last4Cps[0].transpose() << std::endl;
-        std::cout << last4Cps[1].transpose() << std::endl;
-        std::cout << last4Cps[2].transpose() << std::endl;
-        std::cout << last4Cps[3].transpose() << std::endl;
-        ///////////////////////////////////////////////*/
-
-    bool satisfies_LP = true;
-    // std::cout << "num_of_obst_=" << num_of_obst_ << std::endl;
-    for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
-    {
-      Eigen::Vector3d n_i;
-      double d_i;
-
-      MyTimer timer_lp(true);
-
-      /*      if (basis_ == MINVO)
-            {
-              transformBSpline2Minvo(last4Cps);
-              // now last4CPs are in MINVO BASIS
-            }*/
-
-      satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][current.index + 1 - 3], last4Cps);
-      // transformMinvo2BSpline(last4Cps);
-
-      /*      if (basis_ == MINVO)
-            {
-              transformMinvo2BSpline(last4Cps);
-              // now last4CPs are in MINVO BASIS
-            }*/
-
-      /*
-            std::cout << "last4Cps AFTER = " << std::endl;
-            std::cout << last4Cps[0].transpose() << std::endl;
-            std::cout << last4Cps[1].transpose() << std::endl;
-            std::cout << last4Cps[2].transpose() << std::endl;
-            std::cout << last4Cps[3].transpose() << std::endl;
-
-            std::cout << "\nThis statisfies the LP: " << std::endl;
-            std::cout << last4Cps[0].transpose() << std::endl;
-            std::cout << last4Cps[1].transpose() << std::endl;
-            std::cout << last4Cps[2].transpose() << std::endl;
-            std::cout << last4Cps[3].transpose() << std::endl;*/
-
-      num_of_LPs_run_++;
-      time_solving_lps_ += timer_lp.ElapsedMs();
-
-      if (satisfies_LP == false)
-      {
-        // std::cout << "[BSpline]" << neighbor_va.qi.transpose() << " does not satisfy constraints" << std::endl;
-        break;
-      }
-
-      /*      std::cout << "Check for this obstacle (" << obst_index << ") is true" << std::endl;
-            std::cout << hulls_[obst_index][current.index + 1 - 3][0].transpose() << std::endl;
-            std::cout << hulls_[obst_index][current.index + 1 - 3][1].transpose() << std::endl;
-            std::cout << hulls_[obst_index][current.index + 1 - 3][2].transpose() << std::endl;
-            std::cout << hulls_[obst_index][current.index + 1 - 3][3].transpose() << std::endl;
-            std::cout << hulls_[obst_index][current.index + 1 - 3][4].transpose() << std::endl;
-            std::cout << hulls_[obst_index][current.index + 1 - 3][5].transpose() << std::endl;
-            std::cout << hulls_[obst_index][current.index + 1 - 3][6].transpose() << std::endl;
-            std::cout << hulls_[obst_index][current.index + 1 - 3][7].transpose() << std::endl;*/
-    }
-
-    if (basis_ == MINVO)
-    {
-      transformMinvo2BSpline(last4Cps);
-      // now last4CPs are in BSpline Basis (needed for the next iteration)
-    }
-
-    if (satisfies_LP == true)  // this is true also when num_of_obst_=0;
-    {
-      // std::cout << neighbor_va.qi.transpose() << "Satisfies the LP!" << std::endl;
-      neighbors.push_back(neighbor_va);
-    }
-  }
-
-  time_expanding_ += timer_expand.ElapsedMs();
 }
 
 void SplineAStar::computeInverses()
@@ -1055,16 +846,287 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
   return true;
 }
 
+void SplineAStar::expandAndAddToQueue(Node& current)
+{
+  // std::cout << bold << "openList_ size " << openList_.size() << reset << std::endl;
+
+  // MyTimer timer_expand(true);
+
+  if (current.index == (N_ - 2))
+  {
+    // std::cout << "can't expand more in this direction" << std::endl;  // can't expand more
+    return;  // neighbors = empty vector
+  }
+
+  int i = current.index;
+
+  Eigen::Vector3d qiM1;
+
+  if (current.index == 2)
+  {
+    qiM1 = q1_;
+  }
+  else
+  {
+    qiM1 = current.previous->qi;
+  }
+
+  double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
+
+  computeUpperAndLowerConstraints(i, qiM1, current.qi, constraint_xL, constraint_xU, constraint_yL, constraint_yU,
+                                  constraint_zL, constraint_zU);
+
+  //////////////////////////////
+
+  std::vector<Eigen::Vector3d> last4Cps(4);
+
+  if (current.index == 2)
+  {
+    last4Cps[0] = q0_;
+    last4Cps[1] = q1_;
+    last4Cps[2] = current.qi;
+  }
+  else if (current.index == 3)
+  {
+    last4Cps[0] = q1_;
+    last4Cps[1] = current.previous->qi;
+    last4Cps[2] = current.qi;
+  }
+  else
+  {
+    last4Cps[0] = current.previous->previous->qi;
+    last4Cps[1] = current.previous->qi;
+    last4Cps[2] = current.qi;
+  }
+
+  // stuff used in the loop (here to reduce time)
+  Eigen::Vector3d vi;
+  Node neighbor;
+  // Eigen::Vector3d aiM1;
+  unsigned int ix, iy, iz;
+
+  int jx, jy, jz;
+
+  double delta_x = ((constraint_xU - constraint_xL) / (num_samples_x_ - 1));
+  double delta_y = ((constraint_yU - constraint_yL) / (num_samples_y_ - 1));
+  double delta_z = ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));
+
+  // std::cout << "constraint_xU= " << constraint_xU << std::endl;
+  // std::cout << "constraint_xL= " << constraint_xL << std::endl;
+  // std::cout << "delta_x= " << delta_x << std::endl;
+  // std::cout << "_____________________________________________" << std::endl;
+  // std::cout << "_____________________________________________" << std::endl;
+  // std::cout << "_____________________________________________" << std::endl;
+  // std::cout << "The neighbors of " << current.qi.transpose() << " are " << std::endl;
+
+  for (auto comb : all_combinations_)
+  {
+    jx = std::get<0>(comb);
+    jy = std::get<1>(comb);
+    jz = std::get<2>(comb);
+
+    vi << constraint_xL + jx * delta_x,  // ((constraint_xU - constraint_xL) / (num_samples_x_ - 1)),  /////////
+        constraint_yL + jy * delta_y,    //((constraint_yU - constraint_yL) / (num_samples_y_ - 1)),    /////////
+        constraint_zL + jz * delta_z;    // ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));    /////////
+
+    neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
+
+    // std::cout << " neighbor.qi =" << neighbor.qi.transpose() << std::endl;
+
+    // std::cout << "orig_ = " << orig_.transpose() << std::endl;
+    // std::cout << "voxel_size_ = " << voxel_size_ << std::endl;
+
+    ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
+    iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
+    iz = round((neighbor.qi.z() - orig_.z()) / voxel_size_);
+
+    auto ptr_to_voxel = map_open_list_.find(Eigen::Vector3i(ix, iy, iz));
+
+    // std::cout << bold << red << "map_open_list_ contains " << reset << std::endl;
+    // for (auto tmp : map_open_list_)
+    // {
+    //   std::cout << red << (*(tmp.second)).qi.transpose() << reset << std::endl;
+    // }
+
+    // std::cout << bold << "openList_ contains " << reset << std::endl;
+    // for (auto tmp : openList_)
+    // {
+    //   std::cout << tmp.qi.transpose() << std::endl;
+    // }
+
+    // std::cout << bold << "openList_ contains " << reset << std::endl;
+    // for (auto tmp : expanded_nodes_)
+    // {
+    //   std::cout << tmp.qi.transpose() << std::endl;
+    // }
+
+    bool already_exist = (ptr_to_voxel != map_open_list_.end());
+    // bool already_exists_with_lower_cost = false;
+
+    if (already_exist ||                                           // Element already exists in the search box
+        (vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||             // Not wanna use v=[0,0,0]
+        (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_) ||  /// Outside the limits
+        (ix >= bbox_x_ / voxel_size_ ||                            // Out. the search box
+         iy >= bbox_y_ / voxel_size_ ||                            // Out. the search box
+         iz >= bbox_z_ / voxel_size_)                              // Out. the search box
+    )
+
+    {
+      // std::cout << "already_exist" << std::endl;
+      continue;
+      // auto ptr_to_node = (*ptr_to_voxel).second;
+      // auto node_tmp = (*ptr_to_node);
+      // already_exists_with_lower_cost = (node_tmp.g + bias_ * (node_tmp.h)) < (neighbor.g + bias_ * neighbor.h);
+    }
+
+    // if (already_exists_with_lower_cost == true)
+    // {
+    //   std::cout << "already_exists_with_lower_cost" << std::endl;
+
+    //   continue;
+    // }
+
+    // if (already_exist == false)
+    // {
+    //   std::cout << red << neighbor.qi.transpose() << " does NOT exist" << reset << std::endl;
+    // }
+
+    neighbor.g = current.g + weightEdge(current, neighbor);
+    neighbor.h = h(neighbor);
+
+    neighbor.index = current.index + 1;
+    neighbor.previous = &current;
+
+    //////////////////////////////////// // Now let's check if it satisfies the LPs
+    last4Cps[3] = neighbor.qi;
+
+    ////////////////////////////////////
+
+    if (collidesWithObstacles(last4Cps, neighbor.index) == true)
+    {
+      continue;
+    }
+    else
+    {
+      // std::cout << "New point at " << ix << ", " << iy << ", " << iz << std::endl;
+      // std::cout << neighbor.qi.transpose() << std::endl;
+
+      openList_.push(neighbor);
+      map_open_list_[Eigen::Vector3i(ix, iy, iz)] = true;
+
+      expanded_nodes_.push_back(neighbor);
+
+      // std::cout << "size openList= " << openList_.size() << std::endl;
+      // if (already_exist)
+      // {
+      // deleteFromOpenListtheOldOne
+      // auto it = std::find_if(openList_.begin(), openList_.end(), boost::bind(&Node::index, _1) == neighbor.index);
+      //   std::cout << "trying to erase from openList_" << (*((*ptr_to_voxel).second)).qi.transpose() << std::endl;
+
+      // Option 1
+      // openList_.erase((*ptr_to_voxel).second);
+
+      // Option 3
+      // openList_.remove((*ptr_to_voxel).second);
+
+      // and now set the direction in the map to Null:
+      //(*ptr_to_voxel).second = nullptr;
+      // I should not use more times this pointer. But have to leave it here because it needs to keep "existing" so
+      // that I don't expand again that same voxel
+
+      //   std::cout << "erased" << std::endl;
+      // }
+
+      // typedef std::set<Node, CompareCost> my_list;
+      // typedef std::set<Node, CompareCost>::iterator my_list_iterator;
+
+      // std::cout << "other" << std::endl;
+
+      // std::pair<my_list_iterator, bool> ret;
+      // std::cout << "inserting to openList_" << neighbor.qi.transpose() << std::endl;
+
+      // Option 1
+      // ret = openList_.insert(neighbor);
+      // if (!ret.second)
+      // {
+      //   std::cout << "no insertion!\n";
+      // }
+      // map_open_list_[Eigen::Vector3i(ix, iy, iz)] = ret.first;  // Keep an iterator to neighbor
+
+      // Option 3
+      // auto iterator_tmp = openList_.pushAndReturnIterator(neighbor);
+      // map_open_list_[Eigen::Vector3i(ix, iy, iz)] = iterator_tmp;  // Keep an iterator to neighbor
+
+      // std::cout << red << "inserting to map_open_list_" << neighbor.qi.transpose() << reset << std::endl;
+      // std::cout << "other_done" << std::endl;
+    }
+
+    ////////////////////////////////////
+  }
+
+  // time_expanding_ += timer_expand.ElapsedMs();
+
+  // std::cout << "End of expand Function" << std::endl;
+}
+
+bool SplineAStar::collidesWithObstacles(std::vector<Eigen::Vector3d>& last4Cps, int index_lastCP)
+{
+  if (basis_ == MINVO)
+  {
+    transformBSpline2Minvo(last4Cps);  // now last4Cps are in MINVO BASIS
+  }
+
+  bool satisfies_LP = true;
+
+  for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+  {
+    Eigen::Vector3d n_i;
+    double d_i;
+
+    satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][index_lastCP - 3], last4Cps);
+
+    num_of_LPs_run_++;
+
+    if (satisfies_LP == false)
+    {
+      // std::cout << " (NO, LP)" << std::endl;
+
+      break;
+    }
+  }
+
+  if (basis_ == MINVO)
+  {
+    transformMinvo2BSpline(last4Cps);
+    // now last4Cps are in BSpline Basis (needed for the next iteration)
+  }
+
+  return (!satisfies_LP);
+}
+
 bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d)
 {
+  // Option 1
+  CompareCost comparer;
+  comparer.bias = bias_;
+  // typedef std::set<Node, CompareCost> my_list;
+  // typedef std::set<Node, CompareCost>::iterator my_list_iterator;
+  // my_list openList_tmp(comparer);
+
+  // Option 2
+  std::priority_queue<Node, std::vector<Node>, CompareCost> openList_tmp(comparer);
+  openList_ = openList_tmp;
+
+  // Option 3
+  // custom_priority_queue<Node, CompareCost> openList_tmp;
+  // openList_ = openList_tmp;
+
+  std::cout << "[A*] Running..." << std::endl;
+
   expanded_nodes_.clear();
 
   MyTimer timer_astar(true);
   // std::cout << "this->bias_ =" << this->bias_ << std::endl;
-  auto cmp = [&](Node& left, Node& right) {
-    return (left.g + this->bias_ * left.h) > (right.g + this->bias_ * right.h);
-  };
-  std::priority_queue<Node, std::vector<Node>, decltype(cmp)> openList(cmp);  //= OpenSet, = Q
 
   Node nodeq2;
   nodeq2.index = 0;
@@ -1074,7 +1136,14 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
   nodeq2.index = 2;
   nodeq2.h = h(nodeq2);  // f=g+h
 
-  openList.push(nodeq2);
+  // Option 1
+  // openList_.insert(nodeq2);
+
+  // Option 2
+  // openList_.push(nodeq2);
+
+  // Option 3
+  openList_.push(nodeq2);
 
   Node* current_ptr;
 
@@ -1084,12 +1153,17 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
   int GOAL_REACHED = 1;
   int EMPTY_OPENLIST = 2;
 
-  while (openList.size() > 0)
+  while (openList_.size() > 0)
   {
     // std::cout << red << "=============================" << reset << std::endl;
 
     current_ptr = new Node;
-    *current_ptr = openList.top();
+
+    // Option 1
+    //*current_ptr = *openList_.begin();
+
+    // Option 2 and 3
+    *current_ptr = openList_.top();
 
     // std::cout << "Path to current_ptr= " << (*current_ptr).qi.transpose() << std::endl;
     // printPath(*current_ptr);
@@ -1142,19 +1216,30 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     ////////////////////////////////////////////////////
     ////////////////////////////////////////////////////
 
-    openList.pop();  // remove the element
+    // std::cout << "erasing from openList_" << (*current_ptr).qi.transpose() << std::endl;
 
-    std::vector<Node> neighbors;
-    expand(*current_ptr, neighbors);
-    expanded_nodes_.push_back((*current_ptr));
+    // Option 1
+    // openList_.erase(openList_.begin());
 
-    for (auto neighbor : neighbors)
-    {
-      openList.push(neighbor);
-    }
+    // Option 2
+    // openList_.pop();  // remove the element
+
+    // Option 3
+    openList_.pop();
+
+    // expanded_nodes_.push_back((*current_ptr));
+
+    //////
+    unsigned int ix, iy, iz;
+    ix = round(((*current_ptr).qi.x() - orig_.x()) / voxel_size_);
+    iy = round(((*current_ptr).qi.y() - orig_.y()) / voxel_size_);
+    iz = round(((*current_ptr).qi.z() - orig_.z()) / voxel_size_);
+    // map_open_list_[Eigen::Vector3i(ix, iy, iz)] = (*current_ptr).g + bias_ * (*current_ptr).h;
+    ////////
+    expandAndAddToQueue(*current_ptr);
   }
 
-  std::cout << "[A*] openList is empty" << std::endl;
+  std::cout << "[A*] openList_ is empty" << std::endl;
   status = EMPTY_OPENLIST;
   goto exitloop;
 
@@ -1175,16 +1260,16 @@ exitloop:
   }
   else if ((status == RUNTIME_REACHED || status == EMPTY_OPENLIST) && have_a_solution)
   {
-    if (complete_closest_result_so_far_ptr_ != NULL)
-    {
-      std::cout << "[A*] choosing closest complete path as solution" << std::endl;
-      best_node_ptr = complete_closest_result_so_far_ptr_;
-    }
-    else
-    {
-      std::cout << "[A*] choosing closest path as solution" << std::endl;
-      best_node_ptr = closest_result_so_far_ptr_;
-    }
+    // if (complete_closest_result_so_far_ptr_ != NULL)
+    // {
+    //   std::cout << "[A*] choosing closest complete path as solution" << std::endl;
+    //   best_node_ptr = complete_closest_result_so_far_ptr_;
+    // }
+    // else
+    // {
+    std::cout << "[A*] choosing closest path as solution" << std::endl;
+    best_node_ptr = closest_result_so_far_ptr_;
+    //}
   }
   else
   {
@@ -1199,6 +1284,7 @@ exitloop:
     Node* node_ptr = new Node;
     node_ptr->qi = best_node_ptr->qi;
     node_ptr->index = j;
+    ROS_INFO_STREAM("Filled " << j);
     std::cout << "Filled " << j << ", ";
     // << node_ptr->qi.transpose() << std::endl;
     node_ptr->previous = best_node_ptr;

@@ -2,7 +2,7 @@ use_ff: true # use feedforward
 visual: true #publish visualization stuff
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.3    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
-drone_radius: 0.001  #(m) Used for collision checking
+drone_radius: 0.1  #(m) Used for collision checking
 
 N_whole: 6 #[-] Number of discretization points in the whole trajectory
 N_safe: 6 #[-] Number of discretization points in the safe path
@@ -14,19 +14,19 @@ alpha_filter_dyaw: 0 #was 0.92  #[] Filter parameter for dyaw, \in [0,1]. Higher
 ##Needed: Ra <= fov_depth  <= R_local_map
 ##Agents/obstacles from which I am allowed to receive information:
 impose_fov: false
-R_local_map: 5.0 #[m] Trajectories from obstacles/agents whose center falls inside this local map are stored
+R_local_map: 50.0 #[m] Trajectories from obstacles/agents whose center falls inside this local map are stored
 
 #####Only used if impose_fov==true
 fov_horiz_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 
 fov_vert_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 
-fov_depth: 4.0  #[m] Should be < Ra
+fov_depth: 7.0  #[m] Should be < Ra
 
 #####If impose_fov==false
 #R_consider_agents: 900       # [m] Other agents are considered if they are closer than Rothers. Should be >=2*Ra (because this ensures that the other agent hasn't planned a trajectory that enters my sphere of radius Ra)
 #R_consider_obstacles: 7.0    # [m] Other obstacles are considered if they are closer than Rothers.
 ##########################################
 
-Ra: 3.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
+Ra: 6.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
 z_ground: 0.2         #[m] points below this are considered ground
 z_max: 200         #[m] JPS is not allowed to give a solution that goes higher than this height
@@ -34,14 +34,14 @@ inflation_jps: 0.35  #[m] The obstacles are inflated (to run JPS) by this amount
 factor_jps: 1  #[m] JPS is run with resolution=factor_jps*(resolution of the map)
 
 #For multi-agent simulations
-# v_max: 2.5   #[m/s]  
-# a_max: 20.0   #[m/s2] 
-# j_max: 20.0  #[m/s3] 
+v_max: 2.5   #[m/s]  
+a_max: 20.0   #[m/s2] 
+j_max: 20.0  #[m/s3] 
 
 #For single-agent simulations
-v_max: 4.0   #[m/s]  7.0
-a_max: 20.0   #[m/s2] 20.0
-j_max: 50.0  #[m/s3] 10.0
+# v_max: 4.0   #[m/s]  7.0
+# a_max: 20.0   #[m/s2] 20.0
+# j_max: 50.0  #[m/s3] 10.0
 
 #Factors for time allocation
 gamma_whole: 20       #[-]

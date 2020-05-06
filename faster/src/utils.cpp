@@ -9,6 +9,40 @@
   double r, g, b;
 } COLOUR;*/
 
+visualization_msgs::Marker edges2Marker(const faster_types::Edges& edges, std_msgs::ColorRGBA color_marker)
+{
+  visualization_msgs::Marker marker;
+
+  if (edges.size() == 0)  // there are no edges
+  {
+    // std::cout << "there are no edges" << std::endl;
+    return marker;
+  }
+
+  marker.header.frame_id = "world";
+  marker.header.stamp = ros::Time::now();
+  marker.ns = "markertacles";
+  marker.id = 0;
+  marker.type = marker.LINE_LIST;
+  marker.action = marker.ADD;
+  marker.pose = identityGeometryMsgsPose();
+
+  marker.points.clear();
+
+  for (auto edge : edges)
+  {
+    marker.points.push_back(eigen2point(edge.first));
+    marker.points.push_back(eigen2point(edge.second));
+  }
+
+  marker.scale.x = 0.03;
+  // marker.scale.y = 0.00001;
+  // marker.scale.z = 0.00001;
+  marker.color = color_marker;
+
+  return marker;
+}
+
 // returns a PieceWisePol, taking the polynomials of p1 and p2 that should satisfy p1>t, p2>t
 PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& p1, PieceWisePol& p2)
 {
@@ -489,7 +523,7 @@ std_msgs::ColorRGBA color(int id)
 // C1 is the corner with lowest x,y,z
 // C2 is the corner with highest x,y,z
 // center is the center of the sphere
-// r is the radiuos of the sphere
+// r is the radius of the sphere
 bool boxIntersectsSphere(Eigen::Vector3d center, double r, Eigen::Vector3d c1, Eigen::Vector3d c2)
 {
   // https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
