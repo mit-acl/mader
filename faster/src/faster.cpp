@@ -1264,7 +1264,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   // std::cout << bold << red << "[replan] Locked" << reset << std::endl;
 
   MyTimer convex_hulls_timer(true);
-  removeTrajsThatWillNotAffectMe(A, t_min, t_max);
+  // removeTrajsThatWillNotAffectMe(A, t_min, t_max);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_min, t_max);
   // std::cout << "hulls.size()=" << hulls.size() << std::endl;
 

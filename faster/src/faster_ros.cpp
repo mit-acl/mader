@@ -266,7 +266,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   // For now stop all these subscribers/timers until we receive GO
   occup_grid_sub_.unsubscribe();
   unknown_grid_sub_.unsubscribe();
-  sub_state_.shutdown();
+  // sub_state_.shutdown();
   pubCBTimer_.stop();
   replanCBTimer_.stop();
 
@@ -335,37 +335,7 @@ FasterRos::~FasterRos()
 
 void FasterRos::pubObstacles(faster_types::Edges edges_obstacles)
 {
-  if (edges_obstacles.size() == 0)  // there are no obstacles
-  {
-    return;
-  }
-
-  visualization_msgs::Marker marker_obstacles;
-  marker_obstacles.header.frame_id = world_name_;
-  marker_obstacles.header.stamp = ros::Time::now();
-  marker_obstacles.ns = "marker_obstaclestacles";
-  marker_obstacles.id = 0;
-  marker_obstacles.type = marker_obstacles.LINE_LIST;
-  marker_obstacles.action = marker_obstacles.ADD;
-  marker_obstacles.pose = identityGeometryMsgsPose();
-
-  marker_obstacles.points.clear();
-
-  for (auto edge : edges_obstacles)
-  {
-    marker_obstacles.points.push_back(eigen2point(edge.first));
-    marker_obstacles.points.push_back(eigen2point(edge.second));
-  }
-
-  marker_obstacles.scale.x = 0.03;
-  marker_obstacles.scale.y = 0.00001;
-  marker_obstacles.scale.z = 0.00001;
-  marker_obstacles.color.a = 1.0;  // Don't forget to set the alpha!
-  marker_obstacles.color.r = 0.0;
-  marker_obstacles.color.g = 1.0;
-  marker_obstacles.color.b = 0.0;
-
-  pub_obstacles_.publish(marker_obstacles);
+  pub_obstacles_.publish(edges2Marker(edges_obstacles, color(RED_NORMAL)));
 
   return;
 }
@@ -705,7 +675,7 @@ void FasterRos::modeCB(const faster_msgs::Mode& msg)
   {  // FASTER DOES NOTHING
     occup_grid_sub_.unsubscribe();
     unknown_grid_sub_.unsubscribe();
-    sub_state_.shutdown();
+    // sub_state_.shutdown();
     pubCBTimer_.stop();
     replanCBTimer_.stop();
     std::cout << "stopping replanCBTimer" << std::endl;
@@ -716,7 +686,7 @@ void FasterRos::modeCB(const faster_msgs::Mode& msg)
     occup_grid_sub_.subscribe();
     unknown_grid_sub_.subscribe();
 
-    sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);  // TODO duplicated from above
+    // sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);  // TODO duplicated from above
 
     pubCBTimer_.start();
     replanCBTimer_.start();
