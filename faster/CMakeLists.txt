@@ -72,6 +72,7 @@ find_package(catkin REQUIRED COMPONENTS
 	decomp_ros_utils
 	rviz_visual_tools
 	separator
+  jsk_rviz_plugins
 )
 find_package(decomp_util REQUIRED)
 include_directories(${DECOMP_UTIL_INCLUDE_DIRS})
