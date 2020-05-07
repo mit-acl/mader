@@ -89,6 +89,9 @@ BUG TODO: cuando uso MINVO, estoy permitiendo que los B-Spline Control points es
 
 --> removeTrajsThatWillNotAffectMe doesn't seem to be working (it leads to collisions at the end of the trajectory in the scenario where multiple agents are on a sphere)
 
+--> Por qu'e se para justo al final de la trajectoria en un obstaculo estatico. Creo que tiene que ver con el size del static obstacle (COM is not inside sphere, pero static obstacle is)
+o con la esfera centrada en A en lugar de en el dron (quiza Rlocal mas has to be 2*Ra)
+
 --> Crear el separator problem al principio, no todo el rato (en separator.cpp)
 
 --> Por qu'e alguna vez se para justo en un obstaculo. Tolerance is very big??

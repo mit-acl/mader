@@ -33,13 +33,15 @@ def convertToStringCommand(action,quad,x,y,z,goal_x,goal_y,goal_z):
     if(action=="send_goal"):
         return "rostopic pub /"+quad+"/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: 'world'}, pose: {position: {x: "+str(goal_x)+", y: "+str(goal_y)+", z: "+str(goal_z)+"}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}}}'"
     if(action=="faster"):
-        return "roslaunch faster faster.launch quad:="+quad
+        return "roslaunch faster faster.launch quad:="+quad + " >> "+quad+".txt"
+        # return "script -q -c 'roslaunch faster faster.launch quad:="+quad + "' "+quad+".txt"
+        
 
 if __name__ == '__main__':
     # formation="sphere"
-    formation="sphere"
+    formation="circle"
     commands = []
-    num_of_agents=16; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
+    num_of_agents=8; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
     radius=4.5;
 
 
@@ -56,6 +58,7 @@ if __name__ == '__main__':
 
     id_number=1;
     shift_z=radius;
+    shift_z=1.0
 
     for i in range(1, num_mer+1):
         theta=0.0+i*(2*math.pi/num_mer);

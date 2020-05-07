@@ -46,19 +46,19 @@ class MovingCircle:
 
 class MovingCorridor:
     def __init__(self):
-        self.num_of_dyn_objects=0;
-        self.num_of_stat_objects=0;
-        self.x_min= 0.0
-        self.x_max= 50.0
-        self.y_min= -1.0 
-        self.y_max= +1.0
-        self.z_min= 0.0 
+        self.num_of_dyn_objects=4;
+        self.num_of_stat_objects=10;
+        self.x_min= -2.0
+        self.x_max= 2.0
+        self.y_min= -2.0 
+        self.y_max= +2.0
+        self.z_min= 1.0 
         self.z_max= 1.0
         self.scale=1.0;
-        self.slower_min=1
-        self.slower_max= 1.5
+        self.slower_min=1.1
+        self.slower_max= 1.1
         self.bbox_dynamic=[0.6, 0.6, 0.6]
-        self.bbox_static=[0.4, 0.4, 1.2]
+        self.bbox_static=[0.4, 0.4, 4]
 
 
 
@@ -98,12 +98,12 @@ class FakeSim:
         for i in range(self.world.num_of_stat_objects):          
             self.x_all.append(random.uniform(self.world.x_min-self.world.scale, self.world.x_max+self.world.scale));
             self.y_all.append(random.uniform(self.world.y_min-self.world.scale, self.world.y_max+self.world.scale));
-            self.z_all.append(random.uniform(self.world.z_min-self.world.scale, self.world.z_max+self.world.scale));
+            self.z_all.append(random.uniform(self.world.z_min, self.world.z_max));
             self.offset_all.append(random.uniform(-2*math.pi, 2*math.pi));
             self.slower.append(random.uniform(self.world.slower_min, self.world.slower_max));
             self.type.append("static")
 
-        self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=20, latch=True)
+        self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=1, latch=True)
         self.pubShapes_static = rospy.Publisher('/shapes_static', Marker, queue_size=1, latch=True)
         self.pubShapes_dynamic = rospy.Publisher('/shapes_dynamic', Marker, queue_size=1, latch=True)
         self.timer = rospy.Timer(rospy.Duration(0.001), self.pubTF)
@@ -161,7 +161,7 @@ class FakeSim:
             dynamic_trajectory_msg.id = 4000+ i #Current id 4000 to avoid interference with ids from agents #TODO
 
             self.pubTraj.publish(dynamic_trajectory_msg)
-            br.sendTransform((x, y, z), (0,0,0,1), t_ros, self.name+str(i), "world")
+            br.sendTransform((x, y, z), (0,0,0,1), t_ros, self.name+str(dynamic_trajectory_msg.id), "world")
 
 
             #If you want to move the objets in gazebo
