@@ -9,7 +9,7 @@
 
 #include "faster_types.hpp"
 // Solvers includes
-#include "solvers/solverGurobi.hpp"
+//#include "solvers/solverGurobi.hpp"
 #include "solvers/nlopt/solverNlopt.hpp"
 #include "jps_manager.hpp"
 
@@ -81,8 +81,8 @@ private:
 
   SolverNlopt* snlopt_;
 
-  SolverGurobi sg_whole_;  // solver gurobi whole trajectory
-  SolverGurobi sg_safe_;   // solver gurobi safe trajectory
+  // SolverGurobi sg_whole_;  // solver gurobi whole trajectory
+  // SolverGurobi sg_safe_;   // solver gurobi safe trajectory
 
   JPS_Manager jps_manager_;      // Manager of JPS
   JPS_Manager jps_manager_dyn_;  // Manager of JPS
@@ -98,7 +98,7 @@ private:
 
   bool trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_init, double t_end);
 
-  void removeTrajsThatWillNotAffectMe(state A, double t_start, double t_end);
+  void removeTrajsThatWillNotAffectMe(const state& A, double t_start, double t_end);
 
   /*  vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves);
     ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls);*/

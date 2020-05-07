@@ -43,22 +43,22 @@ add_definitions(${PCL_DEFINITIONS})
 
 #In the ws/ directory there must be the file FindGUROBI.cmake (available https://github.com/joschu/trajopt/blob/master/cmake/modules/FindGUROBI.cmake ). I had to modify it a little bit. 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
-find_package(GUROBI REQUIRED)
+# find_package(GUROBI REQUIRED)
 find_package(NLOPT REQUIRED)
 find_package(CGAL REQUIRED)
 include(${CGAL_USE_FILE})
 
-if(GUROBI_FOUND)
-  message(STATUS "GUROBI FOUND")
-else(GUROBI_FOUND)
-  message(FATAL_ERROR "GUROBI NOT FOUND!")
-endif(GUROBI_FOUND)
+# if(GUROBI_FOUND)
+#   message(STATUS "GUROBI FOUND")
+# else(GUROBI_FOUND)
+#   message(FATAL_ERROR "GUROBI NOT FOUND!")
+# endif(GUROBI_FOUND)
+
+# include_directories(${GUROBI_INCLUDE_DIRS})
+
 
 
 set(CMAKE_BUILD_TYPE Release) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo) or Debug
-
-include_directories(${GUROBI_INCLUDE_DIRS})
-#set(GUROBI_LIBRARIES "${GUROBI_CXX_LIBRARY};${GUROBI_LIBRARY}" )
 
 
 find_package(catkin REQUIRED COMPONENTS 
@@ -88,7 +88,7 @@ catkin_package(
 
 include_directories(${catkin_INCLUDE_DIRS})
 
-set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;$ENV{GUROBI_HOME}/lib/libgurobi90.so;$ENV{GUROBI_HOME}/lib/" )
+#set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;$ENV{GUROBI_HOME}/lib/libgurobi90.so;$ENV{GUROBI_HOME}/lib/" )
 
 
 #For precompile headers see example here
@@ -121,18 +121,16 @@ target_include_directories (jps_manager PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 #target_precompile_headers(utils PUBLIC src/jps_manager.hpp)
 target_link_libraries(jps_manager PUBLIC ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES})
 
-add_library(solverGurobi STATIC src/solvers/solverGurobi.cpp )
-#set_property(TARGET solverGurobi PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
-target_include_directories (solverGurobi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-#target_precompile_headers(utils PUBLIC src/solvers/solverGurobi.hpp)
-target_link_libraries(solverGurobi PUBLIC ${GUROBI_LIBRARIES})
+# add_library(solverGurobi STATIC src/solvers/solverGurobi.cpp )
+# target_include_directories (solverGurobi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# target_link_libraries(solverGurobi PUBLIC ${GUROBI_LIBRARIES})
 
 
 
 
 add_library(faster_hpp STATIC src/faster.hpp)
 target_include_directories (faster_hpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(faster_hpp PUBLIC ${CGAL_LIBS} solverGurobi jps_manager solverNlopt)
+target_link_libraries(faster_hpp PUBLIC ${CGAL_LIBS} jps_manager solverNlopt) #solverGurobi
 
 
 add_library(faster STATIC src/faster.cpp)

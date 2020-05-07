@@ -57,27 +57,27 @@ Faster::Faster(parameters par) : par_(par)
 
   double max_values[3] = { par_.v_max, par_.a_max, par_.j_max };
 
-  // Setup of sg_whole_
-  sg_whole_.setN(par_.N_whole);
-  sg_whole_.createVars();
-  sg_whole_.setDC(par_.dc);
-  sg_whole_.setBounds(max_values);
-  sg_whole_.setForceFinalConstraint(true);
-  sg_whole_.setFactorInitialAndFinalAndIncrement(1, 10, par_.increment_whole);
-  sg_whole_.setVerbose(par_.gurobi_verbose);
-  sg_whole_.setThreads(par_.gurobi_threads);
-  sg_whole_.setWMax(par_.w_max);
+  // // Setup of sg_whole_
+  // sg_whole_.setN(par_.N_whole);
+  // sg_whole_.createVars();
+  // sg_whole_.setDC(par_.dc);
+  // sg_whole_.setBounds(max_values);
+  // sg_whole_.setForceFinalConstraint(true);
+  // sg_whole_.setFactorInitialAndFinalAndIncrement(1, 10, par_.increment_whole);
+  // sg_whole_.setVerbose(par_.gurobi_verbose);
+  // sg_whole_.setThreads(par_.gurobi_threads);
+  // sg_whole_.setWMax(par_.w_max);
 
-  // Setup of sg_safe_
-  sg_safe_.setN(par_.N_safe);
-  sg_safe_.createVars();
-  sg_safe_.setDC(par_.dc);
-  sg_safe_.setBounds(max_values);
-  sg_safe_.setForceFinalConstraint(false);
-  sg_safe_.setFactorInitialAndFinalAndIncrement(1, 10, par_.increment_safe);
-  sg_safe_.setVerbose(par_.gurobi_verbose);
-  sg_safe_.setThreads(par_.gurobi_threads);
-  sg_safe_.setWMax(par_.w_max);
+  // // Setup of sg_safe_
+  // sg_safe_.setN(par_.N_safe);
+  // sg_safe_.createVars();
+  // sg_safe_.setDC(par_.dc);
+  // sg_safe_.setBounds(max_values);
+  // sg_safe_.setForceFinalConstraint(false);
+  // sg_safe_.setFactorInitialAndFinalAndIncrement(1, 10, par_.increment_safe);
+  // sg_safe_.setVerbose(par_.gurobi_verbose);
+  // sg_safe_.setThreads(par_.gurobi_threads);
+  // sg_safe_.setWMax(par_.w_max);
 
   pclptr_unk_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
   pclptr_map_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
@@ -271,7 +271,8 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_s
   return poly;
 }
 
-void Faster::removeTrajsThatWillNotAffectMe(state A, double t_start, double t_end)
+// trajs_ is already locked when calling this function
+void Faster::removeTrajsThatWillNotAffectMe(const state& A, double t_start, double t_end)
 {
   int samples_per_traj = 10;
   double inc = (t_end - t_start) / (1.0 * samples_per_traj);
@@ -310,6 +311,7 @@ void Faster::removeTrajsThatWillNotAffectMe(state A, double t_start, double t_en
     if (traj_affects_me == false)
     {
       // std::cout << red << bold << "Going to  delete t raj " << trajs_[index_traj].id << reset << std::endl;
+
       ids_to_remove.push_back(trajs_[index_traj].id);
     }
     /*    else
@@ -320,6 +322,7 @@ void Faster::removeTrajsThatWillNotAffectMe(state A, double t_start, double t_en
 
   for (auto id : ids_to_remove)
   {
+    ROS_INFO_STREAM("traj " << id << " doesn't affect me");
     trajs_.erase(
         std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
         trajs_.end());
@@ -476,124 +479,127 @@ void Faster::getState(state& data)
   mtx_state.unlock();
 }
 
-int Faster::findIndexR(int indexH)
-{
-  // Ignore z to obtain this heuristics (if not it can become very conservative)
-  // mtx_X_U_temp.lock();
-  Eigen::Vector2d posHk;
-  posHk << sg_whole_.X_temp_[indexH].pos(0), sg_whole_.X_temp_[indexH].pos(1);
-  int indexR = indexH;
+// int Faster::findIndexR(int indexH)
+// {
+//   // Ignore z to obtain this heuristics (if not it can become very conservative)
+//   // mtx_X_U_temp.lock();
+//   Eigen::Vector2d posHk;
+//   posHk << sg_whole_.X_temp_[indexH].pos(0), sg_whole_.X_temp_[indexH].pos(1);
+//   int indexR = indexH;
 
-  for (int i = 0; i <= indexH; i = i + 1)  // Loop from A to H
-  {
-    Eigen::Vector2d vel;
-    vel << sg_whole_.X_temp_[i].vel(0), sg_whole_.X_temp_[i].vel(1);  //(i, 3), sg_whole_.X_temp_(i, 4);
+//   for (int i = 0; i <= indexH; i = i + 1)  // Loop from A to H
+//   {
+//     Eigen::Vector2d vel;
+//     vel << sg_whole_.X_temp_[i].vel(0), sg_whole_.X_temp_[i].vel(1);  //(i, 3), sg_whole_.X_temp_(i, 4);
 
-    Eigen::Vector2d pos;
-    pos << sg_whole_.X_temp_[i].pos(0), sg_whole_.X_temp_[i].pos(1);
+//     Eigen::Vector2d pos;
+//     pos << sg_whole_.X_temp_[i].pos(0), sg_whole_.X_temp_[i].pos(1);
 
-    Eigen::Vector2d braking_distance =
-        (vel.array() * (posHk - pos).array()).sign() * vel.array().square() / (2 * par_.delta_a * par_.a_max);
+//     Eigen::Vector2d braking_distance =
+//         (vel.array() * (posHk - pos).array()).sign() * vel.array().square() / (2 * par_.delta_a * par_.a_max);
 
-    // std::cout << "braking_distance=" << braking_distance.transpose() << std::endl;
-    // std::cout << "(posHk - pos).cwiseAbs().array())=" << (posHk - pos).cwiseAbs().array().transpose() << std::endl;
+//     // std::cout << "braking_distance=" << braking_distance.transpose() << std::endl;
+//     // std::cout << "(posHk - pos).cwiseAbs().array())=" << (posHk - pos).cwiseAbs().array().transpose() <<
+//     std::endl;
 
-    bool thereWillBeCollision =
-        (braking_distance.array() > (posHk - pos).cwiseAbs().array()).any();  // Any of the braking distances (in x, y,
-                                                                              // z) is bigger than the distance to the
-                                                                              // obstacle in that direction
-    if (thereWillBeCollision)
-    {
-      indexR = i;
+//     bool thereWillBeCollision =
+//         (braking_distance.array() > (posHk - pos).cwiseAbs().array()).any();  // Any of the braking distances (in x,
+//         y,
+//                                                                               // z) is bigger than the distance to
+//                                                                               the
+//                                                                               // obstacle in that direction
+//     if (thereWillBeCollision)
+//     {
+//       indexR = i;
 
-      if (indexR == 0)
-      {
-        std::cout << bold << red << "R was taken in A" << reset << std::endl;
-      }
+//       if (indexR == 0)
+//       {
+//         std::cout << bold << red << "R was taken in A" << reset << std::endl;
+//       }
 
-      break;
-    }
-  }
-  std::cout << red << bold << "indexR=" << indexR << " /" << sg_whole_.X_temp_.size() - 1 << reset << std::endl;
-  // std::cout << red << bold << "indexH=" << indexH << " /" << sg_whole_.X_temp_.rows() - 1 << reset << std::endl;
-  // mtx_X_U_temp.unlock();
+//       break;
+//     }
+//   }
+//   std::cout << red << bold << "indexR=" << indexR << " /" << sg_whole_.X_temp_.size() - 1 << reset << std::endl;
+//   // std::cout << red << bold << "indexH=" << indexH << " /" << sg_whole_.X_temp_.rows() - 1 << reset << std::endl;
+//   // mtx_X_U_temp.unlock();
 
-  return indexR;
-}
+//   return indexR;
+// }
 
-int Faster::findIndexH(bool& needToComputeSafePath)
-{
-  int n = 1;  // find one neighbour
-  std::vector<int> pointIdxNKNSearch(n);
-  std::vector<float> pointNKNSquaredDistance(n);
+// int Faster::findIndexH(bool& needToComputeSafePath)
+// {
+//   int n = 1;  // find one neighbour
+//   std::vector<int> pointIdxNKNSearch(n);
+//   std::vector<float> pointNKNSquaredDistance(n);
 
-  needToComputeSafePath = false;
+//   needToComputeSafePath = false;
 
-  mtx_unk.lock();
-  mtx_X_U_temp.lock();
-  int indexH = sg_whole_.X_temp_.size() - 1;
+//   mtx_unk.lock();
+//   mtx_X_U_temp.lock();
+//   int indexH = sg_whole_.X_temp_.size() - 1;
 
-  for (int i = 0; i < sg_whole_.X_temp_.size(); i = i + 10)
-  {  // Sample points along the trajectory
+//   for (int i = 0; i < sg_whole_.X_temp_.size(); i = i + 10)
+//   {  // Sample points along the trajectory
 
-    Eigen::Vector3d tmp = sg_whole_.X_temp_[i].pos;
-    pcl::PointXYZ searchPoint(tmp(0), tmp(1), tmp(2));
+//     Eigen::Vector3d tmp = sg_whole_.X_temp_[i].pos;
+//     pcl::PointXYZ searchPoint(tmp(0), tmp(1), tmp(2));
 
-    if (kdtree_unk_.nearestKSearch(searchPoint, n, pointIdxNKNSearch, pointNKNSquaredDistance) > 0)
-    {
-      if (sqrt(pointNKNSquaredDistance[0]) < par_.drone_radius)
-      {
-        needToComputeSafePath = true;  // There is intersection, so there is need to compute safe path
-        indexH = (int)(par_.delta_H * i);
-        break;
-      }
-    }
-  }
-  std::cout << red << bold << "indexH=" << indexH << " /" << sg_whole_.X_temp_.size() - 1 << reset << std::endl;
-  mtx_unk.unlock();
-  mtx_X_U_temp.unlock();
+//     if (kdtree_unk_.nearestKSearch(searchPoint, n, pointIdxNKNSearch, pointNKNSquaredDistance) > 0)
+//     {
+//       if (sqrt(pointNKNSquaredDistance[0]) < par_.drone_radius)
+//       {
+//         needToComputeSafePath = true;  // There is intersection, so there is need to compute safe path
+//         indexH = (int)(par_.delta_H * i);
+//         break;
+//       }
+//     }
+//   }
+//   std::cout << red << bold << "indexH=" << indexH << " /" << sg_whole_.X_temp_.size() - 1 << reset << std::endl;
+//   mtx_unk.unlock();
+//   mtx_X_U_temp.unlock();
 
-  return indexH;
-}
+//   return indexH;
+// }
 
-bool Faster::ARisInFreeSpace(int index)
-{  // We have to check only against the unkown space (A-R won't intersect the obstacles for sure)
+// bool Faster::ARisInFreeSpace(int index)
+// {  // We have to check only against the unkown space (A-R won't intersect the obstacles for sure)
 
-  // std::cout << "In ARisInFreeSpace, radius_drone= " << par_.drone_radius << std::endl;
-  int n = 1;  // find one neighbour
+//   // std::cout << "In ARisInFreeSpace, radius_drone= " << par_.drone_radius << std::endl;
+//   int n = 1;  // find one neighbour
 
-  std::vector<int> pointIdxNKNSearch(n);
-  std::vector<float> pointNKNSquaredDistance(n);
+//   std::vector<int> pointIdxNKNSearch(n);
+//   std::vector<float> pointNKNSquaredDistance(n);
 
-  bool isFree = true;
+//   bool isFree = true;
 
-  // std::cout << "Before mtx_unk" << std::endl;
-  mtx_unk.lock();
-  mtx_X_U_temp.lock();
-  // std::cout << "After mtx_unk. index=" << index << std::endl;
-  for (int i = 0; i < index; i = i + 10)
-  {  // Sample points along the trajectory
-     // std::cout << "i=" << i << std::endl;
-    Eigen::Vector3d tmp = sg_whole_.X_temp_[i].pos;
-    pcl::PointXYZ searchPoint(tmp(0), tmp(1), tmp(2));
+//   // std::cout << "Before mtx_unk" << std::endl;
+//   mtx_unk.lock();
+//   mtx_X_U_temp.lock();
+//   // std::cout << "After mtx_unk. index=" << index << std::endl;
+//   for (int i = 0; i < index; i = i + 10)
+//   {  // Sample points along the trajectory
+//      // std::cout << "i=" << i << std::endl;
+//     Eigen::Vector3d tmp = sg_whole_.X_temp_[i].pos;
+//     pcl::PointXYZ searchPoint(tmp(0), tmp(1), tmp(2));
 
-    if (kdtree_unk_.nearestKSearch(searchPoint, n, pointIdxNKNSearch, pointNKNSquaredDistance) > 0)
-    {
-      if (sqrt(pointNKNSquaredDistance[0]) < 0.2)
-      {  // TODO: 0.2 is the radius of the drone.
-        std::cout << "A->R collides, with d=" << sqrt(pointNKNSquaredDistance[0])
-                  << ", radius_drone=" << par_.drone_radius << std::endl;
-        isFree = false;
-        break;
-      }
-    }
-  }
+//     if (kdtree_unk_.nearestKSearch(searchPoint, n, pointIdxNKNSearch, pointNKNSquaredDistance) > 0)
+//     {
+//       if (sqrt(pointNKNSquaredDistance[0]) < 0.2)
+//       {  // TODO: 0.2 is the radius of the drone.
+//         std::cout << "A->R collides, with d=" << sqrt(pointNKNSquaredDistance[0])
+//                   << ", radius_drone=" << par_.drone_radius << std::endl;
+//         isFree = false;
+//         break;
+//       }
+//     }
+//   }
 
-  mtx_unk.unlock();
-  mtx_X_U_temp.unlock();
+//   mtx_unk.unlock();
+//   mtx_X_U_temp.unlock();
 
-  return isFree;
-}
+//   return isFree;
+// }
 
 // Returns the first collision of JPS with the map (i.e. with the known obstacles). Note that JPS will collide with a
 // map B if JPS was computed using an older map A
@@ -920,8 +926,8 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   // std::cout << "here3" << std::endl;
 
-  sg_whole_.ResetToNormalState();
-  sg_safe_.ResetToNormalState();
+  // sg_whole_.ResetToNormalState();
+  // sg_safe_.ResetToNormalState();
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// G <-- Project GTerm ////////////////////////////
@@ -1444,13 +1450,13 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 */
   std::vector<state> dummy_vector;
   dummy_vector.push_back(A);
-  sg_whole_.X_temp_ = dummy_vector;
+  // sg_whole_.X_temp_ = dummy_vector;
 
   M_ = G_term;
 
   k_safe = 0;
 
-  bool result_appending = appendToPlan(k_end_whole, sg_whole_.X_temp_, k_safe, snlopt.X_temp_);
+  bool result_appending = appendToPlan(k_end_whole, dummy_vector, k_safe, snlopt.X_temp_);
 
   // std::cout << "After appendToPlan, plan_= " << std::endl;
   // plan_.print();
@@ -1523,13 +1529,13 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   mtx_offsets.unlock();
 
   // Time allocation
-  double new_init_whole = std::max(sg_whole_.factor_that_worked_ - par_.gamma_whole, 1.0);
-  double new_final_whole = sg_whole_.factor_that_worked_ + par_.gammap_whole;
-  sg_whole_.setFactorInitialAndFinalAndIncrement(new_init_whole, new_final_whole, par_.increment_whole);
+  // double new_init_whole = std::max(sg_whole_.factor_that_worked_ - par_.gamma_whole, 1.0);
+  // double new_final_whole = sg_whole_.factor_that_worked_ + par_.gammap_whole;
+  // sg_whole_.setFactorInitialAndFinalAndIncrement(new_init_whole, new_final_whole, par_.increment_whole);
 
-  double new_init_safe = std::max(sg_safe_.factor_that_worked_ - par_.gamma_safe, 1.0);
-  double new_final_safe = sg_safe_.factor_that_worked_ + par_.gammap_safe;
-  sg_safe_.setFactorInitialAndFinalAndIncrement(new_init_safe, new_final_safe, par_.increment_safe);
+  // double new_init_safe = std::max(sg_safe_.factor_that_worked_ - par_.gamma_safe, 1.0);
+  // double new_final_safe = sg_safe_.factor_that_worked_ + par_.gammap_safe;
+  // sg_safe_.setFactorInitialAndFinalAndIncrement(new_init_safe, new_final_safe, par_.increment_safe);
 
   planner_initialized_ = true;
 
