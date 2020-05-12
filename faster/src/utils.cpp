@@ -1366,6 +1366,8 @@ visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& 
   p_last.y = data[0].pos(1);
   p_last.z = data[0].pos(2);
 
+  increm = (increm < 1.0) ? 1 : increm;
+
   int j = type * 9000;
   for (int i = 0; i < data.size(); i = i + increm)
   {

@@ -41,8 +41,8 @@ La forma correcta de hacerlo es ir creando libraries en el CMakeLists.txt
 --> El video/paper deberia empezar diciendo "FOV constraints + static obs + dyn obtacles + other agents".
 
 ========================
-Opciones:
---> 
+Tips:
+--> El A* no esta garantizado que d'e feasible solution (wrt acceleration) en los ultimos control points (pues qN y qN-1 los append directly, sin verify if they satisfy the accel constraints wrt qN-2)
 
 --> 
 ========================
