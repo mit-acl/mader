@@ -57,14 +57,14 @@ int main(int argc, char **argv)
   int num_pol = 7;
   int deg_pol = 3;
 
-  int samples_x = 7;  // odd number
-  int samples_y = 7;  // odd number
-  int samples_z = 7;  // odd number
+  int samples_x = 3;  // odd number
+  int samples_y = 3;  // odd number
+  int samples_z = 3;  // odd number
 
   double fraction_voxel_size = 0.5;  // grid used to prune nodes that are on the same cell
 
-  double runtime = 1.0;     //[seconds]
-  double goal_size = 0.01;  //[meters]
+  double runtime = 0.01;   //[seconds]
+  double goal_size = 0.1;  //[meters]
 
   Eigen::Vector3d v_max(7.0, 7.0, 7.0);
   Eigen::Vector3d a_max(400000.0, 4000000.0, 4000000.0);

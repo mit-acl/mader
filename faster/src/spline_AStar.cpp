@@ -286,8 +286,8 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
 
   voxel_size_ = min_voxel_size + fraction_voxel_size * (max_voxel_size - min_voxel_size);
 
-  std::cout << red << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", " << max_voxel_size
-            << ")" << reset << std::endl;
+  std::cout << green << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", "
+            << max_voxel_size << ")" << reset << std::endl;
 
   // Make sure voxel_size_<= (min_voxel_size + max_voxel_size) / 2.0  (if not, very few nodes are expanded)
   // voxel_size_ = (min_voxel_size + max_voxel_size) / 2.0;
@@ -414,21 +414,25 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
 {
   Eigen::Vector3d viM1 = p_ * (qi - qiM1) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
 
-  double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
+  double d = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
 
-  // |vi - viM1|<=a_max_*tmp
+  // |vi - viM1|<=a_max_*d
   //  <=>
-  // (vi - viM1)<=a_max_*tmp   AND   (vi - viM1)>=-a_max_*tmp
+  // (vi - viM1)<=a_max_*d   AND   (vi - viM1)>=-a_max_*d
   //  <=>
-  //  vi<=a_max_*tmp + viM1   AND     vi>=-a_max_*tmp + viM1
-  constraint_xL = std::max(-v_max_.x(), -a_max_.x() * tmp + viM1.x());  // lower bound
-  constraint_xU = std::min(v_max_.x(), a_max_.x() * tmp + viM1.x());    // upper bound
+  //  vi<=a_max_*d + viM1   AND     vi>=-a_max_*d + viM1
 
-  constraint_yL = std::max(-v_max_.y(), -a_max_.y() * tmp + viM1.y());  // lower bound
-  constraint_yU = std::min(v_max_.y(), a_max_.y() * tmp + viM1.y());    // upper bound
+  Eigen::Vector3d max_vel = a_max_ * d + viM1;
+  Eigen::Vector3d min_vel = -a_max_ * d + viM1;
 
-  constraint_zL = std::max(-v_max_.z(), -a_max_.z() * tmp + viM1.z());  // lower bound
-  constraint_zU = std::min(v_max_.z(), a_max_.z() * tmp + viM1.z());    // upper bound
+  constraint_xL = std::max(-v_max_.x(), min_vel.x());  // lower bound
+  constraint_xU = std::min(v_max_.x(), max_vel.x());   // upper bound
+
+  constraint_yL = std::max(-v_max_.y(), min_vel.y());  // lower bound
+  constraint_yU = std::min(v_max_.y(), max_vel.y());   // upper bound
+
+  constraint_zL = std::max(-v_max_.z(), min_vel.z());  // lower bound
+  constraint_zU = std::min(v_max_.z(), max_vel.z());   // upper bound
 
   /*  std::cout << "constraint_xL= " << constraint_xL << std::endl;
     std::cout << "constraint_xU= " << constraint_xU << std::endl;
@@ -902,6 +906,9 @@ void SplineAStar::expandAndAddToQueue(Node& current)
   // stuff used in the loop (here to reduce time)
   Eigen::Vector3d vi;
   Node neighbor;
+
+  neighbor.index = current.index + 1;
+  neighbor.previous = &current;
   // Eigen::Vector3d aiM1;
   unsigned int ix, iy, iz;
 
@@ -911,96 +918,57 @@ void SplineAStar::expandAndAddToQueue(Node& current)
   double delta_y = ((constraint_yU - constraint_yL) / (num_samples_y_ - 1));
   double delta_z = ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));
 
-  // std::cout << "constraint_xU= " << constraint_xU << std::endl;
-  // std::cout << "constraint_xL= " << constraint_xL << std::endl;
-  // std::cout << "delta_x= " << delta_x << std::endl;
-  // std::cout << "_____________________________________________" << std::endl;
-  // std::cout << "_____________________________________________" << std::endl;
-  // std::cout << "_____________________________________________" << std::endl;
-  // std::cout << "The neighbors of " << current.qi.transpose() << " are " << std::endl;
-
   for (auto comb : all_combinations_)
   {
     jx = std::get<0>(comb);
     jy = std::get<1>(comb);
     jz = std::get<2>(comb);
 
-    vi << constraint_xL + jx * delta_x,  // ((constraint_xU - constraint_xL) / (num_samples_x_ - 1)),  /////////
-        constraint_yL + jy * delta_y,    //((constraint_yU - constraint_yL) / (num_samples_y_ - 1)),    /////////
-        constraint_zL + jz * delta_z;    // ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));    /////////
+    // std::cout << "jx= " << jx << std::endl;
+    // std::cout << "jy= " << jy << std::endl;
+    // std::cout << "jz= " << jz << std::endl;
+
+    // std::cout << "constraint_xL= " << constraint_xL << std::endl;
+    // std::cout << "constraint_yL= " << constraint_yL << std::endl;
+    // std::cout << "constraint_zL= " << constraint_zL << std::endl;
+
+    // std::cout << "constraint_xU= " << constraint_xU << std::endl;
+    // std::cout << "constraint_yU= " << constraint_yU << std::endl;
+    // std::cout << "constraint_zU= " << constraint_zU << std::endl;
+
+    vi << constraint_xL + jx * delta_x, constraint_yL + jy * delta_y, constraint_zL + jz * delta_z;
+
+    // std::cout << "vi" << vi.transpose() << std::endl;
 
     neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
 
-    // std::cout << " neighbor.qi =" << neighbor.qi.transpose() << std::endl;
+    // ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
+    // iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
+    // iz = round((neighbor.qi.z() - orig_.z()) / voxel_size_);
 
-    // std::cout << "orig_ = " << orig_.transpose() << std::endl;
-    // std::cout << "voxel_size_ = " << voxel_size_ << std::endl;
+    // auto ptr_to_voxel = map_open_list_.find(Eigen::Vector3i(ix, iy, iz));
 
-    ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
-    iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
-    iz = round((neighbor.qi.z() - orig_.z()) / voxel_size_);
-
-    auto ptr_to_voxel = map_open_list_.find(Eigen::Vector3i(ix, iy, iz));
-
-    // std::cout << bold << red << "map_open_list_ contains " << reset << std::endl;
-    // for (auto tmp : map_open_list_)
-    // {
-    //   std::cout << red << (*(tmp.second)).qi.transpose() << reset << std::endl;
-    // }
-
-    // std::cout << bold << "openList_ contains " << reset << std::endl;
-    // for (auto tmp : openList_)
-    // {
-    //   std::cout << tmp.qi.transpose() << std::endl;
-    // }
-
-    // std::cout << bold << "openList_ contains " << reset << std::endl;
-    // for (auto tmp : expanded_nodes_)
-    // {
-    //   std::cout << tmp.qi.transpose() << std::endl;
-    // }
-
-    bool already_exist = (ptr_to_voxel != map_open_list_.end());
+    // bool already_exist = (ptr_to_voxel != map_open_list_.end());
     // bool already_exists_with_lower_cost = false;
-
-    if (already_exist ||                                           // Element already exists in the search box
-        (vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||             // Not wanna use v=[0,0,0]
-        (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_) ||  /// Outside the limits
-        (ix >= bbox_x_ / voxel_size_ ||                            // Out. the search box
-         iy >= bbox_y_ / voxel_size_ ||                            // Out. the search box
-         iz >= bbox_z_ / voxel_size_)                              // Out. the search box
+    // already_exist
+    if (false ||                                                // Element already exists in the search box
+        (vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||          // Not wanna use v=[0,0,0]
+        (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_)  // ||  /// Outside the limits
+        // (ix >= bbox_x_ / voxel_size_ ||                            // Out. the search box
+        //  iy >= bbox_y_ / voxel_size_ ||                            // Out. the search box
+        //  iz >= bbox_z_ / voxel_size_)                              // Out. the search box
     )
 
     {
       // std::cout << "already_exist" << std::endl;
       continue;
-      // auto ptr_to_node = (*ptr_to_voxel).second;
-      // auto node_tmp = (*ptr_to_node);
-      // already_exists_with_lower_cost = (node_tmp.g + bias_ * (node_tmp.h)) < (neighbor.g + bias_ * neighbor.h);
     }
-
-    // if (already_exists_with_lower_cost == true)
-    // {
-    //   std::cout << "already_exists_with_lower_cost" << std::endl;
-
-    //   continue;
-    // }
-
-    // if (already_exist == false)
-    // {
-    //   std::cout << red << neighbor.qi.transpose() << " does NOT exist" << reset << std::endl;
-    // }
 
     neighbor.g = current.g + weightEdge(current, neighbor);
     neighbor.h = h(neighbor);
 
-    neighbor.index = current.index + 1;
-    neighbor.previous = &current;
-
     //////////////////////////////////// // Now let's check if it satisfies the LPs
     last4Cps[3] = neighbor.qi;
-
-    ////////////////////////////////////
 
     if (collidesWithObstacles(last4Cps, neighbor.index) == true)
     {
@@ -1008,66 +976,116 @@ void SplineAStar::expandAndAddToQueue(Node& current)
     }
     else
     {
-      // std::cout << "New point at " << ix << ", " << iy << ", " << iz << std::endl;
-      // std::cout << neighbor.qi.transpose() << std::endl;
-
       openList_.push(neighbor);
-      map_open_list_[Eigen::Vector3i(ix, iy, iz)] = true;
+      // map_open_list_[Eigen::Vector3i(ix, iy, iz)] = true;
 
       expanded_nodes_.push_back(neighbor);
-
-      // std::cout << "size openList= " << openList_.size() << std::endl;
-      // if (already_exist)
-      // {
-      // deleteFromOpenListtheOldOne
-      // auto it = std::find_if(openList_.begin(), openList_.end(), boost::bind(&Node::index, _1) == neighbor.index);
-      //   std::cout << "trying to erase from openList_" << (*((*ptr_to_voxel).second)).qi.transpose() << std::endl;
-
-      // Option 1
-      // openList_.erase((*ptr_to_voxel).second);
-
-      // Option 3
-      // openList_.remove((*ptr_to_voxel).second);
-
-      // and now set the direction in the map to Null:
-      //(*ptr_to_voxel).second = nullptr;
-      // I should not use more times this pointer. But have to leave it here because it needs to keep "existing" so
-      // that I don't expand again that same voxel
-
-      //   std::cout << "erased" << std::endl;
-      // }
-
-      // typedef std::set<Node, CompareCost> my_list;
-      // typedef std::set<Node, CompareCost>::iterator my_list_iterator;
-
-      // std::cout << "other" << std::endl;
-
-      // std::pair<my_list_iterator, bool> ret;
-      // std::cout << "inserting to openList_" << neighbor.qi.transpose() << std::endl;
-
-      // Option 1
-      // ret = openList_.insert(neighbor);
-      // if (!ret.second)
-      // {
-      //   std::cout << "no insertion!\n";
-      // }
-      // map_open_list_[Eigen::Vector3i(ix, iy, iz)] = ret.first;  // Keep an iterator to neighbor
-
-      // Option 3
-      // auto iterator_tmp = openList_.pushAndReturnIterator(neighbor);
-      // map_open_list_[Eigen::Vector3i(ix, iy, iz)] = iterator_tmp;  // Keep an iterator to neighbor
-
-      // std::cout << red << "inserting to map_open_list_" << neighbor.qi.transpose() << reset << std::endl;
-      // std::cout << "other_done" << std::endl;
     }
-
-    ////////////////////////////////////
   }
-
   // time_expanding_ += timer_expand.ElapsedMs();
-
   // std::cout << "End of expand Function" << std::endl;
 }
+
+//////
+
+// std::cout << " neighbor.qi =" << neighbor.qi.transpose() << std::endl;
+
+// std::cout << "orig_ = " << orig_.transpose() << std::endl;
+// std::cout << "voxel_size_ = " << voxel_size_ << std::endl;
+/////////////////
+// std::cout << "New point at " << ix << ", " << iy << ", " << iz << std::endl;
+// std::cout << neighbor.qi.transpose() << std::endl;
+
+////////////////////////////////
+// auto ptr_to_node = (*ptr_to_voxel).second;
+// auto node_tmp = (*ptr_to_node);
+// already_exists_with_lower_cost = (node_tmp.g + bias_ * (node_tmp.h)) < (neighbor.g + bias_ * neighbor.h);
+//////////////////////////////////////////////
+// std::cout << "constraint_xU= " << constraint_xU << std::endl;
+// std::cout << "constraint_xL= " << constraint_xL << std::endl;
+// std::cout << "delta_x= " << delta_x << std::endl;
+// std::cout << "_____________________________________________" << std::endl;
+// std::cout << "_____________________________________________" << std::endl;
+// std::cout << "_____________________________________________" << std::endl;
+// std::cout << "The neighbors of " << current.qi.transpose() << " are " << std::endl;
+//////////////////////////////////////////////
+// std::cout << bold << red << "map_open_list_ contains " << reset << std::endl;
+// for (auto tmp : map_open_list_)
+// {
+//   std::cout << red << (*(tmp.second)).qi.transpose() << reset << std::endl;
+// }
+
+// std::cout << bold << "openList_ contains " << reset << std::endl;
+// for (auto tmp : openList_)
+// {
+//   std::cout << tmp.qi.transpose() << std::endl;
+// }
+
+// std::cout << bold << "openList_ contains " << reset << std::endl;
+// for (auto tmp : expanded_nodes_)
+// {
+//   std::cout << tmp.qi.transpose() << std::endl;
+// }
+
+/////////////////////////////////////////////////
+// if (already_exists_with_lower_cost == true)
+// {
+//   std::cout << "already_exists_with_lower_cost" << std::endl;
+
+//   continue;
+// }
+
+// if (already_exist == false)
+// {
+//   std::cout << red << neighbor.qi.transpose() << " does NOT exist" << reset << std::endl;
+// }
+
+////////////////////////////////////////////////
+// std::cout << "size openList= " << openList_.size() << std::endl;
+// if (already_exist)
+// {
+// deleteFromOpenListtheOldOne
+// auto it = std::find_if(openList_.begin(), openList_.end(), boost::bind(&Node::index, _1) == neighbor.index);
+//   std::cout << "trying to erase from openList_" << (*((*ptr_to_voxel).second)).qi.transpose() << std::endl;
+
+// Option 1
+// openList_.erase((*ptr_to_voxel).second);
+
+// Option 3
+// openList_.remove((*ptr_to_voxel).second);
+
+// and now set the direction in the map to Null:
+//(*ptr_to_voxel).second = nullptr;
+// I should not use more times this pointer. But have to leave it here because it needs to keep "existing" so
+// that I don't expand again that same voxel
+
+//   std::cout << "erased" << std::endl;
+// }
+
+// typedef std::set<Node, CompareCost> my_list;
+// typedef std::set<Node, CompareCost>::iterator my_list_iterator;
+
+// std::cout << "other" << std::endl;
+
+// std::pair<my_list_iterator, bool> ret;
+// std::cout << "inserting to openList_" << neighbor.qi.transpose() << std::endl;
+
+// Option 1
+// ret = openList_.insert(neighbor);
+// if (!ret.second)
+// {
+//   std::cout << "no insertion!\n";
+// }
+// map_open_list_[Eigen::Vector3i(ix, iy, iz)] = ret.first;  // Keep an iterator to neighbor
+
+// Option 3
+// auto iterator_tmp = openList_.pushAndReturnIterator(neighbor);
+// map_open_list_[Eigen::Vector3i(ix, iy, iz)] = iterator_tmp;  // Keep an iterator to neighbor
+
+// std::cout << red << "inserting to map_open_list_" << neighbor.qi.transpose() << reset << std::endl;
+// std::cout << "other_done" << std::endl;
+
+/////////////////////////////////////////////////
 
 bool SplineAStar::collidesWithObstacles(std::vector<Eigen::Vector3d>& last4Cps, int index_lastCP)
 {
@@ -1135,6 +1153,13 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
   nodeq2.qi = q2_;
   nodeq2.index = 2;
   nodeq2.h = h(nodeq2);  // f=g+h
+
+  if (q2_.z() > z_max_ || q2_.z() < z_min_)
+  {  // happens in some corner cases
+    // I need to detect it here because if not, no other nodes will be expanded, and I'll just fill everything with q2,
+    // and nlopt will crash
+    return false;
+  }
 
   // Option 1
   // openList_.insert(nodeq2);
@@ -1230,10 +1255,10 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     // expanded_nodes_.push_back((*current_ptr));
 
     //////
-    unsigned int ix, iy, iz;
-    ix = round(((*current_ptr).qi.x() - orig_.x()) / voxel_size_);
-    iy = round(((*current_ptr).qi.y() - orig_.y()) / voxel_size_);
-    iz = round(((*current_ptr).qi.z() - orig_.z()) / voxel_size_);
+    // unsigned int ix, iy, iz;
+    // ix = round(((*current_ptr).qi.x() - orig_.x()) / voxel_size_);
+    // iy = round(((*current_ptr).qi.y() - orig_.y()) / voxel_size_);
+    // iz = round(((*current_ptr).qi.z() - orig_.z()) / voxel_size_);
     // map_open_list_[Eigen::Vector3i(ix, iy, iz)] = (*current_ptr).g + bias_ * (*current_ptr).h;
     ////////
     expandAndAddToQueue(*current_ptr);
@@ -1262,14 +1287,20 @@ exitloop:
   {
     // if (complete_closest_result_so_far_ptr_ != NULL)
     // {
-    //   std::cout << "[A*] choosing closest complete path as solution" << std::endl;
-    //   best_node_ptr = complete_closest_result_so_far_ptr_;
+    //   std::cout << "THERE EXISTS AT LEAST ONE COMPLETE PATH, with distance= " << complete_closest_dist_so_far_
+    //             << std::endl;
     // }
-    // else
-    // {
-    std::cout << "[A*] choosing closest path as solution" << std::endl;
-    best_node_ptr = closest_result_so_far_ptr_;
-    //}
+
+    if (complete_closest_result_so_far_ptr_ != NULL)
+    {
+      std::cout << "[A*] choosing closest complete path as solution" << std::endl;
+      best_node_ptr = complete_closest_result_so_far_ptr_;
+    }
+    else
+    {
+      std::cout << "[A*] choosing closest path as solution" << std::endl;
+      best_node_ptr = closest_result_so_far_ptr_;
+    }
   }
   else
   {
@@ -1286,6 +1317,7 @@ exitloop:
     node_ptr->index = j;
     ROS_INFO_STREAM("Filled " << j);
     std::cout << "Filled " << j << ", ";
+
     // << node_ptr->qi.transpose() << std::endl;
     node_ptr->previous = best_node_ptr;
     best_node_ptr = node_ptr;

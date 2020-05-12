@@ -1187,6 +1187,17 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
 
     // a<=amax  ==  a_i - amax <= 0  ==  c3 * (v_iP1 - v_i)<=0 ==
     // c3*c2 *q[i + 2] - c3*c2* q[i + 1]  -  c3*c1*q[i + 1] + c3*c1*q[i]   - amax <= 0
+
+    // if (((a_i - a_max_).array() > Eigen::Vector3d::Zero().array()).any())
+    // {
+    //   std::cout << "__________________ i= " << i << " _________________" << std::endl;
+
+    //   std::cout << "v_i= " << v_i.transpose() << std::endl;
+    //   std::cout << "a_i= " << a_i.transpose() << std::endl;
+    //   std::cout << "v_iP1= " << v_iP1.transpose() << std::endl;
+
+    //   std::cout << "r= " << r << ", a_i= " << a_i.transpose() << "  a_max_=" << a_max_.transpose() << std::endl;
+    // }
     assignEigenToVector(constraints, r, a_i - a_max_);  // f<=0
     if (grad)
     {
@@ -1206,6 +1217,10 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
     r = r + 3;
 
     // a>=-amax    \equiv  -a_i - amax <= 0
+    // if (((-a_i - a_max_).array() > Eigen::Vector3d::Zero().array()).any())
+    // {
+    //   std::cout << "r= " << r << "a_i= " << a_i.transpose() << "  a_max_=" << a_max_.transpose() << std::endl;
+    // }
     assignEigenToVector(constraints, r, -a_i - a_max_);  // f<=0
     if (grad)
     {
@@ -1260,6 +1275,20 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
                                     void *f_data)
 {
   SolverNlopt *opt = reinterpret_cast<SolverNlopt *>(f_data);
+
+  // sometimes max_runtime in nlopt doesn't work --> force stop execution
+  if ((opt->opt_timer_.ElapsedMs() / 1000) > (opt->mu_ * opt->max_runtime_))
+  {
+    try
+    {
+      throw 20;
+    }
+    catch (int e)
+    {
+      // std::cout << "An exception occurred. Exception Nr. " << e << '\n';
+    }
+    // https://nlopt.readthedocs.io/en/latest/NLopt_C-plus-plus_Reference/
+  }
 
   // std::cout << "in myIneqConstraints, m=" << m << ", n=" << nn << std::endl;
 
@@ -1372,7 +1401,8 @@ void SolverNlopt::printIndexesConstraints()
   std::cout << "Obstacles: " << index_const_obs_ << "-->" << index_const_vel_ - 1 << std::endl;
   std::cout << "Velocity: " << index_const_vel_ << "-->" << index_const_accel_ - 1 << std::endl;
   std::cout << "Accel: " << index_const_accel_ << "-->" << index_const_normals_ - 1 << std::endl;
-  std::cout << "Normals: " << index_const_normals_ << "-->" << num_of_constraints_ << std::endl;
+  // std::cout << "Normals: " << index_const_normals_ << "-->" << num_of_constraints_ << std::endl;
+  std::cout << "Total number of Constraints: " << num_of_constraints_ << std::endl;
   std::cout << "_______________________" << std::endl;
 }
 
@@ -1416,7 +1446,7 @@ bool SolverNlopt::optimize()
 
   // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
   // max_runtime_ = 0.2;               // hack
-  opt_->set_maxtime(std::max(mu_ * max_runtime_, 0.001));  // 0.001 to make use this criterion is used  // maximum time
+  opt_->set_maxtime(std::max(mu_ * max_runtime_, 0.001));  // 0.001 to make sure this criterion is used  // maximum time
                                                            // in seconds. Negative --> don't use this criterion
 
   // opt_->set_maxtime(max_runtime_);
@@ -1473,9 +1503,9 @@ bool SolverNlopt::optimize()
 
   qndtoX(q_guess_, n_guess_, d_guess_, x_);
 
-  // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
-  // std::cout << "q_guess_ is\n" << std::endl;
-  // printStd(q_guess_);
+  std::cout << bold << blue << "GUESSES: " << reset << std::endl;
+  std::cout << "q_guess_ is\n" << std::endl;
+  printStd(q_guess_);
 
   // std::cout << "n_guess_ is\n" << std::endl;
   // printStd(n_guess_);
@@ -1486,13 +1516,21 @@ bool SolverNlopt::optimize()
   // // toEigen(x_, q_guess_, n_guess_);
 
   std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
+  std::cout << bold << "Note that A* guess may not satisfy the accel constraints for the last cpoints " << std::endl;
   printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
   printIndexesConstraints();
 
   opt_timer_.Reset();
   std::cout << "[NL] Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
+
+  // std::cout << "std::max(mu_ * max_runtime_, 0.001)=" << std::max(mu_ * max_runtime_, 0.001) << std::endl;
+
+  // std::cout << "get_maxtime()= " << opt_->get_maxtime() << std::endl;
+
   int result = opt_->optimize(x_, minf);
+  std::cout << "[NL] Finished optimizing" << std::endl;
+
   time_needed_ = opt_timer_.ElapsedMs() / 1000;
 
   num_of_QCQPs_run_++;

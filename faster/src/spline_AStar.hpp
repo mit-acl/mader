@@ -149,6 +149,8 @@ public:
 
   bool collidesWithObstacles(std::vector<Eigen::Vector3d>& last4Cps, int index_lastCP);
 
+  double getCost();
+
 protected:
 private:
   void transformBSpline2Minvo(std::vector<Eigen::Vector3d>& last4Cps);
