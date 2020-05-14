@@ -414,7 +414,7 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
 {
   Eigen::Vector3d viM1 = p_ * (qi - qiM1) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
 
-  double d = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
+  double d = (knots_(i + p_) - knots_(i + 1)) / (1.0 * (p_ - 1));
 
   // |vi - viM1|<=a_max_*d
   //  <=>
