@@ -1,3 +1,4 @@
 .rosinstall
 .rosinstall.bak
 *.asv
+*.lyx~
