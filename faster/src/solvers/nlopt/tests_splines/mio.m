@@ -77,9 +77,6 @@ Qbspline=[q1' ; q2' ; q3' ; q4'];  %Qbspline is [q1'
 syms u
 
                                      
-
-
-
 Qbezier=inv(Mbezier)*Mbspline*Qbspline;
 Qoptimal=P*Qbezier;
 
