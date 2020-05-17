@@ -200,45 +200,12 @@ End
 \begin_body
 
 \begin_layout Title
-[Name]: 
-\begin_inset Note Note
-status open
-
-\begin_layout Title
-Aggressive
-\end_layout
-
-\end_inset
-
- Flying in Multi-Agent and Dynamic Environments
-\begin_inset Note Note
-status open
-
-\begin_layout Title
-Fast Trajectory Planner
-\end_layout
-
-\end_inset
-
-
+[Name]: Flying in Multi-Agent and Dynamic Environments
 \end_layout
 
 \begin_layout Author
 Jesus Tordesillas Torres, and Jonathan P.
  How
-\end_layout
-
-\begin_layout Author
-\begin_inset Note Note
-status open
-
-\begin_layout Title
-FLAME
-\end_layout
-
-\end_inset
-
-
 \begin_inset Foot
 status open
 
@@ -318,6 +285,45 @@ LatexCommand tableofcontents
 
 \begin_layout Abstract
 Decentralized, Collision Check, MINVO basis
+\end_layout
+
+\begin_layout Abstract
+\begin_inset Note Note
+status open
+
+\begin_layout Title
+FLAME
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+\begin_inset Note Note
+status open
+
+\begin_layout Title
+Fast Trajectory Planner
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+\begin_inset Note Note
+status open
+
+\begin_layout Title
+Aggressive
+\end_layout
+
+\end_inset
+
+
 \begin_inset Note Note
 status open
 
@@ -2169,7 +2175,7 @@ Set that contains the indexes all the obstacles/agents, except the agent
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $\mathbf{x}_{0}(0)=\mathbf{x}_{init}\nonumber\mathbf{x}_{N-1}(dt)=\mathbf{x}_{final}\nonumber\boldsymbol{x}_{n}(\tau)=\mathbf{a}_{n}\tau^{3}+\mathbf{b}_{n}\tau^{2}+\mathbf{c}_{n}\tau+\mathbf{d}_{n}\;\forall n,\forall\tau\in[0,dt]\nonumber\boldsymbol{v}_{n}(\tau)=\dot{\boldsymbol{x}}_{n}(\tau)\;\qquad\qquad\qquad\qquad\;\forall n,\forall\tau\in[0,dt]\nonumber\boldsymbol{a}_{n}(\tau)=\dot{\boldsymbol{v}}_{n}(\tau)\;\qquad\qquad\qquad\qquad\;\forall n,\forall\tau\in[0,dt]\nonumber\mathbf{j}_{n}=6\mathbf{a}_{n}\;\forall n\nonumber$
+\begin_inset Formula $\mathbf{x}_{0}(0)=\mathbf{x}_{init}\mathbf{x}_{N-1}(dt)=\mathbf{x}_{final}\boldsymbol{x}_{n}(\tau)=\mathbf{a}_{n}\tau^{3}+\mathbf{b}_{n}\tau^{2}+\mathbf{c}_{n}\tau+\mathbf{d}_{n}\;\forall n,\forall\tau\in[0,dt]\boldsymbol{v}_{n}(\tau)=\dot{\boldsymbol{x}}_{n}(\tau)\;\qquad\qquad\qquad\qquad\;\forall n,\forall\tau\in[0,dt]\boldsymbol{a}_{n}(\tau)=\dot{\boldsymbol{v}}_{n}(\tau)\;\qquad\qquad\qquad\qquad\;\forall n,\forall\tau\in[0,dt]\mathbf{j}_{n}=6\mathbf{a}_{n}\;\forall n$
 \end_inset
 
 
@@ -2467,57 +2473,6 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename imgs/deconfliction.pdf
-	lyxscale 130
-	width 100text%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Caption
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-vskip-2ex
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide true
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
 	filename imgs/explanation_trajs.pdf
 	lyxscale 130
 	width 100text%
@@ -2532,8 +2487,10 @@ status open
 
 \begin_layout Plain Layout
 Caption.
+ This is the view of the problem from the perspective of agent 2.
  Assume that the obstacles have been inflated with the radius (or max dim
- of its bounding box) of the agent 3
+ of its bounding box) of the agent 3.
+ [Jon: Fade the agent 0 and 1] [Agent 3 should be called Agent 2]
 \end_layout
 
 \end_inset
@@ -3573,6 +3530,213 @@ literal "false"
  
 \end_layout
 
+\begin_layout Standard
+We assume that there is no delay in the communication.
+\end_layout
+
+\begin_layout Standard
+we assume that a tracker algorithm is able to obtain traj of obstacles inside
+ radius R
+\end_layout
+
+\begin_layout Standard
+we assume that we can communicate with the agents within a radius R
+\end_layout
+
+\begin_layout Section
+Deconfliction
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Optimization
+\series default
+, 
+\series bold
+check
+\series default
+ and 
+\series bold
+recheck
+\series default
+.
+ (which ) .
+ 
+\end_layout
+
+\begin_layout Itemize
+The 
+\series bold
+optimization
+\series default
+ happens 
+\begin_inset Formula $t\in(t_{1},t_{2}]$
+\end_inset
+
+, and include all the trajectories of the obstacles in the local map at
+ 
+\begin_inset Formula $t=t_{1}$
+\end_inset
+
+ as hard constraints .
+\end_layout
+
+\begin_layout Itemize
+The 
+\series bold
+check
+\series default
+ happens during 
+\begin_inset Formula $t\in(t_{2},t_{3}]$
+\end_inset
+
+.
+ The goal of this part is to check whether the trajectory found in the optimizat
+ion collides with the trajectories recived during the optimization.
+ 
+\end_layout
+
+\begin_layout Itemize
+The 
+\series bold
+recheck: 
+\series default
+The goal of the recheck is to check whether the agent A has received any
+ trajectory during the check period.
+ It is implemented as a single Boolean comparison in the code, which allows
+ us to assume that no trajectories have been published while this recheck
+ is done.
+ 
+\end_layout
+
+\begin_layout Standard
+Therefore, the agent A will keep executing the trajectory it had at 
+\begin_inset Formula $t_{1}$
+\end_inset
+
+ when any of these two scenarios happen:
+\end_layout
+
+\begin_layout Itemize
+The trajectory obtained at the end of the optimization collides with any
+ the trajectories received during the optimization.
+ 
+\end_layout
+
+\begin_layout Itemize
+The agent A has received any trajectory from other agents 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+or obstacles??
+\end_layout
+
+\end_inset
+
+ during the 
+\end_layout
+
+\begin_layout Standard
+Plot with the order of magnitude of timings of all the checks
+\end_layout
+
+\begin_layout Standard
+Should I include also the trajectories of the obstacles??
+\end_layout
+
+\begin_layout Standard
+Fig.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Deconfliction"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows one example scenario:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename imgs/deconfliction.pdf
+	lyxscale 130
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Caption Note that as soon as one iteration finishes, the next one starts
+ (i.e.
+ 
+\begin_inset Formula $t_{4}^{{\color{red}A},k}=t_{1}^{{\color{red}A},k+1}$
+\end_inset
+
+ and 
+\begin_inset Formula $t_{4}^{{\color{blue}B},k}=t_{1}^{{\color{blue}B},k+1}$
+\end_inset
+
+).[Fade 
+\begin_inset Quotes eld
+\end_inset
+
+iteration
+\begin_inset Quotes erd
+\end_inset
+
+ words]
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Deconfliction"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+vskip-2ex
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Results
 \end_layout
@@ -3650,6 +3814,58 @@ status open
 \end_inset
 
 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+All the trajectories received in 
+\begin_inset Formula $(t_{1},t_{2}]$
+\end_inset
+
+ were not included as constraints when the optimization began at 
+\begin_inset Formula $t_{1}$
+\end_inset
+
+.
+ Hence, the trajectory obtained in the optimization will be checked for
+ collision 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+I should fix this in the code I think, right now is by sampling, and not
+ by LP solving
+\end_layout
+
+\end_inset
+
+ against all the trajectories received in 
+\begin_inset Formula $(t_{1},t_{2}]$
+\end_inset
+
+.
+ If there is any collision, the
+\end_layout
+
+\begin_layout Plain Layout
+If, while during the check in 
+\begin_inset Formula $(t_{2},t_{3}]$
+\end_inset
+
+, the agent A receives any trajectory from other agent, agent A will keep
+ executing the trajectory it had at 
+\begin_inset Formula $t_{1}$
+\end_inset
+
+.
 \end_layout
 
 \end_inset
