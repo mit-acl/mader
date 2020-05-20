@@ -2,3 +2,4 @@
 .rosinstall.bak
 *.asv
 *.lyx~
+*.lyx#
