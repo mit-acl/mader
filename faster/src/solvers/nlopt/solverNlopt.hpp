@@ -68,6 +68,7 @@ public:
 
   int B_SPLINE = 1;  // B-Spline Basis
   int MINVO = 2;     // Minimum volume basis
+  int BEZIER = 3;    // Bezier basis
 
 protected:
 private:
@@ -75,7 +76,7 @@ private:
 
   bool isDegenerate(const std::vector<double> &x);
 
-  void transformBSpline2Minvo(Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv);
+  void transformBSpline2otherBasis(Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv);
 
   void generateRandomGuess();
   void generateAStarGuess();
@@ -278,9 +279,17 @@ private:
   double time_needed_;
   double dist_to_use_straight_guess_ = std::numeric_limits<double>::max();
 
-  // transformation between the B-spline control points and the optimal volume control points
+  // transformation between the B-spline control points and the MINVO control points
   Eigen::Matrix<double, 4, 4> Mbs2mv_;
-  Eigen::Matrix<double, 4, 4> Mbs2mv_inverse_;
+  // Eigen::Matrix<double, 4, 4> Mbs2mv_inverse_;
+
+  // transformation between the B-spline control points and the Bezier control points
+  Eigen::Matrix<double, 4, 4> Mbs2be_;
+  // Eigen::Matrix<double, 4, 4> Mbs2be_inverse_;
+
+  // transformation between the B-spline control points and other basis
+  Eigen::Matrix<double, 4, 4> Mbs2basis_;
+  // Eigen::Matrix<double, 4, 4> Mbs2basis_inverse_;
 
   double a_star_bias_ = 1.0;
   double a_star_fraction_voxel_size_ = 0.5;

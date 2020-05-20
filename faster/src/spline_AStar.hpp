@@ -137,6 +137,7 @@ public:
 
   int B_SPLINE = 1;  // B-Spline Basis
   int MINVO = 2;     // Minimum volume basis
+  int BEZIER = 3;    // Minimum volume basis
 
   struct CompareCost
   {
@@ -153,8 +154,8 @@ public:
 
 protected:
 private:
-  void transformBSpline2Minvo(std::vector<Eigen::Vector3d>& last4Cps);
-  void transformMinvo2BSpline(std::vector<Eigen::Vector3d>& last4Cps);
+  void transformBSpline2otherBasis(std::vector<Eigen::Vector3d>& last4Cps);
+  void transformOtherBasis2BSpline(std::vector<Eigen::Vector3d>& last4Cps);
 
   void computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size);
   void computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
@@ -243,9 +244,15 @@ private:
 
   int num_of_LPs_run_ = 0;
 
-  // transformation between the B-spline control points and the optimal volume control points
+  // transformation between the B-spline control points and the MINVO control points
   Eigen::Matrix<double, 4, 4> Mbs2mv_;
-  Eigen::Matrix<double, 4, 4> Mbs2mv_inverse_;
+
+  // transformation between the B-spline control points and the Bezier control points
+  Eigen::Matrix<double, 4, 4> Mbs2be_;
+
+  // transformation between the B-spline control points and other basis
+  Eigen::Matrix<double, 4, 4> Mbs2basis_;
+  Eigen::Matrix<double, 4, 4> Mbs2basis_inverse_;
 
   Eigen::Vector3d epsilons_;
 

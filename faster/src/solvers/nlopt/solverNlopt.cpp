@@ -114,16 +114,17 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
 
   // see matlab.
   // This is for the interval [0 1];
-  Mbs2mv_ << 0.18372189915240552671171769816283, 0.057009540927778268315506693397765,
-      -0.015455155707597145742226985021261, -0.0053387944495218442320094709430123,  //
-      0.7017652257737894139211221045116, 0.66657381254229430833646574683371, 0.29187180223752395846759100095369,
-      0.11985166952332593215402312125661,  //
-      0.11985166952332680645465501356739, 0.29187180223752445806795208227413, 0.6665738125422940862918608218024,
-      0.70176522577378919187651717948029,  //////////////////
-      -0.0053387944495217436180478642882008, -0.015455155707597079822734897902592, 0.057009540927778296071082309026679,
-      0.18372189915240555446729331379174;  //////////////////
-  // Mbs2ov_ = Eigen::Matrix<double, 4, 4>::Identity();
-  Mbs2mv_inverse_ = Mbs2mv_.inverse();
+  Mbs2mv_ << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
+      0.70176, 0.6665738, 0.29187, 0.119851669,       ////////////
+      0.119851669, 0.2918718, 0.66657, 0.7017652,     //////////////////
+      -0.00533879, -0.015455, 0.0570095, 0.18372189;  //////////////////
+
+  Mbs2be_ << 1, 0, 0, 0,  //////////
+      4, 4, 2, 1,         //////////
+      1, 2, 4, 4,         //////////
+      0, 0, 0, 1;         //////////
+
+  Mbs2be_ = (1 / 6.0) * Mbs2be_;
 
   separator_solver_ = new separator::Separator();
 }
@@ -321,6 +322,10 @@ void SolverNlopt::generateAStarGuess()
   if (basis_ == MINVO)
   {
     myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);
+  }
+  else if (basis_ == BEZIER)
+  {
+    myAStarSolver.setBasisUsedForCollision(myAStarSolver.BEZIER);
   }
   else
   {
@@ -1001,16 +1006,34 @@ int SolverNlopt::lastDecCP()
   return (force_final_state_ == true) ? (N_ - 3) : (N_ - 2);
 }
 
-void SolverNlopt::transformBSpline2Minvo(Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv)
+void SolverNlopt::transformBSpline2otherBasis(Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv)
 {
   /////////////////////
   // Eigen::Matrix<double, 4, 3> Qmv;  // minvo
 
-  Qmv = Qbs * Mbs2mv_;
+  Qmv = Qbs * Mbs2basis_;
 }
 
 void SolverNlopt::setBasisUsedForCollision(int basis)
 {
+  if (basis == MINVO)
+  {
+    Mbs2basis_ = Mbs2mv_;
+  }
+  else if (basis == BEZIER)
+  {
+    Mbs2basis_ = Mbs2be_;
+  }
+  else if (basis == B_SPLINE)
+  {
+    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+  }
+  else
+  {
+    std::cout << red << "Basis not implemented yet, using the one for B-Spline" << std::endl;
+    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+  }
+
   basis_ = basis;
 }
 
@@ -1080,15 +1103,15 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         r++;
       }
 
-      if (basis_ == MINVO)
+      if (basis_ == MINVO || basis_ == BEZIER)
       {
         Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
-        Eigen::Matrix<double, 3, 4> Qmv;  // minvo
+        Eigen::Matrix<double, 3, 4> Qmv;  // other basis "basis_" (minvo, bezier,...).
         Qbs.col(0) = q[i];
         Qbs.col(1) = q[i + 1];
         Qbs.col(2) = q[i + 2];
         Qbs.col(3) = q[i + 3];
-        transformBSpline2Minvo(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
+        transformBSpline2otherBasis(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a "basis_" control point
 
         // std::cout << "Control Points" << std::endl;
         // and the control points on the other side
@@ -1107,7 +1130,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
             {
               if (isADecisionCP(i + k))  // If Q[i] is a decision variable
               {
-                toGradSameConstraintDiffVariables(gIndexQ(i + k), Mbs2mv_(u, k) * n[ip], grad, r, nn);
+                toGradSameConstraintDiffVariables(gIndexQ(i + k), Mbs2basis_(k, u) * n[ip], grad, r, nn);
               }
             }
             assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
@@ -1662,7 +1685,7 @@ void SolverNlopt::generateStraightLineGuess()
     for (int i = 0; i < num_of_segments_; i++)
     {
       std::vector<Eigen::Vector3d> last4Cps(4);
-      if (basis_ == MINVO)
+      if (basis_ == MINVO || basis_ == BEZIER)
       {
         Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
         Eigen::Matrix<double, 3, 4> Qmv;  // minvo
@@ -1671,7 +1694,7 @@ void SolverNlopt::generateStraightLineGuess()
         Qbs.col(2) = q_guess_[i + 2];
         Qbs.col(3) = q_guess_[i + 3];
 
-        transformBSpline2Minvo(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
+        transformBSpline2otherBasis(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
 
         std::vector<Eigen::Vector3d> last4Cps(4);
         last4Cps[0] = Qmv.col(0);

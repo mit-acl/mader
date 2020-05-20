@@ -64,16 +64,17 @@ SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, d
 
   // see matlab.
   // This is for the interval [0 1];
-  Mbs2mv_ << 0.18372189915240552671171769816283, 0.057009540927778268315506693397765,
-      -0.015455155707597145742226985021261, -0.0053387944495218442320094709430123,  //
-      0.7017652257737894139211221045116, 0.66657381254229430833646574683371, 0.29187180223752395846759100095369,
-      0.11985166952332593215402312125661,  //
-      0.11985166952332680645465501356739, 0.29187180223752445806795208227413, 0.6665738125422940862918608218024,
-      0.70176522577378919187651717948029,  //////////////////
-      -0.0053387944495217436180478642882008, -0.015455155707597079822734897902592, 0.057009540927778296071082309026679,
-      0.18372189915240555446729331379174;  //////////////////
-  // Mbs2ov_ = Eigen::Matrix<double, 4, 4>::Identity();
-  Mbs2mv_inverse_ = Mbs2mv_.inverse();
+  Mbs2mv_ << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
+      0.70176, 0.6665738, 0.29187, 0.119851669,       ////////////
+      0.119851669, 0.2918718, 0.66657, 0.7017652,     //////////////////
+      -0.00533879, -0.015455, 0.0570095, 0.18372189;  //////////////////
+
+  Mbs2be_ << 1, 0, 0, 0,  //////////
+      4, 4, 2, 1,         //////////
+      1, 2, 4, 4,         //////////
+      0, 0, 0, 1;         //////////
+
+  Mbs2be_ = (1 / 6.0) * Mbs2be_;
 
   // std::default_random_engine eng{ static_cast<long unsigned int>(time(0)) };
   // double delta = 0.0;
@@ -123,9 +124,9 @@ void SplineAStar::getEdgesConvexHulls(faster_types::Edges& edges_convex_hulls)
     // std::cout << last4Cps[1].transpose() << std::endl;
     // std::cout << last4Cps[2].transpose() << std::endl;
     // std::cout << last4Cps[3].transpose() << std::endl;
-    if (basis_ == MINVO)  // Plot the control points using the MINVO basis
+    if (basis_ == MINVO || basis_ == BEZIER)  // Plot the control points using the MINVO basis
     {
-      transformBSpline2Minvo(last4Cps);
+      transformBSpline2otherBasis(last4Cps);
     }
     // std::cout << last4Cps[0].transpose() << std::endl;
     // std::cout << last4Cps[1].transpose() << std::endl;
@@ -184,6 +185,26 @@ void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
 
 void SplineAStar::setBasisUsedForCollision(int basis)
 {
+  if (basis == MINVO)
+  {
+    Mbs2basis_ = Mbs2mv_;
+  }
+  else if (basis == BEZIER)
+  {
+    Mbs2basis_ = Mbs2be_;
+  }
+  else if (basis == B_SPLINE)
+  {
+    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+  }
+  else
+  {
+    std::cout << red << "Basis not implemented yet, using the one for B-Spline" << std::endl;
+    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+  }
+
+  Mbs2basis_inverse_ = Mbs2basis_.inverse();
+
   basis_ = basis;
 }
 
@@ -658,7 +679,7 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
       std::cout << q_i.transpose() << std::endl;
     }
 
-    if (basis_ == MINVO)  // Plot the control points using the MINVO basis
+    if (basis_ == MINVO || basis_ == BEZIER)  // Plot the control points using the MINVO basis
     {
       for (int i = 3; i < result_.size(); i++)
       {
@@ -675,7 +696,7 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
 
         std::vector<double> x_result_ov, y_result_ov, z_result_ov;
 
-        transformBSpline2Minvo(last4Cps);
+        transformBSpline2otherBasis(last4Cps);
 
         std::cout << "[MINVO]  with color=" << colors[counter_color] << std::endl;
         std::cout << last4Cps[0].transpose() << std::endl;
@@ -702,7 +723,7 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
 
 }*/
 
-void SplineAStar::transformBSpline2Minvo(std::vector<Eigen::Vector3d>& last4Cps)
+void SplineAStar::transformBSpline2otherBasis(std::vector<Eigen::Vector3d>& last4Cps)
 {
   /////////////////////
   Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
@@ -718,7 +739,7 @@ void SplineAStar::transformBSpline2Minvo(std::vector<Eigen::Vector3d>& last4Cps)
     std::cout << "tmp BS= " << tmp << std::endl;
     std::cout << "Determinant BS=" << tmp.determinant() << std::endl;*/
 
-  Qmv = Qbs * Mbs2mv_;
+  Qmv = Qbs * Mbs2basis_;
 
   /*  tmp.block(0, 0, 4, 3) = Qmv;
     std::cout << "tmp OV= " << tmp << std::endl;
@@ -732,7 +753,7 @@ void SplineAStar::transformBSpline2Minvo(std::vector<Eigen::Vector3d>& last4Cps)
   /////////////////////
 }
 
-void SplineAStar::transformMinvo2BSpline(std::vector<Eigen::Vector3d>& last4Cps)
+void SplineAStar::transformOtherBasis2BSpline(std::vector<Eigen::Vector3d>& last4Cps)
 {
   /////////////////////
   Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
@@ -742,7 +763,7 @@ void SplineAStar::transformMinvo2BSpline(std::vector<Eigen::Vector3d>& last4Cps)
   Qmv.col(2) = last4Cps[2];
   Qmv.col(3) = last4Cps[3];
 
-  Qbs = Qmv * Mbs2mv_inverse_;
+  Qbs = Qmv * Mbs2basis_inverse_;
 
   last4Cps[0] = Qbs.col(0);
   last4Cps[1] = Qbs.col(1);
@@ -781,9 +802,9 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
     last4Cps[2] = result[index_interv + 2];
     last4Cps[3] = result[index_interv + 3];
 
-    if (basis_ == MINVO)
+    if (basis_ == MINVO || basis_ == BEZIER)
     {
-      transformBSpline2Minvo(last4Cps);
+      transformBSpline2otherBasis(last4Cps);
     }
 
     for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
@@ -791,9 +812,7 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
       Eigen::Vector3d n_i;
       double d_i;
 
-      // transformBSpline2Minvo(last4Cps);
       bool solved = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][index_interv], last4Cps);
-      //   transformMinvo2BSpline(last4Cps);
 
       /*      std::cout << "Filling " << obst_index * num_of_segments_ + index_interv << std::endl;
             std::cout << "OBSTACLE= " << obst_index << std::endl;
@@ -1100,9 +1119,9 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
 bool SplineAStar::collidesWithObstacles(std::vector<Eigen::Vector3d>& last4Cps, int index_lastCP)
 {
-  if (basis_ == MINVO)
+  if (basis_ == MINVO || basis_ == BEZIER)
   {
-    transformBSpline2Minvo(last4Cps);  // now last4Cps are in MINVO BASIS
+    transformBSpline2otherBasis(last4Cps);  // now last4Cps are in MINVO BASIS
   }
 
   bool satisfies_LP = true;
@@ -1124,9 +1143,9 @@ bool SplineAStar::collidesWithObstacles(std::vector<Eigen::Vector3d>& last4Cps, 
     }
   }
 
-  if (basis_ == MINVO)
+  if (basis_ == MINVO || basis_ == BEZIER)
   {
-    transformMinvo2BSpline(last4Cps);
+    transformOtherBasis2BSpline(last4Cps);
     // now last4Cps are in BSpline Basis (needed for the next iteration)
   }
 

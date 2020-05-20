@@ -1324,6 +1324,10 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   {
     snlopt.setBasisUsedForCollision(snlopt.MINVO);
   }
+  else if (par_.basis == "BEZIER")
+  {
+    snlopt.setBasisUsedForCollision(snlopt.BEZIER);
+  }
   else
   {
     snlopt.setBasisUsedForCollision(snlopt.B_SPLINE);
