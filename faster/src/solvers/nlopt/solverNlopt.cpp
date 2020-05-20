@@ -112,11 +112,16 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
   printQND(q, n, d);*/
   //#endif
 
-  Mbs2mv_ << 182, 685, 100, -7,  //////////////////
-      56, 640, 280, -16,         //////////////////
-      -16, 280, 640, 56,         //////////////////
-      -7, 100, 685, 182;
-  Mbs2mv_ = (1.0 / 960.0) * Mbs2mv_;
+  // see matlab.
+  // This is for the interval [0 1];
+  Mbs2mv_ << 0.18372189915240552671171769816283, 0.057009540927778268315506693397765,
+      -0.015455155707597145742226985021261, -0.0053387944495218442320094709430123,  //
+      0.7017652257737894139211221045116, 0.66657381254229430833646574683371, 0.29187180223752395846759100095369,
+      0.11985166952332593215402312125661,  //
+      0.11985166952332680645465501356739, 0.29187180223752445806795208227413, 0.6665738125422940862918608218024,
+      0.70176522577378919187651717948029,  //////////////////
+      -0.0053387944495217436180478642882008, -0.015455155707597079822734897902592, 0.057009540927778296071082309026679,
+      0.18372189915240555446729331379174;  //////////////////
   // Mbs2ov_ = Eigen::Matrix<double, 4, 4>::Identity();
   Mbs2mv_inverse_ = Mbs2mv_.inverse();
 
@@ -996,12 +1001,12 @@ int SolverNlopt::lastDecCP()
   return (force_final_state_ == true) ? (N_ - 3) : (N_ - 2);
 }
 
-void SolverNlopt::transformBSpline2Minvo(Eigen::Matrix<double, 4, 3> &Qbs, Eigen::Matrix<double, 4, 3> &Qmv)
+void SolverNlopt::transformBSpline2Minvo(Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv)
 {
   /////////////////////
   // Eigen::Matrix<double, 4, 3> Qmv;  // minvo
 
-  Qmv = Mbs2mv_ * Qbs;
+  Qmv = Qbs * Mbs2mv_;
 }
 
 void SolverNlopt::setBasisUsedForCollision(int basis)
@@ -1077,12 +1082,12 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
 
       if (basis_ == MINVO)
       {
-        Eigen::Matrix<double, 4, 3> Qbs;  // b-spline
-        Eigen::Matrix<double, 4, 3> Qmv;  // minvo
-        Qbs.row(0) = q[i].transpose();
-        Qbs.row(1) = q[i + 1].transpose();
-        Qbs.row(2) = q[i + 2].transpose();
-        Qbs.row(3) = q[i + 3].transpose();
+        Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+        Eigen::Matrix<double, 3, 4> Qmv;  // minvo
+        Qbs.col(0) = q[i];
+        Qbs.col(1) = q[i + 1];
+        Qbs.col(2) = q[i + 2];
+        Qbs.col(3) = q[i + 3];
         transformBSpline2Minvo(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
 
         // std::cout << "Control Points" << std::endl;
@@ -1090,7 +1095,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         Eigen::Vector3d q_ipu;
         for (int u = 0; u <= 3; u++)
         {
-          q_ipu = Qmv.row(u).transpose();                         // if using the MINVO basis
+          q_ipu = Qmv.col(u);                                     // if using the MINVO basis
           constraints[r] = (n[ip].dot(q_ipu) + d[ip] + epsilon);  //  // fi<=0
 
           if (grad)
@@ -1659,20 +1664,20 @@ void SolverNlopt::generateStraightLineGuess()
       std::vector<Eigen::Vector3d> last4Cps(4);
       if (basis_ == MINVO)
       {
-        Eigen::Matrix<double, 4, 3> Qbs;  // b-spline
-        Eigen::Matrix<double, 4, 3> Qmv;  // minvo
-        Qbs.row(0) = q_guess_[i].transpose();
-        Qbs.row(1) = q_guess_[i + 1].transpose();
-        Qbs.row(2) = q_guess_[i + 2].transpose();
-        Qbs.row(3) = q_guess_[i + 3].transpose();
+        Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+        Eigen::Matrix<double, 3, 4> Qmv;  // minvo
+        Qbs.col(0) = q_guess_[i];
+        Qbs.col(1) = q_guess_[i + 1];
+        Qbs.col(2) = q_guess_[i + 2];
+        Qbs.col(3) = q_guess_[i + 3];
 
         transformBSpline2Minvo(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
 
         std::vector<Eigen::Vector3d> last4Cps(4);
-        last4Cps[0] = Qmv.row(0).transpose();
-        last4Cps[1] = Qmv.row(1).transpose();
-        last4Cps[2] = Qmv.row(2).transpose();
-        last4Cps[3] = Qmv.row(3).transpose();
+        last4Cps[0] = Qmv.col(0);
+        last4Cps[1] = Qmv.col(1);
+        last4Cps[2] = Qmv.col(2);
+        last4Cps[3] = Qmv.col(3);
       }
       else
       {

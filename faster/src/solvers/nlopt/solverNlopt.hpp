@@ -75,7 +75,7 @@ private:
 
   bool isDegenerate(const std::vector<double> &x);
 
-  void transformBSpline2Minvo(Eigen::Matrix<double, 4, 3> &Qbs, Eigen::Matrix<double, 4, 3> &Qmv);
+  void transformBSpline2Minvo(Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv);
 
   void generateRandomGuess();
   void generateAStarGuess();

@@ -244,8 +244,8 @@ private:
   int num_of_LPs_run_ = 0;
 
   // transformation between the B-spline control points and the optimal volume control points
-  Eigen::Matrix<double, 4, 4> Mbs2ov_;
-  Eigen::Matrix<double, 4, 4> Mbs2ov_inverse_;
+  Eigen::Matrix<double, 4, 4> Mbs2mv_;
+  Eigen::Matrix<double, 4, 4> Mbs2mv_inverse_;
 
   Eigen::Vector3d epsilons_;
 

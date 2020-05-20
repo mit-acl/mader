@@ -56,13 +56,24 @@ SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, d
 
   separator_solver_ = new separator::Separator();  // 0.0, 0.0, 0.0
 
-  Mbs2ov_ << 182, 685, 100, -7,  //////////////////
-      56, 640, 280, -16,         //////////////////
-      -16, 280, 640, 56,         //////////////////
-      -7, 100, 685, 182;
-  Mbs2ov_ = (1.0 / 960.0) * Mbs2ov_;
+  // Mbs2mv_ << 182, 685, 100, -7,  //////////////////
+  //     56, 640, 280, -16,         //////////////////
+  //     -16, 280, 640, 56,         //////////////////
+  //     -7, 100, 685, 182;
+  // Mbs2mv_ = (1.0 / 960.0) * Mbs2mv_;
+
+  // see matlab.
+  // This is for the interval [0 1];
+  Mbs2mv_ << 0.18372189915240552671171769816283, 0.057009540927778268315506693397765,
+      -0.015455155707597145742226985021261, -0.0053387944495218442320094709430123,  //
+      0.7017652257737894139211221045116, 0.66657381254229430833646574683371, 0.29187180223752395846759100095369,
+      0.11985166952332593215402312125661,  //
+      0.11985166952332680645465501356739, 0.29187180223752445806795208227413, 0.6665738125422940862918608218024,
+      0.70176522577378919187651717948029,  //////////////////
+      -0.0053387944495217436180478642882008, -0.015455155707597079822734897902592, 0.057009540927778296071082309026679,
+      0.18372189915240555446729331379174;  //////////////////
   // Mbs2ov_ = Eigen::Matrix<double, 4, 4>::Identity();
-  Mbs2ov_inverse_ = Mbs2ov_.inverse();
+  Mbs2mv_inverse_ = Mbs2mv_.inverse();
 
   // std::default_random_engine eng{ static_cast<long unsigned int>(time(0)) };
   // double delta = 0.0;
@@ -694,12 +705,12 @@ void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, 
 void SplineAStar::transformBSpline2Minvo(std::vector<Eigen::Vector3d>& last4Cps)
 {
   /////////////////////
-  Eigen::Matrix<double, 4, 3> Qbs;  // b-spline
-  Eigen::Matrix<double, 4, 3> Qmv;  // minvo
-  Qbs.row(0) = last4Cps[0].transpose();
-  Qbs.row(1) = last4Cps[1].transpose();
-  Qbs.row(2) = last4Cps[2].transpose();
-  Qbs.row(3) = last4Cps[3].transpose();
+  Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+  Eigen::Matrix<double, 3, 4> Qmv;  // minvo
+  Qbs.col(0) = last4Cps[0];
+  Qbs.col(1) = last4Cps[1];
+  Qbs.col(2) = last4Cps[2];
+  Qbs.col(3) = last4Cps[3];
 
   /*  Eigen::Matrix<double, 4, 4> tmp;
     tmp.block(0, 0, 4, 3) = Qbs;
@@ -707,16 +718,16 @@ void SplineAStar::transformBSpline2Minvo(std::vector<Eigen::Vector3d>& last4Cps)
     std::cout << "tmp BS= " << tmp << std::endl;
     std::cout << "Determinant BS=" << tmp.determinant() << std::endl;*/
 
-  Qmv = Mbs2ov_ * Qbs;
+  Qmv = Qbs * Mbs2mv_;
 
   /*  tmp.block(0, 0, 4, 3) = Qmv;
     std::cout << "tmp OV= " << tmp << std::endl;
     std::cout << "Determinant OV=" << tmp.determinant() << std::endl;*/
 
-  last4Cps[0] = Qmv.row(0).transpose();
-  last4Cps[1] = Qmv.row(1).transpose();
-  last4Cps[2] = Qmv.row(2).transpose();
-  last4Cps[3] = Qmv.row(3).transpose();
+  last4Cps[0] = Qmv.col(0);
+  last4Cps[1] = Qmv.col(1);
+  last4Cps[2] = Qmv.col(2);
+  last4Cps[3] = Qmv.col(3);
 
   /////////////////////
 }
@@ -724,19 +735,19 @@ void SplineAStar::transformBSpline2Minvo(std::vector<Eigen::Vector3d>& last4Cps)
 void SplineAStar::transformMinvo2BSpline(std::vector<Eigen::Vector3d>& last4Cps)
 {
   /////////////////////
-  Eigen::Matrix<double, 4, 3> Qbs;  // b-spline
-  Eigen::Matrix<double, 4, 3> Qmv;  // minvo
-  Qmv.row(0) = last4Cps[0].transpose();
-  Qmv.row(1) = last4Cps[1].transpose();
-  Qmv.row(2) = last4Cps[2].transpose();
-  Qmv.row(3) = last4Cps[3].transpose();
+  Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+  Eigen::Matrix<double, 3, 4> Qmv;  // minvo
+  Qmv.col(0) = last4Cps[0];
+  Qmv.col(1) = last4Cps[1];
+  Qmv.col(2) = last4Cps[2];
+  Qmv.col(3) = last4Cps[3];
 
-  Qbs = Mbs2ov_inverse_ * Qmv;
+  Qbs = Qmv * Mbs2mv_inverse_;
 
-  last4Cps[0] = Qbs.row(0).transpose();
-  last4Cps[1] = Qbs.row(1).transpose();
-  last4Cps[2] = Qbs.row(2).transpose();
-  last4Cps[3] = Qbs.row(3).transpose();
+  last4Cps[0] = Qbs.col(0);
+  last4Cps[1] = Qbs.col(1);
+  last4Cps[2] = Qbs.col(2);
+  last4Cps[3] = Qbs.col(3);
 
   /////////////////////
 }
