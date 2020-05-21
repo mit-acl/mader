@@ -1,7 +1,7 @@
 <launch>
 
 	<node pkg="faster" type="astar_example" name="astar_example" output="screen" >
-		<param name="basis" value="MINVO"/> <!-- MINVO   or   B_SPLINE-->
+		<param name="basis" value="B_SPLINE"/> <!-- MINVO   or   B_SPLINE-->
 	</node>
 
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find faster)/rviz_cfgs/astar.rviz"/>

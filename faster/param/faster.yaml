@@ -80,7 +80,7 @@ solver: "LD_MMA"
 #  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1 //LD_VAR2 //LD_LBFGS_NOCEDAL
 
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
-kappa: 0.35 #SHOULDN'T BE > 0.35 (if not the optimization fails too often)% of time spent to find initial guess
+kappa: 0.45 #SHOULDN'T BE > 0.35 (if not the optimization fails too often)% of time spent to find initial guess
 mu: 0.4    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
@@ -91,7 +91,7 @@ a_star_fraction_voxel_size: 0.6 #\in [0,1] The higher, the bigger the voxel size
 
 a_star_bias: 1000.0 #Bias (cost=g+bias*h) in the A* search 
 
-basis: "BEZIER"  #MINVO OR B_SPLINE or BEZIER This is the basis used only for collision checking
+basis: "B_SPLINE"  #MINVO OR B_SPLINE or BEZIER This is the basis used only for collision checking
 
 res_plot_traj: 6.0  #Higher --> More resolution when plotting the trajectory 
 
