@@ -1152,7 +1152,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   Eigen::Vector3d ones = Eigen::Vector3d::Ones();
   int r = 0;
   // grad is a vector with nn*m elements
-  // Initialize grad to 0 all the elements, not sure if needed
+  // Initialize grad to 0 all the elements, is needed I think
   if (grad)
   {
     for (int i = 0; i < nn * m; i++)
@@ -1279,47 +1279,16 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         {
           constraints[r] = (n[ip].dot(q[i + u]) + d[ip] + epsilon);  //  // f<=0
 
-          // if (r == 23)
-          // {
-          //   std::cout << "i= " << i << ", u= " << u << ", gIndexQ(i + u)=" << gIndexQ(i + u) << std::endl;
-          //   std::cout << "q[i + u]= " << q[i + u].transpose() << std::endl;
-          // }
           if (grad)
           {
             toGradSameConstraintDiffVariables(gIndexN(ip), q[i + u], grad, r, nn);
             if (isADecisionCP(i + u))  // If Q[i] is a decision variable
             {
-              // if (r == 23)
-              // {
-              //   std::cout << "Going to assign " << n[ip].transpose() << ", r= " << r << std::endl;
-              //   // std::cout << "________23" << std::endl;
-              //   // std::cout << "n[ip]= " << n[ip].transpose() << std::endl;
-              //   // std::cout << "q[i + u]= " << q[i + u].transpose() << std::endl;
-              //   // std::cout << "d[ip]= " << d[ip] << std::endl;
-              // }
-
               toGradSameConstraintDiffVariables(gIndexQ(i + u), n[ip], grad, r, nn);
             }
 
-            // if (r == 23 && isADecisionCP(i + u) == false)
-            // {
-            //   std::cout << "i+u =" << i + u << " is not a dec variable" << std::endl;
-            //   int tmp = i + u;
-            //   std::cout << "N_=" << N_ << std::endl;
-            //   std::cout << "result =" << ((tmp >= 3) && tmp <= (N_ - 2)) << std::endl;
-            // }
-
             assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
-
-            // if (r == 23)
-            // {
-            //   std::cout << "grad[23+0] " << std::setprecision(10) << grad[23] << reset << std::endl;
-            // }
           }
-          // if (r == 23)
-          // {
-          //   std::cout << "constraints[23] " << std::setprecision(10) << constraints[23] << reset << std::endl;
-          // }
 
           r++;
         }
