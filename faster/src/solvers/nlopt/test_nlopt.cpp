@@ -25,7 +25,7 @@ int main()
   double Ra = 4.0;
   int deg = 3;
   int samples_per_interval = 1;
-  double weight = 10000.0;
+  double weight = 100000.0;
   double epsilon_tol_constraints = 0.1;
   double xtol_rel = 1e-07;
   double ftol_rel = 1e-07;
@@ -69,46 +69,48 @@ int main()
   std::ofstream myfile;
   myfile.open("/home/jtorde/Desktop/ws/src/faster/faster/src/solvers/nlopt/example.txt");
 
-  for (double tmp = 3; tmp < 50; tmp = tmp + 0.05)
+  double tmp = 8.0;
+  //  for (double tmp = 3; tmp < 50; tmp = tmp + 0.05)
+  // {
+  int n_pol = ceil(tmp);
+  std::cout << "**************************************************" << std::endl;
+  std::cout << "**************************************************" << std::endl;
+  std::cout << "TRYING WITH n_pol= " << n_pol << std::endl;
+
+  ConvexHullsOfCurves_Std hulls_curves;
+  ConvexHullsOfCurve_Std hulls_curve;
+  // Assummes static obstacle
+  for (int i = 0; i < n_pol; i++)
   {
-    int n_pol = ceil(tmp);
-    std::cout << "**************************************************" << std::endl;
-    std::cout << "**************************************************" << std::endl;
-    std::cout << "TRYING WITH n_pol= " << n_pol << std::endl;
-
-    ConvexHullsOfCurves_Std hulls_curves;
-    ConvexHullsOfCurve_Std hulls_curve;
-    // Assummes static obstacle
-    for (int i = 0; i < n_pol; i++)
-    {
-      hulls_curve.push_back(hull);
-    }
-
-    hulls_curves.push_back(hulls_curve);
-
-    /////
-    SolverNlopt snlopt(n_pol, deg, hulls_curves.size(), weight, epsilon_tol_constraints, xtol_rel, ftol_rel, false,
-                       solver);  // snlopt(a,g) a polynomials of degree 3
-    snlopt.setHulls(hulls_curves);
-    snlopt.setDistanceToUseStraightLine(Ra / 2.0);
-    snlopt.setKappaAndMu(kappa, mu);
-    snlopt.setZminZmax(z_ground, z_max);
-    snlopt.setAStarSamplesAndFractionVoxel(a_star_samp_x, a_star_samp_y, a_star_samp_z, 0.5);
-    snlopt.setMaxValues(v_max.x(), a_max.x());  // v_max and a_max
-    snlopt.setDC(dc);                           // dc
-    snlopt.setTminAndTmax(t_min, t_max);
-    snlopt.setMaxRuntime(runtime);
-    snlopt.setInitAndFinalStates(initial, final);
-
-    std::cout << "Calling optimize" << std::endl;
-    bool converged = snlopt.optimize();
-
-    double time_needed = snlopt.getTimeNeeded();
-    double delta = (t_max - t_min) / n_pol;
-    if (converged)
-    {
-      myfile << n_pol << ", " << delta << ", " << time_needed << std::endl;
-    }
+    hulls_curve.push_back(hull);
   }
+
+  hulls_curves.push_back(hulls_curve);
+
+  /////
+  SolverNlopt snlopt(n_pol, deg, hulls_curves.size(), weight, epsilon_tol_constraints, xtol_rel, ftol_rel, false,
+                     solver);  // snlopt(a,g) a polynomials of degree 3
+  snlopt.setBasisUsedForCollision(snlopt.B_SPLINE);
+  snlopt.setHulls(hulls_curves);
+  snlopt.setDistanceToUseStraightLine(Ra / 2.0);
+  snlopt.setKappaAndMu(kappa, mu);
+  snlopt.setZminZmax(z_ground, z_max);
+  snlopt.setAStarSamplesAndFractionVoxel(a_star_samp_x, a_star_samp_y, a_star_samp_z, 0.5);
+  snlopt.setMaxValues(v_max.x(), a_max.x());  // v_max and a_max
+  snlopt.setDC(dc);                           // dc
+  snlopt.setTminAndTmax(t_min, t_max);
+  snlopt.setMaxRuntime(runtime);
+  snlopt.setInitAndFinalStates(initial, final);
+
+  std::cout << "Calling optimize" << std::endl;
+  bool converged = snlopt.optimize();
+
+  double time_needed = snlopt.getTimeNeeded();
+  double delta = (t_max - t_min) / n_pol;
+  if (converged)
+  {
+    myfile << n_pol << ", " << delta << ", " << time_needed << std::endl;
+  }
+  //  }
   myfile.close();
 }

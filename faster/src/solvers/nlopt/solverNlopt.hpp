@@ -108,7 +108,10 @@ private:
   void assignEigenToVector(double *grad, int index, const Eigen::Vector3d &tmp);
 
   template <class T>
-  void toEigen(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
+  void x2qnd(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
+
+  void qnd2x(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n, const std::vector<double> &d,
+             std::vector<double> &x);
 
   int gIndexQ(int i);  // Element jth of control point ith
   int gIndexN(int i);  // Element jth of normal ith
@@ -133,8 +136,9 @@ private:
   // See example https://github.com/stevengj/nlopt/issues/168
   static void myIneqConstraints(unsigned m, double *result, unsigned nn, const double *x, double *grad, void *f_data);
 
-  double computeObjFunction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-                            std::vector<double> &d);
+  // double computeObjFunction(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d>
+  // &n,
+  //                           std::vector<double> &d);
 
   double computeObjFunctionJerk(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
                                 std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
@@ -143,9 +147,6 @@ private:
                           std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
   void initializeNumOfConstraints();
-
-  void qndtoX(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
-              const std::vector<double> &d, std::vector<double> &x);
 
   void printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                                   std::vector<double> &d);
@@ -177,6 +178,9 @@ private:
   // bool satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q);
 
   void printIndexesConstraints();
+  void printIndexesVariables();
+
+  void checkGradientsUsingFiniteDiff();
 
   PieceWisePol solution_;
 
@@ -234,7 +238,7 @@ private:
   state initial_state_;
   state final_state_;
 
-  double constraints_[10000];  // this number should be very big!! (hack)
+  double constraints_[10000];  // this number should be very big!! (hack, TODO)
 
   Eigen::Vector3d q0_, q1_, q2_, qNm2_, qNm1_, qN_;
 
