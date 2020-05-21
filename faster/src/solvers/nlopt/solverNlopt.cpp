@@ -1748,8 +1748,7 @@ bool SolverNlopt::optimize()
   // // x2qnd(x_, q_guess_, n_guess_);
 
   std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
-  std::cout << bold << "Note that A* guess may not satisfy the accel constraints for the last cpoints " << reset
-            << std::endl;
+
   printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
   printIndexesConstraints();

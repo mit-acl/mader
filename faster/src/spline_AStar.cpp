@@ -466,6 +466,39 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   constraint_zL = std::max(-v_max_.z(), min_vel.z());  // lower bound
   constraint_zU = std::min(v_max_.z(), max_vel.z());   // upper bound
 
+  // Now, if i==(N_-3), I need to impose also the constraint aNm3 \in [-amax,amax]
+  if (i == (N_ - 3))
+  {
+    Eigen::Vector3d vNm2(0.0, 0.0, 0.0);  // Due to the stop condition
+
+    double c = (knots_(N_ - 3 + p_ + 1) - knots_(N_ - 3 + 2)) / (p_ - 1);
+
+    Eigen::Vector3d vNm3_max = vNm2 + c * a_max_;
+    Eigen::Vector3d vNm3_min = vNm2 - c * a_max_;
+
+    constraint_xL = std::max(vNm3_min.x(), constraint_xL);  // lower bound
+    constraint_xU = std::min(vNm3_max.x(), constraint_xU);  // upper bound
+
+    constraint_yL = std::max(vNm3_min.y(), constraint_yL);  // lower bound
+    constraint_yU = std::min(vNm3_max.y(), constraint_yU);  // upper bound
+
+    constraint_zL = std::max(vNm3_min.z(), constraint_zL);  // lower bound
+    constraint_zU = std::min(vNm3_max.z(), constraint_zU);  // upper bound
+  }
+
+  // if (neighbor.index == (N_ - 2))
+  // {  // Check that aNm2 is satisfied
+
+  //   Eigen::Vector3d vNm1(0.0, 0.0, 0.0);  // Due to the stop condition
+  //   Eigen::Vector3d vNm2 = vi;
+  //   Eigen::Vector3d aNm2 = (p_ - 1) * (vNm1 - vNm2) / (knots_(N_ - 2 + p_ + 1) - knots_(N_ - 2 + 2));
+
+  //   if ((aNm2.array() > a_max_.array()).any() || (aNm2.array() < -a_max_.array()).any())
+  //   {
+  //     continue;
+  //   }
+  // }
+
   /*  std::cout << "constraint_xL= " << constraint_xL << std::endl;
     std::cout << "constraint_xU= " << constraint_xU << std::endl;
 

@@ -75,7 +75,7 @@ int main(int argc, char **argv)
   Eigen::Vector3d goal(2.0, 0, 0);
 
   double t_min = 0.0;
-  double t_max = t_min + (goal - q0).norm() / (0.6 * v_max(0));
+  double t_max = t_min + (goal - q0).norm() / (0.8 * v_max(0));
 
   ConvexHullsOfCurves hulls_curves;
 
@@ -138,6 +138,10 @@ int main(int argc, char **argv)
   if (basis == "MINVO")
   {
     myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);  // MINVO //B_SPLINE
+  }
+  else if (basis == "BEZIER")
+  {
+    myAStarSolver.setBasisUsedForCollision(myAStarSolver.BEZIER);  // MINVO //B_SPLINE
   }
   else
   {
