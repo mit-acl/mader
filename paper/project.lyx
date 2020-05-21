@@ -200,7 +200,7 @@ End
 \begin_body
 
 \begin_layout Title
-[Name]: Flying in Multi-Agent and Dynamic Environments
+[Name]: Flying in [Decentralized] Multi-Agent and Dynamic Environments
 \end_layout
 
 \begin_layout Author
@@ -284,7 +284,7 @@ LatexCommand tableofcontents
 \end_layout
 
 \begin_layout Abstract
-Decentralized, Collision Check, MINVO basis
+3D Decentralized, Collision Check, MINVO basis, 
 \end_layout
 
 \begin_layout Abstract
@@ -406,6 +406,36 @@ literal "false"
 
 \begin_layout Standard
 A video is available here:
+\end_layout
+
+\begin_layout Section*
+TODOS:
+\end_layout
+
+\begin_layout Standard
+Compare triangle inequ (planes are not found), in terms of conservatism
+ and computation time
+\end_layout
+
+\begin_layout Standard
+Assumptions:
+\end_layout
+
+\begin_layout Standard
+–> We have a tracker/depth sensor that provides trajectories of the obstacles
+\end_layout
+
+\begin_layout Standard
+–> The agent can communicate with agents in radius r, with a delay 
+\begin_inset Formula $=0$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+-> The agents have the same reference time
 \end_layout
 
 \begin_layout Section*
@@ -725,6 +755,17 @@ vskip-2ex
 
 \begin_layout Section
 Related work
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset citation
+LatexCommand cite
+key "zhou2019robust"
+literal "false"
+
+\end_inset
+
+ use the control points of the B-Spline, not Bezier/MINVO
 \end_layout
 
 \begin_layout Section
@@ -2175,13 +2216,6 @@ Set that contains the indexes all the obstacles/agents, except the agent
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $\mathbf{x}_{0}(0)=\mathbf{x}_{init}\mathbf{x}_{N-1}(dt)=\mathbf{x}_{final}\boldsymbol{x}_{n}(\tau)=\mathbf{a}_{n}\tau^{3}+\mathbf{b}_{n}\tau^{2}+\mathbf{c}_{n}\tau+\mathbf{d}_{n}\;\forall n,\forall\tau\in[0,dt]\boldsymbol{v}_{n}(\tau)=\dot{\boldsymbol{x}}_{n}(\tau)\;\qquad\qquad\qquad\qquad\;\forall n,\forall\tau\in[0,dt]\boldsymbol{a}_{n}(\tau)=\dot{\boldsymbol{v}}_{n}(\tau)\;\qquad\qquad\qquad\qquad\;\forall n,\forall\tau\in[0,dt]\mathbf{j}_{n}=6\mathbf{a}_{n}\;\forall n$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
 Clamped uniform B-Splines: They are defined with 
 \begin_inset Formula $n+1$
 \end_inset
@@ -2279,7 +2313,7 @@ Clamped guarantees that the B-Spline passes through the first and last control
 \end_layout
 
 \begin_layout Standard
-The the interval 
+The interval 
 \begin_inset Formula $\mathcal{I}_{i-3}$
 \end_inset
 
@@ -2309,6 +2343,10 @@ The evaluation of a cubic clampled uniform B-Spline in the interval
 \end_inset
 
  can be done as follows (cite):
+\end_layout
+
+\begin_layout Standard
+[This is for the interval [0,1]!!!]
 \end_layout
 
 \begin_layout Standard
@@ -2342,6 +2380,8 @@ status open
 \end_layout
 
 \begin_layout Standard
+
+\size footnotesize
 \begin_inset Formula 
 \[
 \boldsymbol{p}_{\mathcal{I}_{i-3}}(t)=\underbrace{\left[\begin{array}{cccc}
@@ -2490,7 +2530,8 @@ Caption.
  This is the view of the problem from the perspective of agent 2.
  Assume that the obstacles have been inflated with the radius (or max dim
  of its bounding box) of the agent 3.
- [Jon: Fade the agent 0 and 1] [Agent 3 should be called Agent 2]
+ [The control points in agent 2 should match from interval to interval.
+ Or maybe is better to plot the MINVO control points directly]
 \end_layout
 
 \end_inset
@@ -2657,6 +2698,10 @@ First/last qi are given by pos and velocity
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+ADD THE SOFT TERMINAL COST, AND REMOVE THE TERMINAL HARD CONSTRAINT
 \end_layout
 
 \begin_layout Standard
@@ -2906,7 +2951,8 @@ where the operators
 \end_inset
 
 .
- 
+ EXPLAIN WHAT I'M DOING TO ENFORCE that aNm2 is inside bounds (see computeUpperA
+ndLowerConstraints in code)
 \end_layout
 
 \begin_layout Standard
@@ -3548,7 +3594,7 @@ Deconfliction
 \end_layout
 
 \begin_layout Standard
-
+The deconfliction scheme is divided in three periods 
 \series bold
 Optimization
 \series default
@@ -3560,17 +3606,15 @@ check
 \series bold
 recheck
 \series default
-.
- (which ) .
- 
+: 
 \end_layout
 
 \begin_layout Itemize
 The 
 \series bold
-optimization
+Optimization
 \series default
- happens 
+ period happens 
 \begin_inset Formula $t\in(t_{1},t_{2}]$
 \end_inset
 
@@ -3585,28 +3629,28 @@ optimization
 \begin_layout Itemize
 The 
 \series bold
-check
+Check
 \series default
  happens during 
 \begin_inset Formula $t\in(t_{2},t_{3}]$
 \end_inset
 
 .
- The goal of this part is to check whether the trajectory found in the optimizat
-ion collides with the trajectories recived during the optimization.
+ The goal of this period is to check whether the trajectory found in the
+ optimization collides with the trajectories recived during the optimization.
  
 \end_layout
 
 \begin_layout Itemize
 The 
 \series bold
-recheck: 
+Recheck
 \series default
-The goal of the recheck is to check whether the agent A has received any
- trajectory during the check period.
+ period aims at checking whether the agent A has received any trajectory
+ during the Check period.
  It is implemented as a single Boolean comparison in the code, which allows
- us to assume that no trajectories have been published while this recheck
- is done.
+ us to assume that no trajectories have been published by other agents while
+ this recheck is done (and hence an infinite loop of rechecks is not needed).
  
 \end_layout
 
@@ -3620,7 +3664,7 @@ Therefore, the agent A will keep executing the trajectory it had at
 
 \begin_layout Itemize
 The trajectory obtained at the end of the optimization collides with any
- the trajectories received during the optimization.
+ the trajectories received during the Optimization.
  
 \end_layout
 
@@ -3635,7 +3679,16 @@ or obstacles??
 
 \end_inset
 
- during the 
+ during the Check period.
+\end_layout
+
+\begin_layout Standard
+The previous deconfliction scheme guarantees safety wrt the other agents
+ assuming 
+\begin_inset Formula $t_{4}^{{\color{red}A},k}\neq t_{4}^{{\color{blue}B},q}$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -3658,7 +3711,8 @@ noprefix "false"
 
 \end_inset
 
- shows one example scenario:
+ shows one example scenario.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -3690,7 +3744,7 @@ Caption Note that as soon as one iteration finishes, the next one starts
 \end_inset
 
  and 
-\begin_inset Formula $t_{4}^{{\color{blue}B},k}=t_{1}^{{\color{blue}B},k+1}$
+\begin_inset Formula $t_{4}^{{\color{blue}B},q}=t_{1}^{{\color{blue}B},q+1}$
 \end_inset
 
 ).[Fade 
