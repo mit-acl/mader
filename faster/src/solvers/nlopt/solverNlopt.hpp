@@ -180,7 +180,7 @@ private:
   void printIndexesConstraints();
   void printIndexesVariables();
 
-  void checkGradientsUsingFiniteDiff();
+  bool checkGradientsUsingFiniteDiff();
 
   PieceWisePol solution_;
 

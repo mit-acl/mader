@@ -1050,7 +1050,7 @@ void SolverNlopt::setAStarBias(double a_star_bias)
   a_star_bias_ = a_star_bias;
 }
 
-void SolverNlopt::checkGradientsUsingFiniteDiff()
+bool SolverNlopt::checkGradientsUsingFiniteDiff()
 {
   printIndexesConstraints();
   printIndexesVariables();
@@ -1079,10 +1079,13 @@ void SolverNlopt::checkGradientsUsingFiniteDiff()
 
   computeConstraints(m, constraints_, num_of_variables_, grad_constraints, q, n, d);
 
-  double grad_obj_function[nn];
-  double f = computeObjFunctionJerk(nn, grad_obj_function, q, n, d);
+  double grad_f[nn];
+  double f = computeObjFunctionJerk(nn, grad_f, q, n, d);
 
   double epsilon = 1e-6;
+
+  bool gradients_f_are_right = true;  // objective function
+  bool gradients_c_are_right = true;  // constraints
 
   for (int i = 0; i < num_of_variables_; i++)
   {
@@ -1100,15 +1103,16 @@ void SolverNlopt::checkGradientsUsingFiniteDiff()
 
     double f_perturbed = computeObjFunctionJerk(nn, NULL, q_perturbed, n_perturbed, d_perturbed);
 
-    double grad_obj_function_is = grad_obj_function[i];
-    double grad_obj_function_should_be = (f_perturbed - f) / epsilon;
+    double grad_f_is = grad_f[i];
+    double grad_f_should_be = (f_perturbed - f) / epsilon;
 
     std::cout << "Obj Func: ";
 
-    if (fabs(grad_obj_function_is - grad_obj_function_should_be) > 1e-4)
+    if (fabs(grad_f_is - grad_f_should_be) > 1e-4)
     {
-      std::cout << red << "ERROR" << reset << "(partial f)/(partial var_" << i << ") = " << grad_obj_function_is
-                << ", should be " << grad_obj_function_should_be << std::endl;
+      gradients_f_are_right = false;
+      std::cout << red << "ERROR" << reset << "(partial f)/(partial var_" << i << ") = " << grad_f_is << ", should be "
+                << grad_f_should_be << std::endl;
     }
     else
     {
@@ -1124,16 +1128,17 @@ void SolverNlopt::checkGradientsUsingFiniteDiff()
     bool check_satisfied = true;
     for (int ci = 0; ci < num_of_constraints_; ci++)
     {
-      double grad_should_be = (constraints_perturbed[ci] - constraints_[ci]) / epsilon;
+      double grad_c_should_be = (constraints_perturbed[ci] - constraints_[ci]) / epsilon;
 
-      double grad_is = grad_constraints[ci * nn + i];
-      if (fabs(grad_is - grad_should_be) > 1e-4)
+      double grad_c_is = grad_constraints[ci * nn + i];
+      if (fabs(grad_c_is - grad_c_should_be) > 1e-4)
       {
+        gradients_c_are_right = false;
         // std::cout << "constraints_perturbed[ci]= " << constraints_perturbed[ci] << std::endl;
         // std::cout << "constraints_[ci]= " << constraints_[ci] << std::endl;
         check_satisfied = false;
         std::cout << red << "ERROR: " << reset << "(partial constraint_" << ci << ")/(partial var_" << i
-                  << ") = " << grad_is << ", should be " << grad_should_be << std::endl;
+                  << ") = " << grad_c_is << ", should be " << grad_c_should_be << std::endl;
       }
     }
 
@@ -1142,6 +1147,8 @@ void SolverNlopt::checkGradientsUsingFiniteDiff()
       std::cout << green << "OK" << reset << std::endl;
     }
   }
+
+  return (gradients_f_are_right && gradients_c_are_right);
 }
 
 // m is the number of constraints, nn is the number of variables
