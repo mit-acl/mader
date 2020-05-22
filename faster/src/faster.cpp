@@ -10,6 +10,8 @@
 #include "timer.hpp"
 #include "termcolor.hpp"
 
+#include "solvers/nlopt/nlopt_utils.hpp"
+
 /*#include <CGAL/Simple_cartesian.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Surface_mesh.h>
@@ -82,11 +84,24 @@ Faster::Faster(parameters par) : par_(par)
   pclptr_unk_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
   pclptr_map_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
 
+  // Check that the gradients are right
+  if (nlopt_utils::checkGradientsNlopt() == false)
+  {
+    std::cout << "==============================================" << std::endl;
+    std::cout << bold << "Gradient check was " << red << "NOT OK " << reset << std::endl;
+    std::cout << "==============================================" << std::endl;
+
+    abort();
+  }
+  else
+  {
+    std::cout << "==============================================" << std::endl;
+    std::cout << bold << "Gradient check was " << green << " OK " << reset << std::endl;
+    std::cout << "==============================================" << std::endl;
+  }
+
   changeDroneStatus(DroneStatus::GOAL_REACHED);
   resetInitialization();
-
-  n_pol_ = 7;
-  deg_ = 3;
 }
 
 void Faster::dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compiled)
@@ -142,7 +157,7 @@ void Faster::updateTrajObstacles(dynTraj traj)
   else
   {  // if it doesn't exist, add it to the local map
     trajs_.push_back(traj_compiled);
-    ROS_WARN_STREAM("Adding " << traj_compiled.id);
+    // ROS_WARN_STREAM("Adding " << traj_compiled.id);
     // std::cout << red << "Adding " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
     //           << reset << std::endl;
   }
@@ -171,7 +186,7 @@ void Faster::updateTrajObstacles(dynTraj traj)
   for (auto id : ids_to_remove)
   {
     // std::cout << red << "Removing " << id << " at t=" << std::setprecision(12) << traj.time_received;
-    ROS_WARN_STREAM("Removing " << id);
+    // ROS_WARN_STREAM("Removing " << id);
 
     trajs_.erase(
         std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
@@ -322,7 +337,7 @@ void Faster::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doub
 
   for (auto id : ids_to_remove)
   {
-    ROS_INFO_STREAM("traj " << id << " doesn't affect me");
+    // ROS_INFO_STREAM("traj " << id << " doesn't affect me");
     trajs_.erase(
         std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
         trajs_.end());
@@ -1082,9 +1097,9 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   int li1;  // last index inside the sphere of JPSk
   state E;
   // std::cout << bold << std::setprecision(3) << "A.pos= " << A.pos.transpose() << reset << std::endl;
-  std::cout << "A= " << A.pos.transpose() << std::endl;
-  std::cout << "G= " << G.pos.transpose() << std::endl;
-  std::cout << "ra= " << ra << std::endl;
+  // std::cout << "A= " << A.pos.transpose() << std::endl;
+  // std::cout << "G= " << G.pos.transpose() << std::endl;
+  // std::cout << "ra= " << ra << std::endl;
   E.pos = getFirstIntersectionWithSphere(JPSk, ra, JPSk[0], &li1, &noPointsOutsideS);
   if (noPointsOutsideS == true)  // if G is inside the sphere
   {
@@ -1280,9 +1295,9 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   state initial = A;
   state final = E;
 
-  std::cout << "Initial.pos= " << initial.pos << std::endl;
-  std::cout << "Final.pos= " << final.pos << std::endl;
-  std::cout << "norm= " << (initial.pos - final.pos).norm() << std::endl;
+  // std::cout << "Initial.pos= " << initial.pos << std::endl;
+  // std::cout << "Final.pos= " << final.pos << std::endl;
+  // std::cout << "norm= " << (initial.pos - final.pos).norm() << std::endl;
 
   double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
 
@@ -1345,12 +1360,12 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   snlopt.setTminAndTmax(t_min, t_max);
   if (k_whole != 0)
   {
-    std::cout << bold << red << "Using MaxRuntime=" << k_whole * par_.dc << reset << std::endl;
+    // std::cout << bold << red << "Using MaxRuntime=" << k_whole * par_.dc << reset << std::endl;
     snlopt.setMaxRuntime(k_whole * par_.dc);  // 0.8 * deltaT_ * par_.dc to take into account other computations
   }
   else
   {
-    std::cout << bold << red << "Using MaxRuntime=" << 1.0 << reset << std::endl;
+    // std::cout << bold << red << "Using MaxRuntime=" << 1.0 << reset << std::endl;
     snlopt.setMaxRuntime(1.0);  // I'm stopped at the end of the trajectory --> take my time to replan
   }
   snlopt.setInitAndFinalStates(initial, final);

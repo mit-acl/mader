@@ -87,9 +87,6 @@ private:
   JPS_Manager jps_manager_;      // Manager of JPS
   JPS_Manager jps_manager_dyn_;  // Manager of JPS
 
-  int n_pol_ = 7;
-  int deg_ = 3;
-
   void dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compiled);
 
   bool initializedStateAndTermGoal();

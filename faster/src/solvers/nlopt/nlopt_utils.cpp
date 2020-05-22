@@ -1,4 +1,7 @@
-// Jesus Tordesillas Torres, jtorde@mit.edu, January 2020
+// Jesus Tordesillas Torres, jtorde@mit.edu, May 2020
+
+// This file simply creates a solverNlopt object, sets its params and some random obstacles, and then checks all the
+// gradients numerically
 
 #include <iostream>
 #include <vector>
@@ -10,12 +13,9 @@
 #include "./../../timer.hpp"
 
 #include "solverNlopt.hpp"
+#include "nlopt_utils.hpp"
 
-#include <fstream>
-
-typedef JPS::Timer MyTimer;
-
-int main()
+bool nlopt_utils::checkGradientsNlopt()
 {
   double z_ground = -2.0;
   double z_max = 2.0;
@@ -23,7 +23,8 @@ int main()
   double Ra = 4.0;
   int deg = 3;
   int samples_per_interval = 1;
-  double weight = 10000.0;
+  double weight = 10000.0;  // Note that internally, this weight will be changed to other value for the check (to get
+                            // rid of numerical issues)
   double epsilon_tol_constraints = 0.1;
   double xtol_rel = 1e-07;
   double ftol_rel = 1e-07;
@@ -33,17 +34,12 @@ int main()
   int a_star_samp_x = 7;
   int a_star_samp_y = 7;
   int a_star_samp_z = 7;
-
   double increment = 0.3;  // grid used to prune nodes that are on the same cell
-
-  double runtime = 1.0;  //(not use this criterion)  //[seconds]
-
+  double runtime = 1.0;    //(not use this criterion)  //[seconds]
   Eigen::Vector3d v_max(10.0, 10.0, 10.0);
   Eigen::Vector3d a_max(60.0, 60.0, 60.0);
-
   state initial;
   initial.pos = Eigen::Vector3d(-4.0, 0.0, 0.0);
-
   state final;
   final.pos = Eigen::Vector3d(4.0, 0.0, 0.0);
 
@@ -64,16 +60,7 @@ int main()
 
   hull.push_back(Eigen::Vector3d(0.5, 0.5, 70.0));
 
-  std::ofstream myfile;
-  myfile.open("/home/jtorde/Desktop/ws/src/faster/faster/src/solvers/nlopt/example.txt");
-
-  double tmp = 8.0;
-  //  for (double tmp = 3; tmp < 50; tmp = tmp + 0.05)
-  // {
-  int n_pol = ceil(tmp);
-  std::cout << "**************************************************" << std::endl;
-  std::cout << "**************************************************" << std::endl;
-  std::cout << "TRYING WITH n_pol= " << n_pol << std::endl;
+  int n_pol = 8;
 
   ConvexHullsOfCurves_Std hulls_curves;
   ConvexHullsOfCurve_Std hulls_curve;
@@ -85,7 +72,6 @@ int main()
 
   hulls_curves.push_back(hulls_curve);
 
-  /////
   SolverNlopt snlopt(n_pol, deg, hulls_curves.size(), weight, epsilon_tol_constraints, xtol_rel, ftol_rel, false,
                      solver);  // snlopt(a,g) a polynomials of degree 3
   snlopt.setBasisUsedForCollision(snlopt.B_SPLINE);
@@ -100,15 +86,5 @@ int main()
   snlopt.setMaxRuntime(runtime);
   snlopt.setInitAndFinalStates(initial, final);
 
-  std::cout << "Calling optimize" << std::endl;
-  bool converged = snlopt.optimize();
-
-  double time_needed = snlopt.getTimeNeeded();
-  double delta = (t_max - t_min) / n_pol;
-  if (converged)
-  {
-    myfile << n_pol << ", " << delta << ", " << time_needed << std::endl;
-  }
-  //  }
-  myfile.close();
+  return snlopt.checkGradientsUsingFiniteDiff();
 }

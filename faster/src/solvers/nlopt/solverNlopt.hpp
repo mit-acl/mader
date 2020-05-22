@@ -70,6 +70,8 @@ public:
   int MINVO = 2;     // Minimum volume basis
   int BEZIER = 3;    // Bezier basis
 
+  bool checkGradientsUsingFiniteDiff();
+
 protected:
 private:
   void saturateQ(std::vector<Eigen::Vector3d> &q);
@@ -179,8 +181,6 @@ private:
 
   void printIndexesConstraints();
   void printIndexesVariables();
-
-  bool checkGradientsUsingFiniteDiff();
 
   PieceWisePol solution_;
 

@@ -73,7 +73,7 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
   /*  qNm2_ << 0, 0, 0;
     qNm1_ << 0, 0, 0;
     qN_ << 0, 0, 0;*/
-  std::cout << bold << "N_= " << N_ << reset << std::endl;
+  // std::cout << bold << "N_= " << N_ << reset << std::endl;
   /*  opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
     local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);*/
   //#ifdef DEBUG_MODE_NLOPT
@@ -282,7 +282,7 @@ void SolverNlopt::generateAStarGuess()
   std::cout << "[NL] Running A* from" << q0_.transpose() << " to " << final_state_.pos.transpose()
             << ", allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << std::endl;
 
-  std::cout << bold << blue << "z_max_= " << z_max_ << reset << std::endl;
+  //  std::cout << bold << blue << "z_max_= " << z_max_ << reset << std::endl;
 
   n_guess_.clear();
   q_guess_.clear();
@@ -294,9 +294,9 @@ void SolverNlopt::generateAStarGuess()
     generateRandomD(d_guess_);
     generateRandomQ(q_guess_);*/
 
-  std::cout << "The StraightLineGuess is" << std::endl;
-  printStd(q_guess_);
-  std::cout << "************" << std::endl;
+  // std::cout << "The StraightLineGuess is" << std::endl;
+  // printStd(q_guess_);
+  // std::cout << "************" << std::endl;
 
   SplineAStar myAStarSolver(num_pol_, deg_pol_, hulls_.size(), t_min_, t_max_, hulls_);
 
@@ -1052,6 +1052,12 @@ void SolverNlopt::setAStarBias(double a_star_bias)
 
 bool SolverNlopt::checkGradientsUsingFiniteDiff()
 {
+  optimize();  // we need to call optimize first so that all the variables and constraints are set up
+
+  double weight_modified_original = weight_modified_;
+  weight_modified_ =
+      10;  // For the gradient check, we set the weight to a small value (if not you run into numerical issues)
+
   printIndexesConstraints();
   printIndexesVariables();
 
@@ -1147,6 +1153,8 @@ bool SolverNlopt::checkGradientsUsingFiniteDiff()
       std::cout << green << "OK" << reset << std::endl;
     }
   }
+
+  weight_modified_ = weight_modified_original;
 
   return (gradients_f_are_right && gradients_c_are_right);
 }
@@ -1735,9 +1743,9 @@ bool SolverNlopt::optimize()
 
   qnd2x(q_guess_, n_guess_, d_guess_, x_);
 
-  std::cout << bold << blue << "GUESSES: " << reset << std::endl;
-  std::cout << "q_guess_ is\n" << std::endl;
-  printStd(q_guess_);
+  // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
+  // std::cout << "q_guess_ is\n" << std::endl;
+  // printStd(q_guess_);
 
   // std::cout << "n_guess_ is\n" << std::endl;
   // printStd(n_guess_);
