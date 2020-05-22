@@ -872,6 +872,8 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
         std::cout << last4Cps[1].transpose() << std::endl;
         std::cout << last4Cps[2].transpose() << std::endl;
         std::cout << last4Cps[3].transpose() << std::endl;
+
+        std::cout << "interval=" << index_interv << std::endl;
         /*
                 std::cout << "(which, expressed in OV form, it is)" << std::endl;
 
@@ -1378,8 +1380,8 @@ exitloop:
     Node* node_ptr = new Node;
     node_ptr->qi = best_node_ptr->qi;
     node_ptr->index = j;
-    ROS_INFO_STREAM("Filled " << j);
-    std::cout << "Filled " << j << ", ";
+    //   ROS_INFO_STREAM("Filled " << j);
+    std::cout << red << "Filled " << j << ", " << reset;
 
     // << node_ptr->qi.transpose() << std::endl;
     node_ptr->previous = best_node_ptr;

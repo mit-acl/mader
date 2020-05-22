@@ -80,7 +80,8 @@ Posibles escenarios de simulación:
 --> sphere
 
 TODOs:
---> CUIDADO QUE la MINVO basis ahora mismo tiene la matrix del paper de 1900, no la matrix buena de mi MINVO paper
+--> Anadir que el size de los obstaculos aumente a medida de que esten mas lejos (para simular incertidumbre)
+--> In checkFeasAndFillND, I should check also the acceleration constraints (which may not be satisfied when I've filled)
 0.6?? aqu'i:  double t_max = t_min + (goal - q0).norm() / (0.6 * v_max(0));
 Mejorar cost-to-go en la A* guess
 Usar MINVO basis tambien en velocity/acceleration space?
@@ -107,6 +108,7 @@ te mueves para y<0 (por ejempo), la constraint en velocidad [yL yU] tambi'en se 
 --> Si, en el escenario tipo sphere, los de arriba tienen un planning horizon corto, es porque la box del mapa (wdx,wdy,wdz) no es un cubo de lados iguales
 --> Si en el dynamic forest no funciona bien, puede ser porque el radio del dron sea muy grande
 --> El bias en A* search era provocado por la constraint n1+n2+n3 <=3 que ten'ia en separator.cpp
+--> Si hay muchas ocasiones en que checkFeasAndFillND fails, quiza es porqe a_star_samp_x, a_star_samp_y,a_star_samp_z... sean muy bajas
 
 
 --> Usar la MINVO basis tambi'en para velocity y acceleration??

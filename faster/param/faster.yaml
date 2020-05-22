@@ -84,9 +84,9 @@ kappa: 0.45 #SHOULDN'T BE > 0.35 (if not the optimization fails too often)% of t
 mu: 0.4    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
-a_star_samp_x: 3
-a_star_samp_y: 3 
-a_star_samp_z: 3 
+a_star_samp_x: 5
+a_star_samp_y: 5 
+a_star_samp_z: 5 
 a_star_fraction_voxel_size: 0.6 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
 
 a_star_bias: 1000.0 #Bias (cost=g+bias*h) in the A* search 
