@@ -110,7 +110,7 @@ target_include_directories (spline_AStar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(spline_AStar PUBLIC ${catkin_LIBRARIES})
 
 
-add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp src/bspline_utils.cpp )
+add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp src/bspline_utils.cpp src/solvers/nlopt/nlopt_utils.cpp )
 #set_property(TARGET solverNlopt PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 #target_precompile_headers(utils PUBLIC src/solvers/nlopt/solverNlopt.hpp)
 target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
