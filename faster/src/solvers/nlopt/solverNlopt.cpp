@@ -27,89 +27,76 @@
 //#define DEBUG_MODE_NLOPT 1  // any value will make the debug output appear (comment line if you don't want debug)
 using namespace termcolor;
 
-SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints,
-                         double xtol_rel, double ftol_rel, std::string &solver)
+SolverNlopt::SolverNlopt(par_snlopt &par)
 {
   // std::cout << "In the SolverNlopt Constructor\n";
 
-  solver_ = getSolver(solver);
+  z_ground_ = par.z_min;
+  z_max_ = par.z_max;
+
+  z_ground_ = par.z_min;
+  z_max_ = par.z_max;
+
+  a_star_bias_ = par.a_star_bias;
+  // basis used for collision
+  if (par.basis == "MINVO")
+  {
+    basis_ = MINVO;
+    Mbs2basis_ = Mbs2mv_;
+  }
+  else if (par.basis == "BEZIER")
+  {
+    basis_ = BEZIER;
+    Mbs2basis_ = Mbs2be_;
+  }
+  else if (par.basis == "B_SPLINE")
+  {
+    basis_ = B_SPLINE;
+    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+  }
+  else
+  {
+    std::cout << red << "Basis not implemented yet, using the one for B-Spline" << std::endl;
+    basis_ = B_SPLINE;
+    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+  }
+
+  /////////
+
+  a_star_samp_x_ = par.a_star_samp_x;
+  a_star_samp_y_ = par.a_star_samp_y;
+  a_star_samp_z_ = par.a_star_samp_z;
+  a_star_fraction_voxel_size_ = par.a_star_fraction_voxel_size;
+
+  ////////
+  dist_to_use_straight_guess_ = par.dist_to_use_straight_guess;
+
+  ///////
+
+  dc_ = par.dc;
+  /////
+
+  v_max_ = par.v_max * Eigen::Vector3d::Ones();
+  a_max_ = par.a_max * Eigen::Vector3d::Ones();
+
+  /////
+
+  solver_ = getSolver(par.solver);
 
   // force_final_state_ = force_final_state;
 
-  epsilon_tol_constraints_ = epsilon_tol_constraints;  // 1e-1;
-  xtol_rel_ = xtol_rel;                                // 1e-1;
-  ftol_rel_ = ftol_rel;                                // 1e-1;
+  epsilon_tol_constraints_ = par.epsilon_tol_constraints;  // 1e-1;
+  xtol_rel_ = par.xtol_rel;                                // 1e-1;
+  ftol_rel_ = par.ftol_rel;                                // 1e-1;
 
-  num_of_obst_ = num_obst;
-  weight_ = weight;
-  deg_pol_ = deg_pol;
-  num_pol_ = num_pol;
+  weight_ = par.weight;
+  deg_pol_ = par.deg_pol;
+  num_pol_ = par.num_pol;
 
   p_ = deg_pol_;
   M_ = num_pol_ + 2 * p_;
   N_ = M_ - p_ - 1;
   // num_of_variables_ = (3 * (N_ + 1) - 18) + (3 * (M_ - 2 * p_)) + (M_ - 2 * p_);  // total number of variables
-
-  i_min_ = 0;
-  i_max_ =
-      3 * (N_ + 1) - 1 - 9 - 6;  //(9 * (force_final_state_));  // 18 is because pos, vel and accel at t_min_ and t_max_
-                                 // are fixed (not dec variables)
-  j_min_ = i_max_ + 1;
-  j_max_ = j_min_ + 3 * (M_ - 2 * p_) * num_of_obst_ - 1;
-  k_min_ = j_max_ + 1;
-  k_max_ = k_min_ + (M_ - 2 * p_) * num_of_obst_ - 1;
-
-  num_of_variables_ = k_max_ + 1;  // k_max_ + 1;
-
-  num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
-  int num_of_cpoints = N_ + 1;
-
-  num_of_normals_ = num_of_segments_ * num_of_obst_;
-
-  q0_ << 0, 0, 0;
-  q1_ << 0, 0, 0;
-  q2_ << 0, 0, 0;
-  /*  qNm2_ << 0, 0, 0;
-    qNm1_ << 0, 0, 0;
-    qN_ << 0, 0, 0;*/
-  // std::cout << bold << "N_= " << N_ << reset << std::endl;
-  /*  opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
-    local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);*/
-  //#ifdef DEBUG_MODE_NLOPT
-  // Debugging stuff
-  /*  std::cout << "deg_pol_= " << deg_pol_ << std::endl;
-    std::cout << "num_pol= " << num_pol << std::endl;
-    std::cout << "num_of_obst_= " << num_of_obst_ << std::endl;
-    std::cout << "p_= " << p_ << std::endl;
-    std::cout << "M_= " << M_ << std::endl;
-    std::cout << "N_= " << N_ << std::endl;
-    std::cout << "num_of_cpoints= " << num_of_cpoints << std::endl;
-    std::cout << "num_of_segments_= " << num_of_segments_ << std::endl;
-    std::cout << "i_min_= " << i_min_ << std::endl;
-    std::cout << "i_max_= " << i_max_ << std::endl;
-    std::cout << "j_min_= " << j_min_ << std::endl;
-    std::cout << "j_max_= " << j_max_ << std::endl;
-
-    std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
-    std::cout << "gIndexQ(3)=" << gIndexQ(3) << std::endl;
-    std::cout << "gIndexQ(num_of_cpoints-3)=" << gIndexQ(num_of_cpoints - 3 - 1) << std::endl;
-    std::cout << "gIndexN(0)=" << gIndexN(0) << std::endl;
-    std::cout << "gIndexN(num_of_segments-1)=" << gIndexN(num_of_segments_ - 1) << std::endl;
-  */
-  // separator_solver = new separator::Separator(1.0, 1.0, 1.0);
-
-  /*  x_.clear();
-    for (int i = 0; i < num_of_variables_; i++)
-    {
-      x_.push_back(i);
-    }*/
-
-  /*  std::vector<Eigen::Vector3d> q;
-  std::vector<Eigen::Vector3d> n;
-  std::vector<double> d;
-  x2qnd(x, q, n, d);
-  printQND(q, n, d);*/
-  //#endif
 
   // see matlab.
   // This is for the interval [0 1];
@@ -216,16 +203,11 @@ Eigen::Matrix3d rot = Eigen::Matrix3d::Identity();
           }
         }*/
 
-void SolverNlopt::setKappaAndMu(double kappa, double mu)
+void SolverNlopt::setMaxRuntimeKappaAndMu(double max_runtime, double kappa, double mu)
 {
   kappa_ = kappa;
   mu_ = mu;
-}
-
-void SolverNlopt::setZminZmax(double z_min, double z_max)
-{
-  z_ground_ = z_min;
-  z_max_ = z_max;
+  max_runtime_ = max_runtime;
 }
 
 void SolverNlopt::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const std::vector<Eigen::Vector3d> &n,
@@ -266,16 +248,6 @@ void SolverNlopt::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const st
   }
 }
 
-void SolverNlopt::setAStarSamplesAndFractionVoxel(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z,
-                                                  double a_star_fraction_voxel_size)
-{
-  a_star_samp_x_ = a_star_samp_x;
-  a_star_samp_y_ = a_star_samp_y;
-  a_star_samp_z_ = a_star_samp_z;
-
-  a_star_fraction_voxel_size_ = a_star_fraction_voxel_size;
-}
-
 void SolverNlopt::generateAStarGuess()
 {
   std::cout << "[NL] Running A* from" << q0_.transpose() << " to " << final_state_.pos.transpose()
@@ -297,7 +269,7 @@ void SolverNlopt::generateAStarGuess()
   // printStd(q_guess_);
   // std::cout << "************" << std::endl;
 
-  SplineAStar myAStarSolver(num_pol_, deg_pol_, hulls_.size(), t_min_, t_max_, hulls_);
+  SplineAStar myAStarSolver(num_pol_, deg_pol_, hulls_.size(), t_init_, t_final_, hulls_);
 
   // std::cout << "q0_=" << q0_.transpose() << std::endl;
   // std::cout << "q1_=" << q1_.transpose() << std::endl;
@@ -457,51 +429,6 @@ void SolverNlopt::generateGuessNDFromQ(const std::vector<Eigen::Vector3d> &q, st
   }
 }
 
-void SolverNlopt::setTminAndTmax(double t_min, double t_max)
-{
-  t_min_ = t_min;
-  t_max_ = t_max;
-
-  std::cout << "t_min_= " << t_min_ << std::endl;
-  std::cout << "t_max_= " << t_max_ << std::endl;
-
-  deltaT_ = (t_max_ - t_min_) / (1.0 * (M_ - 2 * p_ - 1 + 1));
-
-  std::cout << "deltaT_" << deltaT_ << std::endl;
-
-  Eigen::RowVectorXd knots(M_ + 1);
-  for (int i = 0; i <= p_; i++)
-  {
-    knots[i] = t_min_;
-  }
-
-  for (int i = (p_ + 1); i <= M_ - p_ - 1; i++)
-  {
-    knots[i] = knots[i - 1] + deltaT_;  // Assumming a uniform b-spline (internal knots are equally spaced)
-  }
-
-  for (int i = (M_ - p_); i <= M_; i++)
-  {
-    knots[i] = t_max_;
-  }
-
-  knots_ = knots;
-
-  std::cout << "knots_" << knots_ << std::endl;
-}
-
-void SolverNlopt::setDC(double dc)
-{
-  dc_ = dc;
-}
-
-void SolverNlopt::setMaxValues(double v_max, double a_max)
-{
-  v_max_ = v_max * Eigen::Vector3d::Ones();
-  a_max_ = a_max * Eigen::Vector3d::Ones();
-  max_values_set_ = true;
-}
-
 void SolverNlopt::assignEigenToVector(double *result, int var_gindex, const Eigen::Vector3d &tmp)
 
 {
@@ -573,6 +500,69 @@ void SolverNlopt::setHulls(ConvexHullsOfCurves_Std &hulls)
         std::cout << "Vertex = " << vertex.transpose() << std::endl;
       }
     }*/
+
+  num_of_obst_ = hulls_.size();
+
+  i_min_ = 0;
+  i_max_ = 3 * (N_ + 1) - 1 - 9 -
+           6;  //(9 * (force_final_state_));  // 18 is because pos, vel and accel at t_init_ and t_final_
+               // are fixed (not dec variables)
+  j_min_ = i_max_ + 1;
+  j_max_ = j_min_ + 3 * (M_ - 2 * p_) * num_of_obst_ - 1;
+  k_min_ = j_max_ + 1;
+  k_max_ = k_min_ + (M_ - 2 * p_) * num_of_obst_ - 1;
+
+  num_of_variables_ = k_max_ + 1;  // k_max_ + 1;
+
+  num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
+  int num_of_cpoints = N_ + 1;
+
+  num_of_normals_ = num_of_segments_ * num_of_obst_;
+
+  q0_ << 0, 0, 0;
+  q1_ << 0, 0, 0;
+  q2_ << 0, 0, 0;
+  /*  qNm2_ << 0, 0, 0;
+    qNm1_ << 0, 0, 0;
+    qN_ << 0, 0, 0;*/
+  // std::cout << bold << "N_= " << N_ << reset << std::endl;
+  /*  opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
+    local_opt_ = new nlopt::opt(nlopt::LD_MMA, num_of_variables_);*/
+  //#ifdef DEBUG_MODE_NLOPT
+  // Debugging stuff
+  /*  std::cout << "deg_pol_= " << deg_pol_ << std::endl;
+    std::cout << "num_pol= " << num_pol << std::endl;
+    std::cout << "num_of_obst_= " << num_of_obst_ << std::endl;
+    std::cout << "p_= " << p_ << std::endl;
+    std::cout << "M_= " << M_ << std::endl;
+    std::cout << "N_= " << N_ << std::endl;
+    std::cout << "num_of_cpoints= " << num_of_cpoints << std::endl;
+    std::cout << "num_of_segments_= " << num_of_segments_ << std::endl;
+    std::cout << "i_min_= " << i_min_ << std::endl;
+    std::cout << "i_max_= " << i_max_ << std::endl;
+    std::cout << "j_min_= " << j_min_ << std::endl;
+    std::cout << "j_max_= " << j_max_ << std::endl;
+
+    std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
+    std::cout << "gIndexQ(3)=" << gIndexQ(3) << std::endl;
+    std::cout << "gIndexQ(num_of_cpoints-3)=" << gIndexQ(num_of_cpoints - 3 - 1) << std::endl;
+    std::cout << "gIndexN(0)=" << gIndexN(0) << std::endl;
+    std::cout << "gIndexN(num_of_segments-1)=" << gIndexN(num_of_segments_ - 1) << std::endl;
+  */
+  // separator_solver = new separator::Separator(1.0, 1.0, 1.0);
+
+  /*  x_.clear();
+    for (int i = 0; i < num_of_variables_; i++)
+    {
+      x_.push_back(i);
+    }*/
+
+  /*  std::vector<Eigen::Vector3d> q;
+  std::vector<Eigen::Vector3d> n;
+  std::vector<double> d;
+  x2qnd(x, q, n, d);
+  printQND(q, n, d);*/
+  //#endif
 }
 
 template <class T>
@@ -717,23 +707,11 @@ void SolverNlopt::initializeNumOfConstraints()
   // end of hack
 }
 
-void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state)
+// Note that t_final will be updated in case the saturation in deltaT_ has had effect
+void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init,
+                                                    double t_final)
 {
-  // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
-  // I think equation (7) of the paper "Robust and Efficent quadrotor..." has a typo, p_ is missing there (compare
-  // with equation 15 of that paper)
-
-  if (max_values_set_ == false)
-  {
-    std::cout << red << bold << "Please set the max values first" << reset << std::endl;
-    abort();
-  }
-
-  std::cout << "initial_state" << std::endl;
-  initial_state.print();
-  std::cout << "final_state= " << std::endl;
-  final_state.print();
-
+  ///////////////////////////
   Eigen::Vector3d p0 = initial_state.pos;
   Eigen::Vector3d v0 = initial_state.vel;
   Eigen::Vector3d a0 = initial_state.accel;
@@ -749,10 +727,15 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
   saturate(vf, -v_max_, v_max_);
   saturate(af, -a_max_, a_max_);
 
+  initial_state_ = initial_state;
+  final_state_ = final_state;
+
+  //////////////////////////////
+
+  deltaT_ = (t_final - t_init) / (1.0 * (M_ - 2 * p_ - 1 + 1));
+
   //////////////////////////////
   // Now make sure deltaT in knots_ is such that -v_max<=v1<=v_max is satisfied:
-  // v1=c*
-  // double deltaT;
 
   std::cout << bold << "deltaT_ before= " << deltaT_ << reset << std::endl;
 
@@ -763,22 +746,38 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
   saturate(deltaT_, std::min(bound1.y(), bound2.y()), std::max(bound1.y(), bound2.y()));
   saturate(deltaT_, std::min(bound1.z(), bound2.z()), std::max(bound1.z(), bound2.z()));
 
-  double max_deltaT = ((p_ - 1) * (v_max_ - v0).array() / (a0.array())).minCoeff();
-  double min_deltaT = ((p_ - 1) * (-v_max_ - v0).array() / (a0.array())).maxCoeff();
+  t_final = t_init + (1.0 * (M_ - 2 * p_ - 1 + 1)) * deltaT_;
 
-  std::cout << green << "uno= " << ((p_ - 1) * (-v_max_ - v0).array() / (a0.array())) << reset << std::endl;
-  std::cout << green << "dos= " << ((p_ - 1) * (v_max_ - v0).array() / (a0.array())) << reset << std::endl;
+  t_init_ = t_init;
+  t_final_ = t_final;
 
-  std::cout << "Saturating between " << min_deltaT << " and " << max_deltaT << std::endl;
-  // saturate(deltaT_, min_deltaT, max_deltaT);
-  t_max_ = std::min(t_max_, t_min_ + (M_ - 2 * p_ - 1 + 1) * deltaT_);
-  setTminAndTmax(t_min_, t_max_);
-  std::cout << bold << "deltaT_ after= " << deltaT_ << reset << std::endl;
+  /////////////////////////
 
-  //////////////////////////////
+  Eigen::RowVectorXd knots(M_ + 1);
+  for (int i = 0; i <= p_; i++)
+  {
+    knots[i] = t_init_;
+  }
 
-  initial_state_ = initial_state;
-  final_state_ = final_state;
+  for (int i = (p_ + 1); i <= M_ - p_ - 1; i++)
+  {
+    knots[i] = knots[i - 1] + deltaT_;  // Assumming a uniform b-spline (internal knots are equally spaced)
+  }
+
+  for (int i = (M_ - p_); i <= M_; i++)
+  {
+    knots[i] = t_final_;
+  }
+
+  knots_ = knots;
+
+  std::cout << "knots_" << knots_ << std::endl;
+
+  //////////////////
+
+  // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
+  // I think equation (7) of the paper "Robust and Efficent quadrotor..." has a typo, p_ is missing there (compare
+  // with equation 15 of that paper)
 
   weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
 
@@ -1063,12 +1062,6 @@ bool SolverNlopt::isADecisionCP(int i)
   return ((i >= 3) && i <= (N_ - 2));
 }
 
-//[seconds]
-void SolverNlopt::setMaxRuntime(double deltaT)
-{
-  max_runtime_ = deltaT;
-}
-
 double SolverNlopt::getTimeNeeded()
 {
   return time_needed_;
@@ -1085,34 +1078,6 @@ void SolverNlopt::transformBSpline2otherBasis(Eigen::Matrix<double, 3, 4> &Qbs, 
   // Eigen::Matrix<double, 4, 3> Qmv;  // minvo
 
   Qmv = Qbs * Mbs2basis_;
-}
-
-void SolverNlopt::setBasisUsedForCollision(int basis)
-{
-  if (basis == MINVO)
-  {
-    Mbs2basis_ = Mbs2mv_;
-  }
-  else if (basis == BEZIER)
-  {
-    Mbs2basis_ = Mbs2be_;
-  }
-  else if (basis == B_SPLINE)
-  {
-    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
-  }
-  else
-  {
-    std::cout << red << "Basis not implemented yet, using the one for B-Spline" << std::endl;
-    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
-  }
-
-  basis_ = basis;
-}
-
-void SolverNlopt::setAStarBias(double a_star_bias)
-{
-  a_star_bias_ = a_star_bias;
 }
 
 bool SolverNlopt::checkGradientsUsingFiniteDiff()
@@ -1682,11 +1647,6 @@ void SolverNlopt::printStd(const std::vector<Eigen::Vector3d> &v)
   }
 }
 
-void SolverNlopt::setDistanceToUseStraightLine(double dist_to_use_straight_guess)
-{
-  dist_to_use_straight_guess_ = dist_to_use_straight_guess;
-}
-
 void SolverNlopt::printIndexesVariables()
 {
   std::cout << "_______________________" << std::endl;
@@ -1800,10 +1760,10 @@ bool SolverNlopt::optimize()
   {
     lb.push_back(-HUGE_VAL);
     ub.push_back(HUGE_VAL);
-    // y conpoment
+    // y component
     lb.push_back(-HUGE_VAL);
     ub.push_back(HUGE_VAL);
-    // z conpoment
+    // z component
     lb.push_back(z_ground_);
     ub.push_back(z_max_);
   }

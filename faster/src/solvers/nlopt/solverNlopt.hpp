@@ -17,86 +17,68 @@
 
 typedef JPS::Timer MyTimer;
 
+struct par_snlopt
+{
+  // Will not change between iterations
+
+  double z_min;
+  double z_max;
+  double v_max;
+  double a_max;
+  double dc;
+  double dist_to_use_straight_guess;
+  int a_star_samp_x;
+  int a_star_samp_y;
+  int a_star_samp_z;
+  double a_star_fraction_voxel_size;
+  int num_pol;
+  int deg_pol;
+  double weight;
+  double epsilon_tol_constraints;
+  double xtol_rel;
+  double ftol_rel;
+  std::string solver;
+  std::string basis;
+  double a_star_bias;
+
+  // //  Will change between iterations
+  // double kappa;
+  // double mu;
+  // state initial_state;
+  // state final_state;
+  // ConvexHullsOfCurves_Std hulls;
+  // double t_min;
+  // double t_max;
+  // double max_runtime;
+  // int num_obst;
+};
+
 class SolverNlopt
 {
 public:
-  SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints, double xtol_rel,
-              double ftol_rel, std::string &solver);
+  SolverNlopt(par_snlopt &par);
 
   ~SolverNlopt();
 
   bool optimize();
 
-  void setInitAndFinalStates(state &initial_state, state &final_state);
+  void setMaxRuntimeKappaAndMu(double runtime, double kappa, double mu);
+  void setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init, double t_final);
   void setHulls(ConvexHullsOfCurves_Std &hulls);
-  void setTminAndTmax(double t_min, double t_max);
-  void setMaxValues(double v_max, double a_max);
-  void setDC(double dc);
-  void setDistanceToUseStraightLine(double dist_to_use_straight_guess);
-  void setMaxRuntime(double deltaT);
-  void setKappaAndMu(double kappa, double mu);
-  void setZminZmax(double z_min, double z_max);  // A* guess will always be between z_min and z_max
-  void setAStarSamplesAndFractionVoxel(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z,
-                                       double a_star_fraction_voxel_size);
+
   trajectory X_temp_;
 
-  // Guesses
-  /*  void useJPSGuess(vec_Vecf<3> &jps_path);
-    void useRRTGuess();*/
-
   void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
-
   int getNumOfLPsRun();
-
   int getNumOfQCQPsRun();
-
   void getSolution(PieceWisePol &solution);
-
   double getTimeNeeded();
-
-  void setBasisUsedForCollision(int basis);
-
-  void setAStarBias(double a_star_bias);
 
   int B_SPLINE = 1;  // B-Spline Basis
   int MINVO = 2;     // Minimum volume basis
   int BEZIER = 3;    // Bezier basis
 
   bool checkGradientsUsingFiniteDiff();
-
-  // struct par_snlopt
-  // {
-  //   // Will not change between iterations
-  //   double z_min;
-  //   double z_max;
-  //   double kappa;
-  //   double mu;
-  //   double v_max;
-  //   double a_max;
-  //   double dc;
-  //   double dist_to_use_straight_guess;
-  //   int a_star_samp_x;
-  //   int a_star_samp_y;
-  //   int a_star_samp_z;
-  //   double a_star_fraction_voxel_size;
-  //   int num_pol;
-  //   int deg_pol;
-  //   double weight;
-  //   double epsilon_tol_constraints;
-  //   double xtol_rel;
-  //   double ftol_rel;
-  //   std::string &solver;
-
-  // Will change between iterations
-  //   state initial_state;
-  //   state final_state;
-  //   ConvexHullsOfCurves_Std hulls;
-  //   double t_min;
-  //   double t_max;
-  //   double max_runtime;
-  //   int num_obst;
-
-  // };
 
 protected:
 private:
@@ -252,8 +234,8 @@ private:
 
   double dc_;
   Eigen::RowVectorXd knots_;
-  double t_min_;
-  double t_max_;
+  double t_init_;
+  double t_final_;
   double deltaT_;
   Eigen::Vector3d v_max_;
   Eigen::Vector3d a_max_;
@@ -327,7 +309,5 @@ private:
   double a_star_fraction_voxel_size_ = 0.5;
 
   separator::Separator *separator_solver_;
-
-  bool max_values_set_ = false;
 };
 #endif

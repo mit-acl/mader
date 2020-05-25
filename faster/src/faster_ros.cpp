@@ -73,8 +73,8 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "use_faster", par_.use_faster);
 
-  safeGetParam(nh_, "n_pol", par_.n_pol);
-  safeGetParam(nh_, "deg", par_.deg);
+  safeGetParam(nh_, "num_pol", par_.num_pol);
+  safeGetParam(nh_, "deg_pol", par_.deg_pol);
   safeGetParam(nh_, "samples_per_interval", par_.samples_per_interval);
   safeGetParam(nh_, "weight", par_.weight);
   safeGetParam(nh_, "epsilon_tol_constraints", par_.epsilon_tol_constraints);
@@ -589,7 +589,7 @@ void FasterRos::publishPlanes(std::vector<Hyperplane3D>& planes)
   int i = 0;
   for (auto plane_i : planes)
   {
-    if ((i % par_.n_pol) == 0)  // planes for a new obstacle --> new color
+    if ((i % par_.num_pol) == 0)  // planes for a new obstacle --> new color
     {
       color = visual_tools_->getRandColor();
     }

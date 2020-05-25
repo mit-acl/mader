@@ -360,9 +360,9 @@ ConvexHullsOfCurve Faster::convexHullsOfCurve(dynTrajCompiled& traj, double t_st
 {
   ConvexHullsOfCurve convexHulls;
 
-  double deltaT = (t_end - t_start) / (1.0 * par_.n_pol);  // n_pol is the number of intervals
+  double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
   // std::cout << "deltaT= " << deltaT << std::endl;
-  for (int i = 0; i < par_.n_pol; i++)
+  for (int i = 0; i < par_.num_pol; i++)
   {
     // std::cout << "i= " << i << std::endl;
     convexHulls.push_back(convexHullOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT));
@@ -1288,8 +1288,8 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   // DEBUGGING
 
-  int n_pol = par_.n_pol;
-  int deg = par_.deg;
+  // int num_pol = par_.num_pol;
+  // int deg = par_.deg;
   int samples_per_interval = par_.samples_per_interval;
 
   state initial = A;
@@ -1301,106 +1301,59 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
 
-  double t_min = k_whole * par_.dc + time_now;
-  // double t_max = t_min + (initial.pos - final.pos).norm() / (0.6 * par_.v_max);  // time to execute the optimized
-  // path
-  double t_max = t_min + (initial.pos - final.pos).array().abs().maxCoeff() /
-                             (par_.factor_v_max * par_.v_max);  // time to execute the optimized path
+  double t_init = k_whole * par_.dc + time_now;
+  double t_final = t_init + (initial.pos - final.pos).array().abs().maxCoeff() /
+                                (par_.factor_v_max * par_.v_max);  // time to execute the optimized path
 
-  /*  std::cout << "Going to compute the convex hulls, t_min= " << t_min << std::endl;
-    std::cout << "Going to compute the convex hulls, t_max= " << t_max << std::endl;
-    std::cout << "ros::Time::now().toSec()= " << ros::Time::now().toSec() << std::endl;
-    std::cout << "deltaT_= " << deltaT_ << std::endl;
-    std::cout << "par_.dc= " << par_.dc << std::endl;
-  */
-  // std::cout << bold << red << "[replan] Locking" << reset << std::endl;
   mtx_trajs_.lock();
 
   double time_init_opt = ros::Time::now().toSec();
-  // std::cout << bold << red << "[replan] Locked" << reset << std::endl;
 
   MyTimer convex_hulls_timer(true);
-  removeTrajsThatWillNotAffectMe(A, t_min, t_max);
-  ConvexHullsOfCurves hulls = convexHullsOfCurves(t_min, t_max);
-  // std::cout << "hulls.size()=" << hulls.size() << std::endl;
-
+  removeTrajsThatWillNotAffectMe(A, t_init, t_final);
+  ConvexHullsOfCurves hulls = convexHullsOfCurves(t_init, t_final);
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
   edges_obstacles_out = vectorGCALPol2edges(hulls);
 
-  // std::cout << cyan << "Convex Hull time = " << convex_hulls_timer << reset << std::endl;
-  // std::cout << bold << "hulls has size=" << hulls.size() << reset << std::endl;
+  par_snlopt par;
 
-  int num_obst = hulls.size();
+  par.z_min = par_.z_ground;
+  par.z_max = par_.z_max;
+  par.v_max = par_.v_max;
+  par.a_max = par_.a_max;
+  par.dc = par_.dc;
+  par.dist_to_use_straight_guess = par_.goal_radius;
+  par.a_star_samp_x = par_.a_star_samp_x;
+  par.a_star_samp_y = par_.a_star_samp_y;
+  par.a_star_samp_z = par_.a_star_samp_z;
+  par.a_star_fraction_voxel_size = par_.a_star_fraction_voxel_size;
+  par.num_pol = par_.num_pol;
+  par.deg_pol = par_.deg_pol;
+  par.weight = par_.weight;
+  par.epsilon_tol_constraints = par_.epsilon_tol_constraints;
+  par.xtol_rel = par_.xtol_rel;
+  par.ftol_rel = par_.ftol_rel;
+  par.solver = par_.solver;
+  par.basis = par_.basis;
+  par.a_star_bias = par_.a_star_bias;
 
-  SolverNlopt snlopt(n_pol, deg, num_obst, par_.weight, par_.epsilon_tol_constraints, par_.xtol_rel, par_.ftol_rel,
-                     par_.solver);  // snlopt(a,g) a polynomials of degree 3
-  if (par_.basis == "MINVO")
-  {
-    snlopt.setBasisUsedForCollision(snlopt.MINVO);
-  }
-  else if (par_.basis == "BEZIER")
-  {
-    snlopt.setBasisUsedForCollision(snlopt.BEZIER);
-  }
-  else
-  {
-    snlopt.setBasisUsedForCollision(snlopt.B_SPLINE);
-  }
+  SolverNlopt snlopt(par);
 
-  snlopt.setAStarBias(par_.a_star_bias);
   snlopt.setHulls(hulls_std);
-  snlopt.setDistanceToUseStraightLine(par_.goal_radius);
-  snlopt.setKappaAndMu(par_.kappa, par_.mu);
-  snlopt.setZminZmax(par_.z_ground, par_.z_max);
-  snlopt.setAStarSamplesAndFractionVoxel(par_.a_star_samp_x, par_.a_star_samp_y, par_.a_star_samp_z,
-                                         par_.a_star_fraction_voxel_size);
-  snlopt.setMaxValues(par_.v_max, par_.a_max);  // v_max and a_max
-  snlopt.setDC(par_.dc);                        // dc
-  snlopt.setTminAndTmax(t_min, t_max);
+
   if (k_whole != 0)
   {
-    // std::cout << bold << red << "Using MaxRuntime=" << k_whole * par_.dc << reset << std::endl;
-    snlopt.setMaxRuntime(k_whole * par_.dc);  // 0.8 * deltaT_ * par_.dc to take into account other computations
+    snlopt.setMaxRuntimeKappaAndMu(k_whole * par_.dc, par_.kappa, par_.mu);
   }
   else
   {
-    // std::cout << bold << red << "Using MaxRuntime=" << 1.0 << reset << std::endl;
-    snlopt.setMaxRuntime(1.0);  // I'm stopped at the end of the trajectory --> take my time to replan
+    snlopt.setMaxRuntimeKappaAndMu(1.0, par_.kappa,
+                                   par_.mu);  // I'm stopped at the end of the trajectory --> take my time to replan
   }
-  snlopt.setInitAndFinalStates(initial, final);
+  snlopt.setInitStateFinalStateInitTFinalT(initial, final, t_init, t_final);
 
-  /*  snlopt.getGuessForCPs(poly_safe_out);  // in testing phase
-    X_safe_out = snlopt.X_temp_;           // in testing phase
-    return;                                // // in testing phase*/
-
-  // Initial GUESS: run JPS with the dynamic obstacles as static obstacles
-  /*  mtx_map.lock();
-    mtx_unk.lock();
-
-    createObstacleMapFromTrajs(t_min, t_max);
-    bool solvedjps_dyn = false;
-
-    vec_Vecf<3> JPSk_dyn = jps_manager_dyn_.solveJPS3D(initial.pos, final.pos, &solvedjps_dyn, 1);
-
-    if (solvedjps_dyn == false)
-    {
-      std::cout << bold << red << "JPS didn't find a solution, using straight line" << reset << std::endl;
-    }
-
-    JPS_safe_out = JPSk_dyn;              // for visualization
-    jps_manager_dyn_.getMap(pcloud_jps);  // for visualization
-
-    mtx_map.unlock();
-    mtx_unk.unlock();*/
-  // end of Initial GUESSS
-  // snlopt.useJPSGuess(JPSk_dyn);
-
-  // std::cout << bold << red << "[replan] Unlocking" << reset << std::endl;
   mtx_trajs_.unlock();
-  // std::cout << bold << red << "[replan] Unlocked" << reset << std::endl;
-
-  // snlopt.createGuess(poly_safe_out);
 
   std::cout << on_cyan << bold << "Solved so far" << solutions_found_ << "/" << total_replannings_ << reset
             << std::endl;
@@ -1443,30 +1396,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   // std::cout << "Below of loop\n";
 
   /////// END OF DEBUGGING
-  /*
-    SolverNlopt snlopt(n_pol_, deg_, true);  // snlopt(a,g) a polynomials of degree 3
 
-    // SolverNlopt snlopt(n_pol_, deg_);  // snlopt(a,g) a polynomials of degree 3
-
-    snlopt.setMaxValues(300, 200);  // v_max and a_max
-    snlopt.setDC(par_.dc);          // dc
-
-    double secs = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
-    std::vector<CGAL_Polyhedron_3> hulls = convexHullsOfCurve(secs, secs + 10, n_pol_, 0.1);  // TODO: Change this time
-    poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
-    std::vector<std::vector<Eigen::Vector3d>> hulls_std = vectorGCALPol2vectorStdEigen(hulls);
-    snlopt.setHulls(hulls_std);
-
-    // snlopt.setTminAndTmax(0, (A.pos - G_term.pos).norm() / (0.4 * par_.v_max));
-    snlopt.setTminAndTmax(0, (A.pos - G_term.pos).norm() / (0.4 * par_.v_max));
-    snlopt.setInitAndFinalStates(A, G_term);
-    bool result = snlopt.optimize();
-    if (result == false)
-    {
-      return;
-    }
-    // X_safe_out = snlopt.X_temp_;
-*/
   std::vector<state> dummy_vector;
   dummy_vector.push_back(A);
   // sg_whole_.X_temp_ = dummy_vector;

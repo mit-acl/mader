@@ -190,8 +190,8 @@ struct parameters
   double wdz;
   double res;
 
-  int n_pol;
-  int deg;
+  int num_pol;
+  int deg_pol;
   int samples_per_interval;
   double weight;
   double epsilon_tol_constraints;
@@ -292,19 +292,19 @@ struct state
     dyaw = 0;
   }
 
-  void printPos()
+  const void printPos()
   {
     std::cout << "Pos= " << pos.transpose() << std::endl;
   }
 
-  void print()
+  const void print()
   {
     std::cout << std::setprecision(15) << "Pos= " << pos.transpose() << std::endl;
     std::cout << std::setprecision(15) << "Vel= " << vel.transpose() << std::endl;
     std::cout << std::setprecision(15) << "Accel= " << accel.transpose() << std::endl;
   }
 
-  void printHorizontal()
+  const void printHorizontal()
   {
     using namespace termcolor;
     std::cout << std::setprecision(3) << "Pos, Vel, Accel, Jerk= " << red << pos.transpose() << reset;

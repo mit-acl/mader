@@ -21,7 +21,7 @@ bool nlopt_utils::checkGradientsNlopt()
   double z_max = 2.0;
   double dc = 0.01;
   double Ra = 4.0;
-  int deg = 3;
+  int deg_pol = 3;
   int samples_per_interval = 1;
   double weight = 10000.0;  // Note that internally, this weight will be changed to other value for the check (to get
                             // rid of numerical issues)
@@ -36,15 +36,37 @@ bool nlopt_utils::checkGradientsNlopt()
   int a_star_samp_z = 7;
   double increment = 0.3;  // grid used to prune nodes that are on the same cell
   double runtime = 1.0;    //(not use this criterion)  //[seconds]
-  Eigen::Vector3d v_max(10.0, 10.0, 10.0);
-  Eigen::Vector3d a_max(60.0, 60.0, 60.0);
+  double v_max = 10;
+  double a_max = 60;
   state initial;
   initial.pos = Eigen::Vector3d(-4.0, 0.0, 0.0);
   state final;
   final.pos = Eigen::Vector3d(4.0, 0.0, 0.0);
+  double dist_to_use_straight_guess = 1.0;
+  double a_star_fraction_voxel_size = 0.0;
+  int num_pol = 8;
+
+  par_snlopt param;
+  param.z_min = z_ground;
+  param.z_max = z_max;
+  param.v_max = v_max;
+  param.a_max = a_max;
+  param.dc = dc;
+  param.dist_to_use_straight_guess = dist_to_use_straight_guess;
+  param.a_star_samp_x = a_star_samp_x;
+  param.a_star_samp_y = a_star_samp_y;
+  param.a_star_samp_z = a_star_samp_z;
+  param.a_star_fraction_voxel_size = a_star_fraction_voxel_size;
+  param.num_pol = num_pol;
+  param.deg_pol = deg_pol;
+  param.weight = weight;
+  param.epsilon_tol_constraints = epsilon_tol_constraints;
+  param.xtol_rel = xtol_rel;
+  param.ftol_rel = ftol_rel;
+  param.solver = solver;
 
   double t_min = 0.0;
-  double t_max = t_min + (final.pos - initial.pos).norm() / (0.3 * v_max(0));
+  double t_max = t_min + (final.pos - initial.pos).norm() / (0.3 * v_max);
 
   Polyhedron_Std hull;
 
@@ -60,31 +82,21 @@ bool nlopt_utils::checkGradientsNlopt()
 
   hull.push_back(Eigen::Vector3d(0.5, 0.5, 70.0));
 
-  int n_pol = 8;
-
   ConvexHullsOfCurves_Std hulls_curves;
   ConvexHullsOfCurve_Std hulls_curve;
   // Assummes static obstacle
-  for (int i = 0; i < n_pol; i++)
+  for (int i = 0; i < num_pol; i++)
   {
     hulls_curve.push_back(hull);
   }
 
   hulls_curves.push_back(hulls_curve);
 
-  SolverNlopt snlopt(n_pol, deg, hulls_curves.size(), weight, epsilon_tol_constraints, xtol_rel, ftol_rel,
-                     solver);  // snlopt(a,g) a polynomials of degree 3
-  snlopt.setBasisUsedForCollision(snlopt.B_SPLINE);
+  SolverNlopt snlopt(param);  // snlopt(a,g) a polynomials of degree 3
   snlopt.setHulls(hulls_curves);
-  snlopt.setDistanceToUseStraightLine(Ra / 2.0);
-  snlopt.setKappaAndMu(kappa, mu);
-  snlopt.setZminZmax(z_ground, z_max);
-  snlopt.setAStarSamplesAndFractionVoxel(a_star_samp_x, a_star_samp_y, a_star_samp_z, 0.5);
-  snlopt.setMaxValues(v_max.x(), a_max.x());  // v_max and a_max
-  snlopt.setDC(dc);                           // dc
-  snlopt.setTminAndTmax(t_min, t_max);
-  snlopt.setMaxRuntime(runtime);
-  snlopt.setInitAndFinalStates(initial, final);
+  snlopt.setMaxRuntimeKappaAndMu(runtime, kappa, mu);
+
+  snlopt.setInitStateFinalStateInitTFinalT(initial, final, t_min, t_max);
 
   return snlopt.checkGradientsUsingFiniteDiff();
 }
