@@ -1334,7 +1334,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   int num_obst = hulls.size();
 
   SolverNlopt snlopt(n_pol, deg, num_obst, par_.weight, par_.epsilon_tol_constraints, par_.xtol_rel, par_.ftol_rel,
-                     false, par_.solver);  // snlopt(a,g) a polynomials of degree 3
+                     par_.solver);  // snlopt(a,g) a polynomials of degree 3
   if (par_.basis == "MINVO")
   {
     snlopt.setBasisUsedForCollision(snlopt.MINVO);

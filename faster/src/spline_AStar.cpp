@@ -440,7 +440,8 @@ void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_vox
 }
 
 // Compute the lower and upper bounds on the velocity based on the velocity and acceleration constraints
-void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
+// return false if any of the intervals, the lower bound is > the upper bound
+bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
                                                   double& constraint_xL, double& constraint_xU, double& constraint_yL,
                                                   double& constraint_yU, double& constraint_zL, double& constraint_zU)
 {
@@ -454,8 +455,8 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   //  <=>
   //  vi<=a_max_*d + viM1   AND     vi>=-a_max_*d + viM1
 
-  Eigen::Vector3d max_vel = a_max_ * d + viM1;
-  Eigen::Vector3d min_vel = -a_max_ * d + viM1;
+  Eigen::Vector3d max_vel = a_max_ * d + viM1;   // this is to ensure that aiM1 is inside the bounds
+  Eigen::Vector3d min_vel = -a_max_ * d + viM1;  // this is to ensure that aiM1 is inside the bounds
 
   constraint_xL = std::max(-v_max_.x(), min_vel.x());  // lower bound
   constraint_xU = std::min(v_max_.x(), max_vel.x());   // upper bound
@@ -465,6 +466,9 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
 
   constraint_zL = std::max(-v_max_.z(), min_vel.z());  // lower bound
   constraint_zU = std::min(v_max_.z(), max_vel.z());   // upper bound
+
+  std::cout << "i " << i << std::endl;
+  std::cout << "Checking for acceleration " << i - 1 << std::endl;
 
   // Now, if i==(N_-3), I need to impose also the constraint aNm3 \in [-amax,amax]
   if (i == (N_ - 3))
@@ -476,6 +480,11 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
     Eigen::Vector3d vNm3_max = vNm2 + c * a_max_;
     Eigen::Vector3d vNm3_min = vNm2 - c * a_max_;
 
+    std::cout << "Before: " << constraint_xL << " --> " << constraint_xU << std::endl;
+
+    std::cout << "vNm3_min.x()=: " << vNm3_min.x() << std::endl;
+    std::cout << "constraint_xL=: " << constraint_xL << std::endl;
+
     constraint_xL = std::max(vNm3_min.x(), constraint_xL);  // lower bound
     constraint_xU = std::min(vNm3_max.x(), constraint_xU);  // upper bound
 
@@ -484,6 +493,26 @@ void SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
 
     constraint_zL = std::max(vNm3_min.z(), constraint_zL);  // lower bound
     constraint_zU = std::min(vNm3_max.z(), constraint_zU);  // upper bound
+
+    std::cout << "vNm3=v4 in" << constraint_xL << " --> " << constraint_xU << std::endl;
+  }
+
+  // if (constraint_xL > constraint_xU)
+  // {
+  //   std::cout << red << "there is sth wrong, constraint_xL > constraint_xU" << reset << std::endl;
+  //   std::cout << "constraint_xL= " << constraint_xL << std::endl;
+  //   std::cout << "constraint_xU= " << constraint_xU << std::endl;
+
+  //   abort();
+  // }
+
+  if (constraint_xL > constraint_xU || constraint_yL > constraint_yU || constraint_zL > constraint_zU)
+  {  // can happen when i==(N_-3), but never happens when i<(N_-3)
+    return false;
+  }
+  else
+  {
+    return true;  // constraint_xL<=constraint_xU (same with other axes)
   }
 
   // if (neighbor.index == (N_ - 2))
@@ -806,7 +835,7 @@ void SplineAStar::transformOtherBasis2BSpline(std::vector<Eigen::Vector3d>& last
   /////////////////////
 }
 
-bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n,
+bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vector<Eigen::Vector3d>& n,
                                      std::vector<double>& d)
 {
   n.resize(std::max(num_of_normals_, 0), Eigen::Vector3d::Zero());
@@ -814,11 +843,11 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
 
   std::vector<Eigen::Vector3d> last4Cps(4);
   /*
-   std::cout << "result=" << std::endl;
+   std::cout << "q=" << std::endl;
 
-   for (auto result_i : result)
+   for (auto q_i : q)
    {
-     std::cout << result_i.transpose() << std::endl;
+     std::cout << q_i.transpose() << std::endl;
    }
 
    std::cout << "num_of_segments_= " << num_of_segments_ << std::endl;
@@ -828,12 +857,13 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
      std::cout << "p_= " << p_ << std::endl;
    */
 
-  for (int index_interv = 0; index_interv < (result.size() - 3); index_interv++)
+  // Check obstacles constraints (and compute n and d)
+  for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++)
   {
-    last4Cps[0] = result[index_interv];
-    last4Cps[1] = result[index_interv + 1];
-    last4Cps[2] = result[index_interv + 2];
-    last4Cps[3] = result[index_interv + 3];
+    last4Cps[0] = q[index_interv];
+    last4Cps[1] = q[index_interv + 1];
+    last4Cps[2] = q[index_interv + 2];
+    last4Cps[3] = q[index_interv + 3];
 
     if (basis_ == MINVO || basis_ == BEZIER)
     {
@@ -847,6 +877,20 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
 
       bool solved = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][index_interv], last4Cps);
 
+      // std::cout << "________________________" << std::endl;
+      // std::cout << "Solving LP, interval=" << index_interv << "Obstacle  " << obst_index << std::endl;
+      // std::cout << "PointsA=" << std::endl;
+      // std::cout << last4Cps[0].transpose() << std::endl;
+      // std::cout << last4Cps[1].transpose() << std::endl;
+      // std::cout << last4Cps[2].transpose() << std::endl;
+      // std::cout << last4Cps[3].transpose() << std::endl;
+
+      // std::cout << "PointsB=" << std::endl;
+      // for (auto vertex_i : hulls_[obst_index][index_interv])
+      // {
+      //   std::cout << vertex_i.transpose() << std::endl;
+      // }
+
       /*      std::cout << "Filling " << obst_index * num_of_segments_ + index_interv << std::endl;
             std::cout << "OBSTACLE= " << obst_index << std::endl;
             std::cout << "INTERVAL= " << index_interv << std::endl;
@@ -856,24 +900,26 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
               std::cout << last4Cps_i.transpose() << std::endl;
             }
 
-            std::cout << "Obstacle= " << std::endl;
-            for (auto vertex_i : hulls_[obst_index][index_interv])
-            {
-              std::cout << vertex_i.transpose() << std::endl;
-            }
-      */
+              */
 
       // std::cout << "index_interv= " << index_interv << std::endl;
       if (solved == false)
       {
-        std::cout << "\nThis does NOT satisfy the LP: (in basis_chosen form) " << std::endl;
+        std::cout << "\nThis does NOT satisfy the LP: (in basis_chosen form) for obstacle= " << obst_index << std::endl;
 
         std::cout << last4Cps[0].transpose() << std::endl;
         std::cout << last4Cps[1].transpose() << std::endl;
         std::cout << last4Cps[2].transpose() << std::endl;
         std::cout << last4Cps[3].transpose() << std::endl;
 
-        std::cout << "interval=" << index_interv << std::endl;
+        // std::cout << "interval=" << index_interv << std::endl;
+
+        // std::cout << "Obstacle was= " << obst_index << std::endl;
+        // for (auto vertex_i : hulls_[obst_index][index_interv])
+        // {
+        //   std::cout << vertex_i.transpose() << std::endl;
+        // }
+
         /*
                 std::cout << "(which, expressed in OV form, it is)" << std::endl;
 
@@ -888,13 +934,13 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
       }
       else
       {
-        /*        std::cout << "\nThis satisfies the LP: (in basis_chosen form) " << std::endl;
+        // std::cout << "\nThis satisfies the LP (in basis_chosen form) for obstacle= " << obst_index << std::endl;
 
-                std::cout << last4Cps[0].transpose() << std::endl;
-                std::cout << last4Cps[1].transpose() << std::endl;
-                std::cout << last4Cps[2].transpose() << std::endl;
-                std::cout << last4Cps[3].transpose() << std::endl;
-        */
+        // std::cout << last4Cps[0].transpose() << std::endl;
+        // std::cout << last4Cps[1].transpose() << std::endl;
+        // std::cout << last4Cps[2].transpose() << std::endl;
+        // std::cout << last4Cps[3].transpose() << std::endl;
+
         /*        std::cout << "(which, expressed in OV form, it is)" << std::endl;
 
                 transformBSpline2Minvo(last4Cps);
@@ -912,6 +958,58 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& result, std::
       d[obst_index * num_of_segments_ + index_interv] = d_i;
     }
   }
+
+  // Check velocity and accel constraints
+  Eigen::Vector3d vi;
+  Eigen::Vector3d vip1;
+  Eigen::Vector3d ai;
+  double epsilon = 1.0001;
+  for (int i = 0; i <= (N_ - 2); i++)
+  {
+    vi = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
+    vip1 = p_ * (q[i + 1 + 1] - q[i + 1]) / (knots_(i + 1 + p_ + 1) - knots_(i + 1 + 1));
+    ai = (p_ - 1) * (vip1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
+
+    if ((vi.array() > epsilon * v_max_.array()).any() || (vi.array() < -epsilon * v_max_.array()).any())
+    {
+      std::cout << "(vi.array() > epsilon * v_max_.array()).any()" << (vi.array() > epsilon * v_max_.array()).any()
+                << std::endl;
+      std::cout << "(vi.array() < -epsilon * v_max_.array()).any()" << (vi.array() < -epsilon * v_max_.array()).any()
+                << std::endl;
+
+      std::cout << red << "velocity constraints are not satisfied" << reset << std::endl;
+
+      std::cout << "i= " << i << std::endl;
+      std::cout << "vi= " << vi.transpose() << std::endl;
+      std::cout << "v_max_= " << v_max_.transpose() << std::endl;
+
+      return false;
+    }
+
+    if (i == N_ - 2)
+    {  // Check also vNm1 (which should be zero)
+      if ((vip1.array() > epsilon * v_max_.array()).any() || (vip1.array() < -epsilon * v_max_.array()).any())
+      {
+        std::cout << red << "velocity constraints are not satisfied" << reset << std::endl;
+        return false;
+      }
+    }
+    if ((ai.array() > epsilon * a_max_.array()).any() || (ai.array() < -epsilon * a_max_.array()).any())
+    {
+      std::cout << "(ai.array() > a_max_.array()).any()= " << (ai.array() > a_max_.array()).any() << std::endl;
+      std::cout << "(ai.array() < -a_max_.array()).any()" << (ai.array() < -a_max_.array()).any() << std::endl;
+      std::cout << red << "acceleration constraints are not satisfied" << reset << std::endl;
+      std::cout << "N_= " << N_ << std::endl;
+      std::cout << "i= " << i << std::endl;
+
+      std::cout << "ai= " << ai.transpose() << std::endl;
+      std::cout << "a_max_= " << a_max_.transpose() << std::endl;
+      accel_constraints_not_satisfied_ = true;
+
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -942,8 +1040,13 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
   double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
 
-  computeUpperAndLowerConstraints(i, qiM1, current.qi, constraint_xL, constraint_xU, constraint_yL, constraint_yU,
-                                  constraint_zL, constraint_zU);
+  bool intervalIsNotZero = computeUpperAndLowerConstraints(i, qiM1, current.qi, constraint_xL, constraint_xU,
+                                                           constraint_yL, constraint_yU, constraint_zL, constraint_zU);
+
+  if (intervalIsNotZero == false)  // constraintxL>constraint_xU (or with other axes)
+  {
+    return;
+  }
 
   //////////////////////////////
 
@@ -1041,6 +1144,32 @@ void SplineAStar::expandAndAddToQueue(Node& current)
     }
     else
     {
+      if (neighbor.index == (N_ - 2))
+      {
+        // Check for the convex hull qNm4, qNm3, qNm2, qNm1 (where qNm1==qNm2)
+        std::vector<Eigen::Vector3d> last4Cps_tmp;
+        last4Cps_tmp.push_back(last4Cps[1]);
+        last4Cps_tmp.push_back(last4Cps[2]);
+        last4Cps_tmp.push_back(last4Cps[3]);
+        last4Cps_tmp.push_back(last4Cps[3]);
+
+        if (collidesWithObstacles(last4Cps_tmp, N_ - 1) == true)
+        {
+          continue;
+        }
+
+        // Check for the convex hull qNm3, qNm2, qNm1, qN (where qN==qNm1==qNm2)
+        last4Cps_tmp[0] = last4Cps[2];
+        last4Cps_tmp[1] = last4Cps[3];
+        last4Cps_tmp[2] = last4Cps[3];
+        last4Cps_tmp[3] = last4Cps[3];
+
+        if (collidesWithObstacles(last4Cps_tmp, N_) == true)
+        {
+          continue;
+        }
+      }
+
       openList_.push(neighbor);
       // map_open_list_[Eigen::Vector3i(ix, iy, iz)] = true;
 
@@ -1154,35 +1283,42 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
 bool SplineAStar::collidesWithObstacles(std::vector<Eigen::Vector3d>& last4Cps, int index_lastCP)
 {
+  // std::cout << "In collidesWithObstacles, index_lastCP= " << index_lastCP << std::endl;
+
+  // std::cout << "last4Cps.size()= " << last4Cps.size() << std::endl;
+  // std::cout << "hulls_[obst_index][index_lastCP - 3].size()= " << hulls_[obst_index][index_lastCP - 3].size()
+  //           << std::endl;
+  // std::cout << " (NO, LP)" << std::endl;
+
   if (basis_ == MINVO || basis_ == BEZIER)
   {
     transformBSpline2otherBasis(last4Cps);  // now last4Cps are in MINVO BASIS
   }
 
+  ///////////////////////
   bool satisfies_LP = true;
 
   for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
   {
     Eigen::Vector3d n_i;
     double d_i;
-
     satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][index_lastCP - 3], last4Cps);
-
     num_of_LPs_run_++;
-
     if (satisfies_LP == false)
     {
-      // std::cout << " (NO, LP)" << std::endl;
-
-      break;
+      goto exit;
     }
   }
+
+  ///////////////////////
 
   if (basis_ == MINVO || basis_ == BEZIER)
   {
     transformOtherBasis2BSpline(last4Cps);
     // now last4Cps are in BSpline Basis (needed for the next iteration)
   }
+
+exit:
 
   return (!satisfies_LP);
 }
@@ -1375,36 +1511,65 @@ exitloop:
   // Fill (until we arrive to N_-2), with the same qi
   // Note that, by doing this, it's not guaranteed feasibility wrt a dynamic obstacle
   // and hence the need of the function checkFeasAndFillND()
-  for (int j = (best_node_ptr->index) + 1; j <= N_ - 2; j++)
-  {
-    Node* node_ptr = new Node;
-    node_ptr->qi = best_node_ptr->qi;
-    node_ptr->index = j;
-    //   ROS_INFO_STREAM("Filled " << j);
-    std::cout << red << "Filled " << j << ", " << reset;
 
-    // << node_ptr->qi.transpose() << std::endl;
-    node_ptr->previous = best_node_ptr;
-    best_node_ptr = node_ptr;
+  bool path_found_is_not_complete = (best_node_ptr->index < (N_ - 2));
+
+  if (path_found_is_not_complete)
+  {
+    for (int j = (best_node_ptr->index) + 1; j <= N_ - 2; j++)
+    {
+      // return false;
+
+      Node* node_ptr = new Node;
+      node_ptr->qi = best_node_ptr->qi;
+      node_ptr->index = j;
+      //   ROS_INFO_STREAM("Filled " << j);
+      std::cout << red << "Filled " << j << ", " << reset;
+
+      // << node_ptr->qi.transpose() << std::endl;
+      node_ptr->previous = best_node_ptr;
+      best_node_ptr = node_ptr;
+    }
   }
 
   recoverPath(best_node_ptr);  // saved in result_
 
   result = result_;
 
-  if (visual_)
+  // if (visual_)
+  // {
+  //   plotExpandedNodesAndResult(expanded_nodes_, best_node_ptr);
+  // }
+
+  bool isFeasible = checkFeasAndFillND(result_, n, d);
+
+  std::cout << "____________" << std::endl;
+  for (auto qi : result_)
   {
-    plotExpandedNodesAndResult(expanded_nodes_, best_node_ptr);
+    std::cout << qi.transpose() << std::endl;
   }
 
-  if (checkFeasAndFillND(result_, n, d) == false)  // This may be true or false, depending on the case
+  if (isFeasible == false && path_found_is_not_complete == false)
   {
-    return false;
+    std::cout << red << "This should never happen: All complete paths are guaranteed to be feasible" << reset
+              << std::endl;
+
+    // if (accel_constraints_not_satisfied_)
+    // {
+    abort();
+    //}
   }
-  else
-  {
-    return true;
-  }
+
+  return isFeasible;
+
+  // if (checkFeasAndFillND(result_, n, d) == false)  // This may be true or false, depending on the case
+  // {
+  //   return false;
+  // }
+  // else
+  // {
+  //   return true;
+  // }
 
   /*
     return false;

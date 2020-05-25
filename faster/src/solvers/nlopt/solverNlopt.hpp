@@ -21,24 +21,24 @@ class SolverNlopt
 {
 public:
   SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints, double xtol_rel,
-              double ftol_rel, bool force_final_state, std::string &solver);
+              double ftol_rel, std::string &solver);
 
   ~SolverNlopt();
 
   bool optimize();
 
   void setInitAndFinalStates(state &initial_state, state &final_state);
-
   void setHulls(ConvexHullsOfCurves_Std &hulls);
   void setTminAndTmax(double t_min, double t_max);
-
   void setMaxValues(double v_max, double a_max);
-
   void setDC(double dc);
-
-  trajectory X_temp_;
-
+  void setDistanceToUseStraightLine(double dist_to_use_straight_guess);
   void setMaxRuntime(double deltaT);
+  void setKappaAndMu(double kappa, double mu);
+  void setZminZmax(double z_min, double z_max);  // A* guess will always be between z_min and z_max
+  void setAStarSamplesAndFractionVoxel(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z,
+                                       double a_star_fraction_voxel_size);
+  trajectory X_temp_;
 
   // Guesses
   /*  void useJPSGuess(vec_Vecf<3> &jps_path);
@@ -46,19 +46,11 @@ public:
 
   void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
 
-  void setKappaAndMu(double kappa, double mu);
-  void setZminZmax(double z_min, double z_max);  // A* guess will always be between z_min and z_max
-
   int getNumOfLPsRun();
 
   int getNumOfQCQPsRun();
 
   void getSolution(PieceWisePol &solution);
-
-  void setAStarSamplesAndFractionVoxel(int a_star_samp_x, int a_star_samp_y, int a_star_samp_z,
-                                       double a_star_fraction_voxel_size);
-
-  void setDistanceToUseStraightLine(double dist_to_use_straight_guess);
 
   double getTimeNeeded();
 
@@ -71,6 +63,40 @@ public:
   int BEZIER = 3;    // Bezier basis
 
   bool checkGradientsUsingFiniteDiff();
+
+  // struct par_snlopt
+  // {
+  //   // Will not change between iterations
+  //   double z_min;
+  //   double z_max;
+  //   double kappa;
+  //   double mu;
+  //   double v_max;
+  //   double a_max;
+  //   double dc;
+  //   double dist_to_use_straight_guess;
+  //   int a_star_samp_x;
+  //   int a_star_samp_y;
+  //   int a_star_samp_z;
+  //   double a_star_fraction_voxel_size;
+  //   int num_pol;
+  //   int deg_pol;
+  //   double weight;
+  //   double epsilon_tol_constraints;
+  //   double xtol_rel;
+  //   double ftol_rel;
+  //   std::string &solver;
+
+  // Will change between iterations
+  //   state initial_state;
+  //   state final_state;
+  //   ConvexHullsOfCurves_Std hulls;
+  //   double t_min;
+  //   double t_max;
+  //   double max_runtime;
+  //   int num_obst;
+
+  // };
 
 protected:
 private:
@@ -106,6 +132,8 @@ private:
 
   template <class T>
   bool isFeasible(const T x);
+
+  void printQVA(const std::vector<Eigen::Vector3d> &q);
 
   void assignEigenToVector(double *grad, int index, const Eigen::Vector3d &tmp);
 
@@ -233,7 +261,7 @@ private:
   double weight_ = 10000;
   double weight_modified_ = 10000;
 
-  bool force_final_state_ = true;
+  // bool force_final_state_ = true;
 
   state initial_state_;
   state final_state_;
@@ -299,5 +327,7 @@ private:
   double a_star_fraction_voxel_size_ = 0.5;
 
   separator::Separator *separator_solver_;
+
+  bool max_values_set_ = false;
 };
 #endif

@@ -129,6 +129,15 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   std::cout << "Parameters obtained" << std::endl;
 
+  if (par_.epsilon_tol_constraints > 0.02)
+  {
+    std::cout << bold << red
+              << "The tolerance on the constraints is too big. Note that we are saturating v0 and a0 in snlopt.cpp --> "
+                 "there will be jumps in accel/vel"
+              << std::endl;
+    abort();
+  }
+
   if (par_.factor_v_max > 1.0 || par_.factor_v_max < 0.0)
   {
     std::cout << bold << red << "Needed: 0<=factor_v_max<=1  " << reset << std::endl;

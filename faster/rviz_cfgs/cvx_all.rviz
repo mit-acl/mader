@@ -267,106 +267,6 @@ Visualization Manager:
           Value: true
         4099:
           Value: true
-        4100:
-          Value: true
-        4101:
-          Value: true
-        4102:
-          Value: true
-        4103:
-          Value: true
-        4104:
-          Value: true
-        4105:
-          Value: true
-        4106:
-          Value: true
-        4107:
-          Value: true
-        4108:
-          Value: true
-        4109:
-          Value: true
-        4110:
-          Value: true
-        4111:
-          Value: true
-        4112:
-          Value: true
-        4113:
-          Value: true
-        4114:
-          Value: true
-        4115:
-          Value: true
-        4116:
-          Value: true
-        4117:
-          Value: true
-        4118:
-          Value: true
-        4119:
-          Value: true
-        4120:
-          Value: true
-        4121:
-          Value: true
-        4122:
-          Value: true
-        4123:
-          Value: true
-        4124:
-          Value: true
-        4125:
-          Value: true
-        4126:
-          Value: true
-        4127:
-          Value: true
-        4128:
-          Value: true
-        4129:
-          Value: true
-        4130:
-          Value: true
-        4131:
-          Value: true
-        4132:
-          Value: true
-        4133:
-          Value: true
-        4134:
-          Value: true
-        4135:
-          Value: true
-        4136:
-          Value: true
-        4137:
-          Value: true
-        4138:
-          Value: true
-        4139:
-          Value: true
-        4140:
-          Value: true
-        4141:
-          Value: true
-        4142:
-          Value: true
-        4143:
-          Value: true
-        4144:
-          Value: true
-        4145:
-          Value: true
-        4146:
-          Value: true
-        4147:
-          Value: true
-        4148:
-          Value: true
-        4149:
-          Value: true
         All Enabled: false
         SQ01s:
           Value: true
@@ -581,106 +481,6 @@ Visualization Manager:
             {}
           4099:
             {}
-          4100:
-            {}
-          4101:
-            {}
-          4102:
-            {}
-          4103:
-            {}
-          4104:
-            {}
-          4105:
-            {}
-          4106:
-            {}
-          4107:
-            {}
-          4108:
-            {}
-          4109:
-            {}
-          4110:
-            {}
-          4111:
-            {}
-          4112:
-            {}
-          4113:
-            {}
-          4114:
-            {}
-          4115:
-            {}
-          4116:
-            {}
-          4117:
-            {}
-          4118:
-            {}
-          4119:
-            {}
-          4120:
-            {}
-          4121:
-            {}
-          4122:
-            {}
-          4123:
-            {}
-          4124:
-            {}
-          4125:
-            {}
-          4126:
-            {}
-          4127:
-            {}
-          4128:
-            {}
-          4129:
-            {}
-          4130:
-            {}
-          4131:
-            {}
-          4132:
-            {}
-          4133:
-            {}
-          4134:
-            {}
-          4135:
-            {}
-          4136:
-            {}
-          4137:
-            {}
-          4138:
-            {}
-          4139:
-            {}
-          4140:
-            {}
-          4141:
-            {}
-          4142:
-            {}
-          4143:
-            {}
-          4144:
-            {}
-          4145:
-            {}
-          4146:
-            {}
-          4147:
-            {}
-          4148:
-            {}
-          4149:
-            {}
           vicon:
             SQ01s:
               {}
@@ -771,7 +571,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/setpoint
       Name: Setpoint
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -910,13 +710,13 @@ Visualization Manager:
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /shapes_dynamic
       Name: RViz_Dynamic_Obstacles
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /rviz_visual_tools
@@ -1008,7 +808,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        SQ01s: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -1200,7 +1000,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        {}
+        ActualTraj_SQ01s: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1375,25 +1175,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 19.83600425720215
+      Distance: 48.726688385009766
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.004304707050323486
-        Y: 0.06370210647583008
+        X: 24.8468074798584
+        Y: -3.265406370162964
         Z: 9.023143320519011e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4797973036766052
+      Pitch: 1.5297963619232178
       Target Frame: LQ01s
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.390395164489746
+      Yaw: 4.720392227172852
     Saved: ~
 Window Geometry:
   Displays:

@@ -28,13 +28,13 @@
 using namespace termcolor;
 
 SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, double epsilon_tol_constraints,
-                         double xtol_rel, double ftol_rel, bool force_final_state, std::string &solver)
+                         double xtol_rel, double ftol_rel, std::string &solver)
 {
   // std::cout << "In the SolverNlopt Constructor\n";
 
   solver_ = getSolver(solver);
 
-  force_final_state_ = force_final_state;
+  // force_final_state_ = force_final_state;
 
   epsilon_tol_constraints_ = epsilon_tol_constraints;  // 1e-1;
   xtol_rel_ = xtol_rel;                                // 1e-1;
@@ -52,9 +52,8 @@ SolverNlopt::SolverNlopt(int num_pol, int deg_pol, int num_obst, double weight, 
 
   i_min_ = 0;
   i_max_ =
-      3 * (N_ + 1) - 1 - 9 - 6 * (!force_final_state_) -
-      9 * force_final_state_;  //(9 * (force_final_state_));  // 18 is because pos, vel and accel at t_min_ and t_max_
-                               // are fixed (not dec variables)
+      3 * (N_ + 1) - 1 - 9 - 6;  //(9 * (force_final_state_));  // 18 is because pos, vel and accel at t_min_ and t_max_
+                                 // are fixed (not dec variables)
   j_min_ = i_max_ + 1;
   j_max_ = j_min_ + 3 * (M_ - 2 * p_) * num_of_obst_ - 1;
   k_min_ = j_max_ + 1;
@@ -354,7 +353,7 @@ void SolverNlopt::generateAStarGuess()
   }
   else
   {
-    ROS_ERROR_STREAM("[NL] A* failed --> SLine");
+    // ROS_ERROR_STREAM("[NL] A* failed --> SLine");
 
     std::cout << bold << red << "[NL] A* didn't find a solution, using straight line guess" << reset << std::endl;
   }
@@ -463,12 +462,12 @@ void SolverNlopt::setTminAndTmax(double t_min, double t_max)
   t_min_ = t_min;
   t_max_ = t_max;
 
-  // std::cout << "t_min_= " << t_min_ << std::endl;
-  // std::cout << "t_max_= " << t_max_ << std::endl;
+  std::cout << "t_min_= " << t_min_ << std::endl;
+  std::cout << "t_max_= " << t_max_ << std::endl;
 
   deltaT_ = (t_max_ - t_min_) / (1.0 * (M_ - 2 * p_ - 1 + 1));
 
-  // std::cout << "deltaT_" << deltaT_ << std::endl;
+  std::cout << "deltaT_" << deltaT_ << std::endl;
 
   Eigen::RowVectorXd knots(M_ + 1);
   for (int i = 0; i <= p_; i++)
@@ -487,6 +486,8 @@ void SolverNlopt::setTminAndTmax(double t_min, double t_max)
   }
 
   knots_ = knots;
+
+  std::cout << "knots_" << knots_ << std::endl;
 }
 
 void SolverNlopt::setDC(double dc)
@@ -498,6 +499,7 @@ void SolverNlopt::setMaxValues(double v_max, double a_max)
 {
   v_max_ = v_max * Eigen::Vector3d::Ones();
   a_max_ = a_max * Eigen::Vector3d::Ones();
+  max_values_set_ = true;
 }
 
 void SolverNlopt::assignEigenToVector(double *result, int var_gindex, const Eigen::Vector3d &tmp)
@@ -721,6 +723,17 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
   // I think equation (7) of the paper "Robust and Efficent quadrotor..." has a typo, p_ is missing there (compare
   // with equation 15 of that paper)
 
+  if (max_values_set_ == false)
+  {
+    std::cout << red << bold << "Please set the max values first" << reset << std::endl;
+    abort();
+  }
+
+  std::cout << "initial_state" << std::endl;
+  initial_state.print();
+  std::cout << "final_state= " << std::endl;
+  final_state.print();
+
   Eigen::Vector3d p0 = initial_state.pos;
   Eigen::Vector3d v0 = initial_state.vel;
   Eigen::Vector3d a0 = initial_state.accel;
@@ -729,17 +742,52 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
   Eigen::Vector3d vf = final_state.vel;
   Eigen::Vector3d af = final_state.accel;
 
+  // here we saturate the value to ensure it is within the limits
+  // the reason for this is the epsilon_tol_constraints (in the previous iteration, it may be slightly unfeasible)
+  saturate(v0, -v_max_, v_max_);
+  saturate(a0, -a_max_, a_max_);
+  saturate(vf, -v_max_, v_max_);
+  saturate(af, -a_max_, a_max_);
+
+  //////////////////////////////
+  // Now make sure deltaT in knots_ is such that -v_max<=v1<=v_max is satisfied:
+  // v1=c*
+  // double deltaT;
+
+  std::cout << bold << "deltaT_ before= " << deltaT_ << reset << std::endl;
+
+  Eigen::Vector3d bound1 = ((p_ - 1) * (v_max_ - v0).array() / (a0.array()));
+  Eigen::Vector3d bound2 = ((p_ - 1) * (-v_max_ - v0).array() / (a0.array()));
+
+  saturate(deltaT_, std::min(bound1.x(), bound2.x()), std::max(bound1.x(), bound2.x()));
+  saturate(deltaT_, std::min(bound1.y(), bound2.y()), std::max(bound1.y(), bound2.y()));
+  saturate(deltaT_, std::min(bound1.z(), bound2.z()), std::max(bound1.z(), bound2.z()));
+
+  double max_deltaT = ((p_ - 1) * (v_max_ - v0).array() / (a0.array())).minCoeff();
+  double min_deltaT = ((p_ - 1) * (-v_max_ - v0).array() / (a0.array())).maxCoeff();
+
+  std::cout << green << "uno= " << ((p_ - 1) * (-v_max_ - v0).array() / (a0.array())) << reset << std::endl;
+  std::cout << green << "dos= " << ((p_ - 1) * (v_max_ - v0).array() / (a0.array())) << reset << std::endl;
+
+  std::cout << "Saturating between " << min_deltaT << " and " << max_deltaT << std::endl;
+  // saturate(deltaT_, min_deltaT, max_deltaT);
+  t_max_ = std::min(t_max_, t_min_ + (M_ - 2 * p_ - 1 + 1) * deltaT_);
+  setTminAndTmax(t_min_, t_max_);
+  std::cout << bold << "deltaT_ after= " << deltaT_ << reset << std::endl;
+
+  //////////////////////////////
+
   initial_state_ = initial_state;
   final_state_ = final_state;
 
   weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
 
-  /*  std::cout << "initial_state= " << std::endl;
-    initial_state.printHorizontal();
+  std::cout << "initial_state= " << std::endl;
+  initial_state.printHorizontal();
 
-    std::cout << "final_state= " << std::endl;
-    final_state.printHorizontal();
-  */
+  std::cout << "final_state= " << std::endl;
+  final_state.printHorizontal();
+
   double t1 = knots_(1);
   double t2 = knots_(2);
   double tpP1 = knots_(p_ + 1);
@@ -759,6 +807,36 @@ void SolverNlopt::setInitAndFinalStates(state &initial_state, state &final_state
   qNm1_ = pf + ((tN - tNPp) * vf) / p_;
   qNm2_ = (p_ * p_ * qNm1_ - (tNm1 - tNm1Pp) * (af * (-tN + tNm1Pp) + vf) - p_ * (qNm1_ + (-tNm1 + tNm1Pp) * vf)) /
           ((-1 + p_) * p_);
+
+  /// FOR DEBUGGING, REMOVE LATER
+
+  Eigen::MatrixXd knots_0 = knots_;
+  for (int i = 0; i < knots_0.cols(); i++)
+  {
+    knots_0(0, i) = knots_(0, 0);
+  }
+  // std::cout << "knots_ - knots[0]= " << std::endl;
+  // std::cout << std::setprecision(13) << (knots_ - knots_0).transpose() << reset << std::endl;
+
+  int i = 1;
+  Eigen::Vector3d vcomputed_1 = p_ * (q2_ - q1_) / (knots_(i + p_ + 1) - knots_(i + 1));
+
+  i = 0;
+  Eigen::Vector3d vcomputed_0 = p_ * (q1_ - q0_) / (knots_(i + p_ + 1) - knots_(i + 1));
+  Eigen::Vector3d acomputed_0 = (p_ - 1) * (vcomputed_1 - vcomputed_0) / (knots_(i + p_ + 1) - knots_(i + 2));
+
+  std::cout << "vcomputed_0= " << vcomputed_0.transpose() << std::endl;
+  std::cout << "vcomputed_1= " << vcomputed_1.transpose() << std::endl;
+  std::cout << "acomputed_0= " << acomputed_0.transpose() << std::endl;
+
+  double epsilon = 1.0001;
+
+  if ((vcomputed_1.array() > epsilon * v_max_.array()).any() || (vcomputed_1.array() < -epsilon * v_max_.array()).any())
+  {
+    std::cout << bold << red << "vel constraint for v1 is not satisfied" << reset << std::endl;
+
+    abort();
+  }
 }
 
 // check if there is a normal vector = [0 0 0]
@@ -792,18 +870,10 @@ void SolverNlopt::x2qnd(T &x, std::vector<Eigen::Vector3d> &q, std::vector<Eigen
     q.push_back(Eigen::Vector3d(x[i], x[i + 1], x[i + 2]));
   }
 
-  if (force_final_state_ == true)
-  {
-    q.push_back(qNm2_);  // Not a decision variable
-    q.push_back(qNm1_);  // Not a decision variable
-    q.push_back(qN_);    // Not a decision variable
-  }
-  else
-  {
-    Eigen::Vector3d qNm2(x[i_max_ - 2], x[i_max_ - 1], x[i_max_]);
-    q.push_back(qNm2);  // qn-1 Not a decision variable
-    q.push_back(qNm2);  // qn Not a decision variable
-  }
+  Eigen::Vector3d qNm2(x[i_max_ - 2], x[i_max_ - 1], x[i_max_]);
+  q.push_back(qNm2);  // qn-1 Not a decision variable
+  q.push_back(qNm2);  // qn Not a decision variable
+
   // Normals vectors (3x1)
   for (int j = j_min_; j <= j_max_ - 2; j = j + 3)
   {
@@ -879,10 +949,7 @@ double SolverNlopt::computeObjFunctionJerk(unsigned nn, double *grad, std::vecto
                                                                              // ///////////////////
   }
 
-  if (force_final_state_ == false)
-  {
-    cost += weight_modified_ * (q[N_] - final_state_.pos).squaredNorm();
-  }
+  cost += weight_modified_ * (q[N_] - final_state_.pos).squaredNorm();
 
   if (grad)
   {
@@ -983,8 +1050,6 @@ double SolverNlopt::myObjFunc(unsigned nn, const double *x, double *grad, void *
   return cost;
 }
 
-// 3,...,N_ are dec points if force_final_state_=false (0,1,2 aren't)
-// 3,...,N_-3 are dec points if force_final_state_=true (0,1,2 aren't)
 bool SolverNlopt::isADecisionCP(int i)
 
 {  // If Q[i] is a decision variable
@@ -995,7 +1060,7 @@ bool SolverNlopt::isADecisionCP(int i)
     std::cout << "But N_=" << N_ << std::endl;
   }
 #endif
-  return (force_final_state_ == true) ? (i >= 3 && i <= (N_ - 3)) : ((i >= 3) && i <= (N_ - 2));
+  return ((i >= 3) && i <= (N_ - 2));
 }
 
 //[seconds]
@@ -1011,7 +1076,7 @@ double SolverNlopt::getTimeNeeded()
 
 int SolverNlopt::lastDecCP()
 {
-  return (force_final_state_ == true) ? (N_ - 3) : (N_ - 2);
+  return (N_ - 2);
 }
 
 void SolverNlopt::transformBSpline2otherBasis(Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv)
@@ -1646,6 +1711,34 @@ void SolverNlopt::printIndexesConstraints()
   std::cout << "_______________________" << std::endl;
 }
 
+void SolverNlopt::printQVA(const std::vector<Eigen::Vector3d> &q)
+{
+  for (int i = 0; i < N_ - 2; i++)
+  {
+    std::cout << "***i= " << i << std::endl;
+    std::cout << "q= " << q[i].transpose() << std::endl;
+
+    Eigen::Vector3d vi = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
+    Eigen::Vector3d vip1 = p_ * (q[i + 1 + 1] - q[i + 1]) / (knots_(i + 1 + p_ + 1) - knots_(i + 1 + 1));
+    Eigen::Vector3d ai = (p_ - 1) * (vip1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
+
+    std::cout << "v= " << vi.transpose() << std::endl;
+    std::cout << "a= " << ai.transpose() << std::endl;
+  }
+
+  int i = N_ - 1;
+
+  std::cout << "***i= " << i << std::endl;
+  std::cout << "q= " << q[i].transpose() << std::endl;
+  Eigen::Vector3d vi = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
+  std::cout << "v= " << vi.transpose() << std::endl;
+
+  i = N_;
+
+  std::cout << "***i= " << i << std::endl;
+  std::cout << "q= " << q[i].transpose() << std::endl;
+}
+
 bool SolverNlopt::optimize()
 
 {
@@ -1743,6 +1836,9 @@ bool SolverNlopt::optimize()
 
   qnd2x(q_guess_, n_guess_, d_guess_, x_);
 
+  std::cout << "The guess is the following one:" << std::endl;
+  printQVA(q_guess_);
+
   // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
   // std::cout << "q_guess_ is\n" << std::endl;
   // printStd(q_guess_);
@@ -1807,7 +1903,7 @@ bool SolverNlopt::optimize()
 
     printf("[NL] nlopt failed or maximum time was reached!\n");
 
-    std::cout << on_red << bold << "[NL] Solution not found" << opt_timer_ << reset << std::endl;
+    std::cout << bold << red << "[NL] Solution not found" << opt_timer_ << reset << std::endl;  // on_red
 
     x2qnd(x_, q, n, d);
     // printInfeasibleConstraints(q, n, d);
@@ -1841,18 +1937,17 @@ bool SolverNlopt::optimize()
 
   CPs2TrajAndPwp(q, X_temp_, solution_, N_, p_, num_pol_, knots_, dc_);
 
+  std::cout << "The solution is the following one:" << std::endl;
+  // printQND(q, n, d);
+
+  printQVA(q);
+
   //  fillXTempFromCPs(q);
 
   // Force the last position to be the final_state_ (it's not guaranteed to be because of the discretization with dc_)
-  if (force_final_state_ == true)
-  {
-    X_temp_.back() = final_state_;
-  }
-  else
-  {
-    X_temp_.back().vel = final_state_.vel;
-    X_temp_.back().accel = final_state_.accel;
-  }
+
+  X_temp_.back().vel = final_state_.vel;
+  X_temp_.back().accel = final_state_.accel;
 
   // std::cout << "Done filling the solution" << std::endl;
 

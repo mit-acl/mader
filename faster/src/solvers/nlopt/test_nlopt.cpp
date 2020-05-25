@@ -86,7 +86,7 @@ int main()
   hulls_curves.push_back(hulls_curve);
 
   /////
-  SolverNlopt snlopt(n_pol, deg, hulls_curves.size(), weight, epsilon_tol_constraints, xtol_rel, ftol_rel, false,
+  SolverNlopt snlopt(n_pol, deg, hulls_curves.size(), weight, epsilon_tol_constraints, xtol_rel, ftol_rel,
                      solver);  // snlopt(a,g) a polynomials of degree 3
   snlopt.setBasisUsedForCollision(snlopt.B_SPLINE);
   snlopt.setHulls(hulls_curves);
