@@ -1002,7 +1002,7 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 {
   // std::cout << bold << "openList_ size " << openList_.size() << reset << std::endl;
 
-  MyTimer timer_expand(true);
+  // MyTimer timer_expand(true);
 
   if (current.index == (N_ - 2))
   {
@@ -1071,9 +1071,9 @@ void SplineAStar::expandAndAddToQueue(Node& current)
   double delta_y = ((constraint_yU - constraint_yL) / (num_samples_y_ - 1));
   double delta_z = ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));
 
-  MyTimer timer_forLoop(true);
+  // MyTimer timer_forLoop(true);
 
-  double time_openList = 0.0;
+  // double time_openList = 0.0;
   for (auto comb : all_combinations_)
   {
     jx = std::get<0>(comb);
@@ -1147,10 +1147,10 @@ void SplineAStar::expandAndAddToQueue(Node& current)
         }
       }
 
-      MyTimer timer_openList(true);
+      //  MyTimer timer_openList(true);
       openList_.push(neighbor);
 
-      time_openList = time_openList + timer_openList.ElapsedUs() / 1000.0;
+      // time_openList = time_openList + timer_openList.ElapsedUs() / 1000.0;
 
       map_open_list_[Eigen::Vector3i(ix, iy, iz)] = true;
 
@@ -1158,16 +1158,16 @@ void SplineAStar::expandAndAddToQueue(Node& current)
     }
   }
 
-  std::cout << "pushing to openList  took " << time_openList << std::endl;
-  std::cout << "openList size= " << openList_.size() << std::endl;
+  // std::cout << "pushing to openList  took " << time_openList << std::endl;
+  // std::cout << "openList size= " << openList_.size() << std::endl;
 
-  std::cout << "for loop took " << timer_forLoop << std::endl;
+  // std::cout << "for loop took " << timer_forLoop << std::endl;
 
-  std::cout << "time_solving_lps_ " << time_solving_lps_ << std::endl;
+  // std::cout << "time_solving_lps_ " << time_solving_lps_ << std::endl;
 
-  std::cout << bold << "expanding took " << timer_expand << reset << std::endl;
+  // std::cout << bold << "expanding took " << timer_expand << reset << std::endl;
 
-  time_solving_lps_ = 0.0;
+  //  time_solving_lps_ = 0.0;
 
   // time_expanding_ += timer_expand.ElapsedMs();
   // std::cout << "End of expand Function" << std::endl;
@@ -1175,7 +1175,7 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
 bool SplineAStar::collidesWithObstacles(std::vector<Eigen::Vector3d>& last4Cps, int index_lastCP)
 {
-  MyTimer timer_function(true);
+  // MyTimer timer_function(true);
 
   // std::cout << "In collidesWithObstacles, index_lastCP= " << index_lastCP << std::endl;
 
@@ -1214,7 +1214,7 @@ bool SplineAStar::collidesWithObstacles(std::vector<Eigen::Vector3d>& last4Cps, 
 
 exit:
 
-  time_solving_lps_ += timer_function.ElapsedUs() / 1000.0;
+  // time_solving_lps_ += timer_function.ElapsedUs() / 1000.0;
   return (!satisfies_LP);
 }
 
@@ -1452,6 +1452,7 @@ exitloop:
     std::cout << red << "This should never happen: All complete paths are guaranteed to be feasible" << reset
               << std::endl;
 
+    std::cout << red << "=====================================================" << std::endl;
     // if (accel_constraints_not_satisfied_)
     // {
     abort();
