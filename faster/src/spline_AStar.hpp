@@ -283,6 +283,4 @@ private:
   // };
 
   // bool matrixExpandedNodes_[40][40][40];
-
-  bool accel_constraints_not_satisfied_ = false;
 };

@@ -56,7 +56,7 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   }
   else
   {
-    std::cout << red << "Basis not implemented yet, using the one for B-Spline" << std::endl;
+    std::cout << red << "Basis " << par.basis << " not implemented yet, using the one for B-Spline" << std::endl;
     basis_ = B_SPLINE;
     Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
   }
@@ -519,9 +519,6 @@ void SolverNlopt::setHulls(ConvexHullsOfCurves_Std &hulls)
 
   num_of_normals_ = num_of_segments_ * num_of_obst_;
 
-  q0_ << 0, 0, 0;
-  q1_ << 0, 0, 0;
-  q2_ << 0, 0, 0;
   /*  qNm2_ << 0, 0, 0;
     qNm1_ << 0, 0, 0;
     qN_ << 0, 0, 0;*/
@@ -709,7 +706,7 @@ void SolverNlopt::initializeNumOfConstraints()
 
 // Note that t_final will be updated in case the saturation in deltaT_ has had effect
 void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init,
-                                                    double t_final)
+                                                    double &t_final)
 {
   ///////////////////////////
   Eigen::Vector3d p0 = initial_state.pos;
@@ -742,9 +739,23 @@ void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
   Eigen::Vector3d bound1 = ((p_ - 1) * (v_max_ - v0).array() / (a0.array()));
   Eigen::Vector3d bound2 = ((p_ - 1) * (-v_max_ - v0).array() / (a0.array()));
 
+  // note that if any element of a0 is ==0.0, then its corresponding element in bound1 (or bound2) is +-infinity, but
+  // valid  for the saturation below
+
   saturate(deltaT_, std::min(bound1.x(), bound2.x()), std::max(bound1.x(), bound2.x()));
   saturate(deltaT_, std::min(bound1.y(), bound2.y()), std::max(bound1.y(), bound2.y()));
   saturate(deltaT_, std::min(bound1.z(), bound2.z()), std::max(bound1.z(), bound2.z()));
+
+  std::cout << "std::min(bound1.x(), bound2.x()= " << std::min(bound1.x(), bound2.x()) << std::endl;
+  std::cout << "std::max(bound1.x(), bound2.x()= " << std::max(bound1.x(), bound2.x()) << std::endl;
+
+  std::cout << "std::min(bound1.y(), bound2.y()= " << std::min(bound1.y(), bound2.y()) << std::endl;
+  std::cout << "std::max(bound1.y(), bound2.y()= " << std::max(bound1.y(), bound2.y()) << std::endl;
+
+  std::cout << "std::min(bound1.z(), bound2.z()= " << std::min(bound1.z(), bound2.z()) << std::endl;
+  std::cout << "std::max(bound1.z(), bound2.z()= " << std::max(bound1.z(), bound2.z()) << std::endl;
+
+  std::cout << bold << "deltaT_ after= " << deltaT_ << reset << std::endl;
 
   t_final = t_init + (1.0 * (M_ - 2 * p_ - 1 + 1)) * deltaT_;
 

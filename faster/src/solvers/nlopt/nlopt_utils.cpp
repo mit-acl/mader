@@ -64,6 +64,7 @@ bool nlopt_utils::checkGradientsNlopt()
   param.xtol_rel = xtol_rel;
   param.ftol_rel = ftol_rel;
   param.solver = solver;
+  param.basis = "B_SPLINE";
 
   double t_min = 0.0;
   double t_max = t_min + (final.pos - initial.pos).norm() / (0.3 * v_max);

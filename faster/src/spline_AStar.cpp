@@ -842,6 +842,8 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
   d.resize(std::max(num_of_normals_, 0), 0.0);
 
   std::vector<Eigen::Vector3d> last4Cps(4);
+
+  bool isFeasible = true;
   /*
    std::cout << "q=" << std::endl;
 
@@ -930,7 +932,8 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
                 std::cout << last4Cps[3].transpose() << std::endl;
                 transformMinvo2BSpline(last4Cps);*/
         std::cout << bold << red << "[A*] The node provided doesn't satisfy LPs" << reset << std::endl;
-        return false;
+
+        isFeasible = false;
       }
       else
       {
@@ -972,45 +975,27 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
 
     if ((vi.array() > epsilon * v_max_.array()).any() || (vi.array() < -epsilon * v_max_.array()).any())
     {
-      std::cout << "(vi.array() > epsilon * v_max_.array()).any()" << (vi.array() > epsilon * v_max_.array()).any()
-                << std::endl;
-      std::cout << "(vi.array() < -epsilon * v_max_.array()).any()" << (vi.array() < -epsilon * v_max_.array()).any()
-                << std::endl;
-
-      std::cout << red << "velocity constraints are not satisfied" << reset << std::endl;
-
-      std::cout << "i= " << i << std::endl;
-      std::cout << "vi= " << vi.transpose() << std::endl;
-      std::cout << "v_max_= " << v_max_.transpose() << std::endl;
-
-      return false;
+      std::cout << red << "velocity constraint for vi is not satisfied, i=" << i << reset << std::endl;
+      isFeasible = false;
     }
 
     if (i == N_ - 2)
     {  // Check also vNm1 (which should be zero)
       if ((vip1.array() > epsilon * v_max_.array()).any() || (vip1.array() < -epsilon * v_max_.array()).any())
       {
-        std::cout << red << "velocity constraints are not satisfied" << reset << std::endl;
-        return false;
+        isFeasible = false;
+        std::cout << red << "velocity constraint for vNm1 is not satisfied" << reset << std::endl;
       }
     }
     if ((ai.array() > epsilon * a_max_.array()).any() || (ai.array() < -epsilon * a_max_.array()).any())
     {
-      std::cout << "(ai.array() > a_max_.array()).any()= " << (ai.array() > a_max_.array()).any() << std::endl;
-      std::cout << "(ai.array() < -a_max_.array()).any()" << (ai.array() < -a_max_.array()).any() << std::endl;
       std::cout << red << "acceleration constraints are not satisfied" << reset << std::endl;
-      std::cout << "N_= " << N_ << std::endl;
-      std::cout << "i= " << i << std::endl;
 
-      std::cout << "ai= " << ai.transpose() << std::endl;
-      std::cout << "a_max_= " << a_max_.transpose() << std::endl;
-      accel_constraints_not_satisfied_ = true;
-
-      return false;
+      isFeasible = false;
     }
   }
 
-  return true;
+  return isFeasible;
 }
 
 void SplineAStar::expandAndAddToQueue(Node& current)

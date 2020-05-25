@@ -1299,23 +1299,6 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   // std::cout << "Final.pos= " << final.pos << std::endl;
   // std::cout << "norm= " << (initial.pos - final.pos).norm() << std::endl;
 
-  double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
-
-  double t_init = k_whole * par_.dc + time_now;
-  double t_final = t_init + (initial.pos - final.pos).array().abs().maxCoeff() /
-                                (par_.factor_v_max * par_.v_max);  // time to execute the optimized path
-
-  mtx_trajs_.lock();
-
-  double time_init_opt = ros::Time::now().toSec();
-
-  MyTimer convex_hulls_timer(true);
-  removeTrajsThatWillNotAffectMe(A, t_init, t_final);
-  ConvexHullsOfCurves hulls = convexHullsOfCurves(t_init, t_final);
-  ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
-  // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
-  edges_obstacles_out = vectorGCALPol2edges(hulls);
-
   par_snlopt par;
 
   par.z_min = par_.z_ground;
@@ -1340,8 +1323,6 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   SolverNlopt snlopt(par);
 
-  snlopt.setHulls(hulls_std);
-
   if (k_whole != 0)
   {
     snlopt.setMaxRuntimeKappaAndMu(k_whole * par_.dc, par_.kappa, par_.mu);
@@ -1351,10 +1332,33 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
     snlopt.setMaxRuntimeKappaAndMu(1.0, par_.kappa,
                                    par_.mu);  // I'm stopped at the end of the trajectory --> take my time to replan
   }
-  snlopt.setInitStateFinalStateInitTFinalT(initial, final, t_init, t_final);
 
+  //////////////////////
+  double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+
+  double t_init = k_whole * par_.dc + time_now;
+  double t_final = t_init + (initial.pos - final.pos).array().abs().maxCoeff() /
+                                (par_.factor_v_max * par_.v_max);  // time to execute the optimized path
+
+  snlopt.setInitStateFinalStateInitTFinalT(initial, final, t_init,
+                                           t_final);  // note that here t_final may have been updated
+
+  ////////////////
+
+  mtx_trajs_.lock();
+
+  double time_init_opt = ros::Time::now().toSec();
+
+  removeTrajsThatWillNotAffectMe(A, t_init, t_final);
+  ConvexHullsOfCurves hulls = convexHullsOfCurves(t_init, t_final);
+  ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
+  // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
+  edges_obstacles_out = vectorGCALPol2edges(hulls);
   mtx_trajs_.unlock();
 
+  snlopt.setHulls(hulls_std);
+
+  //////////////////////
   std::cout << on_cyan << bold << "Solved so far" << solutions_found_ << "/" << total_replannings_ << reset
             << std::endl;
 
