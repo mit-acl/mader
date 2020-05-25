@@ -1724,6 +1724,14 @@ void SolverNlopt::printQVA(const std::vector<Eigen::Vector3d> &q)
 bool SolverNlopt::optimize()
 
 {
+  // note that, for a v0 and a0 given, q2_ is not guaranteed to lie within the bounds. If that's the case --> keep
+  // executing previous trajectory
+  if ((q2_.z() > z_max_ || q2_.z() < z_ground_))
+  {
+    std::cout << bold << red << "q2_ is not in [z_min, z_max]" << reset << std::endl;
+    return false;
+  }
+
   // generateRandomGuess();
   // generateStraightLineGuess();
   if ((initial_state_.pos - final_state_.pos).norm() < dist_to_use_straight_guess_ || num_of_obst_ == 0)

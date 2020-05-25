@@ -9,6 +9,7 @@ class Timer
 {
   typedef std::chrono::high_resolution_clock high_resolution_clock;
   typedef std::chrono::milliseconds milliseconds;
+  typedef std::chrono::microseconds microseconds;
   // typedef std::chrono::microseconds microseconds;
 
 public:
@@ -24,6 +25,11 @@ public:
   double ElapsedMs() const
   {
     return (std::chrono::duration_cast<milliseconds>(high_resolution_clock::now() - _start)).count();
+  }
+
+  double ElapsedUs() const
+  {
+    return (std::chrono::duration_cast<microseconds>(high_resolution_clock::now() - _start)).count();
   }
   template <typename T, typename Traits>
   friend std::basic_ostream<T, Traits>& operator<<(std::basic_ostream<T, Traits>& out, const Timer& timer)
