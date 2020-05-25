@@ -40,6 +40,7 @@ struct par_snlopt
   std::string solver;
   std::string basis;
   double a_star_bias;
+  bool allow_infeasible_guess;
 
   // //  Will change between iterations
   // double kappa;
@@ -307,6 +308,7 @@ private:
 
   double a_star_bias_ = 1.0;
   double a_star_fraction_voxel_size_ = 0.5;
+  bool allow_infeasible_guess_ = false;
 
   separator::Separator *separator_solver_;
 };

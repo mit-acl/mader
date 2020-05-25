@@ -89,6 +89,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "a_star_samp_y", par_.a_star_samp_y);
   safeGetParam(nh_, "a_star_samp_z", par_.a_star_samp_z);
   safeGetParam(nh_, "a_star_fraction_voxel_size", par_.a_star_fraction_voxel_size);
+  safeGetParam(nh_, "allow_infeasible_guess", par_.allow_infeasible_guess);
 
   safeGetParam(nh_, "a_star_bias", par_.a_star_bias);
 

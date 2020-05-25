@@ -1320,6 +1320,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   par.solver = par_.solver;
   par.basis = par_.basis;
   par.a_star_bias = par_.a_star_bias;
+  par.allow_infeasible_guess = par_.allow_infeasible_guess;
 
   SolverNlopt snlopt(par);
 

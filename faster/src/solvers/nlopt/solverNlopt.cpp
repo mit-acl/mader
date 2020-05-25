@@ -81,6 +81,9 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
 
   /////
 
+  allow_infeasible_guess_ = par.allow_infeasible_guess;
+  /////
+
   solver_ = getSolver(par.solver);
 
   // force_final_state_ = force_final_state;
@@ -308,7 +311,7 @@ void SolverNlopt::generateAStarGuess()
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
-  bool solved = myAStarSolver.run(q, n, d);
+  bool is_feasible = myAStarSolver.run(q, n, d);
 
   num_of_LPs_run_ = myAStarSolver.getNumOfLPsRun();
   // std::cout << "After Running solved, n= " << std::endl;
@@ -316,18 +319,26 @@ void SolverNlopt::generateAStarGuess()
 
   fillPlanesFromNDQ(planes_, n_guess_, d_guess_, q_guess_);
 
-  if (solved == true)
+  if (is_feasible)
+  {
+    ROS_INFO_STREAM("[NL] A* found a feasible solution!");
+  }
+  else
+  {
+    ROS_ERROR_STREAM("[NL] A* didn't find a feasible solution!");
+  }
+
+  if (is_feasible == true || (is_feasible == false && allow_infeasible_guess_ == true))
   {
     q_guess_ = q;
     n_guess_ = n;
     d_guess_ = d;
-    ROS_INFO_STREAM("[NL] A* succeded");
+
+    ROS_INFO_STREAM("[NL] Using the A* guess");
   }
   else
   {
-    // ROS_ERROR_STREAM("[NL] A* failed --> SLine");
-
-    std::cout << bold << red << "[NL] A* didn't find a solution, using straight line guess" << reset << std::endl;
+    std::cout << "[NL] Using straight line guess" << std::endl;
   }
 
   return;
@@ -1807,8 +1818,8 @@ bool SolverNlopt::optimize()
 
   qnd2x(q_guess_, n_guess_, d_guess_, x_);
 
-  std::cout << "The guess is the following one:" << std::endl;
-  printQVA(q_guess_);
+  // std::cout << "The guess is the following one:" << std::endl;
+  // printQVA(q_guess_);
 
   // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
   // std::cout << "q_guess_ is\n" << std::endl;
@@ -1908,10 +1919,10 @@ bool SolverNlopt::optimize()
 
   CPs2TrajAndPwp(q, X_temp_, solution_, N_, p_, num_pol_, knots_, dc_);
 
-  std::cout << "The solution is the following one:" << std::endl;
+  // std::cout << "The solution is the following one:" << std::endl;
   // printQND(q, n, d);
 
-  printQVA(q);
+  // printQVA(q);
 
   //  fillXTempFromCPs(q);
 

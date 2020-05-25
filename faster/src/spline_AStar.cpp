@@ -467,8 +467,8 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   constraint_zL = std::max(-v_max_.z(), min_vel.z());  // lower bound
   constraint_zU = std::min(v_max_.z(), max_vel.z());   // upper bound
 
-  std::cout << "i " << i << std::endl;
-  std::cout << "Checking for acceleration " << i - 1 << std::endl;
+  // std::cout << "i " << i << std::endl;
+  // std::cout << "Checking for acceleration " << i - 1 << std::endl;
 
   // Now, if i==(N_-3), I need to impose also the constraint aNm3 \in [-amax,amax]
   if (i == (N_ - 3))
@@ -480,10 +480,10 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
     Eigen::Vector3d vNm3_max = vNm2 + c * a_max_;
     Eigen::Vector3d vNm3_min = vNm2 - c * a_max_;
 
-    std::cout << "Before: " << constraint_xL << " --> " << constraint_xU << std::endl;
+    // std::cout << "Before: " << constraint_xL << " --> " << constraint_xU << std::endl;
 
-    std::cout << "vNm3_min.x()=: " << vNm3_min.x() << std::endl;
-    std::cout << "constraint_xL=: " << constraint_xL << std::endl;
+    // std::cout << "vNm3_min.x()=: " << vNm3_min.x() << std::endl;
+    // std::cout << "constraint_xL=: " << constraint_xL << std::endl;
 
     constraint_xL = std::max(vNm3_min.x(), constraint_xL);  // lower bound
     constraint_xU = std::min(vNm3_max.x(), constraint_xU);  // upper bound
@@ -494,7 +494,7 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
     constraint_zL = std::max(vNm3_min.z(), constraint_zL);  // lower bound
     constraint_zU = std::min(vNm3_max.z(), constraint_zU);  // upper bound
 
-    std::cout << "vNm3=v4 in" << constraint_xL << " --> " << constraint_xU << std::endl;
+    // std::cout << "vNm3=v4 in" << constraint_xL << " --> " << constraint_xU << std::endl;
   }
 
   // if (constraint_xL > constraint_xU)
@@ -1490,6 +1490,8 @@ exitloop:
   }
   else
   {
+    std::cout << red << "This state should never occur" << reset << std::endl;
+    abort();
     return false;
   }
 
@@ -1528,11 +1530,11 @@ exitloop:
 
   bool isFeasible = checkFeasAndFillND(result_, n, d);
 
-  std::cout << "____________" << std::endl;
-  for (auto qi : result_)
-  {
-    std::cout << qi.transpose() << std::endl;
-  }
+  // std::cout << "____________" << std::endl;
+  // for (auto qi : result_)
+  // {
+  //   std::cout << qi.transpose() << std::endl;
+  // }
 
   if (isFeasible == false && path_found_is_not_complete == false)
   {
