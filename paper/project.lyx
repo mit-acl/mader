@@ -2740,7 +2740,8 @@ literal "false"
 
 \end_inset
 
-.
+ (explain that I'm using the augmented lagrangian , and the inner solver
+ is MMA).
  
 \end_layout
 
@@ -2952,7 +2953,10 @@ where the operators
 
 .
  EXPLAIN WHAT I'M DOING TO ENFORCE that aNm2 is inside bounds (see computeUpperA
-ndLowerConstraints in code)
+ndLowerConstraints in code).
+ Now the only reason why it may not be feasible is when filling (either
+ because it collides, or because it doesn't satisfy the accel constraints)
+ 
 \end_layout
 
 \begin_layout Standard
