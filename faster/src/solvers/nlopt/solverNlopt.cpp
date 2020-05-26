@@ -29,6 +29,22 @@ using namespace termcolor;
 
 SolverNlopt::SolverNlopt(par_snlopt &par)
 {
+  Eigen::Matrix<double, 4, 4> Mbs2mv;
+  Eigen::Matrix<double, 4, 4> Mbs2be;
+  // see matlab.
+  // This is for the interval [0 1];
+  Mbs2mv << 0.18372, 0.057009, -0.01545, -0.005338,   ///////////
+      0.70176, 0.6665738, 0.29187, 0.119851669,       ////////////
+      0.119851669, 0.2918718, 0.66657, 0.7017652,     //////////////////
+      -0.00533879, -0.015455, 0.0570095, 0.18372189;  //////////////////
+
+  Mbs2be << 1, 0, 0, 0,  //////////
+      4, 4, 2, 1,        //////////
+      1, 2, 4, 4,        //////////
+      0, 0, 0, 1;        //////////
+
+  Mbs2be = (1 / 6.0) * Mbs2be;
+
   // std::cout << "In the SolverNlopt Constructor\n";
 
   z_ground_ = par.z_min;
@@ -42,12 +58,12 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   if (par.basis == "MINVO")
   {
     basis_ = MINVO;
-    Mbs2basis_ = Mbs2mv_;
+    Mbs2basis_ = Mbs2mv;
   }
   else if (par.basis == "BEZIER")
   {
     basis_ = BEZIER;
-    Mbs2basis_ = Mbs2be_;
+    Mbs2basis_ = Mbs2be;
   }
   else if (par.basis == "B_SPLINE")
   {
@@ -100,20 +116,6 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   M_ = num_pol_ + 2 * p_;
   N_ = M_ - p_ - 1;
   // num_of_variables_ = (3 * (N_ + 1) - 18) + (3 * (M_ - 2 * p_)) + (M_ - 2 * p_);  // total number of variables
-
-  // see matlab.
-  // This is for the interval [0 1];
-  Mbs2mv_ << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
-      0.70176, 0.6665738, 0.29187, 0.119851669,       ////////////
-      0.119851669, 0.2918718, 0.66657, 0.7017652,     //////////////////
-      -0.00533879, -0.015455, 0.0570095, 0.18372189;  //////////////////
-
-  Mbs2be_ << 1, 0, 0, 0,  //////////
-      4, 4, 2, 1,         //////////
-      1, 2, 4, 4,         //////////
-      0, 0, 0, 1;         //////////
-
-  Mbs2be_ = (1 / 6.0) * Mbs2be_;
 
   separator_solver_ = new separator::Separator();
 }
@@ -295,14 +297,17 @@ void SolverNlopt::generateAStarGuess()
   myAStarSolver.setBias(a_star_bias_);
   if (basis_ == MINVO)
   {
+    std::cout << green << bold << "snlopt is using MINVO" << reset << std::endl;
     myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);
   }
   else if (basis_ == BEZIER)
   {
+    std::cout << green << bold << "snlopt is using BEZIER" << reset << std::endl;
     myAStarSolver.setBasisUsedForCollision(myAStarSolver.BEZIER);
   }
   else
   {
+    std::cout << green << bold << "snlopt is using B_SPLINE" << reset << std::endl;
     myAStarSolver.setBasisUsedForCollision(myAStarSolver.B_SPLINE);
   }
 
@@ -747,24 +752,40 @@ void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
 
   std::cout << bold << "deltaT_ before= " << deltaT_ << reset << std::endl;
 
-  Eigen::Vector3d bound1 = ((p_ - 1) * (v_max_ - v0).array() / (a0.array()));
-  Eigen::Vector3d bound2 = ((p_ - 1) * (-v_max_ - v0).array() / (a0.array()));
+  for (int axis = 0; axis < 3; axis++)
+  {
+    double bound1, bound2;
+    if (fabs(a0(axis)) > 1e-7)
+    {
+      bound1 = ((p_ - 1) * (v_max_(axis) - v0(axis)) / (a0(axis)));
+      bound2 = ((p_ - 1) * (-v_max_(axis) - v0(axis)) / (a0(axis)));
+      saturate(deltaT_, std::min(bound1, bound2), std::max(bound1, bound2));
+    }
+    else
+    {
+      // do nothing: a0 ==0 for that axis, so that means that v1==v0, and therefore v1 satisfies constraints for that
+      // axis
+    }
+  }
 
-  // note that if any element of a0 is ==0.0, then its corresponding element in bound1 (or bound2) is +-infinity, but
-  // valid  for the saturation below
+  // Eigen::Vector3d bound1 = ((p_ - 1) * (v_max_ - v0).array() / (a0.array()));
+  // Eigen::Vector3d bound2 = ((p_ - 1) * (-v_max_ - v0).array() / (a0.array()));
 
-  saturate(deltaT_, std::min(bound1.x(), bound2.x()), std::max(bound1.x(), bound2.x()));
-  saturate(deltaT_, std::min(bound1.y(), bound2.y()), std::max(bound1.y(), bound2.y()));
-  saturate(deltaT_, std::min(bound1.z(), bound2.z()), std::max(bound1.z(), bound2.z()));
+  // // note that if any element of a0 is ==0.0, then its corresponding element in bound1 (or bound2) is +-infinity, but
+  // // valid  for the saturation below
 
-  std::cout << "std::min(bound1.x(), bound2.x()= " << std::min(bound1.x(), bound2.x()) << std::endl;
-  std::cout << "std::max(bound1.x(), bound2.x()= " << std::max(bound1.x(), bound2.x()) << std::endl;
+  // saturate(deltaT_, std::min(bound1.x(), bound2.x()), std::max(bound1.x(), bound2.x()));
+  // saturate(deltaT_, std::min(bound1.y(), bound2.y()), std::max(bound1.y(), bound2.y()));
+  // saturate(deltaT_, std::min(bound1.z(), bound2.z()), std::max(bound1.z(), bound2.z()));
 
-  std::cout << "std::min(bound1.y(), bound2.y()= " << std::min(bound1.y(), bound2.y()) << std::endl;
-  std::cout << "std::max(bound1.y(), bound2.y()= " << std::max(bound1.y(), bound2.y()) << std::endl;
+  // std::cout << "std::min(bound1.x(), bound2.x()= " << std::min(bound1.x(), bound2.x()) << std::endl;
+  // std::cout << "std::max(bound1.x(), bound2.x()= " << std::max(bound1.x(), bound2.x()) << std::endl;
 
-  std::cout << "std::min(bound1.z(), bound2.z()= " << std::min(bound1.z(), bound2.z()) << std::endl;
-  std::cout << "std::max(bound1.z(), bound2.z()= " << std::max(bound1.z(), bound2.z()) << std::endl;
+  // std::cout << "std::min(bound1.y(), bound2.y()= " << std::min(bound1.y(), bound2.y()) << std::endl;
+  // std::cout << "std::max(bound1.y(), bound2.y()= " << std::max(bound1.y(), bound2.y()) << std::endl;
+
+  // std::cout << "std::min(bound1.z(), bound2.z()= " << std::min(bound1.z(), bound2.z()) << std::endl;
+  // std::cout << "std::max(bound1.z(), bound2.z()= " << std::max(bound1.z(), bound2.z()) << std::endl;
 
   std::cout << bold << "deltaT_ after= " << deltaT_ << reset << std::endl;
 
@@ -1094,7 +1115,7 @@ int SolverNlopt::lastDecCP()
   return (N_ - 2);
 }
 
-void SolverNlopt::transformBSpline2otherBasis(Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv)
+void SolverNlopt::transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv)
 {
   /////////////////////
   // Eigen::Matrix<double, 4, 3> Qmv;  // minvo

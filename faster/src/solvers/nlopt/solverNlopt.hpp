@@ -87,7 +87,7 @@ private:
 
   bool isDegenerate(const std::vector<double> &x);
 
-  void transformBSpline2otherBasis(Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv);
+  void transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv);
 
   void generateRandomGuess();
   void generateAStarGuess();
@@ -295,11 +295,11 @@ private:
   double dist_to_use_straight_guess_ = std::numeric_limits<double>::max();
 
   // transformation between the B-spline control points and the MINVO control points
-  Eigen::Matrix<double, 4, 4> Mbs2mv_;
+  // Eigen::Matrix<double, 4, 4> Mbs2mv_;
   // Eigen::Matrix<double, 4, 4> Mbs2mv_inverse_;
 
   // transformation between the B-spline control points and the Bezier control points
-  Eigen::Matrix<double, 4, 4> Mbs2be_;
+  // Eigen::Matrix<double, 4, 4> Mbs2be_;
   // Eigen::Matrix<double, 4, 4> Mbs2be_inverse_;
 
   // transformation between the B-spline control points and other basis

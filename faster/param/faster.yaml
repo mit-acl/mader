@@ -92,7 +92,7 @@ allow_infeasible_guess: true  #whether allow infeasible guesses to be used for t
 
 a_star_bias: 10000.0 #Bias (cost=g+bias*h) in the A* search 
 
-basis: "B_SPLINE"  #MINVO OR B_SPLINE or BEZIER This is the basis used only for collision checking
+basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER This is the basis used only for collision checking
 
 res_plot_traj: 6.0  #Higher --> More resolution when plotting the trajectory 
 

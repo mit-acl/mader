@@ -69,204 +69,6 @@ Visualization Manager:
       Frames:
         4000:
           Value: true
-        4001:
-          Value: true
-        4002:
-          Value: true
-        4003:
-          Value: true
-        4004:
-          Value: true
-        4005:
-          Value: true
-        4006:
-          Value: true
-        4007:
-          Value: true
-        4008:
-          Value: true
-        4009:
-          Value: true
-        4010:
-          Value: true
-        4011:
-          Value: true
-        4012:
-          Value: true
-        4013:
-          Value: true
-        4014:
-          Value: true
-        4015:
-          Value: true
-        4016:
-          Value: true
-        4017:
-          Value: true
-        4018:
-          Value: true
-        4019:
-          Value: true
-        4020:
-          Value: true
-        4021:
-          Value: true
-        4022:
-          Value: true
-        4023:
-          Value: true
-        4024:
-          Value: true
-        4025:
-          Value: true
-        4026:
-          Value: true
-        4027:
-          Value: true
-        4028:
-          Value: true
-        4029:
-          Value: true
-        4030:
-          Value: true
-        4031:
-          Value: true
-        4032:
-          Value: true
-        4033:
-          Value: true
-        4034:
-          Value: true
-        4035:
-          Value: true
-        4036:
-          Value: true
-        4037:
-          Value: true
-        4038:
-          Value: true
-        4039:
-          Value: true
-        4040:
-          Value: true
-        4041:
-          Value: true
-        4042:
-          Value: true
-        4043:
-          Value: true
-        4044:
-          Value: true
-        4045:
-          Value: true
-        4046:
-          Value: true
-        4047:
-          Value: true
-        4048:
-          Value: true
-        4049:
-          Value: true
-        4050:
-          Value: true
-        4051:
-          Value: true
-        4052:
-          Value: true
-        4053:
-          Value: true
-        4054:
-          Value: true
-        4055:
-          Value: true
-        4056:
-          Value: true
-        4057:
-          Value: true
-        4058:
-          Value: true
-        4059:
-          Value: true
-        4060:
-          Value: true
-        4061:
-          Value: true
-        4062:
-          Value: true
-        4063:
-          Value: true
-        4064:
-          Value: true
-        4065:
-          Value: true
-        4066:
-          Value: true
-        4067:
-          Value: true
-        4068:
-          Value: true
-        4069:
-          Value: true
-        4070:
-          Value: true
-        4071:
-          Value: true
-        4072:
-          Value: true
-        4073:
-          Value: true
-        4074:
-          Value: true
-        4075:
-          Value: true
-        4076:
-          Value: true
-        4077:
-          Value: true
-        4078:
-          Value: true
-        4079:
-          Value: true
-        4080:
-          Value: true
-        4081:
-          Value: true
-        4082:
-          Value: true
-        4083:
-          Value: true
-        4084:
-          Value: true
-        4085:
-          Value: true
-        4086:
-          Value: true
-        4087:
-          Value: true
-        4088:
-          Value: true
-        4089:
-          Value: true
-        4090:
-          Value: true
-        4091:
-          Value: true
-        4092:
-          Value: true
-        4093:
-          Value: true
-        4094:
-          Value: true
-        4095:
-          Value: true
-        4096:
-          Value: true
-        4097:
-          Value: true
-        4098:
-          Value: true
-        4099:
-          Value: true
         All Enabled: false
         SQ01s:
           Value: true
@@ -282,204 +84,6 @@ Visualization Manager:
       Tree:
         world:
           4000:
-            {}
-          4001:
-            {}
-          4002:
-            {}
-          4003:
-            {}
-          4004:
-            {}
-          4005:
-            {}
-          4006:
-            {}
-          4007:
-            {}
-          4008:
-            {}
-          4009:
-            {}
-          4010:
-            {}
-          4011:
-            {}
-          4012:
-            {}
-          4013:
-            {}
-          4014:
-            {}
-          4015:
-            {}
-          4016:
-            {}
-          4017:
-            {}
-          4018:
-            {}
-          4019:
-            {}
-          4020:
-            {}
-          4021:
-            {}
-          4022:
-            {}
-          4023:
-            {}
-          4024:
-            {}
-          4025:
-            {}
-          4026:
-            {}
-          4027:
-            {}
-          4028:
-            {}
-          4029:
-            {}
-          4030:
-            {}
-          4031:
-            {}
-          4032:
-            {}
-          4033:
-            {}
-          4034:
-            {}
-          4035:
-            {}
-          4036:
-            {}
-          4037:
-            {}
-          4038:
-            {}
-          4039:
-            {}
-          4040:
-            {}
-          4041:
-            {}
-          4042:
-            {}
-          4043:
-            {}
-          4044:
-            {}
-          4045:
-            {}
-          4046:
-            {}
-          4047:
-            {}
-          4048:
-            {}
-          4049:
-            {}
-          4050:
-            {}
-          4051:
-            {}
-          4052:
-            {}
-          4053:
-            {}
-          4054:
-            {}
-          4055:
-            {}
-          4056:
-            {}
-          4057:
-            {}
-          4058:
-            {}
-          4059:
-            {}
-          4060:
-            {}
-          4061:
-            {}
-          4062:
-            {}
-          4063:
-            {}
-          4064:
-            {}
-          4065:
-            {}
-          4066:
-            {}
-          4067:
-            {}
-          4068:
-            {}
-          4069:
-            {}
-          4070:
-            {}
-          4071:
-            {}
-          4072:
-            {}
-          4073:
-            {}
-          4074:
-            {}
-          4075:
-            {}
-          4076:
-            {}
-          4077:
-            {}
-          4078:
-            {}
-          4079:
-            {}
-          4080:
-            {}
-          4081:
-            {}
-          4082:
-            {}
-          4083:
-            {}
-          4084:
-            {}
-          4085:
-            {}
-          4086:
-            {}
-          4087:
-            {}
-          4088:
-            {}
-          4089:
-            {}
-          4090:
-            {}
-          4091:
-            {}
-          4092:
-            {}
-          4093:
-            {}
-          4094:
-            {}
-          4095:
-            {}
-          4096:
-            {}
-          4097:
-            {}
-          4098:
-            {}
-          4099:
             {}
           vicon:
             SQ01s:
@@ -571,7 +175,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/setpoint
       Name: Setpoint
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -714,7 +318,7 @@ Visualization Manager:
       Marker Topic: /shapes_dynamic
       Name: RViz_Dynamic_Obstacles
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -808,7 +412,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ01s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -1000,7 +604,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ01s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1175,15 +779,15 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 48.726688385009766
+      Distance: 8.41689395904541
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 24.8468074798584
-        Y: -3.265406370162964
+        X: 1.1619682312011719
+        Y: -1.234330415725708
         Z: 9.023143320519011e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
