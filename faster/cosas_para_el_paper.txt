@@ -109,8 +109,9 @@ te mueves para y<0 (por ejempo), la constraint en velocidad [yL yU] tambi'en se 
 --> Si en el dynamic forest no funciona bien, puede ser porque el radio del dron sea muy grande
 --> El bias en A* search era provocado por la constraint n1+n2+n3 <=3 que ten'ia en separator.cpp
 --> Si hay muchas ocasiones en que checkFeasAndFillND fails, quiza es porqe a_star_samp_x, a_star_samp_y,a_star_samp_z... sean muy bajas
-
+--> Si el expandAndAddToQueue del A* guess tarda mucho (> 50ms), es porque no estoy haciendo lo de la voxelMap para prune more nodes
 
 --> Usar la MINVO basis tambi'en para velocity y acceleration??
 
 
+=========================

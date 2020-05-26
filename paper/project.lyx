@@ -417,34 +417,79 @@ Compare triangle inequ (planes are not found), in terms of conservatism
  and computation time
 \end_layout
 
-\begin_layout Standard
-Assumptions:
-\end_layout
-
-\begin_layout Standard
-–> We have a tracker/depth sensor that provides trajectories of the obstacles
-\end_layout
-
-\begin_layout Standard
-–> The agent can communicate with agents in radius r, with a delay 
-\begin_inset Formula $=0$
-\end_inset
-
-.
- 
-\end_layout
-
-\begin_layout Standard
--> The agents have the same reference time
-\end_layout
-
 \begin_layout Section*
 Structure
 \end_layout
 
-\begin_layout Enumerate
-Definition of static/dynamic obstacle, and agents (i.e.
- non-cooperative agents are included in the definition of obstacles)
+\begin_layout Standard
+Paper structure:
+\end_layout
+
+\begin_layout Standard
+--> 
+\series bold
+Definitions
+\end_layout
+
+\begin_layout Standard
+--> 
+\series bold
+Assumptions: limited FOV, existence of tracking and predictor algorithm
+ capablee obstacles in sphere R + can communicate with.
+ Planning iterations are triggered assynchronous between the agents.
+ 
+\end_layout
+
+\begin_layout Standard
+--> Collision check
+\end_layout
+
+\begin_layout Standard
+---------> Dynamic obstacles (check intervals instead of point by point,
+ collision check is done by segments)--> need for polyhedral approximation
+ between two intervals
+\end_layout
+
+\begin_layout Standard
+---------> Which polyhedral approximation whould we use
+\end_layout
+
+\begin_layout Standard
+------------------------> For the traj of the agent: (Basis used B-Spline,...).
+ q0 vs qBezier vs qMv; (and change that in all the algorithms) -----------------
+-------> For other ones: (Minkowski sym + uncertainty,...)
+\end_layout
+
+\begin_layout Standard
+---------> Given the polyhedral approximation, how to guarantee separation
+ between two polyhedra (not use triangle inequality, find planes instead)
+\end_layout
+
+\begin_layout Standard
+--> Optimization Problem
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+--> Initial Guess
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+--> Deconfliction scheme
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+--> WHole archictecture Time allocation between octopus search and optimization
+ (kappa and mu)
+\end_layout
+
+\begin_layout Standard
+INFLATE WITH THE RADIUS OF THE DRONE THE OTHER OBSTACLES!!
 \end_layout
 
 \begin_layout Enumerate
@@ -468,37 +513,14 @@ What method guarantees collision check.
 
 \end_deeper
 \begin_layout Enumerate
-For dynamic obstacles, this collision checking is done by segments.
- 
-\end_layout
-
-\begin_layout Enumerate
 Explain how the local map and the FOV constraints work.
 \end_layout
 
-\begin_layout Enumerate
-Explain assumptions
-\end_layout
-
-\begin_layout Enumerate
-Optimization problem
-\end_layout
-
-\begin_deeper
-\begin_layout Enumerate
-Explain formula to minimize jerk 
-\end_layout
-
-\end_deeper
 \begin_layout Enumerate
 Justify Multi-Agent communication
 \end_layout
 
 \begin_deeper
-\begin_layout Enumerate
-Second check why is needed (boolean operation)
-\end_layout
-
 \begin_layout Enumerate
 We don't have a 
 \begin_inset Quotes eld
@@ -512,22 +534,6 @@ clock that triggers
  Each of them , although they need to be aware of the time of the other
  agents.
  
-\end_layout
-
-\end_deeper
-\begin_layout Enumerate
-Explain whole architecture
-\end_layout
-
-\begin_deeper
-\begin_layout Enumerate
-Octopus search (to generate initial guess, it uses an LP for collision check).
- Guaranteed to be a nearly-feasible guess.
- 
-\end_layout
-
-\begin_layout Enumerate
-Time allocation between octopus search and optimization (kappa and mu)
 \end_layout
 
 \end_deeper
@@ -1548,6 +1554,109 @@ p_{k-1}(t)
 \end_layout
 
 \begin_layout Section
+Assumptions
+\end_layout
+
+\begin_layout Standard
+This paper relies on the following two assumptions:
+\end_layout
+
+\begin_layout Itemize
+The existence of a tracker and prediction algorithm able to estimate the
+ current location and future trajectory of other obstacles that are inside
+ a sphere of radius 
+\begin_inset Formula $r$
+\end_inset
+
+ around the drone, together with their associated uncertainties.
+\end_layout
+
+\begin_layout Itemize
+An agent can communicate without delay with other agents that are within
+ an sphere of radius 
+\begin_inset Formula $r$
+\end_inset
+
+.
+ All the agents have the same reference time, but trigger the planning iteration
+s asynchronously
+\end_layout
+
+\begin_layout Standard
+==========
+\end_layout
+
+\begin_layout Standard
+The space 
+\begin_inset Formula $S(t)$
+\end_inset
+
+ occupied by an obstacle or agent is modeled as:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+S(t)=\boldsymbol{p}(t)\oplus B(t)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\oplus$
+\end_inset
+
+ is the Minkowski sum, and 
+\begin_inset Formula $B(t)$
+\end_inset
+
+ is the 3D axis-aligned bounding box (AABB) of the obstacle.
+ To model the uncertainty in the obstacles detection and prediction, we
+ inflate the size of each side 
+\begin_inset Formula $B_{i}(t)$
+\end_inset
+
+ (
+\begin_inset Formula $i=\{1,2,3\}$
+\end_inset
+
+) of this bounding box as follows: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+B_{i}(t)=\beta_{i}B_{i,0}+\alpha_{i}(t-t_{0}),\quad t\in[t_{0},t_{f}]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\beta_{i}\ge1$
+\end_inset
+
+ models the uncertainty in the current position, and 
+\begin_inset Formula $\alpha_{i}\ge0$
+\end_inset
+
+ models the uncertainty of the future trajectory.
+ For the agents, we use 
+\begin_inset Formula $B_{i}(t)=B_{i,0}\quad\forall i$
+\end_inset
+
+ .
+ 
+\end_layout
+
+\begin_layout Section
 Collision Check
 \end_layout
 
@@ -1756,7 +1865,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="12" columns="3">
+<lyxtabular version="3" rows="14" columns="3">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -2164,7 +2273,7 @@ Set that contains the indexes of all the intervals
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -2176,7 +2285,7 @@ Set that contains the indexes of all the intervals
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -2190,13 +2299,98 @@ Set that contains the indexes all the obstacles/agents, except the agent
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 \begin_inset Formula $I=\{0,1,...,m-2p-1\}\backslash s$
 \end_inset
 
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{I}_{j}^{i}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Polyhedron that contains the interval 
+\begin_inset Formula $j$
+\end_inset
+
+ of the trajectory of the obstacle/agent 
+\begin_inset Formula $i$
+\end_inset
+
+.
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\{\cdot\}_{MV}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set of points using the MINVO (
+\begin_inset Formula $MV$
+\end_inset
+
+), Bezier (
+\begin_inset Formula $Be$
+\end_inset
+
+), or B-Spline (
+\begin_inset Formula $BS$
+\end_inset
+
+) Basis
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
 
 \end_layout
 
@@ -2632,8 +2826,8 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-CHANGE THIS FIGURE Example of the Octopus Search that generates the initial
- guess for the nonconvex optimization.
+CHANGE THIS FIGURE//PUT AN EXAMPLE WITH DYNAMIC OBSTACLES?? Example of the
+ Octopus Search that generates the initial guess for the nonconvex optimization.
  An static obstacle is shown here for visualization purposes, but Alg.
  
 \begin_inset ERT
@@ -2678,21 +2872,30 @@ vskip-2ex
 \end_layout
 
 \begin_layout Standard
-First/last qi are given by pos and velocity
+First/last qi are given by pos and velocity 
 \end_layout
 
 \begin_layout Standard
+A final stop condition is used in the optimization.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\size scriptsize
 \begin_inset Formula 
 \[
-\begin{array}{ccc}
-\underset{\mathcal{Q}_{j},\boldsymbol{n}_{ij},d_{ij}}{\min} & \sum_{j=0}^{n-3}\left\Vert -\boldsymbol{q}_{j}+3\boldsymbol{q}_{j+1}-3\boldsymbol{q}_{j+2}+\boldsymbol{q}_{j+3}\right\Vert ^{2}\\
-\text{s.t.} & \mathbf{x}(0)=\mathbf{x}_{init}\\
- & \mathbf{x}(t_{f})=\mathbf{x}_{final}\\
- & \boldsymbol{n}_{ij}^{T}\boldsymbol{v}+\boldsymbol{d}_{ij}>0 & \forall\boldsymbol{v}\in\mathcal{V}_{ij},\;\forall i\in I,j\in J\\
- & \boldsymbol{n}_{ij}^{T}\boldsymbol{q}+\boldsymbol{d}_{ij}<0 & \forall\boldsymbol{q}\in\mathcal{Q}_{j},\;\forall j\in J\\
- & \left\Vert \frac{p\left(\mathbf{q}_{j+1}-\mathbf{q}_{j}\right)}{t_{i+p+1}-t_{i+1}}\right\Vert _{\infty}\le v_{max} & \forall j\in J\\
- & \left\Vert \frac{\left(p-1\right)}{t_{i+p+1}-t_{i+2}}\left(\frac{p\left(\mathbf{q}_{j+2}-\mathbf{q}_{j+1}\right)}{t_{j+p+2}-t_{j+2}}-\frac{p\left(\mathbf{q}_{j+1}-\mathbf{q}_{j}\right)}{t_{j+p+1}-t_{j+1}}\right)\right\Vert _{\infty}\le a_{max} & \forall j\in J
-\end{array}
+\boxed{\begin{array}{c}
+\underset{\mathcal{Q}_{j},\boldsymbol{n}_{ij},d_{ij}}{\boldsymbol{\min}}\quad\sum\limits _{j=0}^{n-3}\left\Vert -\boldsymbol{q}_{j}+3\boldsymbol{q}_{j+1}-3\boldsymbol{q}_{j+2}+\boldsymbol{q}_{j+3}\right\Vert ^{2}+\omega\left\Vert \boldsymbol{q}_{N}-\boldsymbol{g}\right\Vert ^{2}\\
+\boldsymbol{\text{s.t.}}\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\\
+\mathbf{x}(t_{0})=\mathbf{x}_{init}\\
+\boldsymbol{v}(t_{f})=\boldsymbol{0}\\
+\boldsymbol{a}(t_{f})=\boldsymbol{0}\\
+\boldsymbol{n}_{ij}^{T}\boldsymbol{v}+\boldsymbol{d}_{ij}>0\quad\forall\boldsymbol{v}\in\mathcal{V}_{ij},\;\forall i\in I,j\in J\\
+\boldsymbol{n}_{ij}^{T}\boldsymbol{q}+\boldsymbol{d}_{ij}<0\quad\forall\boldsymbol{q}\in\mathcal{Q}_{j},\;\forall j\in J\\
+\left\Vert \frac{p\left(\mathbf{q}_{j+1}-\mathbf{q}_{j}\right)}{t_{i+p+1}-t_{i+1}}\right\Vert _{\infty}\le v_{max}\quad\forall j\in J\\
+\left\Vert \frac{\left(p-1\right)}{t_{i+p+1}-t_{i+2}}\left(\frac{p\left(\mathbf{q}_{j+2}-\mathbf{q}_{j+1}\right)}{t_{j+p+2}-t_{j+2}}-\frac{p\left(\mathbf{q}_{j+1}-\mathbf{q}_{j}\right)}{t_{j+p+1}-t_{j+1}}\right)\right\Vert _{\infty}\le a_{max}\quad\forall j\in J
+\end{array}}
 \]
 
 \end_inset
@@ -2701,11 +2904,20 @@ First/last qi are given by pos and velocity
 \end_layout
 
 \begin_layout Standard
-ADD THE SOFT TERMINAL COST, AND REMOVE THE TERMINAL HARD CONSTRAINT
+[CUIDADO QUE EN ESTE OPT PROBLEM DEBERIA USAR MINVO CONTROL POINTS]
 \end_layout
 
 \begin_layout Standard
-Note that this problem is clearly a nonconvex problem, since we are minimizing
+where 
+\begin_inset Formula $\boldsymbol{g}$
+\end_inset
+
+ is the intermediate goal, and 
+\begin_inset Formula $\omega\ge0$
+\end_inset
+
+ is the weight of the soft terminal cost.
+ Note that this problem is clearly a nonconvex problem, since we are minimizing
  over the control points 
 \emph on
 and 
@@ -2723,8 +2935,15 @@ the planes
 \end_inset
 
 ).
- We solve this problem using the globally-convergent method-of-moving-asymptotes
- (MMA) 
+ We solve this problem using the augmented Lagrangian method 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "conn1991globally,birgin2008improving"
+literal "false"
+
+\end_inset
+
+, and with the globally-convergent method-of-moving-asymptotes (MMA) 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "svanberg2002class"
@@ -2732,7 +2951,8 @@ literal "false"
 
 \end_inset
 
- through the NLOPT interface 
+ as the subsidiary optimization algorithm.
+ Both of these algorithms are interfaced using NLOPT 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "nlopt20"
@@ -2740,8 +2960,7 @@ literal "false"
 
 \end_inset
 
- (explain that I'm using the augmented lagrangian , and the inner solver
- is MMA).
+.
  
 \end_layout
 
@@ -2750,10 +2969,7 @@ Initial Guess
 \end_layout
 
 \begin_layout Standard
-The goal of this initial guess is to create a nearly-feasible solution that
- .
- To obtain this initial guess (which consists of both the control points
- 
+To obtain an initial guess (which consists of both the control points 
 \begin_inset Formula $\{\boldsymbol{q}_{0},...,\boldsymbol{q}_{n}\}$
 \end_inset
 
@@ -2788,7 +3004,8 @@ Octopus Search
 \begin_inset Formula $A^{*}$
 \end_inset
 
--like algorithm, This guess handles dyn obstacles.
+-like algorithm.
+ This guess handles dyn obstacles.
  We keep all the open nodes in a priority queue 
 \begin_inset Formula $Q$
 \end_inset
@@ -2822,6 +3039,112 @@ Shouldn't this be the integral along the path??
 \end_layout
 
 \begin_layout Standard
+As 
+\begin_inset Formula $\boldsymbol{p}(t_{0})$
+\end_inset
+
+, 
+\begin_inset Formula $\boldsymbol{v}(t_{0})$
+\end_inset
+
+, and 
+\begin_inset Formula $\boldsymbol{a}(t_{0})$
+\end_inset
+
+ are given, the position control points 
+\begin_inset Formula $\{\boldsymbol{q}_{0},\boldsymbol{q}_{1},\boldsymbol{q}_{2}\}$
+\end_inset
+
+, the velocity control points 
+\begin_inset Formula $\{\boldsymbol{v}_{0},\boldsymbol{v}_{1}\}$
+\end_inset
+
+ and the acceleration control point 
+\begin_inset Formula $\boldsymbol{a}_{0}$
+\end_inset
+
+ are completely determined.
+ Both 
+\begin_inset Formula $\boldsymbol{v}_{0}$
+\end_inset
+
+ and 
+\begin_inset Formula $\boldsymbol{a}_{0}$
+\end_inset
+
+ are guaranteed to satisfy the bounds 
+\begin_inset Formula $v_{max}$
+\end_inset
+
+ and 
+\begin_inset Formula $a_{max}$
+\end_inset
+
+ because they are obtained from the trajectory in the previous iteration
+ (i.e.
+ 
+\begin_inset Formula $\boldsymbol{v}_{0}=\boldsymbol{v}(t_{0})$
+\end_inset
+
+ and 
+\begin_inset Formula $\boldsymbol{a}_{0}=\boldsymbol{a}(t_{0})$
+\end_inset
+
+), which was feasible.
+ To ensure that 
+\begin_inset Formula $\left\Vert \boldsymbol{v}_{1}\right\Vert _{\infty}\le v_{max}$
+\end_inset
+
+, we can adjust 
+\begin_inset Formula $\Delta t$
+\end_inset
+
+ so that it satisfies:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\frac{\left(p-1\right)\left(-sign(\boldsymbol{a}_{0}^{i})v_{max}\boldsymbol{1}-\mathbf{v}_{0}^{i}\right)}{\boldsymbol{a}_{0}^{i}}\le\Delta t\le\frac{\left(p-1\right)\left(sign(\boldsymbol{a}_{0}^{i})v_{max}\boldsymbol{1}-\mathbf{v}_{0}^{i}\right)}{\boldsymbol{a}_{0}^{i}}\quad\forall i\in\{1,2,3\}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(see line 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "line:adjust_deltaT"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Standard
+Moreover, as 
+\begin_inset Formula $\boldsymbol{v}(t_{0})=\boldsymbol{0}$
+\end_inset
+
+, and 
+\begin_inset Formula $\boldsymbol{a}(t_{0})=\boldsymbol{0}$
+\end_inset
+
+, we have that 
+\begin_inset Formula $\boldsymbol{q}_{N-2}=\boldsymbol{q}_{N-1}=\boldsymbol{q}_{N}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
 The way a new node is expanded works as follows: First we sample uniformly
  in 
 \begin_inset Formula $v_{x}$
@@ -2844,26 +3167,6 @@ The way a new node is expanded works as follows: First we sample uniformly
 \[
 \boldsymbol{v}_{j}=\frac{p\left(\boldsymbol{q}_{j+1}-\boldsymbol{q}_{j}\right)}{t_{j+p+1}-t_{j+1}}\qquad\boldsymbol{a}_{j-1}=\frac{\left(p-1\right)\left(\boldsymbol{v}_{j}-\boldsymbol{v}_{j-1}\right)}{t_{j+p}-t_{j+1}}
 \]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-\begin_inset Formula 
-\[
-\boldsymbol{v}_{j}=\frac{p\left(\boldsymbol{q}_{j+1}-\boldsymbol{q}_{j}\right)}{t_{j+p+1}-t_{j+1}}\qquad\boldsymbol{a}_{i}=\frac{\left(p-1\right)\left(\boldsymbol{v}_{j+1}-\boldsymbol{v}_{j}\right)}{t_{j+p+1}-t_{j+2}}
-\]
-
-\end_inset
-
-
-\end_layout
 
 \end_inset
 
@@ -2956,7 +3259,224 @@ where the operators
 ndLowerConstraints in code).
  Now the only reason why it may not be feasible is when filling (either
  because it collides, or because it doesn't satisfy the accel constraints)
+\end_layout
+
+\begin_layout Standard
+Once 
+\begin_inset Formula $\boldsymbol{q}_{j+1}$
+\end_inset
+
+ have been expanded, we convert the control points 
+\begin_inset Formula $\{\boldsymbol{q}_{j-2},\boldsymbol{q}_{j-1},\boldsymbol{q}_{j},\boldsymbol{q}_{j+1}\}_{BS}$
+\end_inset
+
+ to the MINVO basis, 
+\begin_inset Formula $\{\cdot\}_{MV}$
+\end_inset
+
+ and discard the current 
+\begin_inset Formula $\boldsymbol{q}_{j+1}$
+\end_inset
+
+ if any of these conditions are true:
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace 0.3cm
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\{\boldsymbol{q}_{j-2},\boldsymbol{q}_{j-1},\boldsymbol{q}_{j},\boldsymbol{q}_{j+1}\}_{MV}$
+\end_inset
+
+ is not l.s.
+ from 
+\begin_inset Formula $\mathcal{I}_{j-2}^{i}$
+\end_inset
+
+ for some 
+\begin_inset Formula $i$
+\end_inset
+
  
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $j=(N-3)$
+\end_inset
+
+ and 
+\begin_inset Formula $\{\boldsymbol{q}_{j-1},\boldsymbol{q}_{j},\boldsymbol{q}_{N-2},\boldsymbol{q}_{N-2}\}_{MV}$
+\end_inset
+
+ is not l.s.
+ from 
+\begin_inset Formula $\mathcal{I}_{j-1}^{i}$
+\end_inset
+
+ for some 
+\begin_inset Formula $i$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $j=(N-3)$
+\end_inset
+
+ and 
+\begin_inset Formula $\{\boldsymbol{q}_{j},\boldsymbol{q}_{N-2},\boldsymbol{q}_{N-2},\boldsymbol{q}_{N-2}\}_{MV}$
+\end_inset
+
+ is not l.s.
+ from 
+\begin_inset Formula $\mathcal{I}_{j}^{i}$
+\end_inset
+
+ for some 
+\begin_inset Formula $i$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\left\Vert \boldsymbol{q}_{j+1}-\boldsymbol{q}_{k}\right\Vert _{\infty}\le\epsilon$
+\end_inset
+
+ for some 
+\begin_inset Formula $\boldsymbol{q}_{k}$
+\end_inset
+
+ already added to 
+\begin_inset Formula $Q$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace 0.3cm
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Note that we need to check the second and third conditions due to the fact
+ that 
+\begin_inset Formula $\boldsymbol{q}_{N-2}=\boldsymbol{q}_{N-1}=\boldsymbol{q}_{N}$
+\end_inset
+
+.
+ The linear separability is checked by solving the following feasibility
+ linear problem for each interval 
+\begin_inset Formula $j$
+\end_inset
+
+ of the obstacle 
+\begin_inset Formula $i$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\begin{array}{cc}
+\boldsymbol{n}_{ij}^{T}\boldsymbol{v}+\boldsymbol{d}_{ij}>0 & \forall\boldsymbol{v}\in\mathcal{V}_{ij},\;\forall i\in I,j\in J\\
+\boldsymbol{n}_{ij}^{T}\boldsymbol{q}+\boldsymbol{d}_{ij}<0 & \forall\boldsymbol{q}\in\{\boldsymbol{q}_{j+1},\boldsymbol{q}_{j},\boldsymbol{q}_{j-1},\boldsymbol{q}_{j-2}\},\;\forall j\in J
+\end{array}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where the decision variables are the planes 
+\begin_inset Formula $\boldsymbol{\pi}_{ij}$
+\end_inset
+
+ (defined by
+\begin_inset Formula $\boldsymbol{n}_{ij}$
+\end_inset
+
+ and 
+\begin_inset Formula $d_{ij}$
+\end_inset
+
+).
+ We solve this problem using GLPK 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "glpkSolver20"
+literal "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The last condition creates like a voxel grid of voxel size 
+\begin_inset Formula $2\epsilon$
+\end_inset
+
+, allowing only to add the point 
+\begin_inset Formula $\boldsymbol{q}_{j+1}$
+\end_inset
+
+ to 
+\begin_inset Formula $Q$
+\end_inset
+
+ if no other point has been added before within the same voxel.
+\end_layout
+
+\begin_layout Standard
+If all the previous conditions are false, 
+\begin_inset Formula $\boldsymbol{q}_{j+1}$
+\end_inset
+
+ is not discarded, and it is appended to 
+\begin_inset Formula $Q$
+\end_inset
+
+ (lines 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "line:Store-in-Q"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "line:Add-to-Q"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ 
+\end_layout
+
+\begin_layout Standard
+Guaranteed to be a nearly-feasible guess.
+ ??
 \end_layout
 
 \begin_layout Standard
@@ -3003,15 +3523,6 @@ mathcal{U}$,  $r$   }
 	%
 \backslash
 KwResult{Next jerk-controleld primitive to execute}
-\end_layout
-
-\begin_layout Plain Layout
-
-	%	
-\backslash
-textbf{Initialization} (only once): $JPS_2{old} 
-\backslash
-leftarrow JPS(A, G)$ //
 \end_layout
 
 \begin_layout Plain Layout
@@ -3092,6 +3603,25 @@ Compute
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Adjust 
+\begin_inset Formula $\Delta t$
+\end_inset
+
+ so that 
+\begin_inset Formula $\left\Vert \boldsymbol{v}_{1}\right\Vert _{\infty}\le v_{max}$
+\end_inset
+
+ is satisfied 
+\begin_inset CommandInset label
+LatexCommand label
+name "line:adjust_deltaT"
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Standard
@@ -3211,7 +3741,7 @@ Return{
 \end_inset
 
  
-\begin_inset Formula $\{\boldsymbol{q}_{0},\boldsymbol{q}_{1},\boldsymbol{q}_{2},...,\boldsymbol{q}_{n-2},\boldsymbol{q}_{n-1},\boldsymbol{q}_{n}\}$
+\begin_inset Formula $\{\boldsymbol{q}_{0},\boldsymbol{q}_{1},\boldsymbol{q}_{2},...,\boldsymbol{q}_{n-2},\boldsymbol{q}_{n-1},\boldsymbol{q}_{n}\}\cup\boldsymbol{\pi}_{ij}$
 \end_inset
 
 
@@ -3346,25 +3876,39 @@ If{
 
 \end_inset
 
- 
-\begin_inset Formula $conv\{\boldsymbol{q}_{j+1},\boldsymbol{q}_{j},\boldsymbol{q}_{j-1},\boldsymbol{q}_{j-2}\}$
-\end_inset
-
- and 
-\begin_inset Formula $CH_{ij}$
-\end_inset
-
- are linearly separable 
-\begin_inset Formula $\forall i$
-\end_inset
-
-
+any of the conditions [Reference] is true
 \begin_inset ERT
 status open
 
 \begin_layout Plain Layout
 
 }{
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+continue with next 
+\begin_inset Formula $\boldsymbol{v}_{i}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}
+\backslash
+Else{
 \end_layout
 
 \end_inset
@@ -3386,6 +3930,13 @@ Store in
 \end_inset
 
 
+\begin_inset CommandInset label
+LatexCommand label
+name "line:Store-in-Q"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -3397,17 +3948,10 @@ Add
 \begin_inset Formula $Q$
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-}
-\end_layout
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "line:Add-to-Q"
 
 \end_inset
 
@@ -3426,24 +3970,25 @@ status open
 \end_inset
 
 
-\end_layout
-
-\begin_layout Standard
 \begin_inset Note Note
 status open
 
 \begin_layout Plain Layout
+else
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset ERT
 status open
 
 \begin_layout Plain Layout
 
 }
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \end_inset
@@ -3526,71 +4071,11 @@ end{algorithm2e}
 \end_layout
 
 \begin_layout Standard
-Once this new control point 
-\begin_inset Formula $\boldsymbol{q}_{j+1}$
+[Change 
+\begin_inset Formula $r$
 \end_inset
 
- is generated, we check that it does not collide with other agents or obstacles
- by checking linear separability of the convex hull of 
-\begin_inset Formula $\{\boldsymbol{q}_{j+1},\boldsymbol{q}_{j},\boldsymbol{q}_{j-1},\boldsymbol{q}_{j-2}\}$
-\end_inset
-
- and each interval of the trajectory of all the other agents and obstacles.
- We check this linear separability by solving the following feasibility
- linear optimization problem for each interval 
-\begin_inset Formula $j$
-\end_inset
-
- of the obstacle 
-\begin_inset Formula $i$
-\end_inset
-
-:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\[
-\begin{array}{ccc}
-\underset{\boldsymbol{n}_{ij},d_{ij}}{\min} & 0\\
- & \boldsymbol{n}_{ij}^{T}\boldsymbol{v}+\boldsymbol{d}_{ij}>0 & \forall\boldsymbol{v}\in\mathcal{V}_{ij},\;\forall i\in I,j\in J\\
- & \boldsymbol{n}_{ij}^{T}\boldsymbol{q}+\boldsymbol{d}_{ij}<0 & \forall\boldsymbol{q}\in\{\boldsymbol{q}_{j+1},\boldsymbol{q}_{j},\boldsymbol{q}_{j-1},\boldsymbol{q}_{j-2}\},\;\forall j\in J
-\end{array}
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-For a sample 
-\end_layout
-
-\begin_layout Standard
-which we solve using GLPK 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "glpkSolver20"
-literal "false"
-
-\end_inset
-
-.
- 
-\end_layout
-
-\begin_layout Standard
-We assume that there is no delay in the communication.
-\end_layout
-
-\begin_layout Standard
-we assume that a tracker algorithm is able to obtain traj of obstacles inside
- radius R
-\end_layout
-
-\begin_layout Standard
-we assume that we can communicate with the agents within a radius R
+ in the algorithm above]
 \end_layout
 
 \begin_layout Section
@@ -3613,11 +4098,52 @@ recheck
 : 
 \end_layout
 
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+definecolor{opt_color}{RGB}{203,255,182}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+definecolor{check_color}{RGB}{195,218,255}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+definecolor{recheck_color}{RGB}{255,176,176}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Itemize
 The 
-\series bold
-Optimization
-\series default
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+fcolorbox{black}{opt_color}{
+\backslash
+textbf{Optimization}}
+\end_layout
+
+\end_inset
+
  period happens 
 \begin_inset Formula $t\in(t_{1},t_{2}]$
 \end_inset
@@ -3632,9 +4158,20 @@ Optimization
 
 \begin_layout Itemize
 The 
-\series bold
-Check
-\series default
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+fcolorbox{black}{check_color}{
+\backslash
+textbf{Check}}
+\end_layout
+
+\end_inset
+
  happens during 
 \begin_inset Formula $t\in(t_{2},t_{3}]$
 \end_inset
@@ -3647,52 +4184,26 @@ Check
 
 \begin_layout Itemize
 The 
-\series bold
-Recheck
-\series default
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+fcolorbox{black}{recheck_color}{
+\backslash
+textbf{Recheck}}
+\end_layout
+
+\end_inset
+
  period aims at checking whether the agent A has received any trajectory
  during the Check period.
  It is implemented as a single Boolean comparison in the code, which allows
  us to assume that no trajectories have been published by other agents while
  this recheck is done (and hence an infinite loop of rechecks is not needed).
  
-\end_layout
-
-\begin_layout Standard
-Therefore, the agent A will keep executing the trajectory it had at 
-\begin_inset Formula $t_{1}$
-\end_inset
-
- when any of these two scenarios happen:
-\end_layout
-
-\begin_layout Itemize
-The trajectory obtained at the end of the optimization collides with any
- the trajectories received during the Optimization.
- 
-\end_layout
-
-\begin_layout Itemize
-The agent A has received any trajectory from other agents 
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-or obstacles??
-\end_layout
-
-\end_inset
-
- during the Check period.
-\end_layout
-
-\begin_layout Standard
-The previous deconfliction scheme guarantees safety wrt the other agents
- assuming 
-\begin_inset Formula $t_{4}^{{\color{red}A},k}\neq t_{4}^{{\color{blue}B},q}$
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -3741,8 +4252,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Caption Note that as soon as one iteration finishes, the next one starts
- (i.e.
+Note that as soon as one iteration finishes, the next one starts (i.e.
  
 \begin_inset Formula $t_{4}^{{\color{red}A},k}=t_{1}^{{\color{red}A},k+1}$
 \end_inset
@@ -3763,6 +4273,337 @@ iteration
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:Deconfliction"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+vskip-2ex
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+newcommand{
+\backslash
+tikzcircle}[2][black,fill=red]{
+\backslash
+tikz[baseline=0.0ex, line width=0.3mm]
+\backslash
+draw[#1] [#1] (0,0.08) circle (0.09);}%
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To choose the initial condition of the iteration 
+\begin_inset Formula $k$
+\end_inset
+
+, Agent A first chooses a point along the trajectory found in the iteration
+ 
+\begin_inset Formula $k-1$
+\end_inset
+
+, with an offset of 
+\begin_inset Formula $\delta t$
+\end_inset
+
+ seconds from the current position 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+tikzcircle[black,fill=red]{15pt}
+\end_layout
+
+\end_inset
+
+.
+ Similar to our previous work 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "tordesillas2019faster"
+literal "false"
+
+\end_inset
+
+, to obtain an estimate of the total time the iteration 
+\begin_inset Formula $k$
+\end_inset
+
+ may take, we use the time the previous iteration took multiplied by a factor
+ 
+\begin_inset Formula $\alpha>1$
+\end_inset
+
+: 
+\begin_inset Formula $\delta t=\alpha\left(t_{4}^{{\color{red}A},k-1}-t_{1}^{{\color{red}A},k-1}\right)$
+\end_inset
+
+ (see Fig.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:time_selection"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ The agent A then should finish the replanning iteration 
+\begin_inset Formula $k$
+\end_inset
+
+ in less than 
+\begin_inset Formula $\delta t$
+\end_inset
+
+ seconds.
+ To do this, we allocate a maximum runtime of 
+\begin_inset Formula $\kappa\delta t$
+\end_inset
+
+ seconds to obtain an initial guess, and a maximum runtime of 
+\begin_inset Formula $\mu\delta t$
+\end_inset
+
+ seconds for the nonconvex optimization.
+ Here 
+\begin_inset Formula $\kappa>0,\mu>0$
+\end_inset
+
+ and 
+\begin_inset Formula $\kappa+\mu<1$
+\end_inset
+
+(usually 
+\begin_inset Formula $\kappa+\mu\approx0.8$
+\end_inset
+
+) to give time to the check and recheck.
+ If the octopus search takes longer than 
+\begin_inset Formula $\kappa\delta t$
+\end_inset
+
+, the closest path to the goal found is chosen as initial guess.
+ Similarly, if the nonconvex optimization takes longer than 
+\begin_inset Formula $\mu\delta t$
+\end_inset
+
+, the best feasible solution is selected.
+\end_layout
+
+\begin_layout Standard
+If the replanning iteration 
+\begin_inset Formula $k$
+\end_inset
+
+ takes longer than 
+\begin_inset Formula $\delta t$
+\end_inset
+
+, or becomes infeasible, then the agent will keep executing the trajectory
+ found in the iteration 
+\begin_inset Formula $k-1$
+\end_inset
+
+ if any of these four scenarios happen:
+\end_layout
+
+\begin_layout Itemize
+The trajectory obtained at the end of the optimization collides with any
+ the trajectories received during the Optimization.
+ 
+\end_layout
+
+\begin_layout Itemize
+The agent has received any trajectory from other agents 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+or obstacles??
+\end_layout
+
+\end_inset
+
+ during the Check period.
+\end_layout
+
+\begin_layout Itemize
+No feasible solution has been found in the Optimization
+\end_layout
+
+\begin_layout Itemize
+Iteration 
+\begin_inset Formula $k$
+\end_inset
+
+ takes longer than 
+\begin_inset Formula $\delta t$
+\end_inset
+
+ seconds.
+ 
+\end_layout
+
+\begin_layout Standard
+The previous deconfliction scheme guarantees safety wrt the other agents
+ assuming 
+\begin_inset Formula $t_{4}^{{\color{red}A},k}\neq t_{4}^{{\color{blue}B},q}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename imgs/time_selection.pdf
+	lyxscale 130
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+At 
+\begin_inset Formula $t=t_{1}^{{\color{red}A},k}$
+\end_inset
+
+, agent 
+\begin_inset Formula ${\color{red}A}$
+\end_inset
+
+ chooses a point 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+tikzcircle[black,fill=white]{15pt}
+\end_layout
+
+\end_inset
+
+ along the current trajectory that it is executing, with an offset 
+\begin_inset Formula $\delta t$
+\end_inset
+
+ from the current position 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+tikzcircle[black,fill=red]{15pt}
+\end_layout
+
+\end_inset
+
+.
+ Then, it allocates 
+\begin_inset Formula $\kappa\delta t$
+\end_inset
+
+ seconds to obtain an initial guess.
+ The closest trajectory found to 
+\begin_inset Formula $\boldsymbol{g}$
+\end_inset
+
+ is used as the initial guess if the search has not finished after this
+ time.
+ Then, the nonconvex optimization runs for 
+\begin_inset Formula $\mu\delta t$
+\end_inset
+
+ seconds, choosing the best feasible solution found if no local optimum
+ has been found by then.
+ 
+\begin_inset Formula $\kappa$
+\end_inset
+
+ and 
+\begin_inset Formula $\mu$
+\end_inset
+
+ satisfy 
+\begin_inset Formula $\kappa>0$
+\end_inset
+
+, 
+\begin_inset Formula $\mu>0$
+\end_inset
+
+, 
+\begin_inset Formula $\kappa+\mu<1$
+\end_inset
+
+ [Fade 
+\begin_inset Quotes eld
+\end_inset
+
+iteration
+\begin_inset Quotes erd
+\end_inset
+
+ words]
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:time_selection"
 
 \end_inset
 
@@ -3821,7 +4662,7 @@ Acknowledgements
 \end_layout
 
 \begin_layout Standard
-The author would like to thank Michael Everett, Kasra Khosoussi, Andrea
+The authors would like to thank Michael Everett, Kasra Khosoussi, Andrea
  Tagliabue and Parker Lusk for helpul insights and discussions.
  
 \end_layout
@@ -3867,6 +4708,26 @@ status open
  & \left\Vert \boldsymbol{a}_{n}(0)\right\Vert _{\infty}\le a_{max}\qquad\quad\;\forall n & \nonumber\\
  & \left\Vert \boldsymbol{j}_{n}\right\Vert _{\infty}\le j_{max}\qquad\quad\quad\;\;\;\forall n & \nonumber
 \end{align}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+\boldsymbol{v}_{j}=\frac{p\left(\boldsymbol{q}_{j+1}-\boldsymbol{q}_{j}\right)}{t_{j+p+1}-t_{j+1}}\qquad\boldsymbol{a}_{i}=\frac{\left(p-1\right)\left(\boldsymbol{v}_{j+1}-\boldsymbol{v}_{j}\right)}{t_{j+p+1}-t_{j+2}}
 \]
 
 \end_inset
