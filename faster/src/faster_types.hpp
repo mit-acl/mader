@@ -21,7 +21,7 @@ typedef std::vector<Edge> Edges;
 struct dynTraj
 {
   std::vector<std::string> function;
-  std::vector<double> bbox;
+  Eigen::Vector3d bbox;
   int id;
   double time_received;  // time at which this trajectory was received from an agent
   bool is_agent;         // true for a trajectory of an agent, false for an obstacle
@@ -30,10 +30,11 @@ struct dynTraj
 struct dynTrajCompiled
 {
   std::vector<exprtk::expression<double>> function;
-  std::vector<double> bbox;
+  Eigen::Vector3d bbox;
   int id;
   double time_received;  // time at which this trajectory was received from an agent
   bool is_agent;         // true for a trajectory of an agent, false for an obstacle
+  bool is_static;
 };
 
 struct polytope
@@ -215,6 +216,9 @@ struct parameters
   double res_plot_traj;
 
   double factor_v_max = 0.6;
+
+  double beta = 1.0;
+  double gamma = 0.0;
 
   /*  double kw;
     double kyaw;

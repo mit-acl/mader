@@ -127,6 +127,11 @@ void Faster::dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compil
   traj_compiled.bbox = traj.bbox;
   traj_compiled.id = traj.id;
   traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
+
+  traj_compiled.is_static =
+      (traj.function[0].find("t") == std::string::npos) &&  // there is no dependence on t in the coordinate x
+      (traj.function[1].find("t") == std::string::npos) &&  // there is no dependence on t in the coordinate y
+      (traj.function[2].find("t") == std::string::npos);    // there is no dependence on t in the coordinate z
 }
 // Note that we need to compile the trajectories inside faster.cpp because t_ is in faster.hpp
 void Faster::updateTrajObstacles(dynTraj traj)
@@ -255,9 +260,30 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_s
     double y = traj.function[1].value();  // cos(t) - 2 * cos(2 * t);
     double z = traj.function[2].value();  //-sin(3 * t);
 
-    double delta_x = (traj.bbox[0] / 2.0) + (side_box_drone / 2.0);
-    double delta_y = (traj.bbox[1] / 2.0) + (side_box_drone / 2.0);
-    double delta_z = (traj.bbox[2] / 2.0) + (side_box_drone / 2.0);
+    Eigen::Vector3d traj_bbox_with_uncertainty;
+
+    if (traj.is_agent)
+    {
+      traj_bbox_with_uncertainty = traj.bbox;
+    }
+    else
+    {
+      if (traj.is_static)
+      {  // static obstacle
+        traj_bbox_with_uncertainty = par_.beta * traj.bbox;
+      }
+      else
+      {  // dynamic obstacle
+        traj_bbox_with_uncertainty =
+            par_.beta * traj.bbox + par_.gamma * (t_end - time_init_opt_) *
+                                        Eigen::Vector3d::Ones();  // note that by using t_end, we are taking the
+                                                                  // highest uncertainty within that interval
+      }
+    }
+
+    double delta_x = (traj_bbox_with_uncertainty(0) / 2.0) + (side_box_drone / 2.0);
+    double delta_y = (traj_bbox_with_uncertainty(1) / 2.0) + (side_box_drone / 2.0);
+    double delta_z = (traj_bbox_with_uncertainty(2) / 2.0) + (side_box_drone / 2.0);
 
     //"Minkowski sum along the trajectory: box centered on the trajectory"
 
@@ -881,7 +907,7 @@ bool Faster::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_op
   return false;
 }
 // Checks that I have not received new trajectories that affect me while doing the optimization
-bool Faster::safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimized)
+bool Faster::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
 {
   started_check_ = true;
 
@@ -889,14 +915,14 @@ bool Faster::safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimize
   bool result = true;
   for (auto traj : trajs_)
   {
-    if (traj.time_received > time_init_opt && traj.is_agent == true)
+    if (traj.time_received > time_init_opt_ && traj.is_agent == true)
     {
       if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
       {
         ROS_ERROR_STREAM("Traj collides with " << traj.id);
 
         std::cout << "My traj collides with traj of " << traj.id << ", received at " << std::setprecision(12)
-                  << traj.time_received << ", opt at " << time_init_opt << reset << std::endl;
+                  << traj.time_received << ", opt at " << time_init_opt_ << reset << std::endl;
         result = false;  // will have to redo the optimization
         break;
       }
@@ -1355,7 +1381,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   mtx_trajs_.lock();
 
-  double time_init_opt = ros::Time::now().toSec();
+  time_init_opt_ = ros::Time::now().toSec();
 
   removeTrajsThatWillNotAffectMe(A, t_init, t_final);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_init, t_final);
@@ -1396,7 +1422,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   snlopt.getSolution(pwp_now);
 
   MyTimer check_t(true);
-  bool is_safe_after_opt = safetyCheckAfterOpt(time_init_opt, pwp_now);
+  bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now);
   std::cout << bold << "Check Timer=" << check_t << std::endl;
 
   if (is_safe_after_opt == false)

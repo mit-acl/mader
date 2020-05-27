@@ -91,7 +91,7 @@ private:
 
   bool initializedStateAndTermGoal();
 
-  bool safetyCheckAfterOpt(double time_init_opt, PieceWisePol pwp_optimized);
+  bool safetyCheckAfterOpt(PieceWisePol pwp_optimized);
 
   bool trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_init, double t_end);
 
@@ -255,6 +255,8 @@ private:
   bool started_check_ = false;
 
   bool have_received_trajectories_while_checking_ = false;
+
+  double time_init_opt_;
 };
 
 #endif

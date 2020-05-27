@@ -97,6 +97,9 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "res_plot_traj", par_.res_plot_traj);
 
+  safeGetParam(nh_, "beta", par_.beta);
+  safeGetParam(nh_, "gamma", par_.gamma);
+
   // Parameters for the ground robot (jackal):
   /*  safeGetParam(nh_,"kw", par_.kw);
     safeGetParam(nh_,"kyaw", par_.kyaw);
@@ -129,6 +132,18 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   std::cout << bold << green << "resolution=" << par_.res << reset << std::endl;
 
   std::cout << "Parameters obtained" << std::endl;
+
+  if (par_.beta < 1)
+  {
+    std::cout << bold << red << "beta should be >=1" << std::endl;
+    abort();
+  }
+
+  if (par_.gamma < 0)
+  {
+    std::cout << bold << red << "gamma should be >=0" << std::endl;
+    abort();
+  }
 
   if (par_.epsilon_tol_constraints > 0.02)
   {
@@ -471,9 +486,7 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   tmp.function.push_back(msg.function[1]);
   tmp.function.push_back(msg.function[2]);
 
-  tmp.bbox.push_back(msg.bbox[0]);
-  tmp.bbox.push_back(msg.bbox[1]);
-  tmp.bbox.push_back(msg.bbox[2]);
+  tmp.bbox << msg.bbox[0], msg.bbox[1], msg.bbox[2];
 
   tmp.id = msg.id;
 

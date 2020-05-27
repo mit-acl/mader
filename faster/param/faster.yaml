@@ -71,8 +71,8 @@ deg_pol: 3
 samples_per_interval: 1
 weight: 10000.0 #The .0 is needed #10000  #1000000
 epsilon_tol_constraints: 0.0001
-xtol_rel: 0.00001 #negative value --> stopping criterion not used
-ftol_rel: 0.000001 #negative value --> stopping criterion not used
+xtol_rel: 0.000000001 #negative value --> stopping criterion not used
+ftol_rel: 0.0000000001 #negative value --> stopping criterion not used
 solver: "LD_MMA"
 
 #  // work:  //LD_MMA (fastest) // //LN_NELDERMEAD // LN_SBPLX //LN_PRAXIS //LD_AUGLAG //LD_AUGLAG_EQ
@@ -98,6 +98,9 @@ res_plot_traj: 6.0  #Higher --> More resolution when plotting the trajectory
 
 factor_v_max: 0.6 #\in [0,1]. Used to find the total duration of a given trajectory.
 
+
+beta: 1.0 #[-] >=1 Parameter modelling the uncertainty of the current position of the obstacles
+gamma: 0.9 #[-] >=0 Parameter modelling the uncertainty of the future trajectory of the obstacles
 
 
 # Parameters for the ground robot (jackal):
