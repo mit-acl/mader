@@ -128,6 +128,13 @@ using Vecf = Eigen::Matrix<decimal_t, N, 1>;  // Be CAREFUL, because this is wit
 template <int N>
 using vec_Vecf = vec_E<Vecf<N>>;
 
+// sign function
+template <typename T>
+int sgn(T val)
+{
+  return (T(0) < val) - (val < T(0));
+}
+
 // returns 1 if there is an intersection between the segment P1-P2 and the plane given by coeff=[A B C D]
 // (Ax+By+Cz+D==0)  returns 0 if there is no intersection.
 // The intersection point is saved in "intersection"

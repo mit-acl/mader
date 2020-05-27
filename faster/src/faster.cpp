@@ -1341,8 +1341,15 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   double t_final = t_init + (initial.pos - final.pos).array().abs().maxCoeff() /
                                 (par_.factor_v_max * par_.v_max);  // time to execute the optimized path
 
-  snlopt.setInitStateFinalStateInitTFinalT(initial, final, t_init,
-                                           t_final);  // note that here t_final may have been updated
+  bool correctInitialCond =
+      snlopt.setInitStateFinalStateInitTFinalT(initial, final, t_init,
+                                               t_final);  // note that here t_final may have been updated
+
+  if (correctInitialCond == false)
+  {
+    std::cout << bold << red << "The solver cannot guarantee feasibility for v1" << std::endl;
+    return false;
+  }
 
   ////////////////
 

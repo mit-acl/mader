@@ -64,7 +64,7 @@ public:
   bool optimize();
 
   void setMaxRuntimeKappaAndMu(double runtime, double kappa, double mu);
-  void setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init, double &t_final);
+  bool setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init, double &t_final);
   void setHulls(ConvexHullsOfCurves_Std &hulls);
 
   trajectory X_temp_;

@@ -721,7 +721,7 @@ void SolverNlopt::initializeNumOfConstraints()
 }
 
 // Note that t_final will be updated in case the saturation in deltaT_ has had effect
-void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init,
+bool SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init,
                                                     double &t_final)
 {
   ///////////////////////////
@@ -743,6 +743,12 @@ void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
   initial_state_ = initial_state;
   final_state_ = final_state;
 
+  std::cout << "initial_state= " << std::endl;
+  initial_state.printHorizontal();
+
+  std::cout << "final_state= " << std::endl;
+  final_state.printHorizontal();
+
   //////////////////////////////
 
   deltaT_ = (t_final - t_init) / (1.0 * (M_ - 2 * p_ - 1 + 1));
@@ -754,12 +760,31 @@ void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
 
   for (int axis = 0; axis < 3; axis++)
   {
-    double bound1, bound2;
+    double upper_bound, lower_bound;
     if (fabs(a0(axis)) > 1e-7)
     {
-      bound1 = ((p_ - 1) * (v_max_(axis) - v0(axis)) / (a0(axis)));
-      bound2 = ((p_ - 1) * (-v_max_(axis) - v0(axis)) / (a0(axis)));
-      saturate(deltaT_, std::min(bound1, bound2), std::max(bound1, bound2));
+      upper_bound = ((p_ - 1) * (sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
+      lower_bound = ((p_ - 1) * (-sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
+
+      std::cout << "axis= " << axis << std::endl;
+      std::cout << "lower_bound= " << lower_bound << std::endl;
+      std::cout << "upper_bound= " << upper_bound << std::endl;
+
+      ////////////////// Just for debugging
+      if (upper_bound < lower_bound)
+      {
+        std::cout << red << bold << "This should never happen, aborting" << std::endl;
+        abort();
+      }
+      //////////////////
+
+      if (upper_bound <= 0)
+      {
+        std::cout << red << bold << "There is no way to satisfy v1" << std::endl;  //(deltat will be zero)
+        return false;
+      }
+
+      saturate(deltaT_, std::max(0.0, lower_bound), upper_bound);
     }
     else
     {
@@ -814,7 +839,7 @@ void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
 
   knots_ = knots;
 
-  std::cout << "knots_" << knots_ << std::endl;
+  // std::cout << "knots_" << knots_ << std::endl;
 
   //////////////////
 
@@ -823,12 +848,6 @@ void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
   // with equation 15 of that paper)
 
   weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
-
-  std::cout << "initial_state= " << std::endl;
-  initial_state.printHorizontal();
-
-  std::cout << "final_state= " << std::endl;
-  final_state.printHorizontal();
 
   double t1 = knots_(1);
   double t2 = knots_(2);
@@ -850,15 +869,15 @@ void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
   qNm2_ = (p_ * p_ * qNm1_ - (tNm1 - tNm1Pp) * (af * (-tN + tNm1Pp) + vf) - p_ * (qNm1_ + (-tNm1 + tNm1Pp) * vf)) /
           ((-1 + p_) * p_);
 
-  /// FOR DEBUGGING, REMOVE LATER
+  /////////////////////////////////////////// FOR DEBUGGING, REMOVE LATER
 
   Eigen::MatrixXd knots_0 = knots_;
   for (int i = 0; i < knots_0.cols(); i++)
   {
     knots_0(0, i) = knots_(0, 0);
   }
-  // std::cout << "knots_ - knots[0]= " << std::endl;
-  // std::cout << std::setprecision(13) << (knots_ - knots_0).transpose() << reset << std::endl;
+  std::cout << "knots_ - knots[0]= " << std::endl;
+  std::cout << std::setprecision(13) << (knots_ - knots_0).transpose() << reset << std::endl;
 
   int i = 1;
   Eigen::Vector3d vcomputed_1 = p_ * (q2_ - q1_) / (knots_(i + p_ + 1) - knots_(i + 1));
@@ -879,6 +898,9 @@ void SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
 
     abort();
   }
+  ///////////////////////////////////////////
+
+  return true;
 }
 
 // check if there is a normal vector = [0 0 0]
@@ -1959,6 +1981,7 @@ bool SolverNlopt::optimize()
 
   X_temp_.back().vel = final_state_.vel;
   X_temp_.back().accel = final_state_.accel;
+  X_temp_.back().jerk = Eigen::Vector3d::Zero();
 
   // std::cout << "Done filling the solution" << std::endl;
 
