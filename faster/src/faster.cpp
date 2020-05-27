@@ -242,7 +242,7 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_s
 
   std::vector<Point_3> points;
 
-  double side_box_drone = (2 * sqrt(2) * par_.drone_radius);
+  double side_box_drone = (2 * par_.drone_radius);
 
   // Will always have a sample at the beginning of the interval, and another at the end.
   for (int i = 0; i < samples_per_interval; i++)
@@ -849,7 +849,7 @@ bool Faster::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_op
 
     Eigen::Vector3d pos_2 = pwp_optimized.eval(t_);
 
-    double side_box_drone = (2 * sqrt(2) * par_.drone_radius);
+    double side_box_drone = (2 * par_.drone_radius);
 
     Eigen::Vector3d positive_half_diagonal1;
     positive_half_diagonal1 << traj.bbox[0] / 2.0, traj.bbox[1] / 2.0, traj.bbox[2] / 2.0;
