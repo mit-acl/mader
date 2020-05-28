@@ -1630,7 +1630,7 @@ where
 \begin_layout Standard
 \begin_inset Formula 
 \[
-B_{i}(t)=\beta_{i}B_{i,0}+\alpha_{i}(t-t_{0}),\quad t\in[t_{0},t_{f}]
+B_{i}(t)=\beta_{i}B_{i,0}+\gamma_{i}(t-t_{0}),\quad t\in[t_{0},t_{f}]
 \]
 
 \end_inset
@@ -1644,7 +1644,7 @@ where
 \end_inset
 
  models the uncertainty in the current position, and 
-\begin_inset Formula $\alpha_{i}\ge0$
+\begin_inset Formula $\gamma_{i}\ge0$
 \end_inset
 
  models the uncertainty of the future trajectory.
@@ -1652,7 +1652,11 @@ where
 \begin_inset Formula $B_{i}(t)=B_{i,0}\quad\forall i$
 \end_inset
 
- .
+, and for the static obstacles 
+\begin_inset Formula $B_{i}(t)=\beta_{i}B_{i,0}$
+\end_inset
+
+.
  
 \end_layout
 
@@ -3105,12 +3109,32 @@ As
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\frac{\left(p-1\right)\left(-sign(\boldsymbol{a}_{0}^{i})v_{max}\boldsymbol{1}-\mathbf{v}_{0}^{i}\right)}{\boldsymbol{a}_{0}^{i}}\le\Delta t\le\frac{\left(p-1\right)\left(sign(\boldsymbol{a}_{0}^{i})v_{max}\boldsymbol{1}-\mathbf{v}_{0}^{i}\right)}{\boldsymbol{a}_{0}^{i}}\quad\forall i\in\{1,2,3\}
+\left\{ \begin{array}{c}
+\frac{\left(p-1\right)\left(-sign(\boldsymbol{a}_{0}^{i})v_{max}\boldsymbol{1}-\mathbf{v}_{0}^{i}\right)}{\boldsymbol{a}_{0}^{i}}\le\Delta t\le\frac{\left(p-1\right)\left(sign(\boldsymbol{a}_{0}^{i})v_{max}\boldsymbol{1}-\mathbf{v}_{0}^{i}\right)}{\boldsymbol{a}_{0}^{i}}\quad\forall i\in\{1,2,3\}\\
+0\le\Delta t
+\end{array}\right.
 \]
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+(for the cases 
+\begin_inset Formula $\boldsymbol{a}_{0}^{i}=0$
+\end_inset
+
+, the condition 
+\begin_inset Formula $\left|\boldsymbol{v}_{1}^{i}\right|\le v_{max}$
+\end_inset
+
+ is satisfied, because 
+\begin_inset Formula $\boldsymbol{v}_{1}^{i}=\boldsymbol{v}_{0}^{i}$
+\end_inset
+
+ .
+ 
 \end_layout
 
 \begin_layout Standard
