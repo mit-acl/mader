@@ -322,8 +322,8 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
 
   voxel_size_ = min_voxel_size + fraction_voxel_size * (max_voxel_size - min_voxel_size);
 
-  std::cout << green << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", "
-            << max_voxel_size << ")" << reset << std::endl;
+  // std::cout << green << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", "
+  //           << max_voxel_size << ")" << reset << std::endl;
 
   // Make sure voxel_size_<= (min_voxel_size + max_voxel_size) / 2.0  (if not, very few nodes are expanded)
   // voxel_size_ = (min_voxel_size + max_voxel_size) / 2.0;
