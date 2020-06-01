@@ -117,6 +117,9 @@ private:
   template <class T>
   bool isFeasible(const T x);
 
+  bool isFeasible(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
+                  const std::vector<double> &d);
+
   void printQVA(const std::vector<Eigen::Vector3d> &q);
 
   void assignEigenToVector(double *grad, int index, const Eigen::Vector3d &tmp);
@@ -157,8 +160,9 @@ private:
   double computeObjFunctionJerk(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
                                 std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
-  void computeConstraints(unsigned m, double *constraints, unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
-                          std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
+  void computeConstraints(unsigned m, double *constraints, unsigned nn, double *grad,
+                          const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
+                          const std::vector<double> &d);
 
   void initializeNumOfConstraints();
 
@@ -234,6 +238,7 @@ private:
 
   std::vector<double> x_;  // Here the initial guess, and the solution, are stored
 
+  double lowest_cost_so_far_;
   double dc_;
   Eigen::RowVectorXd knots_;
   double t_init_;

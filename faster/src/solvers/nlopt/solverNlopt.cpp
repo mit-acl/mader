@@ -639,6 +639,23 @@ bool SolverNlopt::isFeasible(const T x)
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
   x2qnd(x, q, n, d);
+  // computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+
+  // // std::cout << "The Infeasible Constraints are these ones:\n";
+  // for (int i = 0; i < num_of_constraints_; i++)
+  // {
+  //   if (constraints_[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
+  //   {
+  //     return false;
+  //     // std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints_[i] << std::endl;
+  //   }
+  // }
+  return isFeasible(q, n, d);
+}
+
+bool SolverNlopt::isFeasible(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
+                             const std::vector<double> &d)
+{
   computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
 
   // std::cout << "The Infeasible Constraints are these ones:\n";
@@ -778,9 +795,9 @@ bool SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
       upper_bound = ((p_ - 1) * (sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
       lower_bound = ((p_ - 1) * (-sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
 
-      std::cout << "axis= " << axis << std::endl;
-      std::cout << "lower_bound= " << lower_bound << std::endl;
-      std::cout << "upper_bound= " << upper_bound << std::endl;
+      // std::cout << "axis= " << axis << std::endl;
+      // std::cout << "lower_bound= " << lower_bound << std::endl;
+      // std::cout << "upper_bound= " << upper_bound << std::endl;
 
       ////////////////// Just for debugging
       if (upper_bound < lower_bound)
@@ -883,13 +900,13 @@ bool SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
 
   /////////////////////////////////////////// FOR DEBUGGING, REMOVE LATER
 
-  Eigen::MatrixXd knots_0 = knots_;
-  for (int i = 0; i < knots_0.cols(); i++)
-  {
-    knots_0(0, i) = knots_(0, 0);
-  }
-  std::cout << "knots_ - knots[0]= " << std::endl;
-  std::cout << std::setprecision(13) << (knots_ - knots_0).transpose() << reset << std::endl;
+  // Eigen::MatrixXd knots_0 = knots_;
+  // for (int i = 0; i < knots_0.cols(); i++)
+  // {
+  //   knots_0(0, i) = knots_(0, 0);
+  // }
+  // std::cout << "knots_ - knots[0]= " << std::endl;
+  // std::cout << std::setprecision(13) << (knots_ - knots_0).transpose() << reset << std::endl;
 
   int i = 1;
   Eigen::Vector3d vcomputed_1 = p_ * (q2_ - q1_) / (knots_(i + p_ + 1) - knots_(i + 1));
@@ -898,9 +915,9 @@ bool SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
   Eigen::Vector3d vcomputed_0 = p_ * (q1_ - q0_) / (knots_(i + p_ + 1) - knots_(i + 1));
   Eigen::Vector3d acomputed_0 = (p_ - 1) * (vcomputed_1 - vcomputed_0) / (knots_(i + p_ + 1) - knots_(i + 2));
 
-  std::cout << "vcomputed_0= " << vcomputed_0.transpose() << std::endl;
-  std::cout << "vcomputed_1= " << vcomputed_1.transpose() << std::endl;
-  std::cout << "acomputed_0= " << acomputed_0.transpose() << std::endl;
+  // std::cout << "vcomputed_0= " << vcomputed_0.transpose() << std::endl;
+  // std::cout << "vcomputed_1= " << vcomputed_1.transpose() << std::endl;
+  // std::cout << "acomputed_0= " << acomputed_0.transpose() << std::endl;
 
   double epsilon = 1.0001;
 
@@ -1014,6 +1031,7 @@ void SolverNlopt::assignValueToGradConstraints(int var_gindex, const double &tmp
   grad[r * nn + var_gindex] = tmp;
 }
 
+// nn is the number of variables
 double SolverNlopt::computeObjFunctionJerk(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
                                            std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
 {
@@ -1058,8 +1076,6 @@ double SolverNlopt::computeObjFunctionJerk(unsigned nn, double *grad, std::vecto
 
     assignEigenToVector(grad, gIndexQ(i), gradient);
   }
-
-  // std::cout << "cost= " << cost << std::endl;
 
   return cost;
 }
@@ -1122,6 +1138,12 @@ double SolverNlopt::myObjFunc(unsigned nn, const double *x, double *grad, void *
   opt->x2qnd(x, q, n, d);
 
   double cost = opt->computeObjFunctionJerk(nn, grad, q, n, d);
+
+  // if (isFeasible(x) && cost < lowest_cost_so_far_)
+  // {
+  //   lowest_cost_so_far_ = cost;
+  //   best_x_so_far_ = x_
+  // }
 
   return cost;
 }
@@ -1272,8 +1294,8 @@ bool SolverNlopt::checkGradientsUsingFiniteDiff()
 
 // m is the number of constraints, nn is the number of variables
 void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned nn, double *grad,
-                                     std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-                                     std::vector<double> &d)
+                                     const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
+                                     const std::vector<double> &d)
 {
   Eigen::Vector3d ones = Eigen::Vector3d::Ones();
   int r = 0;
@@ -1728,20 +1750,25 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
 
   // Be careful cause this adds more runtime...
   // printInfeasibleConstraints(constraints);
-  /*  if (opt->areTheseConstraintsFeasible(constraints))
+  if (opt->areTheseConstraintsFeasible(constraints))
+  {
+    opt->got_a_feasible_solution_ = true;
+    double cost_now = opt->computeObjFunctionJerk(nn, NULL, q, n, d);
+    if (cost_now < opt->best_cost_so_far_)
     {
-      opt->got_a_feasible_solution_ = true;
-      double cost_now = opt->computeObjFunctionJerk(nn, NULL, q, n, d);
-      if (cost_now < opt->best_cost_so_far_)
+      // std::cout << blue << "Updating best_cost to " << cost_now << reset << std::endl;
+      opt->best_cost_so_far_ = cost_now;
+      // Copy onto the std::vector)
+      for (int i = 0; i < nn; i++)
       {
-        opt->best_cost_so_far_ = cost_now;
-        // Copy onto the std::vector)
-        for (int i = 0; i < nn; i++)
-        {
-          opt->best_feasible_sol_so_far_[i] = x[i];
-        }
+        opt->best_feasible_sol_so_far_[i] = x[i];
       }
-    }*/
+    }
+  }
+  // else
+  // {
+  //   std::cout << "constraints not feasible" << std::endl;
+  // }
 
   /**/
   return;
@@ -1749,6 +1776,7 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
 
 void SolverNlopt::printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
 {
+  std::cout << std::setprecision(5) << std::endl;
   std::cout << "   control points:" << std::endl;
   for (Eigen::Vector3d q_i : q)
   {
@@ -1764,6 +1792,7 @@ void SolverNlopt::printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::V
   {
     std::cout << d_i << std::endl;
   }
+  std::cout << reset << std::endl;
 }
 
 void SolverNlopt::generateRandomGuess()
@@ -1966,25 +1995,18 @@ bool SolverNlopt::optimize()
   opt_->set_min_objective(SolverNlopt::myObjFunc,
                           this);  // this is passed as a parameter (the obj function has to be static)
 
-  double minf;
-
   best_feasible_sol_so_far_.resize(num_of_variables_);
   got_a_feasible_solution_ = false;
 
   qnd2x(q_guess_, n_guess_, d_guess_, x_);
 
+  double obj_guess = computeObjFunctionJerk(num_of_variables_, NULL, q_guess_, n_guess_, d_guess_);
+
   // std::cout << "The guess is the following one:" << std::endl;
   // printQVA(q_guess_);
 
   // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
-  // std::cout << "q_guess_ is\n" << std::endl;
-  // printStd(q_guess_);
-
-  // std::cout << "n_guess_ is\n" << std::endl;
-  // printStd(n_guess_);
-
-  // std::cout << "d_guess_ is\n" << std::endl;
-  // printStd(d_guess_);
+  // printQND(q_guess_, n_guess_, d_guess_);
 
   // // x2qnd(x_, q_guess_, n_guess_);
 
@@ -2002,6 +2024,7 @@ bool SolverNlopt::optimize()
   // checkGradientsUsingFiniteDiff();
 
   // std::cout << "====================================" << std::endl;
+  double obj_obtained;
 
   opt_timer_.Reset();
   std::cout << "[NL] Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
@@ -2010,21 +2033,21 @@ bool SolverNlopt::optimize()
 
   // std::cout << "get_maxtime()= " << opt_->get_maxtime() << std::endl;
 
-  int result = opt_->optimize(x_, minf);
+  int result = opt_->optimize(x_, obj_obtained);
 
-  std::cout << "[NL] Finished optimizing" << std::endl;
+  // std::cout << "[NL] Finished optimizing " << std::endl;
 
   time_needed_ = opt_timer_.ElapsedMs() / 1000;
 
   num_of_QCQPs_run_++;
 
-  got_a_feasible_solution_ = isFeasible(x_);  // wasn't here
-  bool x_is_deg = isDegenerate(x_);
-  bool feas_is_deg = isDegenerate(x_);  // was best_feasible_sol_so_far_
+  // got_a_feasible_solution_ = isFeasible(x_);  // wasn't here
+  // bool x_is_deg = isDegenerate(x_);
+  // bool feas_is_deg = isDegenerate(x_);  // was best_feasible_sol_so_far_
 
   // See codes in https://github.com/JuliaOpt/NLopt.jl/blob/master/src/NLopt.jl
-  got_a_feasible_solution_ = got_a_feasible_solution_ && (!feas_is_deg);
-  bool optimal = (result == nlopt::SUCCESS) && (!x_is_deg);
+  // got_a_feasible_solution_ = got_a_feasible_solution_;
+  bool optimal = (result == nlopt::SUCCESS);
   bool failed = (!optimal) && (!got_a_feasible_solution_);
   bool feasible_but_not_optimal = (!optimal) && (got_a_feasible_solution_);
 
@@ -2035,6 +2058,14 @@ bool SolverNlopt::optimize()
 
   // std::cout << "[NL] result= " << getResultCode(result) << std::endl;
 
+  if (failed == false)
+  {
+    std::cout << "obj_guess= " << std::setprecision(7) << obj_guess << reset << std::endl;
+    std::cout << "obj_obtained= " << std::setprecision(7) << obj_obtained << reset << std::endl;
+    // print improvement (0--> no improvement wrt initial guess )
+    std::cout << green << "Improvement: " << (1 - (obj_obtained / obj_guess)) << "%" << reset << std::endl;
+  }
+
   if (failed)
   {
     ROS_ERROR_STREAM("[NL] Failed, code=" << getResultCode(result));
@@ -2043,7 +2074,7 @@ bool SolverNlopt::optimize()
 
     std::cout << bold << red << "[NL] Solution not found" << opt_timer_ << reset << std::endl;  // on_red
 
-    x2qnd(x_, q, n, d);
+    // x2qnd(x_, q, n, d);
     // printInfeasibleConstraints(q, n, d);
 
     return false;
@@ -2060,17 +2091,22 @@ bool SolverNlopt::optimize()
     ROS_INFO_STREAM("[NL] Feasible, code=" << getResultCode(result));
 
     std::cout << on_green << bold << "[NL] Feasible Solution found" << opt_timer_ << reset << std::endl;
-    x2qnd(x_, q, n, d);  // was best_feasible_sol_so_far_
+    x2qnd(best_feasible_sol_so_far_, q, n, d);  // was
+
+    // std::cout << "printing qnd" << std::endl;
+    // printQND(q, n, d);
   }
   else
   {
     std::cout << on_red << bold << "[NL] not implemented yet" << opt_timer_ << reset << std::endl;
+    abort();
     return false;
   }
 
   // printQND(q, n, d);
 
-  /*  std::cout << on_green << bold << "Solution found: " << time_first_feasible_solution_ << "/" << opt_timer_ << reset
+  /*  std::cout << on_green << bold << "Solution found: " << time_first_feasible_solution_ << "/" << opt_timer_ <<
+     reset
               << std::endl;*/
 
   CPs2TrajAndPwp(q, X_temp_, solution_, N_, p_, num_pol_, knots_, dc_);
@@ -2149,7 +2185,8 @@ void SolverNlopt::generateStraightLineGuess()
         Qbs.col(2) = q_guess_[i + 2];
         Qbs.col(3) = q_guess_[i + 3];
 
-        transformPosBSpline2otherBasis(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
+        transformPosBSpline2otherBasis(Qbs,
+                                       Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
 
         std::vector<Eigen::Vector3d> last4Cps(4);
         last4Cps[0] = Qmv.col(0);
@@ -2194,7 +2231,8 @@ void SolverNlopt::generateStraightLineGuess()
             Eigen::Vector3d n_i =
                 (centroid_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
 
-            double alpha = 0.01;  // the smaller, the higher the chances the plane is outside the obstacle. Should be <1
+            double alpha = 0.01;  // the smaller, the higher the chances the plane is outside the obstacle. Should be
+         <1
 
             Eigen::Vector3d point_in_middle = q[i] + (centroid_hull - q[i]) * alpha;
 
