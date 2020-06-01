@@ -69,19 +69,22 @@ use_faster: true  #if false, it will plan only in free space
 num_pol: 5
 deg_pol: 3
 samples_per_interval: 1
-weight: 10000.0 #The .0 is needed #10000  #1000000
+weight: 10.0 #The .0 is needed #10000  #1000000
 epsilon_tol_constraints: 0.0001
-xtol_rel: 0.000000001 #negative value --> stopping criterion not used
+xtol_rel: 0.0000000000001 #negative value --> stopping criterion not used
 ftol_rel: 0.0000000001 #negative value --> stopping criterion not used
-solver: "LD_MMA"
+solver: "LD_SLSQP"
 
 #  // work:  //LD_MMA (fastest) // //LN_NELDERMEAD // LN_SBPLX //LN_PRAXIS //LD_AUGLAG //LD_AUGLAG_EQ // LD_SLSQP
 #  // don't work: LN_BOBYQA //  //LN_NEWUOA //LN_NEWUOA_BOUND //LN_COBYLA
 #  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1 //LD_VAR2 //LD_LBFGS_NOCEDAL //LD_LBFGS
 
+# //COBYLA
+# //MMA and SLSQP
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
-kappa: 0.35 #SHOULDN'T BE > 0.35 (if not the optimization fails too often)% of time spent to find initial guess
-mu: 0.35    #% of time spent to solve the optimization
+upper_bound_runtime_snlopt: 0.3 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
+kappa: 0.35 #% of time spent to find initial guess
+mu: 0.6    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
 a_star_samp_x: 5

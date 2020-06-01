@@ -81,6 +81,8 @@ public:
 
   bool checkGradientsUsingFiniteDiff();
 
+  double improvement_ = 0.0;
+
 protected:
 private:
   void saturateQ(std::vector<Eigen::Vector3d> &q);

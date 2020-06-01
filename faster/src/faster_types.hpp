@@ -200,6 +200,7 @@ struct parameters
   double ftol_rel;
   std::string solver;
 
+  double upper_bound_runtime_snlopt;
   double kappa;
   double mu;
 

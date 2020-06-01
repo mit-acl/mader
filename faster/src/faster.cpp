@@ -1350,15 +1350,19 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   SolverNlopt snlopt(par);
 
+  double runtime_snlopt;
+
   if (k_whole != 0)
   {
-    snlopt.setMaxRuntimeKappaAndMu(k_whole * par_.dc, par_.kappa, par_.mu);
+    runtime_snlopt = std::min(k_whole * par_.dc, par_.upper_bound_runtime_snlopt);
   }
   else
   {
-    snlopt.setMaxRuntimeKappaAndMu(1.0, par_.kappa,
-                                   par_.mu);  // I'm stopped at the end of the trajectory --> take my time to replan
+    runtime_snlopt = std::min(1.0,
+                              par_.upper_bound_runtime_snlopt);  // I'm stopped at the end of the trajectory --> take my
+                                                                 // time to replan
   }
+  snlopt.setMaxRuntimeKappaAndMu(runtime_snlopt, par_.kappa, par_.mu);
 
   //////////////////////
   double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
@@ -1417,6 +1421,11 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   }
 
   solutions_found_++;
+
+  av_improvement_nlopt_ = ((solutions_found_ - 1) * av_improvement_nlopt_ + snlopt.improvement_) / solutions_found_;
+
+  std::cout << blue << "Average improvement so far" << std::setprecision(5) << av_improvement_nlopt_ << reset
+            << std::endl;
 
   PieceWisePol pwp_now;
   snlopt.getSolution(pwp_now);

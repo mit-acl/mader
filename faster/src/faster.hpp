@@ -257,6 +257,8 @@ private:
   bool have_received_trajectories_while_checking_ = false;
 
   double time_init_opt_;
+
+  double av_improvement_nlopt_ = 0.0;
 };
 
 #endif

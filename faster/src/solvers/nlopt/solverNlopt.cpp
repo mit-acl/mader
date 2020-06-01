@@ -309,17 +309,17 @@ void SolverNlopt::generateAStarGuess()
   myAStarSolver.setBias(a_star_bias_);
   if (basis_ == MINVO)
   {
-    std::cout << green << bold << "snlopt is using MINVO" << reset << std::endl;
+    // std::cout << green << bold << "snlopt is using MINVO" << reset << std::endl;
     myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);
   }
   else if (basis_ == BEZIER)
   {
-    std::cout << green << bold << "snlopt is using BEZIER" << reset << std::endl;
+    // std::cout << green << bold << "snlopt is using BEZIER" << reset << std::endl;
     myAStarSolver.setBasisUsedForCollision(myAStarSolver.BEZIER);
   }
   else
   {
-    std::cout << green << bold << "snlopt is using B_SPLINE" << reset << std::endl;
+    // std::cout << green << bold << "snlopt is using B_SPLINE" << reset << std::endl;
     myAStarSolver.setBasisUsedForCollision(myAStarSolver.B_SPLINE);
   }
 
@@ -1917,6 +1917,7 @@ bool SolverNlopt::optimize()
   if ((initial_state_.pos - final_state_.pos).norm() < dist_to_use_straight_guess_ || num_of_obst_ == 0)
   {
     generateStraightLineGuess();
+    std::cout << "[NL] Using StraightLineGuess" << std::endl;
   }
   else
   {
@@ -1938,17 +1939,29 @@ bool SolverNlopt::optimize()
     delete local_opt_;
   }
 
-  opt_ = new nlopt::opt(nlopt::AUGLAG, num_of_variables_);
+  // https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#augmented-lagrangian-algorithm
+  // The augmented Lagrangian method is specified in NLopt as NLOPT_AUGLAG. We also provide a variant, NLOPT_AUGLAG_EQ,
+  // that only uses penalty functions for equality constraints, while inequality constraints are passed through to the
+  // subsidiary algorithm to be handled directly; in this case, the subsidiary algorithm must handle inequality
+  // constraints (e.g. MMA or COBYLA)
+
+  opt_ = new nlopt::opt(nlopt::AUGLAG_EQ, num_of_variables_);  // nlopt::AUGLAG
   local_opt_ = new nlopt::opt(solver_, num_of_variables_);
 
   local_opt_->set_xtol_rel(xtol_rel_);  // stopping criteria. If >=1e-1, it leads to weird trajectories
   local_opt_->set_ftol_rel(ftol_rel_);  // stopping criteria. If >=1e-1, it leads to weird trajectories
+  local_opt_->set_maxtime(std::max(mu_ * max_runtime_, 0.001));
+
   opt_->set_local_optimizer(*local_opt_);
   opt_->set_xtol_rel(xtol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
   opt_->set_ftol_rel(ftol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
+  // opt_ = new nlopt::opt(solver_, num_of_variables_);
+  // opt_->set_xtol_rel(xtol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
+  // opt_->set_ftol_rel(ftol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
+
   // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
-  // max_runtime_ = 0.2;               // hack
+
   opt_->set_maxtime(std::max(mu_ * max_runtime_, 0.001));  // 0.001 to make sure this criterion is used  // maximum time
                                                            // in seconds. Negative --> don't use this criterion
 
@@ -1991,8 +2004,11 @@ bool SolverNlopt::optimize()
   }
   opt_->set_lower_bounds(lb);
   opt_->set_upper_bounds(ub);
-  local_opt_->set_lower_bounds(lb);
-  local_opt_->set_upper_bounds(ub);
+  if (local_opt_)
+  {
+    local_opt_->set_lower_bounds(lb);
+    local_opt_->set_upper_bounds(ub);
+  }
 
   // set constraint and objective
   opt_->add_inequality_mconstraint(SolverNlopt::myIneqConstraints, this, tol_constraints);
@@ -2005,6 +2021,9 @@ bool SolverNlopt::optimize()
   qnd2x(q_guess_, n_guess_, d_guess_, x_);
 
   double obj_guess = computeObjFunctionJerk(num_of_variables_, NULL, q_guess_, n_guess_, d_guess_);
+
+  double second_term_obj_guess = weight_modified_ * (q_guess_[N_] - final_state_.pos).squaredNorm();
+  double first_term_obj_guess = obj_guess - second_term_obj_guess;
 
   // std::cout << "The guess is the following one:" << std::endl;
   // printQVA(q_guess_);
@@ -2019,13 +2038,15 @@ bool SolverNlopt::optimize()
   // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
   // printIndexesConstraints();
-  //  printIndexesVariables();
+  // printIndexesVariables();
 
   // std::cout << "====================================" << std::endl;
 
   // std::cout << "Checking using Finite differences" << std::endl;
 
   // checkGradientsUsingFiniteDiff();
+
+  // std::cout << "q_guess_[N_]= " << q_guess_[N_].transpose() << std::endl;
 
   // std::cout << "====================================" << std::endl;
   double obj_obtained;
@@ -2037,8 +2058,16 @@ bool SolverNlopt::optimize()
 
   // std::cout << "get_maxtime()= " << opt_->get_maxtime() << std::endl;
 
-  int result = opt_->optimize(x_, obj_obtained);
-
+  int result;
+  try
+  {
+    result = opt_->optimize(x_, obj_obtained);
+  }
+  catch (...)
+  {
+    std::cout << red << "An exception occurred in the solver" << reset << std::endl;
+    return false;
+  }
   // std::cout << "[NL] Finished optimizing " << std::endl;
 
   time_needed_ = opt_timer_.ElapsedMs() / 1000;
@@ -2064,11 +2093,6 @@ bool SolverNlopt::optimize()
 
   if (failed == false)
   {
-    std::cout << "obj_guess= " << std::setprecision(7) << obj_guess << reset << std::endl;
-    std::cout << "obj_obtained= " << std::setprecision(7) << obj_obtained << reset << std::endl;
-    // print improvement (0--> no improvement wrt initial guess )
-    std::cout << green << std::setprecision(7) << "Improvement: " << (1.0 - (obj_obtained / obj_guess)) << "%" << reset
-              << std::endl;
   }
 
   if (failed)
@@ -2090,6 +2114,19 @@ bool SolverNlopt::optimize()
 
     std::cout << on_green << bold << "[NL] Optimal Solution found" << opt_timer_ << reset << std::endl;
     x2qnd(x_, q, n, d);
+
+    std::cout << "q[N_]= " << q[N_].transpose() << std::endl;
+
+    double second_term_obj_obtained = weight_modified_ * (q[N_] - final_state_.pos).squaredNorm();
+    double first_term_obj_obtained = obj_obtained - second_term_obj_obtained;
+    std::cout << "obj_guess= " << std::setprecision(7) << obj_guess << reset << "(" << first_term_obj_guess << " + "
+              << second_term_obj_guess << ")" << std::endl;
+    std::cout << "obj_obtained= " << std::setprecision(7) << obj_obtained << reset << "(" << first_term_obj_obtained
+              << " + " << second_term_obj_obtained << ")" << std::endl;
+
+    improvement_ = 100 * (1.0 - (obj_obtained / obj_guess));
+    std::cout << green << std::setprecision(7) << "Improvement: " << 100 * (1.0 - (obj_obtained / obj_guess)) << "%"
+              << reset << std::endl;
   }
   else if (feasible_but_not_optimal)
   {
@@ -2098,8 +2135,18 @@ bool SolverNlopt::optimize()
     std::cout << on_green << bold << "[NL] Feasible Solution found" << opt_timer_ << reset << std::endl;
     x2qnd(best_feasible_sol_so_far_, q, n, d);  // was
 
-    // std::cout << "printing qnd" << std::endl;
-    // printQND(q, n, d);
+    std::cout << "q[N_]= " << q[N_].transpose() << std::endl;
+
+    double second_term_obj_obtained = weight_modified_ * (q[N_] - final_state_.pos).squaredNorm();
+    double first_term_obj_obtained = best_cost_so_far_ - second_term_obj_obtained;
+    std::cout << "obj_guess= " << std::setprecision(7) << obj_guess << reset << "(" << first_term_obj_guess << " + "
+              << second_term_obj_guess << ")" << std::endl;
+    std::cout << "obj_obtained= " << std::setprecision(7) << best_cost_so_far_ << reset << "("
+              << first_term_obj_obtained << " + " << second_term_obj_obtained << ")" << std::endl;
+
+    improvement_ = 100 * (1.0 - (obj_obtained / obj_guess));
+
+    std::cout << green << std::setprecision(7) << "Improvement: " << improvement_ << "%" << reset << std::endl;
   }
   else
   {
