@@ -200,7 +200,27 @@ End
 \begin_body
 
 \begin_layout Title
-[Name]: Flying in [Decentralized] Multi-Agent and Dynamic Environments
+[Name]: 3D 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+[Non-conservative (MINVO)] 
+\end_layout
+
+\end_inset
+
+Flying in
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+[Decentralized]
+\end_layout
+
+\end_inset
+
+ Multi-Agent and Dynamic Environments
 \end_layout
 
 \begin_layout Author
@@ -284,7 +304,66 @@ LatexCommand tableofcontents
 \end_layout
 
 \begin_layout Abstract
-3D Decentralized, Collision Check, MINVO basis, 
+This paper presents [Name], a 3D decentralized trajectory planner for UAVs
+ able to generate collision-free trajectories in uncertain environments
+ with static obstacles, dynamic obstacles and other agents.
+ [Name] also uses the MINVO basis 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+derived in our prior work []
+\end_layout
+
+\end_inset
+
+ to perform collision check both in position and velocity space.
+ By minimizing the volume of the 
+\begin_inset Formula $3$
+\end_inset
+
+-simplex that encloses a given polynomial curve, the MINVO basis obtains
+ a volume that is 2.36 and 254.8 times smaller than the 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+one achieves a much less conservative result compared with
+\end_layout
+
+\end_inset
+
+ Bernstein or B-Spline bases, which are the ones extensively used in the
+ planning state-of-the-art literature.
+ Real-time collision check with other dynamic obstacles or agents is achieved
+ by dividing the trajectory in a finite number of convex sets, including
+ the planes that separates two convex sets as decision variables of the
+ optimization problem.
+ A deconfliction scheme between the agents, where the priority is decided
+ in a decentralized way by the solution time of the optimization is also
+ proposed.
+ Uncertainty in the detection and prediction of the obstacles is also taken
+ into account.
+ Finally, extensive simulation in challenging cluttered environments that
+ contain static obstacles, dynamic obstacles and dynamic agents validates
+ the proposed algorithm.
+ 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Include max num of agents tested
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Initial Guess via Octopus Search
 \end_layout
 
 \begin_layout Abstract
@@ -324,56 +403,6 @@ Aggressive
 \end_inset
 
 
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Applications such as computer graphics rendering, path planning for robotics
- and finite element simulations greatly benefit from having an 
-\begin_inset Formula $n$
-\end_inset
-
--simplex that encloses a given polynomial curve.
- Bézier curves (which use the Bernstein basis) are probably the most common
- choice for this, since it is guaranteed that each interval of the curve
- is contained inside the convex hull of its control points.
- However, it is known that this convex hull is not the one with smallest
- volume, causing therefore great conservatism in all the applications mentioned
- before.
- This project derives and presents the MINVO basis, a polynomial basis that
- generates the smallest 
-\begin_inset Formula $n$
-\end_inset
-
--simplex that encloses any given polynomial curve.
- We show that the MINVO basis is able to obtain a volume that is 
-\begin_inset Formula $2.36$
-\end_inset
-
- times smaller when 
-\begin_inset Formula $n=3$
-\end_inset
-
-, and 
-\begin_inset Formula $903$
-\end_inset
-
- times smaller when 
-\begin_inset Formula $n=7$
-\end_inset
-
-.
- Global optimality is discussed and proven for some 
-\begin_inset Formula $n$
-\end_inset
-
- using Sum-Of-Squares (SOS) Programming and moment relaxations.
- 
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Section*
@@ -408,30 +437,192 @@ literal "false"
 A video is available here:
 \end_layout
 
-\begin_layout Section*
-TODOS:
+\begin_layout Section
+Introduction
 \end_layout
 
 \begin_layout Standard
-Compare triangle inequ (planes are not found), in terms of conservatism
- and computation time
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename imgs/example.png
+	lyxscale 30
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+[Change figure] Agents using [name_algorithm] to plan trajectories in an
+ environment with dynamic obstacles (in red), static obstacles (in blue)
+ and other agents.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+vskip-2ex
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+a 3D real-time planner able to handle in static obstacles, dynamic obstacles
+ and other agents is an open problem.
+ The polyhedral outer approximation of a trajectory, the collision check
+ between two trajectories, and the deconfliction scheme make this problem
+ specially hard.
+ , The 
+\end_layout
+
+\begin_layout Standard
+–> polyhedral approximation of an interval: 
+\end_layout
+
+\begin_layout Standard
+–> sampling, discretization does not solve the problem with
+\end_layout
+
+\begin_layout Standard
+-> Deconfliction scheme (centralized, decentralized and 
+\end_layout
+
+\begin_layout Standard
+-> derived in previous work).
+ 
+\end_layout
+
+\begin_layout Standard
+The Collision check between an agent and a dynamic obstacle (or other agent),
+ and discretization usually needs computation 
+\end_layout
+
+\begin_layout Standard
+With respect to the 
+\series bold
+collision check
+\series default
+, a polyhedral representation of each interval via the convex hull of the
+ control points of the Bernstein or B-Spline bases have been extensively
+ proposed and used in the planning literature.
+ However, these bases do not succeed in obtaining the tightest (i.e.
+ with minimum volume) tetrahedron that encloses the curve, leading therefore
+ to conservative result.
+ This paper addresses this problem at its source, and leverages our recently
+ found MINVO basis 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "tordesillas2020minvo"
+literal "false"
+
+\end_inset
+
+ to obtain the control points that generate the 
+\begin_inset Formula $n$
+\end_inset
+
+-simplex (tetrahedron for 
+\begin_inset Formula $n=3$
+\end_inset
+
+) that contains the curve and that has minimum volume.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Initial Guess
+\end_layout
+
+\begin_layout Standard
+To solve the 
+\series bold
+deconfliction
+\series default
+ problem between the trajectories of the agents, most of the state-of-the-art
+ algorithms rely either on centralized algorithms, or on imposing a ad-hoc
+ priority between the agents (usually via sequential optimization).
+ We propose instead a way to naturally solve to deconflict the trajectories
+ in a decentralized way by deciding the priority based on the time each
+ agent is able to finish the optimization.
+ In this way, each agent triggers the planning optimizations asynchronously
+ with respect to other agents, including as hard constraints the trajectories
+ other agents have already committed to.
+ 
+\end_layout
+
+\begin_layout Standard
+The contributions of this paper are summarized as follows:
+\end_layout
+
+\begin_layout Itemize
+Formulation
+\end_layout
+
+\begin_layout Itemize
+Use of the MINVO basis to do the collision check, achieving a volume 2.36
+ and 254.8 times smaller than the extensively-used Bernstein and B-Spline
+ respectively.
+ 
 \end_layout
 
 \begin_layout Section*
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
 Structure
 \end_layout
 
-\begin_layout Standard
-Paper structure:
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Paper structure:
+\end_layout
+
+\begin_layout Plain Layout
 --> 
 \series bold
 Definitions
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 --> 
 \series bold
 Assumptions: limited FOV, existence of tracking and predictor algorithm
@@ -440,55 +631,55 @@ Assumptions: limited FOV, existence of tracking and predictor algorithm
  
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 --> Collision check
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 ---------> Dynamic obstacles (check intervals instead of point by point,
  collision check is done by segments)--> need for polyhedral approximation
  between two intervals
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 ---------> Which polyhedral approximation whould we use
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 ------------------------> For the traj of the agent: (Basis used B-Spline,...).
  q0 vs qBezier vs qMv; (and change that in all the algorithms) -----------------
 -------> For other ones: (Minkowski sym + uncertainty,...)
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 ---------> Given the polyhedral approximation, how to guarantee separation
  between two polyhedra (not use triangle inequality, find planes instead)
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 --> Optimization Problem
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 
 \series bold
 --> Initial Guess
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 
 \series bold
 --> Deconfliction scheme
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 
 \series bold
 --> WHole archictecture Time allocation between octopus search and optimization
  (kappa and mu)
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 INFLATE WITH THE RADIUS OF THE DRONE THE OTHER OBSTACLES!!
 \end_layout
 
@@ -582,210 +773,21 @@ Several agents + static + dynamic
 Comparison with RVO??
 \end_layout
 
-\end_deeper
-\end_deeper
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
+\begin_layout Plain Layout
+TODOS: Compare triangle inequ (planes are not found), in terms of conservatism
+ and computation time
+\end_layout
 
+\end_deeper
 \begin_layout Plain Layout
 \align center
 \begin_inset Note Note
 status open
 
 \begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename src/imgs/comparison3d.pdf
-	lyxscale 130
-	width 100col%
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Figure showing simulation of static, dynamic and other agents
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-vskip-2ex
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section
-Introduction
-\end_layout
-
-\begin_layout Standard
-Bézier
-\end_layout
-
-\begin_layout Standard
-The contributions of this project are summarized as follows:
-\end_layout
-
-\begin_layout Itemize
-Formulation
-\end_layout
-
-\begin_layout Itemize
-Use of the MINVO basis (derived in previous work)
-\begin_inset CommandInset citation
-LatexCommand cite
-key "augugliaro2012generation"
-literal "false"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename src/imgs/comparison3d.pdf
-	lyxscale 130
-	width 100col%
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Comparison between the MINVO basis and the Bernstein basis for 
-\begin_inset Formula $n=3$
-\end_inset
-
-.
- The simplex found using the MINVO basis (left) encloses the 
-\begin_inset Formula $3^{rd}$
-\end_inset
-
--order polynomial curve in red.
- For any 
-\begin_inset Formula $3^{rd}$
-\end_inset
-
--order polynomial curve, the MINVO basis generates a simplex that is 
-\begin_inset Formula $2.36$
-\end_inset
-
- times smaller that the one found using the Bernstein basis (right).
- 
-\begin_inset CommandInset label
-LatexCommand label
-name "fig:Comparison3d"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-vskip-2ex
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section
-Related work
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset citation
-LatexCommand cite
-key "zhou2019robust"
-literal "false"
-
-\end_inset
-
- use the control points of the B-Spline, not Bezier/MINVO
-\end_layout
-
-\begin_layout Section
-Notation and Definitions
-\end_layout
-
-\begin_layout Standard
-This project will use the following notation:
-\end_layout
-
-\begin_layout Standard
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="20" columns="2">
+<lyxtabular version="3" rows="19" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -844,7 +846,7 @@ Scalar
 \begin_inset Formula $\boldsymbol{a}$
 \end_inset
 
- 
+
 \end_layout
 
 \end_inset
@@ -853,7 +855,7 @@ Scalar
 \begin_inset Text
 
 \begin_layout Plain Layout
-Column vector 
+Column vector
 \end_layout
 
 \end_inset
@@ -867,7 +869,7 @@ Column vector
 \begin_inset Formula $\boldsymbol{A}$
 \end_inset
 
- 
+
 \end_layout
 
 \end_inset
@@ -940,7 +942,7 @@ Convex hull of the set
 \begin_inset Formula $|\boldsymbol{A}|$
 \end_inset
 
- 
+
 \end_layout
 
 \end_inset
@@ -1052,7 +1054,7 @@ Size of a matrix (
 \begin_inset Formula $\boldsymbol{a}\ge\boldsymbol{b}$
 \end_inset
 
- 
+
 \end_layout
 
 \end_inset
@@ -1062,29 +1064,6 @@ Size of a matrix (
 
 \begin_layout Plain Layout
 Element-wise inequality
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\boldsymbol{1}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Column vector of ones
 \end_layout
 
 \end_inset
@@ -1208,7 +1187,7 @@ t^{n} & t^{n-1}\cdots & 1\end{array}\right]^{T}\\
 \begin_inset Formula $\mathbb{S}_{+}^{m}$
 \end_inset
 
- 
+
 \end_layout
 
 \end_inset
@@ -1271,9 +1250,7 @@ Volume of a polyhedron
 
 \begin_layout Plain Layout
 \begin_inset Formula $\begin{array}{c}
-\text{Distance between the point \boldsymbol{a} }\\
-\text{and the plane \boldsymbol{\pi}}
-\end{array}$
+\text{and the plane \boldsymbol{\pi}}\end{array}$
 \end_inset
 
 
@@ -1304,6 +1281,399 @@ Element-wise derivative of the vector
 \end_inset
 
 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Related work
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset citation
+LatexCommand cite
+key "zhou2019robust"
+literal "false"
+
+\end_inset
+
+ use the control points of the B-Spline, not Bezier/MINVO
+\end_layout
+
+\begin_layout Section
+Notation and Definitions
+\end_layout
+
+\begin_layout Standard
+Obstacles are inflated with radius of the UAV
+\end_layout
+
+\begin_layout Standard
+This project will use the following notation:
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="12" columns="2">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top" width="6cm">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Symbol
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Meaning
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathbf{v}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Vertex.
+ 
+\begin_inset Formula $\in\mathbb{R}^{3}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\boldsymbol{p},\boldsymbol{v},\boldsymbol{a},\boldsymbol{j}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Position, Velocity, Acceleration and Jerk.
+ 
+\begin_inset Formula $\in\mathbb{R}^{3}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+State vector: 
+\begin_inset Formula $\mathbf{x}:=\left[\begin{array}{ccc}
+\boldsymbol{p}^{T} & \boldsymbol{v}^{T} & \boldsymbol{a}^{T}\end{array}\right]^{T}\in\mathbb{R}^{9}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $J$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set that contains the indexes of all the intervals
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula $J=\{0,1,...,m-2p-1\}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $I$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set that contains the indexes all the obstacles/agents, except the agent
+ 
+\begin_inset Formula $s$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula $I=\{0,1,...,m-2p-1\}\backslash s$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $i$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Index of the obstacle/agent.
+ 
+\begin_inset Formula $i\in I$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $j$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Index of the interval 
+\begin_inset Formula $j\in0,1,...,J$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $s$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Index of the planning agent
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{I}_{j}^{i}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Polyhedron that contains the interval 
+\begin_inset Formula $j$
+\end_inset
+
+ of the trajectory of the obstacle/agent 
+\begin_inset Formula $i$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\{\cdot\}_{MV}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set of points using the MINVO (
+\begin_inset Formula $MV$
+\end_inset
+
+), Bezier (
+\begin_inset Formula $Be$
+\end_inset
+
+), or B-Spline (
+\begin_inset Formula $BS$
+\end_inset
+
+) Basis
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\boldsymbol{1}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Column vector of ones
 \end_layout
 
 \end_inset
@@ -1363,6 +1733,10 @@ two following common definitions and their respective notations:
 \end_layout
 
 \begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
 \begin_inset Box Boxed
 position "t"
 hor_pos "c"
@@ -1450,14 +1824,14 @@ matrix of vertexes
 
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 \begin_inset VSpace 0.2cm
 \end_inset
 
 
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 \begin_inset Note Note
 status open
 
@@ -1541,6 +1915,11 @@ p_{k-1}(t)
 \end_inset
 
 .
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1754,6 +2133,10 @@ status open
 
 \begin_layout Plain Layout
 Comparison ...
+ The blue line represents an uniform B-Spline, and the red line is one interval
+ of this B-Spline.
+ The vertexes of each tetrahedron are the control points obtained for that
+ interval using the basis MINVO, Bernstein and B-Spline.
  Every arrow has length = 
 \begin_inset Formula $1\;u$
 \end_inset
@@ -1868,543 +2251,6 @@ status open
 
 \begin_layout Plain Layout
 \align center
-\begin_inset Tabular
-<lyxtabular version="3" rows="14" columns="3">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\series bold
-Symbol
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\series bold
-Meaning
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\series bold
-Properties
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\mathbf{v}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Vertex
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\in$
-\end_inset
-
-
-\begin_inset Formula $\mathbb{R}^{3}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\mathbf{x}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-State vector
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\mathbf{x}:=\left[\begin{array}{ccc}
-\boldsymbol{p}^{T} & \boldsymbol{v}^{T} & \boldsymbol{a}^{T}\end{array}\right]^{T}\in\mathbb{R}^{9}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\boldsymbol{p}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Position,
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\in$
-\end_inset
-
-
-\begin_inset Formula $\mathbb{R}^{3}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\boldsymbol{v}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Velocity,
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\in$
-\end_inset
-
-
-\begin_inset Formula $\mathbb{R}^{3}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\boldsymbol{a}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Acceleration,
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\in$
-\end_inset
-
-
-\begin_inset Formula $\mathbb{R}^{3}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\boldsymbol{j}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Jerk
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\in\mathbb{R}^{3}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $i$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Index of the obstacle/agent.
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $i\in I$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $j$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Index of the interval
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $j\in0,1,...,J$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $s$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Index of the planning agent
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $s\in\mathbb{R}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $J$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Set that contains the indexes of all the intervals
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $J=\{0,1,...,m-2p-1\}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $I$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Set that contains the indexes all the obstacles/agents, except the agent
- 
-\begin_inset Formula $s$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $I=\{0,1,...,m-2p-1\}\backslash s$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\mathcal{I}_{j}^{i}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Polyhedron that contains the interval 
-\begin_inset Formula $j$
-\end_inset
-
- of the trajectory of the obstacle/agent 
-\begin_inset Formula $i$
-\end_inset
-
-.
- 
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\{\cdot\}_{MV}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Set of points using the MINVO (
-\begin_inset Formula $MV$
-\end_inset
-
-), Bezier (
-\begin_inset Formula $Be$
-\end_inset
-
-), or B-Spline (
-\begin_inset Formula $BS$
-\end_inset
-
-) Basis
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
 
 \end_layout
 
@@ -2897,7 +2743,7 @@ A final stop condition is used in the optimization.
 \boldsymbol{a}(t_{f})=\boldsymbol{0}\\
 \boldsymbol{n}_{ij}^{T}\boldsymbol{v}+\boldsymbol{d}_{ij}>0\quad\forall\boldsymbol{v}\in\mathcal{V}_{ij},\;\forall i\in I,j\in J\\
 \boldsymbol{n}_{ij}^{T}\boldsymbol{q}+\boldsymbol{d}_{ij}<0\quad\forall\boldsymbol{q}\in\mathcal{Q}_{j},\;\forall j\in J\\
-\left\Vert \frac{p\left(\mathbf{q}_{j+1}-\mathbf{q}_{j}\right)}{t_{i+p+1}-t_{i+1}}\right\Vert _{\infty}\le v_{max}\quad\forall j\in J\\
+\left\Vert \frac{p\left(\mathbf{q}_{j+1}-\mathbf{q}_{j}\right)}{t_{j+p+1}-t_{j+1}}\right\Vert _{\infty}\le v_{max}\quad\forall j\in J\\
 \left\Vert \frac{\left(p-1\right)}{t_{i+p+1}-t_{i+2}}\left(\frac{p\left(\mathbf{q}_{j+2}-\mathbf{q}_{j+1}\right)}{t_{j+p+2}-t_{j+2}}-\frac{p\left(\mathbf{q}_{j+1}-\mathbf{q}_{j}\right)}{t_{j+p+1}-t_{j+1}}\right)\right\Vert _{\infty}\le a_{max}\quad\forall j\in J
 \end{array}}
 \]
