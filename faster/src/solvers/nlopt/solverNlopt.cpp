@@ -596,9 +596,9 @@ void SolverNlopt::printInfeasibleConstraints(const T &constraints)
   std::cout << "The Infeasible Constraints are these ones:\n";
   for (int i = 0; i < num_of_constraints_; i++)
   {
-    if (constraints_[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
+    if (constraints[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
     {
-      std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints_[i] << std::endl;
+      std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints[i] << std::endl;
     }
   }
 }
@@ -656,12 +656,13 @@ bool SolverNlopt::isFeasible(const T x)
 bool SolverNlopt::isFeasible(const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
                              const std::vector<double> &d)
 {
-  computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+  double constraints[num_of_constraints_];
+  computeConstraints(0, constraints, num_of_variables_, NULL, q, n, d);
 
   // std::cout << "The Infeasible Constraints are these ones:\n";
   for (int i = 0; i < num_of_constraints_; i++)
   {
-    if (constraints_[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
+    if (constraints[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
     {
       return false;
       // std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints_[i] << std::endl;
@@ -692,14 +693,15 @@ void SolverNlopt::printInfeasibleConstraints(const T x)
 void SolverNlopt::printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                                              std::vector<double> &d)
 {
-  computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+  double constraints[num_of_constraints_];
+  computeConstraints(0, constraints, num_of_variables_, NULL, q, n, d);
 
   std::cout << "The Infeasible Constraints are these ones:\n";
   for (int i = 0; i < num_of_constraints_; i++)
   {
-    if (constraints_[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
+    if (constraints[i] > epsilon_tol_constraints_)  // constraint is not satisfied yet
     {
-      std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints_[i] << std::endl;
+      std::cout << std::setprecision(5) << "Constraint " << i << " = " << constraints[i] << std::endl;
     }
   }
 }
@@ -744,8 +746,9 @@ void SolverNlopt::initializeNumOfConstraints()
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
 
+  double constraints[10000];  // this number should be very big!! (hack, TODO)
   x2qnd(xx, q, n, d);
-  computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+  computeConstraints(0, constraints, num_of_variables_, NULL, q, n, d);
   // end of hack
 }
 
@@ -1216,7 +1219,8 @@ bool SolverNlopt::checkGradientsUsingFiniteDiff()
   double grad_constraints[nn * m];
   // grad is a vector with nn *m elements
 
-  computeConstraints(m, constraints_, num_of_variables_, grad_constraints, q, n, d);
+  double constraints[num_of_constraints_];
+  computeConstraints(m, constraints, num_of_variables_, grad_constraints, q, n, d);
 
   double grad_f[nn];
   double f = computeObjFunctionJerk(nn, grad_f, q, n, d);
@@ -1259,7 +1263,7 @@ bool SolverNlopt::checkGradientsUsingFiniteDiff()
     }
     ///////////////////////
     std::cout << "Constraints: ";
-    double constraints_perturbed[10000];  // this number should be very big!! (hack, TODO)
+    double constraints_perturbed[num_of_constraints_];  // this number should be very big!! (hack, TODO)
     computeConstraints(m, constraints_perturbed, num_of_variables_, NULL, q_perturbed, n_perturbed, d_perturbed);
 
     // And now check the check on that column (variable i)
@@ -1267,14 +1271,14 @@ bool SolverNlopt::checkGradientsUsingFiniteDiff()
     bool check_satisfied = true;
     for (int ci = 0; ci < num_of_constraints_; ci++)
     {
-      double grad_c_should_be = (constraints_perturbed[ci] - constraints_[ci]) / epsilon;
+      double grad_c_should_be = (constraints_perturbed[ci] - constraints[ci]) / epsilon;
 
       double grad_c_is = grad_constraints[ci * nn + i];
       if (fabs(grad_c_is - grad_c_should_be) > 1e-4)
       {
         gradients_c_are_right = false;
         // std::cout << "constraints_perturbed[ci]= " << constraints_perturbed[ci] << std::endl;
-        // std::cout << "constraints_[ci]= " << constraints_[ci] << std::endl;
+        // std::cout << "constraints[ci]= " << constraints[ci] << std::endl;
         check_satisfied = false;
         std::cout << red << "ERROR: " << reset << "(partial constraint_" << ci << ")/(partial var_" << i
                   << ") = " << grad_c_is << ", should be " << grad_c_should_be << std::endl;
@@ -1749,7 +1753,7 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
   opt->computeConstraints(m, constraints, nn, grad, q, n, d);
 
   // Be careful cause this adds more runtime...
-  // printInfeasibleConstraints(constraints);
+  // opt->printInfeasibleConstraints(constraints);
   if (opt->areTheseConstraintsFeasible(constraints))
   {
     opt->got_a_feasible_solution_ = true;
@@ -2063,7 +2067,8 @@ bool SolverNlopt::optimize()
     std::cout << "obj_guess= " << std::setprecision(7) << obj_guess << reset << std::endl;
     std::cout << "obj_obtained= " << std::setprecision(7) << obj_obtained << reset << std::endl;
     // print improvement (0--> no improvement wrt initial guess )
-    std::cout << green << "Improvement: " << (1 - (obj_obtained / obj_guess)) << "%" << reset << std::endl;
+    std::cout << green << std::setprecision(7) << "Improvement: " << (1.0 - (obj_obtained / obj_guess)) << "%" << reset
+              << std::endl;
   }
 
   if (failed)
@@ -2353,6 +2358,10 @@ nlopt::algorithm SolverNlopt::getSolver(std::string &solver)
   else if (solver == "LD_LBFGS_NOCEDAL")
   {
     return nlopt::LD_LBFGS_NOCEDAL;
+  }
+  else if (solver == "LD_LBFGS")
+  {
+    return nlopt::LD_LBFGS;
   }
   else
   {
