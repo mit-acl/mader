@@ -383,7 +383,7 @@ void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_vox
 
   // std::cout << "Computing upper and lower, qiM1=" << q1_.transpose() << ", and qi=" << q2_.transpose() << std::endl;
 
-  computeUpperAndLowerConstraints(i, q1_, q2_, constraint_xL, constraint_xU, constraint_yL, constraint_yU,
+  computeUpperAndLowerConstraints(i, q0_, q1_, q2_, constraint_xL, constraint_xU, constraint_yL, constraint_yU,
                                   constraint_zL, constraint_zU);
 
   /*  std::cout << "constraint_xL= " << constraint_xL << std::endl;
@@ -445,22 +445,114 @@ void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_vox
 
 // Compute the lower and upper bounds on the velocity based on the velocity and acceleration constraints
 // return false if any of the intervals, the lower bound is > the upper bound
-bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
-                                                  double& constraint_xL, double& constraint_xU, double& constraint_yL,
-                                                  double& constraint_yU, double& constraint_zL, double& constraint_zU)
+bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM2, const Eigen::Vector3d& qiM1,
+                                                  const Eigen::Vector3d& qi, double& constraint_xL,
+                                                  double& constraint_xU, double& constraint_yL, double& constraint_yU,
+                                                  double& constraint_zL, double& constraint_zU)
 {
+  // std::cout << "In computeUpperAndLowerConstraints " << std::endl;
+
+  Eigen::Vector3d viM2 = p_ * (qiM1 - qiM2) / (knots_(i - 1 + p_) - knots_(i - 1));
   Eigen::Vector3d viM1 = p_ * (qi - qiM1) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
+
+  // Eigen::Matrix<double, 3, 2> Vbs_firstblock;
+  // Vbs_firstblock.block(0, 0, 3, 1) = viM2;
+  // Vbs_firstblock.block(0, 1, 3, 1) = viM1;
+
+  // std::cout << bold << "***************************" << reset << std::endl;
+
+  // std::cout << "viM2= " << viM2.transpose() << std::endl;
+  // std::cout << "viM1= " << viM1.transpose() << std::endl;
+
+  // Eigen::Matrix<double, 3, 3> Mvel_bs2basis_;
+  // Mvel_bs2basis_ << 0.5387, 0.08334, -0.03868,    //////////////////////
+  //     /*///////////*/ 0.5, 0.8333, 0.5,           //////////////////////
+  //     /*///////////*/ -0.03867, 0.08333, 0.5387;  //////////////////////
+
+  // // Mvel_bs2basis_ << 1.0, 0.0, 0.0,    //////////////////////
+  // //     /*///////////*/ 0.0, 1.0, 0.0,  //////////////////////
+  // //     /*///////////*/ 0.0, 0.0, 1.0;  //////////////////////
+
+  // Eigen::Matrix<double, 3, 3> tmp = Vbs_firstblock * Mvel_bs2basis_.block(0, 0, 2, 3);
+
+  // std::cout << "Vbs_firstblock= " << Vbs_firstblock << std::endl;
+
+  // std::cout << "Mvel_bs2basis_.block(0, 0, 2, 3)= \n" << Mvel_bs2basis_.block(0, 0, 2, 3) << std::endl;
+
+  // std::cout << " tmp is " << std::endl;
+  // std::cout << tmp << std::endl;
+
+  // double vi_x_lower_bound = -std::numeric_limits<double>::max();
+  // double vi_x_upper_bound = std::numeric_limits<double>::max();
+
+  // double vi_y_lower_bound = -std::numeric_limits<double>::max();
+  // double vi_y_upper_bound = std::numeric_limits<double>::max();
+
+  // double vi_z_lower_bound = -std::numeric_limits<double>::max();
+  // double vi_z_upper_bound = std::numeric_limits<double>::max();
+
+  // // For x
+  // for (int j = 0; j < 3; j++)  // For the three velocity control points
+  // {
+  //   std::cout << "_________" << std::endl;
+  //   double vi_bound1 = (v_max_.x() - tmp(0, j)) / Mvel_bs2basis_(2, j);
+  //   double vi_bound2 = (-v_max_.x() - tmp(0, j)) / Mvel_bs2basis_(2, j);
+  //   std::cout << "v_max_.x()= " << v_max_.x() << std::endl;
+  //   std::cout << "tmp(0, j)= " << tmp(0, j) << std::endl;
+  //   std::cout << "Mvel_bs2basis_(2, j)= " << Mvel_bs2basis_(2, j) << std::endl;
+  //   std::cout << "vi_bound1= " << vi_bound1 << std::endl;
+  //   std::cout << "vi_bound2= " << vi_bound2 << std::endl;
+  //   vi_x_lower_bound = std::max(std::min(vi_bound1, vi_bound2), vi_x_lower_bound);
+  //   vi_x_upper_bound = std::min(std::max(vi_bound1, vi_bound2), vi_x_upper_bound);
+  //   std::cout << "vi_x_lower_bound= " << vi_x_lower_bound << std::endl;
+  //   std::cout << "vi_x_upper_bound= " << vi_x_upper_bound << std::endl;
+  // }
+
+  // std::cout << "vi_x_lower_bound= " << vi_x_lower_bound << ", vi_x_upper_bound" << vi_x_upper_bound << std::endl;
+
+  // // For y
+  // for (int j = 0; j < 3; j++)  // For the three velocity control points
+  // {
+  //   double vi_bound1 = (v_max_.y() - tmp(1, j)) / Mvel_bs2basis_(2, j);
+  //   double vi_bound2 = (-v_max_.y() - tmp(1, j)) / Mvel_bs2basis_(2, j);
+  //   vi_y_lower_bound = std::max(std::min(vi_bound1, vi_bound2), vi_x_lower_bound);
+  //   vi_y_upper_bound = std::min(std::max(vi_bound1, vi_bound2), vi_x_upper_bound);
+  // }
+
+  // std::cout << "vi_y_lower_bound= " << vi_y_lower_bound << std::endl;
+  // std::cout << "vi_y_upper_bound= " << vi_y_upper_bound << std::endl;
+
+  // // For z
+  // for (int j = 0; j < 3; j++)  // For the three velocity control points
+  // {
+  //   double vi_bound1 = (v_max_.z() - tmp(2, j)) / Mvel_bs2basis_(2, j);
+  //   double vi_bound2 = (-v_max_.z() - tmp(2, j)) / Mvel_bs2basis_(2, j);
+  //   vi_z_lower_bound = std::max(std::min(vi_bound1, vi_bound2), vi_x_lower_bound);
+  //   vi_z_upper_bound = std::min(std::max(vi_bound1, vi_bound2), vi_x_upper_bound);
+  // }
+
+  // // std::cout << "vi_y_lower_bound= " << vi_y_lower_bound << ", vi_y_upper_bound" << vi_y_upper_bound << std::endl;
+  // // std::cout << "vi_z_lower_bound= " << vi_z_lower_bound << ", vi_z_upper_bound" << vi_z_upper_bound << std::endl;
 
   double d = (knots_(i + p_) - knots_(i + 1)) / (1.0 * (p_ - 1));
 
-  // |vi - viM1|<=a_max_*d
-  //  <=>
-  // (vi - viM1)<=a_max_*d   AND   (vi - viM1)>=-a_max_*d
-  //  <=>
-  //  vi<=a_max_*d + viM1   AND     vi>=-a_max_*d + viM1
+  // // |vi - viM1|<=a_max_*d
+  // //  <=>
+  // // (vi - viM1)<=a_max_*d   AND   (vi - viM1)>=-a_max_*d
+  // //  <=>
+  // //  vi<=a_max_*d + viM1   AND     vi>=-a_max_*d + viM1
 
   Eigen::Vector3d max_vel = a_max_ * d + viM1;   // this is to ensure that aiM1 is inside the bounds
   Eigen::Vector3d min_vel = -a_max_ * d + viM1;  // this is to ensure that aiM1 is inside the bounds
+
+  // constraint_xL = std::max(vi_x_lower_bound, min_vel.x());  // lower bound
+  // constraint_xU = std::min(vi_x_upper_bound, max_vel.x());  // upper bound
+
+  // constraint_yL = std::max(vi_y_lower_bound, min_vel.y());  // lower bound
+  // constraint_yU = std::min(vi_y_upper_bound, max_vel.y());  // upper bound
+
+  // constraint_zL = std::max(vi_z_lower_bound, min_vel.z());  // lower bound
+  // constraint_zU = std::min(vi_z_upper_bound, max_vel.z());  // upper bound
 
   constraint_xL = std::max(-v_max_.x(), min_vel.x());  // lower bound
   constraint_xU = std::min(v_max_.x(), max_vel.x());   // upper bound
@@ -1005,20 +1097,27 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
   int i = current.index;
 
-  Eigen::Vector3d qiM1;
+  Eigen::Vector3d qiM2, qiM1;
 
   if (current.index == 2)
   {
+    qiM2 = q0_;
     qiM1 = q1_;
+  }
+  else if (current.index == 3)
+  {
+    qiM2 = q1_;
+    qiM1 = current.previous->qi;
   }
   else
   {
+    qiM2 == current.previous->previous->qi;
     qiM1 = current.previous->qi;
   }
 
   double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
 
-  bool intervalIsNotZero = computeUpperAndLowerConstraints(i, qiM1, current.qi, constraint_xL, constraint_xU,
+  bool intervalIsNotZero = computeUpperAndLowerConstraints(i, qiM2, qiM1, current.qi, constraint_xL, constraint_xU,
                                                            constraint_yL, constraint_yU, constraint_zL, constraint_zU);
 
   if (intervalIsNotZero == false)  // constraintxL>constraint_xU (or with other axes)
@@ -1456,7 +1555,7 @@ exitloop:
     std::cout << red << "=====================================================" << std::endl;
     // if (accel_constraints_not_satisfied_)
     // {
-    abort();
+    // abort();
     //}
   }
 

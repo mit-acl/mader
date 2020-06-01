@@ -29,21 +29,29 @@ using namespace termcolor;
 
 SolverNlopt::SolverNlopt(par_snlopt &par)
 {
-  Eigen::Matrix<double, 4, 4> Mbs2mv;
-  Eigen::Matrix<double, 4, 4> Mbs2be;
+  Eigen::Matrix<double, 4, 4> Mbs2mv_pos, Mbs2be_pos;
+  Eigen::Matrix<double, 3, 3> Mbs2mv_vel, Mbs2be_vel;
   // see matlab.
   // This is for the interval [0 1];
-  Mbs2mv << 0.18372, 0.057009, -0.01545, -0.005338,   ///////////
-      0.70176, 0.6665738, 0.29187, 0.119851669,       ////////////
-      0.119851669, 0.2918718, 0.66657, 0.7017652,     //////////////////
-      -0.00533879, -0.015455, 0.0570095, 0.18372189;  //////////////////
+  Mbs2mv_pos << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
+      0.70176, 0.6665738, 0.29187, 0.119851669,          ////////////
+      0.119851669, 0.2918718, 0.66657, 0.7017652,        //////////////////
+      -0.00533879, -0.015455, 0.0570095, 0.18372189;     //////////////////
 
-  Mbs2be << 1, 0, 0, 0,  //////////
-      4, 4, 2, 1,        //////////
-      1, 2, 4, 4,        //////////
-      0, 0, 0, 1;        //////////
+  Mbs2be_pos << 1, 0, 0, 0,  //////////
+      4, 4, 2, 1,            //////////
+      1, 2, 4, 4,            //////////
+      0, 0, 0, 1;            //////////
 
-  Mbs2be = (1 / 6.0) * Mbs2be;
+  Mbs2be_pos = (1 / 6.0) * Mbs2be_pos;
+
+  Mbs2mv_vel << 0.5387, 0.08334, -0.03868,   //////////////////////
+      /*//////*/ 0.5, 0.8333, 0.5,           //////////////////////
+      /*//////*/ -0.03867, 0.08333, 0.5387;  //////////////////////
+
+  Mbs2be_vel << 0.5, 0.0, 0.0,   //////////////////////
+      /*//////*/ 0.5, 1.0, 0.5,  //////////////////////
+      /*//////*/ 0.0, 0.0, 0.5;  //////////////////////
 
   // std::cout << "In the SolverNlopt Constructor\n";
 
@@ -58,23 +66,27 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   if (par.basis == "MINVO")
   {
     basis_ = MINVO;
-    Mbs2basis_ = Mbs2mv;
+    Mbs2basis_pos_ = Mbs2mv_pos;
+    Mbs2basis_vel_ = Mbs2mv_vel;
   }
   else if (par.basis == "BEZIER")
   {
     basis_ = BEZIER;
-    Mbs2basis_ = Mbs2be;
+    Mbs2basis_pos_ = Mbs2be_pos;
+    Mbs2basis_vel_ = Mbs2be_vel;
   }
   else if (par.basis == "B_SPLINE")
   {
     basis_ = B_SPLINE;
-    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+    Mbs2basis_pos_ = Eigen::Matrix<double, 4, 4>::Identity();
+    Mbs2basis_vel_ = Eigen::Matrix<double, 3, 3>::Identity();
   }
   else
   {
     std::cout << red << "Basis " << par.basis << " not implemented yet, using the one for B-Spline" << std::endl;
     basis_ = B_SPLINE;
-    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+    Mbs2basis_pos_ = Eigen::Matrix<double, 4, 4>::Identity();
+    Mbs2basis_vel_ = Eigen::Matrix<double, 3, 3>::Identity();
   }
 
   /////////
@@ -1137,12 +1149,16 @@ int SolverNlopt::lastDecCP()
   return (N_ - 2);
 }
 
-void SolverNlopt::transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv)
+void SolverNlopt::transformPosBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs,
+                                                 Eigen::Matrix<double, 3, 4> &Qmv)
 {
-  /////////////////////
-  // Eigen::Matrix<double, 4, 3> Qmv;  // minvo
+  Qmv = Qbs * Mbs2basis_pos_;
+}
 
-  Qmv = Qbs * Mbs2basis_;
+void SolverNlopt::transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3, 3> &Qbs,
+                                                 Eigen::Matrix<double, 3, 3> &Qmv)
+{
+  Qmv = Qbs * Mbs2basis_vel_;
 }
 
 bool SolverNlopt::checkGradientsUsingFiniteDiff()
@@ -1328,7 +1344,8 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         Qbs.col(1) = q[i + 1];
         Qbs.col(2) = q[i + 2];
         Qbs.col(3) = q[i + 3];
-        transformBSpline2otherBasis(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a "basis_" control point
+        transformPosBSpline2otherBasis(Qbs,
+                                       Qmv);  // Now Qmv is a matrix whose each row contains a "basis_" control point
 
         Eigen::Vector3d q_ipu;
         for (int u = 0; u <= 3 && (i + u) <= (N_ - 2); u++)
@@ -1351,8 +1368,8 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
               if ((i + 3) == (N_ - 1) && k == 2)
               {  // The last control point of the interval is qNm1, and the variable is qNm2
                 // Needed because qN=qNm1=qNm2
-                toGradSameConstraintDiffVariables(gIndexQ(i + k), (Mbs2basis_(k, u) + Mbs2basis_(k + 1, u)) * n[ip],
-                                                  grad, r, nn);
+                toGradSameConstraintDiffVariables(
+                    gIndexQ(i + k), (Mbs2basis_pos_(k, u) + Mbs2basis_pos_(k + 1, u)) * n[ip], grad, r, nn);
               }
 
               else if ((i + 3) == (N_) && k == 1)
@@ -1360,15 +1377,15 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
                 // Needed because qN=qNm1=qNm2
 
                 toGradSameConstraintDiffVariables(
-                    gIndexQ(i + k), (Mbs2basis_(k, u) + Mbs2basis_(k + 1, u) + Mbs2basis_(k + 2, u)) * n[ip], grad, r,
-                    nn);
+                    gIndexQ(i + k),
+                    (Mbs2basis_pos_(k, u) + Mbs2basis_pos_(k + 1, u) + Mbs2basis_pos_(k + 2, u)) * n[ip], grad, r, nn);
               }
 
               else
               {
                 if (isADecisionCP(i + k))  // If Q[i] is a decision variable
                 {
-                  toGradSameConstraintDiffVariables(gIndexQ(i + k), Mbs2basis_(k, u) * n[ip], grad, r, nn);
+                  toGradSameConstraintDiffVariables(gIndexQ(i + k), Mbs2basis_pos_(k, u) * n[ip], grad, r, nn);
                 }
               }
               //}
@@ -1410,41 +1427,128 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   /*#ifdef DEBUG_MODE_NLOPT*/
   // std::cout << "Going to add velocity constraints, r= " << r << std::endl;
   //#endif
+
   // VELOCITY CONSTRAINTS:
   for (int i = 2; i <= (N_ - 3); i++)  // v0 and v1 are already determined by initial_state
   {
-    double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
+    double c1 = p_ / ((p_ + 1) * deltaT_);  // (p_ + 1) * deltaT_ \equiv knots_(i + p_ + 1) - knots_(i + 1)
+    Eigen::Vector3d v_iM2 = c1 * (q[i - 1] - q[i - 2]);
+    Eigen::Vector3d v_iM1 = c1 * (q[i] - q[i - 1]);
     Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
 
-    // v<=vmax  \equiv  v_i - vmax <= 0
-    assignEigenToVector(constraints, r, v_i - v_max_);  // f<=0
-    if (grad)
-    {
-      if (isADecisionCP(i))  // If Q[i] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i), -c1 * ones, grad, r, nn);
-      }
-      if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
-      {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), c1 * ones, grad, r, nn);
-      }
-    }
-    r = r + 3;
+    Eigen::Matrix<double, 3, 3> Qbs;  // b-spline
+    Eigen::Matrix<double, 3, 3> Qmv;  // other basis "basis_" (minvo, bezier,...).
 
-    // v>=-vmax  \equiv  -v_i - vmax <= 0
-    assignEigenToVector(constraints, r, -v_i - v_max_);  // f<=0
-    if (grad)
-    {
-      if (isADecisionCP(i))  // If Q[i] is a decision variable
+    Qbs.col(0) = v_iM2;
+    Qbs.col(1) = v_iM1;
+    Qbs.col(2) = v_i;
+
+    transformVelBSpline2otherBasis(Qbs, Qmv);
+
+    ///////////////////////// ANY BASIS //////////////////////////////
+
+    // std::cout << blue << "****Using q_" << i - 2 << ", " << i - 1 << ", " << i << ", " << i + 1 << reset <<
+    // std::endl; std::cout << "Qbs=\n" << Qbs << std::endl; std::cout << "Qmv=\n" << Qmv << std::endl;
+    for (int j = 0; j < 3; j++)
+    {  // loop over each of the velocity control points (v_{i-2+j}) of the new basis
+      //|v_{i-2+j}| <= v_max ////// v_{i-2}, v_{i-1}, v_{i}
+
+      Eigen::Vector3d v_iM2Pj = Qmv.col(j);  // v_{i-2+j};
+
+      // Constraint v_{i-2+j} - vmax <= 0
+      assignEigenToVector(constraints, r, v_iM2Pj - v_max_);  // f<=0
+
+      if (grad)
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i), c1 * ones, grad, r, nn);
+        // Each column of partials has partial constraint / partial q_{i-2+u}
+        Eigen::Matrix<double, 3, 4> partials = Eigen::Matrix<double, 3, 4>::Zero();
+        for (int u = 0; u < 3; u++)
+        {  // v_{i-2+j} depends on v_{i-2}, v_{i-1}, v_{i} of the old basis
+
+          partials.block(0, u, 3, 1) += -Mbs2basis_vel_(u, j) * c1 * ones;
+          partials.block(0, u + 1, 3, 1) += Mbs2basis_vel_(u, j) * c1 * ones;
+        }
+        // and now assign it to the vector grad
+        for (int u = 0; u < 3; u++)
+        {
+          if (isADecisionCP(i - 2 + u))  // If Q[i] is a decision variable
+          {
+            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u), partials.block(0, u, 3, 1), grad, r, nn);
+          }
+
+          // v_{i-2+u} depends on q_{i-2+u+1}
+          if (isADecisionCP(i - 2 + u + 1))  // If Q[i+1] is a decision variable
+          {
+            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u + 1), partials.block(0, u + 1, 3, 1), grad, r, nn);
+          }
+        }
       }
-      if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+      r = r + 3;
+
+      // Constraint -v_{i-2+j} - vmax <= 0
+      assignEigenToVector(constraints, r, -v_iM2Pj - v_max_);  // f<=0
+
+      if (grad)
       {
-        toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -c1 * ones, grad, r, nn);
+        // Each column of partials has partial constraint / partial q_{i-2+u}
+        Eigen::Matrix<double, 3, 4> partials = Eigen::Matrix<double, 3, 4>::Zero();
+        for (int u = 0; u < 3; u++)
+        {  // v_{i-2+j} depends on v_{i-2}, v_{i-1}, v_{i} of the old basis
+
+          partials.block(0, u, 3, 1) += Mbs2basis_vel_(u, j) * c1 * ones;
+          partials.block(0, u + 1, 3, 1) += -Mbs2basis_vel_(u, j) * c1 * ones;
+        }
+        // and now assign it to the vector grad
+        for (int u = 0; u < 3; u++)
+        {
+          if (isADecisionCP(i - 2 + u))
+          {
+            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u), partials.block(0, u, 3, 1), grad, r, nn);
+          }
+
+          // v_{i-2+u} depends on q_{i-2+u+1}
+          if (isADecisionCP(i - 2 + u + 1))
+          {
+            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u + 1), partials.block(0, u + 1, 3, 1), grad, r, nn);
+          }
+        }
       }
+      r = r + 3;
     }
-    r = r + 3;
+
+    // The code below is valid only for the B-Spline (for which Mbs2basis_vel_ is the identity matrix)
+
+    ///////////////////////// B-SPLINE //////////////////////////////
+    // // v<=vmax  \equiv  v_i - vmax <= 0
+    // assignEigenToVector(constraints, r, v_i - v_max_);  // f<=0
+    // if (grad)
+    // {
+    //   if (isADecisionCP(i))  // If Q[i] is a decision variable
+    //   {
+    //     toGradDiffConstraintsDiffVariables(gIndexQ(i), -c1 * ones, grad, r, nn);
+    //   }
+    //   if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+    //   {
+    //     toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), c1 * ones, grad, r, nn);
+    //   }
+    // }
+    // r = r + 3;
+
+    // // v>=-vmax  \equiv  -v_i - vmax <= 0
+    // assignEigenToVector(constraints, r, -v_i - v_max_);  // f<=0
+    // if (grad)
+    // {
+    //   if (isADecisionCP(i))  // If Q[i] is a decision variable
+    //   {
+    //     toGradDiffConstraintsDiffVariables(gIndexQ(i), c1 * ones, grad, r, nn);
+    //   }
+    //   if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
+    //   {
+    //     toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -c1 * ones, grad, r, nn);
+    //   }
+    // }
+    // r = r + 3;
+    ///////////////////////// B-SPLINE //////////////////////////////
   }
   //#ifdef DEBUG_MODE_NLOPT
   // std::cout << "Going to add acceleration constraints, r= " << r << std::endl;
@@ -1884,11 +1988,11 @@ bool SolverNlopt::optimize()
 
   // // x2qnd(x_, q_guess_, n_guess_);
 
-  std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
+  // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
 
-  printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
+  // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
-  printIndexesConstraints();
+  // printIndexesConstraints();
   //  printIndexesVariables();
 
   // std::cout << "====================================" << std::endl;
@@ -1907,6 +2011,7 @@ bool SolverNlopt::optimize()
   // std::cout << "get_maxtime()= " << opt_->get_maxtime() << std::endl;
 
   int result = opt_->optimize(x_, minf);
+
   std::cout << "[NL] Finished optimizing" << std::endl;
 
   time_needed_ = opt_timer_.ElapsedMs() / 1000;
@@ -2044,7 +2149,7 @@ void SolverNlopt::generateStraightLineGuess()
         Qbs.col(2) = q_guess_[i + 2];
         Qbs.col(3) = q_guess_[i + 3];
 
-        transformBSpline2otherBasis(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
+        transformPosBSpline2otherBasis(Qbs, Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
 
         std::vector<Eigen::Vector3d> last4Cps(4);
         last4Cps[0] = Qmv.col(0);

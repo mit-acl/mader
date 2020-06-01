@@ -15,7 +15,7 @@
 #include "solverNlopt.hpp"
 #include "nlopt_utils.hpp"
 
-bool nlopt_utils::checkGradientsNlopt()
+bool nlopt_utils::checkGradientsNlopt(std::string basis)
 {
   double z_ground = -2.0;
   double z_max = 2.0;
@@ -64,7 +64,7 @@ bool nlopt_utils::checkGradientsNlopt()
   param.xtol_rel = xtol_rel;
   param.ftol_rel = ftol_rel;
   param.solver = solver;
-  param.basis = "B_SPLINE";
+  param.basis = basis;
 
   double t_min = 0.0;
   double t_max = t_min + (final.pos - initial.pos).norm() / (0.3 * v_max);

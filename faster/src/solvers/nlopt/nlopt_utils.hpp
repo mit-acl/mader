@@ -2,6 +2,6 @@
 
 namespace nlopt_utils
 {
-bool checkGradientsNlopt();
+bool checkGradientsNlopt(std::string basis);
 
 }

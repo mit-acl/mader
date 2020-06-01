@@ -87,7 +87,8 @@ private:
 
   bool isDegenerate(const std::vector<double> &x);
 
-  void transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv);
+  void transformPosBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv);
+  void transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3, 3> &Qbs, Eigen::Matrix<double, 3, 3> &Qmv);
 
   void generateRandomGuess();
   void generateAStarGuess();
@@ -303,7 +304,8 @@ private:
   // Eigen::Matrix<double, 4, 4> Mbs2be_inverse_;
 
   // transformation between the B-spline control points and other basis
-  Eigen::Matrix<double, 4, 4> Mbs2basis_;
+  Eigen::Matrix<double, 4, 4> Mbs2basis_pos_;
+  Eigen::Matrix<double, 3, 3> Mbs2basis_vel_;
   // Eigen::Matrix<double, 4, 4> Mbs2basis_inverse_;
 
   double a_star_bias_ = 1.0;

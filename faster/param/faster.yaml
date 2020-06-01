@@ -100,7 +100,7 @@ factor_v_max: 0.6 #\in [0,1]. Used to find the total duration of a given traject
 
 
 beta: 1.0 #[-] >=1 Parameter modelling the uncertainty of the current position of the obstacles
-gamma: 0.9 #[-] >=0 Parameter modelling the uncertainty of the future trajectory of the obstacles
+gamma: 0.0 #[-] >=0 Parameter modelling the uncertainty of the future trajectory of the obstacles
 
 
 # Parameters for the ground robot (jackal):

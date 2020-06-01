@@ -32,7 +32,7 @@ struct matrix_hash : std::unary_function<T, size_t>
 {
   std::size_t operator()(T const& matrix) const
   {
-    // Note that it is oblivious to the storage order of Eigen matrix (column- or
+    // Note that it is obvious to the storage order of Eigen matrix (column- or
     // row-major). It will give you the same hash value for two different matrices if they
     // are the transpose of each other in different storage order.
     size_t seed = 0;
@@ -158,9 +158,10 @@ private:
   std::vector<Eigen::Vector3d> transformOtherBasis2BSpline(const std::vector<Eigen::Vector3d>& last4Cps_new_basis);
 
   void computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size);
-  bool computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
-                                       double& constraint_xL, double& constraint_xU, double& constraint_yL,
-                                       double& constraint_yU, double& constraint_zL, double& constraint_zU);
+  bool computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM2, const Eigen::Vector3d& qiM1,
+                                       const Eigen::Vector3d& qi, double& constraint_xL, double& constraint_xU,
+                                       double& constraint_yL, double& constraint_yU, double& constraint_zL,
+                                       double& constraint_zU);
 
   void plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, Node* result_ptr);
   void expandAndAddToQueue(Node& current);

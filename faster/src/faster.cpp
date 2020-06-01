@@ -85,7 +85,7 @@ Faster::Faster(parameters par) : par_(par)
   pclptr_map_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
 
   // Check that the gradients are right
-  if (nlopt_utils::checkGradientsNlopt() == false)
+  if (nlopt_utils::checkGradientsNlopt(par_.basis) == false)
   {
     std::cout << "==============================================" << std::endl;
     std::cout << bold << "Gradient check was " << red << "NOT OK " << reset << std::endl;
