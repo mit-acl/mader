@@ -414,7 +414,6 @@ void SolverNlopt::findCentroidHull(const std::vector<Eigen::Vector3d> &hull, Eig
   if (hull.size() > 0)
   {
     centroid = centroid / hull.size();
-    int novale = 0;
   }
 }
 
@@ -639,7 +638,7 @@ bool SolverNlopt::isFeasible(const T x)
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
   x2qnd(x, q, n, d);
-  // computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+  // computeConstraints(0, constraints_, num_of_variables_, nullptr, q, n, d);
 
   // // std::cout << "The Infeasible Constraints are these ones:\n";
   // for (int i = 0; i < num_of_constraints_; i++)
@@ -657,7 +656,7 @@ bool SolverNlopt::isFeasible(const std::vector<Eigen::Vector3d> &q, const std::v
                              const std::vector<double> &d)
 {
   double constraints[num_of_constraints_];
-  computeConstraints(0, constraints, num_of_variables_, NULL, q, n, d);
+  computeConstraints(0, constraints, num_of_variables_, nullptr, q, n, d);
 
   // std::cout << "The Infeasible Constraints are these ones:\n";
   for (int i = 0; i < num_of_constraints_; i++)
@@ -678,7 +677,7 @@ void SolverNlopt::printInfeasibleConstraints(const T x)
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
   x2qnd(x, q, n, d);
-  computeConstraints(0, constraints_, num_of_variables_, NULL, q, n, d);
+  computeConstraints(0, constraints_, num_of_variables_, nullptr, q, n, d);
 
   std::cout << "The Infeasible Constraints are these ones:\n";
   for (int i = 0; i < num_of_constraints_; i++)
@@ -694,7 +693,7 @@ void SolverNlopt::printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, st
                                              std::vector<double> &d)
 {
   double constraints[num_of_constraints_];
-  computeConstraints(0, constraints, num_of_variables_, NULL, q, n, d);
+  computeConstraints(0, constraints, num_of_variables_, nullptr, q, n, d);
 
   std::cout << "The Infeasible Constraints are these ones:\n";
   for (int i = 0; i < num_of_constraints_; i++)
@@ -748,7 +747,7 @@ void SolverNlopt::initializeNumOfConstraints()
 
   double constraints[10000];  // this number should be very big!! (hack, TODO)
   x2qnd(xx, q, n, d);
-  computeConstraints(0, constraints, num_of_variables_, NULL, q, n, d);
+  computeConstraints(0, constraints, num_of_variables_, nullptr, q, n, d);
   // end of hack
 }
 
@@ -1244,7 +1243,7 @@ bool SolverNlopt::checkGradientsUsingFiniteDiff()
 
     x2qnd(x_perturbed, q_perturbed, n_perturbed, d_perturbed);
 
-    double f_perturbed = computeObjFunctionJerk(nn, NULL, q_perturbed, n_perturbed, d_perturbed);
+    double f_perturbed = computeObjFunctionJerk(nn, nullptr, q_perturbed, n_perturbed, d_perturbed);
 
     double grad_f_is = grad_f[i];
     double grad_f_should_be = (f_perturbed - f) / epsilon;
@@ -1264,7 +1263,7 @@ bool SolverNlopt::checkGradientsUsingFiniteDiff()
     ///////////////////////
     std::cout << "Constraints: ";
     double constraints_perturbed[num_of_constraints_];  // this number should be very big!! (hack, TODO)
-    computeConstraints(m, constraints_perturbed, num_of_variables_, NULL, q_perturbed, n_perturbed, d_perturbed);
+    computeConstraints(m, constraints_perturbed, num_of_variables_, nullptr, q_perturbed, n_perturbed, d_perturbed);
 
     // And now check the check on that column (variable i)
     // ci is the constraint index
@@ -1757,7 +1756,7 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
   if (opt->areTheseConstraintsFeasible(constraints))
   {
     opt->got_a_feasible_solution_ = true;
-    double cost_now = opt->computeObjFunctionJerk(nn, NULL, q, n, d);
+    double cost_now = opt->computeObjFunctionJerk(nn, nullptr, q, n, d);
     if (cost_now < opt->best_cost_so_far_)
     {
       // std::cout << blue << "Updating best_cost to " << cost_now << reset << std::endl;
@@ -2020,7 +2019,7 @@ bool SolverNlopt::optimize()
 
   qnd2x(q_guess_, n_guess_, d_guess_, x_);
 
-  double obj_guess = computeObjFunctionJerk(num_of_variables_, NULL, q_guess_, n_guess_, d_guess_);
+  double obj_guess = computeObjFunctionJerk(num_of_variables_, nullptr, q_guess_, n_guess_, d_guess_);
 
   double second_term_obj_guess = weight_modified_ * (q_guess_[N_] - final_state_.pos).squaredNorm();
   double first_term_obj_guess = obj_guess - second_term_obj_guess;
@@ -2755,7 +2754,7 @@ bool SolverNlopt::satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q)
     std::vector<Eigen::Vector3d> n_novale;
     std::vector<double> d_novale;
 
-    double cost = computeObjFuction(num_of_variables_, NULL, q, n_novale, d_novale);
+    double cost = computeObjFuction(num_of_variables_, nullptr, q, n_novale, d_novale);
     if (cost < best_cost)
     {
       best_cost = cost;

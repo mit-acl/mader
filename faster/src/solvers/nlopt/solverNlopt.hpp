@@ -269,8 +269,8 @@ private:
 
   // Eigen::Vector3d initial_point_;
   // Eigen::Vector3d final_point_;
-  nlopt::opt *opt_ = NULL;
-  nlopt::opt *local_opt_ = NULL;
+  nlopt::opt *opt_ = nullptr;
+  nlopt::opt *local_opt_ = nullptr;
 
   // Guesses
   std::vector<Eigen::Vector3d> n_guess_;  // Guesses for the normals
