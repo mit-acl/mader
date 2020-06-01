@@ -770,7 +770,7 @@ void SplineAStar::recoverPath(Node* result_ptr)
   // std::cout << "Pushing qN-1= " << tmp->qi.transpose() << std::endl;
 
   // std::cout << "qi is" << std::endl;
-  std::cout << tmp->qi.transpose() << std::endl;
+  // std::cout << tmp->qi.transpose() << std::endl;
 
   //  std::cout << "qi is" << tmp->qi.transpose() << std::endl;
   result_.push_back(tmp->qi);  // qN
@@ -959,12 +959,12 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
 
   bool isFeasible = true;
 
-  std::cout << "q=" << std::endl;
+  // std::cout << "q=" << std::endl;
 
-  for (auto q_i : q)
-  {
-    std::cout << q_i.transpose() << std::endl;
-  }
+  // for (auto q_i : q)
+  // {
+  //   std::cout << q_i.transpose() << std::endl;
+  // }
   /*
    std::cout << "num_of_segments_= " << num_of_segments_ << std::endl;
      std::cout << "num_of_normals_= " << num_of_normals_ << std::endl;
@@ -1467,9 +1467,9 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
 
 exitloop:
 
-  std::cout << "status= " << status << std::endl;
-  std::cout << "expanded_nodes_.size()= " << expanded_nodes_.size() << std::endl;
-  std::cout << "complete_closest_dist_so_far_= " << complete_closest_dist_so_far_ << std::endl;
+  // std::cout << "status= " << status << std::endl;
+  // std::cout << "expanded_nodes_.size()= " << expanded_nodes_.size() << std::endl;
+  // std::cout << "complete_closest_dist_so_far_= " << complete_closest_dist_so_far_ << std::endl;
 
   Node* best_node_ptr = NULL;
 
@@ -1559,7 +1559,7 @@ exitloop:
     //}
   }
 
-  std::cout << "returning isFeasible= " << isFeasible << std::endl;
+  //  std::cout << "returning isFeasible= " << isFeasible << std::endl;
 
   return isFeasible;
 }
