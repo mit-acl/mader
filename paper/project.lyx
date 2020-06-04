@@ -2571,7 +2571,11 @@ status open
 
 \begin_layout Plain Layout
 Caption.
- This is the view of the problem from the perspective of agent 2.
+ [NO, pues t0 y tf se refieren a la optimization del agent 3 (cuyos tiempos
+ se usan para los intervalos de los obstaculos).
+ t0 y tf no son los tiempos de optimization de los otros obstaculos)CHANGE
+ THE COLORS, USE DIFFERENT tf/t0 FOR EACH AGENT]This is the view of the
+ problem from the perspective of agent 2.
  Assume that the obstacles have been inflated with the radius (or max dim
  of its bounding box) of the agent 3.
  [The control points in agent 2 should match from interval to interval.
