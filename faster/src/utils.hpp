@@ -14,6 +14,11 @@
 #include "faster_types.hpp"
 #include <deque>
 
+#include <faster_msgs/PieceWisePolTraj.h>
+#include <faster_msgs/CoeffPoly3.h>
+
+#include "ros/ros.h"  //TODO this shouldn't be here (separate in utils_ros and utils)
+
 #define RED_NORMAL 1
 #define RED_TRANS 2
 #define RED_TRANS_TRANS 3
@@ -40,6 +45,28 @@
 
 #define OCCUPIED_SPACE 1
 #define UNKOWN_AND_OCCUPIED_SPACE 2
+
+template <typename T>
+bool safeGetParam(ros::NodeHandle& nh, std::string const& param_name, T& param_value)
+{
+  if (!nh.getParam(param_name, param_value))
+  {
+    ROS_ERROR("Failed to find parameter: %s", nh.resolveName(param_name, true).c_str());
+    exit(1);
+  }
+  return true;
+}
+
+visualization_msgs::MarkerArray pwp2ColoredMarkerArray(PieceWisePol& pwp, double t_init, double t_final, int samples,
+                                                       std::string ns);
+
+void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix<double, 4, 1>& coeff_new, double t0,
+                     double tf);
+
+faster_msgs::PieceWisePolTraj pwp2PwpMsg(PieceWisePol pwp, const Eigen::Vector3d& bbox, const int& id,
+                                         const bool& is_agent);
+
+PieceWisePolWithInfo pwpMsg2PwpWithInfo(const faster_msgs::PieceWisePolTraj& pwp_msg);
 
 visualization_msgs::Marker edges2Marker(const faster_types::Edges& edges, std_msgs::ColorRGBA color_marker);
 

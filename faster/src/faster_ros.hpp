@@ -44,17 +44,6 @@
 
 namespace rvt = rviz_visual_tools;
 
-template <typename T>
-inline bool safeGetParam(ros::NodeHandle& nh, std::string const& param_name, T& param_value)
-{
-  if (!nh.getParam(param_name, param_value))
-  {
-    ROS_ERROR("Failed to find parameter: %s", nh.resolveName(param_name, true).c_str());
-    exit(1);
-  }
-  return true;
-}
-
 //####Class CVX
 class FasterRos
 {

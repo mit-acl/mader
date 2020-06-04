@@ -131,6 +131,17 @@ struct PieceWisePol
   }
 };
 
+struct PieceWisePolWithInfo
+{
+  PieceWisePol pwp;
+
+  Eigen::Vector3d bbox;
+  int id;
+  double time_received;  // time at which this trajectory was received from an agent
+  bool is_agent;         // true for a trajectory of an agent, false for an obstacle
+  bool is_static;
+};
+
 struct parameters
 {
   bool use_ff;

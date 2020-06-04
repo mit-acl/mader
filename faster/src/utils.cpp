@@ -2,12 +2,249 @@
 
 #include "termcolor.hpp"
 
-#include "ros/ros.h"  //TODO this shouldn't be here (separate in utils_ros and utils)
-
 /*typedef struct
 {
   double r, g, b;
 } COLOUR;*/
+
+visualization_msgs::MarkerArray pwp2ColoredMarkerArray(PieceWisePol& pwp, double t_init, double t_final, int samples,
+                                                       std::string ns)
+{
+  if (t_final < t_init)
+  {
+    std::cout << "t_final<t_init" << std::endl;
+    abort();
+  }
+
+  // std::cout << "t_init= " << std::setprecision(15) << t_init << std::endl;
+  // std::cout << "t_final= " << std::setprecision(15) << t_final << std::endl;
+
+  double deltaT = (t_final - t_init) / (1.0 * samples);
+
+  visualization_msgs::MarkerArray marker_array;
+
+  geometry_msgs::Point p_last = eigen2point(pwp.eval(t_init));
+
+  int j = 7 * 9000;  // TODO
+
+  for (double t = t_init; t <= t_final; t = t + deltaT)
+  {
+    visualization_msgs::Marker m;
+    m.type = visualization_msgs::Marker::ARROW;
+    m.header.frame_id = "world";
+    m.header.stamp = ros::Time::now();
+    m.ns = ns;
+    m.action = visualization_msgs::Marker::ADD;
+    m.id = j;
+    m.color = color(RED_NORMAL);
+    m.scale.x = 0.1;
+    m.scale.y = 0.0000001;  // rviz complains if not
+    m.scale.z = 0.0000001;  // rviz complains if not
+
+    m.pose.orientation.w = 1.0;
+
+    std::cout << "t= " << std::setprecision(15) << t << std::endl;
+    std::cout << "vale " << pwp.eval(t).transpose() << std::endl;
+
+    geometry_msgs::Point p = eigen2point(pwp.eval(t));
+
+    m.points.push_back(p_last);
+    m.points.push_back(p);
+    // std::cout << "pushing marker\n" << m << std::endl;
+    p_last = p;
+    marker_array.markers.push_back(m);
+    j = j + 1;
+  }
+
+  return marker_array;
+}
+
+// visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& data, int type, double max_value,
+//                                                               int increm, std::string ns, double scale)
+// {
+//   visualization_msgs::MarkerArray marker_array;
+
+//   if (data.size() == 0)
+//   {
+//     return marker_array;
+//   }
+//   geometry_msgs::Point p_last;
+//   p_last.x = data[0].pos(0);
+//   p_last.y = data[0].pos(1);
+//   p_last.z = data[0].pos(2);
+
+//   increm = (increm < 1.0) ? 1 : increm;
+
+//   int j = type * 9000;
+//   for (int i = 0; i < data.size(); i = i + increm)
+//   {
+//     double vel = data[i].vel.norm();
+//     visualization_msgs::Marker m;
+//     m.type = visualization_msgs::Marker::ARROW;
+//     m.header.frame_id = "world";
+//     m.header.stamp = ros::Time::now();
+//     m.ns = ns;
+//     m.action = visualization_msgs::Marker::ADD;
+//     m.id = j;
+//     m.color = getColorJet(vel, 0, max_value);  // note that par_.v_max is per axis!
+//     m.scale.x = scale;
+//     m.scale.y = 0.0000001;  // rviz complains if not
+//     m.scale.z = 0.0000001;  // rviz complains if not
+
+//     m.pose.orientation.w = 1.0;
+//     // std::cout << "Mandando bloque" << X.block(i, 0, 1, 3) << std::endl;
+//     geometry_msgs::Point p;
+//     p.x = data[i].pos(0);
+//     p.y = data[i].pos(1);
+//     p.z = data[i].pos(2);
+//     m.points.push_back(p_last);
+//     m.points.push_back(p);
+//     // std::cout << "pushing marker\n" << m << std::endl;
+//     p_last = p;
+//     marker_array.markers.push_back(m);
+//     j = j + 1;
+//   }
+//   return marker_array;
+// }
+
+// coeff_old are the coeff [a b c d]' of a polynomial p(t) defined in [0,1]
+// coeff_new are the coeff [a b c d]' of a polynomial q(t) defined in [0,1] such that:
+//     q((t-t0)/(tf-t0))=p(t) \forall t \in [t0,tf]
+// t0 and tf do not have to be \in [0,1]. If t0<0, we'll be doing extrapolation in the past, and if
+// tf>1, we will be doing extrapolation in the future
+void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix<double, 4, 1>& coeff_new, double t0,
+                     double tf)
+{
+  // if (t0 < 0 || t0 > 1 || tf < 0 || tf > 1)
+  // {
+  //   std::cout << "tf and t0 should be in [0,1]" << std::endl;
+  //   std::cout << "t0= " << t0 << std::endl;
+  //   std::cout << "tf= " << tf << std::endl;
+  //   std::cout << "================================" << std::endl;
+  //   abort();
+  // }
+
+  double a = coeff_old(0);
+  double b = coeff_old(1);
+  double c = coeff_old(2);
+  double d = coeff_old(3);
+
+  double delta = tf - t0;
+  double delta_2 = delta * delta;
+  double delta_3 = delta * delta * delta;
+
+  std::cout << "delta= " << delta << std::endl;
+
+  if (isnan(delta))
+  {
+    std::cout << "tf= " << tf << std::endl;
+    std::cout << "t0= " << tf << std::endl;
+    std::cout << "delta is NAN" << std::endl;
+    abort();
+  }
+
+  std::cout << "a= " << a << std::endl;
+  std::cout << "b= " << b << std::endl;
+  std::cout << "c= " << c << std::endl;
+  std::cout << "d= " << d << std::endl;
+
+  double t0_2 = t0 * t0;
+  double t0_3 = t0 * t0 * t0;
+
+  coeff_new(0) = a * delta_3;
+  coeff_new(1) = b * delta_2 + 3 * a * delta_2 * t0;
+  coeff_new(2) = c * delta + 2 * b * delta * t0 + 3 * a * delta * t0_2;
+  coeff_new(3) = d + c * t0 + b * t0_2 + a * t0_3;
+}
+
+faster_msgs::PieceWisePolTraj pwp2PwpMsg(PieceWisePol pwp, const Eigen::Vector3d& bbox, const int& id,
+                                         const bool& is_agent)
+{
+  faster_msgs::PieceWisePolTraj pwp_msg;
+
+  for (int i = 0; i < pwp.times.size(); i++)
+  {
+    pwp_msg.times.push_back(pwp.times[i]);
+  }
+
+  if (pwp.coeff_x.size() != pwp.coeff_y.size() || pwp.coeff_x.size() != pwp.coeff_z.size())
+  {
+    std::cout << " coeff_x,coeff_y,coeff_z should have the same elements" << std::endl;
+    std::cout << " ================================" << std::endl;
+    abort();
+  }
+
+  for (int i = 0; i < pwp.coeff_x.size(); i++)
+  {
+    faster_msgs::CoeffPoly3 coeff_msg_x;
+    coeff_msg_x.a = pwp.coeff_x[i](0);
+    coeff_msg_x.b = pwp.coeff_x[i](1);
+    coeff_msg_x.c = pwp.coeff_x[i](2);
+    coeff_msg_x.d = pwp.coeff_x[i](3);
+    pwp_msg.coeff_x.push_back(coeff_msg_x);
+
+    faster_msgs::CoeffPoly3 coeff_msg_y;
+    coeff_msg_y.a = pwp.coeff_y[i](0);
+    coeff_msg_y.b = pwp.coeff_y[i](1);
+    coeff_msg_y.c = pwp.coeff_y[i](2);
+    coeff_msg_y.d = pwp.coeff_y[i](3);
+    pwp_msg.coeff_y.push_back(coeff_msg_y);
+
+    faster_msgs::CoeffPoly3 coeff_msg_z;
+    coeff_msg_z.a = pwp.coeff_z[i](0);
+    coeff_msg_z.b = pwp.coeff_z[i](1);
+    coeff_msg_z.c = pwp.coeff_z[i](2);
+    coeff_msg_z.d = pwp.coeff_z[i](3);
+    pwp_msg.coeff_z.push_back(coeff_msg_z);
+  }
+
+  for (int i = 0; i < bbox.rows(); i++)
+  {
+    pwp_msg.bbox.push_back(bbox(i));
+  }
+
+  pwp_msg.id = id;
+  pwp_msg.is_agent = is_agent;
+
+  return pwp_msg;
+}
+
+PieceWisePolWithInfo pwpMsg2PwpWithInfo(const faster_msgs::PieceWisePolTraj& pwp_msg)
+{
+  PieceWisePolWithInfo pwp_with_info;
+
+  if (pwp_msg.coeff_x.size() != pwp_msg.coeff_y.size() || pwp_msg.coeff_x.size() != pwp_msg.coeff_z.size())
+  {
+    std::cout << " coeff_x,coeff_y,coeff_z of pwp_msg should have the same elements" << std::endl;
+    std::cout << " ================================" << std::endl;
+    abort();
+  }
+
+  for (int i = 0; i < pwp_msg.times.size(); i++)
+  {
+    pwp_with_info.pwp.times.push_back(pwp_msg.times[i]);
+  }
+
+  for (int i = 0; i < pwp_msg.coeff_x.size(); i++)
+  {
+    Eigen::Matrix<double, 4, 1> tmp_x, tmp_y, tmp_z;
+    tmp_x << pwp_msg.coeff_x[i].a, pwp_msg.coeff_x[i].b, pwp_msg.coeff_x[i].c, pwp_msg.coeff_x[i].d;
+    pwp_with_info.pwp.coeff_x.push_back(tmp_x);
+
+    tmp_y << pwp_msg.coeff_y[i].a, pwp_msg.coeff_y[i].b, pwp_msg.coeff_y[i].c, pwp_msg.coeff_y[i].d;
+    pwp_with_info.pwp.coeff_y.push_back(tmp_y);
+
+    tmp_z << pwp_msg.coeff_z[i].a, pwp_msg.coeff_z[i].b, pwp_msg.coeff_z[i].c, pwp_msg.coeff_z[i].d;
+    pwp_with_info.pwp.coeff_z.push_back(tmp_z);
+  }
+
+  pwp_with_info.bbox = Eigen::Vector3d(pwp_msg.bbox[0], pwp_msg.bbox[1], pwp_msg.bbox[2]);
+  pwp_with_info.time_received = ros::Time::now().toSec();
+  pwp_with_info.id = pwp_msg.id;
+  pwp_with_info.is_agent = pwp_msg.is_agent;
+
+  return pwp_with_info;
+}
 
 visualization_msgs::Marker edges2Marker(const faster_types::Edges& edges, std_msgs::ColorRGBA color_marker)
 {

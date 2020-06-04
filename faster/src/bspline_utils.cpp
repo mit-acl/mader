@@ -119,3 +119,72 @@ void CPs2TrajAndPwp(std::vector<Eigen::Vector3d> &q, std::vector<state> &traj, P
     // state_i.printHorizontal();
   }
 }
+
+Eigen::Spline3d findInterpolatingBsplineNormalized(const std::vector<double> &times,
+                                                   const std::vector<Eigen::Vector3d> &positions)
+{
+  if (times.size() != positions.size())
+  {
+    std::cout << "times.size() should be == positions.size()" << std::endl;
+    abort();
+  }
+
+  // check that times is  increasing
+  for (int i = 0; i < (times.size() - 1); i++)
+  {
+    if (times[i + 1] < times[i])
+    {
+      std::cout << "times should be increasing" << std::endl;
+      abort();
+    }
+  }
+
+  if ((times.back() - times.front()) < 1e-7)
+  {
+    std::cout << "there is no time span in the vector times" << std::endl;
+    abort();
+  }
+
+  // See example here: https://github.com/libigl/eigen/blob/master/unsupported/test/splines.cpp
+
+  Eigen::MatrixXd points(3, positions.size());
+  for (int i = 0; i < positions.size(); i++)
+  {
+    points.col(i) = positions[i];
+  }
+
+  Eigen::RowVectorXd knots_normalized(times.size());
+  Eigen::RowVectorXd knots(times.size());
+
+  for (int i = 0; i < times.size(); i++)
+  {
+    knots(i) = times[i];
+    knots_normalized(i) = (times[i] - times[0]) / (times.back() - times.front());
+  }
+
+  Eigen::Spline3d spline_normalized = Eigen::SplineFitting<Eigen::Spline3d>::Interpolate(points, 3, knots_normalized);
+
+  // Eigen::Spline3d spline(knots, spline_normalized.ctrls());
+
+  // for (int i = 0; i < points.cols(); ++i)
+  // {
+  //   std::cout << "findInterpolatingBspline 6" << std::endl;
+
+  //   std::cout << "knots(i)= " << knots(i) << std::endl;
+  //   std::cout << "knots= " << knots << std::endl;
+  //   std::cout << "spline.ctrls()= " << spline.ctrls() << std::endl;
+
+  //   Eigen::Vector3d pt1 = spline_normalized(knots_normalized(i));
+  //   std::cout << "pt1= " << pt1.transpose() << std::endl;
+
+  //   // Eigen::Vector3d pt2 = spline(knots(i)); //note that spline(x) requires x to be in [0,1]
+
+  //   // std::cout << "pt2= " << pt2.transpose() << std::endl;
+
+  //   Eigen::Vector3d ref = points.col(i);
+  //   std::cout << "norm= " << (pt1 - ref).norm() << std::endl;  // should be ~zero
+  //   // std::cout << "norm= " << (pt2 - ref).norm() << std::endl;  // should be ~zero
+  // }
+
+  return spline_normalized;
+}
