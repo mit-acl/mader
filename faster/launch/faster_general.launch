@@ -1,6 +1,7 @@
 <launch>
 	<arg name="quad" default="SQ01s"/>
-	<arg name="gui" default="true"/>
+	<arg name="gui" default="false"/>
+	<arg name="rviz" default="true"/>
 	
 	<!-- Start faster commands 
 	<node ns="$(arg quad)" name="faster_commands" pkg="faster" type="faster_commands.py" output="screen"/>
@@ -10,11 +11,15 @@
 
 
   <!-- Don't run this, for instance, for ssh connections -->
-<group if="$(arg gui)">
+<group if="$(arg rviz)">
 
 	<!-- Start Rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find faster)/rviz_cfgs/cvx_all.rviz"/>
 
+</group>
+
+  <!-- Don't run this, for instance, for ssh connections -->
+<group if="$(arg gui)">
 	<!-- Start GUI 	-->
 	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" args="--perspective-file $(find faster)/rqt_cfgs/demo_interface.perspective"/>
 
