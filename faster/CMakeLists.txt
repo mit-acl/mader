@@ -170,6 +170,19 @@ add_dependencies(test_utils ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_utils ${catkin_LIBRARIES} utils)
 
 
+add_executable(test_bspline_utils src/test_bspline_utils.cpp src/bspline_utils.cpp)
+add_dependencies(test_bspline_utils ${catkin_EXPORTED_TARGETS})
+target_link_libraries(test_bspline_utils ${catkin_LIBRARIES})
+
+add_executable(predictor_node src/predictor_node.cpp src/predictor.cpp src/bspline_utils.cpp)
+add_dependencies(predictor_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(predictor_node ${catkin_LIBRARIES} utils)
+
+
+add_executable(test_predictor_node src/test_predictor.cpp src/predictor.cpp src/bspline_utils.cpp)
+add_dependencies(test_predictor_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(test_predictor_node ${catkin_LIBRARIES} utils)
+
 # add_executable(simplex_example src/solvers/simplex/example.cpp)
 # add_dependencies(simplex_example ${catkin_EXPORTED_TARGETS} )
 # target_link_libraries(simplex_example ${catkin_LIBRARIES})
