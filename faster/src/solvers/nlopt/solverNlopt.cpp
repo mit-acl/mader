@@ -57,6 +57,7 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
 
   z_ground_ = par.z_min;
   z_max_ = par.z_max;
+  Ra_ = par.Ra;
 
   z_ground_ = par.z_min;
   z_max_ = par.z_max;
@@ -298,8 +299,8 @@ void SolverNlopt::generateAStarGuess()
   // double runtime = 0.05;   //[seconds]
   double goal_size = 0.05;  //[meters]
 
-  myAStarSolver.setZminZmax(z_ground_, z_max_);         // z limits for the search, in world frame
-  myAStarSolver.setBBoxSearch(2000.0, 2000.0, 2000.0);  // limits for the search, centered on q2
+  myAStarSolver.setZminZmaxAndRa(z_ground_, z_max_, Ra_);  // z limits for the search, in world frame
+  myAStarSolver.setBBoxSearch(2000.0, 2000.0, 2000.0);     // limits for the search, centered on q2
   myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
                                        a_star_fraction_voxel_size_);
 
@@ -1707,6 +1708,18 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   //   r++;
   // }
 
+  // Impose that all the control points are inside an sphere of radius Ra (so that )
+  for (int i = 2; i <= N_ - 2; i++)  // Asumming q0_, q1_ and q2_ are inside the sphere TODO: Add this check
+                                     // when computing q0_, q1_ and q2_ (and return false if not)
+  {
+    constraints[r] = (q[i] - q0_).squaredNorm() - Ra_ * Ra_;  // fi<=0
+    if (grad)
+    {
+      toGradSameConstraintDiffVariables(gIndexQ(i), 2 * (q[i] - q0_), grad, r, nn);
+    }
+    r = r + 1;
+  }
+
 #ifdef DEBUG_MODE_NLOPT
 
   for (int i = 0; i < m; i++)
@@ -2170,6 +2183,13 @@ bool SolverNlopt::optimize()
   //  fillXTempFromCPs(q);
 
   // Force the last position to be the final_state_ (it's not guaranteed to be because of the discretization with dc_)
+
+  if ((X_temp_.back().pos - q0_).norm() > (Ra_ + epsilon_tol_constraints_))
+  {
+    std::cout << "norm(X_temp_.back().pos-q0_)>Ra + epsilon_tol_constraints_" << std::endl;
+    std::cout << "norm(X_temp_.back().pos-q0_)=" << (X_temp_.back().pos - q0_).norm() << std::endl;
+    abort();
+  }
 
   X_temp_.back().vel = final_state_.vel;
   X_temp_.back().accel = final_state_.accel;

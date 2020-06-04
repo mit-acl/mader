@@ -128,7 +128,7 @@ public:
 
   void setVisual(bool visual);
 
-  void setZminZmax(double z_min, double z_max);
+  void setZminZmaxAndRa(double z_min, double z_max, double Ra);
 
   int getNumOfLPsRun();
 
@@ -284,4 +284,6 @@ private:
   // };
 
   // bool matrixExpandedNodes_[40][40][40];
+
+  double Ra_ = 1e10;
 };

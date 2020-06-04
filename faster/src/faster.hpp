@@ -169,7 +169,7 @@ private:
 
   // int deltaTp_old_ = 1000;
   // int deltaTp_ = 10;
-  int deltaT_ = 10;
+  int deltaT_ = 75;
   int deltaT_min_ = 10;
   int indexR_ = 0;
 

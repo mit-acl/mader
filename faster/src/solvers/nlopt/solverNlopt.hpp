@@ -41,6 +41,7 @@ struct par_snlopt
   std::string basis;
   double a_star_bias;
   bool allow_infeasible_guess;
+  double Ra;
 
   // //  Will change between iterations
   // double kappa;
@@ -320,5 +321,7 @@ private:
   bool allow_infeasible_guess_ = false;
 
   separator::Separator *separator_solver_;
+
+  double Ra_ = 1e10;
 };
 #endif

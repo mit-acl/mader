@@ -102,6 +102,10 @@ Faster::Faster(parameters par) : par_(par)
 
   changeDroneStatus(DroneStatus::GOAL_REACHED);
   resetInitialization();
+
+  ////
+  system("rosservice call /change_mode 'mode: 1'");  // to avoid having to click on the GUI
+  ////
 }
 
 void Faster::dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compiled)
@@ -182,7 +186,15 @@ void Faster::updateTrajObstacles(dynTraj traj)
         trajs_[index_traj].function[1].value(),            ////////////////
         trajs_[index_traj].function[2].value();            /////////////////
 
-    if ((center_obs - state_.pos).norm() > par_.R_local_map)
+    if ((center_obs - state_.pos).norm() > 2 * par_.R_local_map)  // 2*Ra because: traj_{k-1} is inside a sphere of Ra.
+                                                                  // Then, in iteration k the point A (which I don't
+                                                                  // know yet)  is taken along that trajectory, and
+                                                                  // another trajectory of radius Ra will be obtained.
+                                                                  // Therefore, I need to take 2*Ra to make sure the
+                                                                  // extreme case (A taken at the end of traj_{k-1} is
+                                                                  // covered). removeTrajsThatWillNotAffectMe will later
+                                                                  // on take care of deleting the ones I don't need once
+                                                                  // I know A
     {
       ids_to_remove.push_back(trajs_[index_traj].id);
     }
@@ -363,7 +375,7 @@ void Faster::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doub
 
   for (auto id : ids_to_remove)
   {
-    // ROS_INFO_STREAM("traj " << id << " doesn't affect me");
+    ROS_INFO_STREAM("traj " << id << " doesn't affect me");
     trajs_.erase(
         std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
         trajs_.end());
@@ -1329,6 +1341,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   par.z_min = par_.z_ground;
   par.z_max = par_.z_max;
+  par.Ra = par_.Ra;
   par.v_max = par_.v_max;
   par.a_max = par_.a_max;
   par.dc = par_.dc;

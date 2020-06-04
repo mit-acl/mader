@@ -346,10 +346,11 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   // matrixExpandedNodes_ = novale;
 }
 
-void SplineAStar::setZminZmax(double z_min, double z_max)
+void SplineAStar::setZminZmaxAndRa(double z_min, double z_max, double Ra)
 {
   z_min_ = z_min;
   z_max_ = z_max;
+  Ra_ = Ra;
 }
 
 void SplineAStar::setBias(double bias)
@@ -1188,9 +1189,10 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
     // bool already_exists_with_lower_cost = false;
     // already_exist
-    if (already_exist ||                                        // Element already exists in the search box
-        (vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||          // Not wanna use v=[0,0,0]
-        (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_)  // ||  /// Outside the limits
+    if (already_exist ||                                          // Element already exists in the search box
+        (vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||            // Not wanna use v=[0,0,0]
+        (neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_ ||  // ||  /// Outside the limits
+         (neighbor.qi - q0_).norm() >= Ra_)                       // ||  /// Outside the limits
         // (ix >= bbox_x_ / voxel_size_ ||                            // Out. the search box
         //  iy >= bbox_y_ / voxel_size_ ||                            // Out. the search box
         //  iz >= bbox_z_ / voxel_size_)                              // Out. the search box
