@@ -1941,13 +1941,66 @@ This paper relies on the following two assumptions:
 \end_layout
 
 \begin_layout Itemize
-The existence of a tracker and prediction algorithm able to estimate the
- current location and future trajectory of other obstacles that are inside
- a sphere of radius 
+The existence of a prediction algorithm that estimates the future trajectory
+ 
+\begin_inset Formula $\boldsymbol{p}_{e}(t)$
+\end_inset
+
+ of other obstacles that are inside a sphere of radius 
 \begin_inset Formula $r$
 \end_inset
 
- around the drone, together with their associated uncertainties.
+ around the drone, with a bounded error with respect to the real trajectory
+ 
+\begin_inset Formula $\boldsymbol{p}_{gt}(t)$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\left\Vert \boldsymbol{p}_{gt}(t)-\boldsymbol{p}_{e}(t)\right\Vert _{\infty}\le\delta(t)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and with the following smoothness condition (
+\begin_inset Formula $\alpha:=\frac{t_{1}+\Delta t-t}{\Delta t}$
+\end_inset
+
+):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\max_{t\in[t_{1},t_{1}+\Delta t]}\left\Vert \boldsymbol{p}_{e}(t)-\left(\alpha\boldsymbol{p}_{e}(t_{1})+(1-\alpha)\boldsymbol{p}_{e}(t_{1}+\Delta t)\right)\right\Vert _{\infty}\le\beta
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This condition bounds the deviation of the estimated trajectory (between
+ two discretization points 
+\begin_inset Formula $\boldsymbol{p}_{e}(t_{1})$
+\end_inset
+
+ and 
+\begin_inset Formula $\boldsymbol{p}_{e}(t_{1}+\Delta t)$
+\end_inset
+
+ of the trajectory) with respect to the straight line that passes through
+ those discretization points.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -2119,9 +2172,27 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
+	filename imgs/comparisonBsBezierMinvoPosVelAccel.pdf
+	lyxscale 30
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
 	filename imgs/comparisonBsBezierMinvo.pdf
 	lyxscale 30
 	width 100col%
+
+\end_inset
+
+
+\end_layout
 
 \end_inset
 
@@ -4512,6 +4583,26 @@ vskip-2ex
 
 \begin_layout Section
 Results
+\end_layout
+
+\begin_layout Subsection
+Single-Agent 
+\end_layout
+
+\begin_layout Standard
+We first run the algorithm proposed in a corridor-like enviroment (
+\begin_inset Formula $50\;\text{m}\times4\;\text{m}\times3\;\text{m}$
+\end_inset
+
+) depicted in Fig.
+ that contains both static and dynamic obstacles.
+ All the obstacles follow a trajectory whose parametric equations are those
+ of a trefoil knot [Cite], with random offsets and scales.
+ We test the algorithm running 
+\end_layout
+
+\begin_layout Subsection
+Multi-Agent
 \end_layout
 
 \begin_layout Section

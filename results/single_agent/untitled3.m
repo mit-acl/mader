@@ -10,12 +10,15 @@ max_x=50;
 
 
 clc;
-[vel_minvo dist_minvo time_minvo n_times_stopped_minvo]=readBagsThatStartWith('minvo');
-[vel_bezier dist_bezier time_bezier n_times_stopped_bezier]=readBagsThatStartWith('bezier');
-[vel_bspline dist_bspline time_bspline n_times_stopped_bspline]=readBagsThatStartWith('bspline');
+[vel_minvo dist_minvo time_minvo n_times_stopped_minvo]=readBagsThatStartWith('MINVO');
+[vel_bezier dist_bezier time_bezier n_times_stopped_bezier]=readBagsThatStartWith('BEZIER');
+
+[vel_bspline dist_bspline time_bspline n_times_stopped_bspline]=readBagsThatStartWith('B_SPLINE');
 
 %%
 close all; clc
+
+vel_minvo(vel_minvo<0)
 %%Plot distances
 n_bins=5;
 subplot(3,3,1); xlabel('Distance (m)')
@@ -112,6 +115,7 @@ xlabel("Control Effort ($m/s^3$)")
 
 function [vel dist time n_times_stopped]=readBagsThatStartWith(name)
 
+    
     vel=[]; %each column has the velocity
     dist=[]; %one element per bag
     time=[]; %one element per bag
@@ -123,13 +127,16 @@ function [vel dist time n_times_stopped]=readBagsThatStartWith(name)
     stopped=1; %Starts the sim stopped; 
     
     for i=1:size(filenames,2)
-        bag = rosbag(filenames{i})
+        disp(['reading bag ', filenames{i}])
+        bag = rosbag(filenames{i});
         topics = readMessages(select(bag, 'Topic', '/SQ01s/goal'));
         total_distance=0.0;
         n_times_stopped_per_bag=0;
         for j=1:size(topics,1)
-
-%             if(topics{j}.Pos.X>min_x && topics{j}.Pos.X<max_x)
+             %%%%%%%%%%%%%%%%%%%%%%%%%
+             min_x=1;
+             max_x=47;
+             if(topics{j}.Pos.X>min_x && topics{j}.Pos.X<max_x)
               vel_j=[topics{j}.Vel.X; topics{j}.Vel.Y; topics{j}.Vel.Z];
               if(norm(vel_j)<1e-7 && stopped==0)
                   stopped=1;
@@ -140,7 +147,8 @@ function [vel dist time n_times_stopped]=readBagsThatStartWith(name)
               end
               
               vel=[vel vel_j];
-%             end
+             end
+             %%%%%%%%%%%%%%%%%%%%%%%%%
 
             pos=[topics{j}.Pos.X; topics{j}.Pos.Y; topics{j}.Pos.Z];
 
