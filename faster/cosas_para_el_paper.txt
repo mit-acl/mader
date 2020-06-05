@@ -114,7 +114,7 @@ te mueves para y<0 (por ejempo), la constraint en velocidad [yL yU] tambi'en se 
 
 
 --> Si a veces el dron hace "espirales", es por la condici'on (qi - q0_).norm() >=Ra_ (tanto en el solver como en la initial guess)
-
+--> Si hay 0 improvement todo el rato (y estoy usando LD_MMA), es porque Ra es super big --> one iteration in the opt alg. takes a lot of time
 
 
 =========================
