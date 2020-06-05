@@ -113,7 +113,8 @@ te mueves para y<0 (por ejempo), la constraint en velocidad [yL yU] tambi'en se 
 --> the solver LD_MMA was not decreasing the cost (i.e the solution was the same as the initial guess, TODO: debug why) 
 
 
---> Usar la MINVO basis tambi'en para velocity y acceleration??
+--> Si a veces el dron hace "espirales", es por la condici'on (qi - q0_).norm() >=Ra_ (tanto en el solver como en la initial guess)
+
 
 
 =========================
