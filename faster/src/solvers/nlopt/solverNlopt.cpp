@@ -1457,7 +1457,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   // VELOCITY CONSTRAINTS:
   for (int i = 2; i <= (N_ - 3); i++)  // v0 and v1 are already determined by initial_state
   {
-    double c1 = p_ / ((p_ + 1) * deltaT_);  // (p_ + 1) * deltaT_ \equiv knots_(i + p_ + 1) - knots_(i + 1)
+    double c1 = p_ / ((p_)*deltaT_);  // (p_ + 1) * deltaT_ \equiv knots_(i + p_ + 1) - knots_(i + 1)
     Eigen::Vector3d v_iM2 = c1 * (q[i - 1] - q[i - 2]);
     Eigen::Vector3d v_iM1 = c1 * (q[i] - q[i - 1]);
     Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
@@ -1887,30 +1887,25 @@ void SolverNlopt::printIndexesConstraints()
 
 void SolverNlopt::printQVA(const std::vector<Eigen::Vector3d> &q)
 {
-  for (int i = 0; i < N_ - 2; i++)
+  std::cout << red << "Position cps, " << blue << "Velocity cps, " << green << "Accel cps" << reset << std::endl;
+  for (int i = 0; i <= (N_ - 2); i++)
   {
-    std::cout << "***i= " << i << std::endl;
-    std::cout << "q= " << q[i].transpose() << std::endl;
-
     Eigen::Vector3d vi = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
     Eigen::Vector3d vip1 = p_ * (q[i + 1 + 1] - q[i + 1]) / (knots_(i + 1 + p_ + 1) - knots_(i + 1 + 1));
     Eigen::Vector3d ai = (p_ - 1) * (vip1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
 
-    std::cout << "v= " << vi.transpose() << std::endl;
-    std::cout << "a= " << ai.transpose() << std::endl;
+    std::cout << "***i= " << red << q[i].transpose() << blue << "   " << vi.transpose() << green << "   "
+              << ai.transpose() << reset << std::endl;
   }
 
   int i = N_ - 1;
 
-  std::cout << "***i= " << i << std::endl;
-  std::cout << "q= " << q[i].transpose() << std::endl;
   Eigen::Vector3d vi = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
-  std::cout << "v= " << vi.transpose() << std::endl;
+  std::cout << "***i= " << red << q[i].transpose() << blue << "   " << vi.transpose() << reset << std::endl;
 
   i = N_;
 
-  std::cout << "***i= " << i << std::endl;
-  std::cout << "q= " << q[i].transpose() << std::endl;
+  std::cout << "***i= " << i << red << q[i].transpose() << reset << std::endl;
 }
 
 bool SolverNlopt::optimize()
@@ -2174,6 +2169,28 @@ bool SolverNlopt::optimize()
               << std::endl;*/
 
   CPs2TrajAndPwp(q, X_temp_, solution_, N_, p_, num_pol_, knots_, dc_);
+
+  ///////////////For debugging, remove later
+  for (auto xi : X_temp_)
+  {
+    if (fabs(xi.vel.x()) > (v_max_.x() + epsilon_tol_constraints_) ||
+        fabs(xi.vel.y()) > (v_max_.y() + epsilon_tol_constraints_) ||
+        (fabs(xi.vel.z()) > v_max_.z() + epsilon_tol_constraints_))
+    {
+      std::cout << bold << red << "Velocity constraints are not satisfied,v_max_= " << v_max_.transpose() << reset
+                << std::endl;
+      std::cout << "Velocity_i=" << xi.vel.transpose() << std::endl;
+
+      std::cout << "These are the control points" << std::endl;
+      printQVA(q);
+
+      std::cout << "is Feasible= " << isFeasible(q, n, d) << std::endl;
+
+      std::cout << red << "====================================" << reset << std::endl;
+      abort();
+    }
+  }
+  ///////////////
 
   // std::cout << "The solution is the following one:" << std::endl;
   // printQND(q, n, d);
