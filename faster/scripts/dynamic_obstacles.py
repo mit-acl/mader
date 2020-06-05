@@ -46,12 +46,12 @@ class MovingCircle:
 
 class MovingCorridor:
     def __init__(self):
-        self.num_of_dyn_objects=6;
-        self.num_of_stat_objects=4;
-        # self.x_min= 2.0
-        # self.x_max= 50.0
-        self.x_min= -2.0
-        self.x_max= 2.0
+        self.num_of_dyn_objects=50;
+        self.num_of_stat_objects=50;
+        self.x_min= 2.0
+        self.x_max= 50.0
+        # self.x_min= -2.0
+        # self.x_max= 2.0
         self.y_min= -2.0 
         self.y_max= +2.0
         self.z_min= 1.0 
