@@ -450,7 +450,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename imgs/example.png
+	filename imgs/circle.png
 	lyxscale 30
 	width 100col%
 
@@ -4597,12 +4597,65 @@ We first run the algorithm proposed in a corridor-like enviroment (
 ) depicted in Fig.
  that contains both static and dynamic obstacles.
  All the obstacles follow a trajectory whose parametric equations are those
- of a trefoil knot [Cite], with random offsets and scales.
+ of a trefoil knot [Cite], with random offsets, centers andd scales.
  We test the algorithm running 
 \end_layout
 
 \begin_layout Subsection
 Multi-Agent
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename imgs/sphere.png
+	lyxscale 30
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+[Change figure] Agents using [name_algorithm] to plan trajectories in an
+ environment with dynamic obstacles (in red), static obstacles (in blue)
+ and other agents.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+vskip-2ex
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
