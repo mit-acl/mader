@@ -56,6 +56,32 @@ Faster::Faster(parameters par) : par_(par)
   ////
   bool success_service_call = system("rosservice call /change_mode 'mode: 1'");  // to avoid having to click on the GUI
   ////
+
+  par_snlopt par_for_solver;
+
+  par_for_solver.z_min = par_.z_ground;
+  par_for_solver.z_max = par_.z_max;
+  par_for_solver.Ra = par_.Ra;
+  par_for_solver.v_max = par_.v_max;
+  par_for_solver.a_max = par_.a_max;
+  par_for_solver.dc = par_.dc;
+  par_for_solver.dist_to_use_straight_guess = par_.goal_radius;
+  par_for_solver.a_star_samp_x = par_.a_star_samp_x;
+  par_for_solver.a_star_samp_y = par_.a_star_samp_y;
+  par_for_solver.a_star_samp_z = par_.a_star_samp_z;
+  par_for_solver.a_star_fraction_voxel_size = par_.a_star_fraction_voxel_size;
+  par_for_solver.num_pol = par_.num_pol;
+  par_for_solver.deg_pol = par_.deg_pol;
+  par_for_solver.weight = par_.weight;
+  par_for_solver.epsilon_tol_constraints = par_.epsilon_tol_constraints;
+  par_for_solver.xtol_rel = par_.xtol_rel;
+  par_for_solver.ftol_rel = par_.ftol_rel;
+  par_for_solver.solver = par_.solver;
+  par_for_solver.basis = par_.basis;
+  par_for_solver.a_star_bias = par_.a_star_bias;
+  par_for_solver.allow_infeasible_guess = par_.allow_infeasible_guess;
+
+  snlopt_ = new SolverNlopt(par_for_solver);
 }
 
 void Faster::dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compiled)
@@ -325,7 +351,7 @@ void Faster::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doub
 
   for (auto id : ids_to_remove)
   {
-    ROS_INFO_STREAM("traj " << id << " doesn't affect me");
+    // ROS_INFO_STREAM("traj " << id << " doesn't affect me");
     trajs_.erase(
         std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
         trajs_.end());
@@ -672,14 +698,24 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   //////////////////////////////////////////////////////////////////////////
 
   state A;
-  int k_safe, k_end_whole, k_whole;
+  int k_index_end, k_index;
 
-  // If k_end_whole=0, then A = plan_.back() = plan_[plan_.size() - 1]
-  k_end_whole = std::max((int)(plan_.size() - deltaT_), 0);
-  k_whole = plan_.size() - 1 - k_end_whole;
-  A = plan_.get(k_whole);
+  // If k_index_end=0, then A = plan_.back() = plan_[plan_.size() - 1]
 
-  /*  if (k_end_whole == 0)
+  mtx_plan_.lock();
+
+  k_index_end = std::max((int)(plan_.size() - deltaT_), 0);
+  k_index = plan_.size() - 1 - k_index_end;
+  A = plan_.get(k_index);
+
+  mtx_plan_.unlock();
+
+  // std::cout << blue << "Have chosen:" << reset << std::endl;
+  // std::cout << blue << "k_index:" << k_index << reset << std::endl;
+  // std::cout << blue << "k_index_end:" << k_index_end << reset << std::endl;
+  // std::cout << blue << "plan_.size():" << plan_.size() << reset << std::endl;
+
+  /*  if (k_index_end == 0)
     {
       exists_previous_pwp_ = false;
     }*/
@@ -715,45 +751,21 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   state initial = A;
   state final = E;
 
+  // std::cout << green << "================================" << reset << std::endl;
+
   // std::cout << "Initial.pos= " << initial.pos << std::endl;
   // std::cout << "Final.pos= " << final.pos << std::endl;
+  // std::cout << green << "================================" << reset << std::endl;
+
   // std::cout << "norm= " << (initial.pos - final.pos).norm() << std::endl;
 
   ////////////////////////////////
 
-  par_snlopt par_for_solver;
-
-  par_for_solver.z_min = par_.z_ground;
-  par_for_solver.z_max = par_.z_max;
-  par_for_solver.Ra = par_.Ra;
-  par_for_solver.v_max = par_.v_max;
-  par_for_solver.a_max = par_.a_max;
-  par_for_solver.dc = par_.dc;
-  par_for_solver.dist_to_use_straight_guess = par_.goal_radius;
-  par_for_solver.a_star_samp_x = par_.a_star_samp_x;
-  par_for_solver.a_star_samp_y = par_.a_star_samp_y;
-  par_for_solver.a_star_samp_z = par_.a_star_samp_z;
-  par_for_solver.a_star_fraction_voxel_size = par_.a_star_fraction_voxel_size;
-  par_for_solver.num_pol = par_.num_pol;
-  par_for_solver.deg_pol = par_.deg_pol;
-  par_for_solver.weight = par_.weight;
-  par_for_solver.epsilon_tol_constraints = par_.epsilon_tol_constraints;
-  par_for_solver.xtol_rel = par_.xtol_rel;
-  par_for_solver.ftol_rel = par_.ftol_rel;
-  par_for_solver.solver = par_.solver;
-  par_for_solver.basis = par_.basis;
-  par_for_solver.a_star_bias = par_.a_star_bias;
-  par_for_solver.allow_infeasible_guess = par_.allow_infeasible_guess;
-
-  snlopt_ = new SolverNlopt(par_for_solver);
-
-  ///////////////////////////////
-
   double runtime_snlopt;
 
-  if (k_whole != 0)
+  if (k_index != 0)
   {
-    runtime_snlopt = std::min(k_whole * par_.dc, par_.upper_bound_runtime_snlopt);
+    runtime_snlopt = std::min(k_index * par_.dc, par_.upper_bound_runtime_snlopt);
   }
   else
   {
@@ -766,7 +778,7 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   //////////////////////
   double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
 
-  double t_init = k_whole * par_.dc + time_now;
+  double t_init = k_index * par_.dc + time_now;
   double t_final = t_init + (initial.pos - final.pos).array().abs().maxCoeff() /
                                 (par_.factor_v_max * par_.v_max);  // time to execute the optimized path
 
@@ -806,8 +818,6 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   num_of_LPs_run += snlopt_->getNumOfLPsRun();
   num_of_QCQPs_run += snlopt_->getNumOfQCQPsRun();
 
-  snlopt_->getGuessForPlanes(planes_guesses);
-
   total_replannings_++;
   if (result == false)
   {
@@ -818,6 +828,8 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
     deltaT_ = std::min(1.0 * deltaT_, 2.0 / par_.dc);
     return false;
   }
+
+  snlopt_->getGuessForPlanes(planes_guesses);
 
   solutions_found_++;
 
@@ -841,31 +853,61 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
 
   /////// END OF DEBUGGING
 
-  std::vector<state> dummy_vector;
-  dummy_vector.push_back(A);
-  // sg_whole_.X_temp_ = dummy_vector;
-
   M_ = G_term;
 
-  k_safe = 0;
+  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Append to plan /////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+  mtx_plan_.lock();
 
-  bool result_appending = appendToPlan(k_end_whole, dummy_vector, k_safe, snlopt_->X_temp_);
-
-  // std::cout << "After appendToPlan, plan_= " << std::endl;
+  // std::cout << std::endl;
+  // std::cout << "************ PLAN BEFORE***************" << std::endl;
   // plan_.print();
 
-  if (result_appending != true)
+  // std::cout << std::endl;
+  // std::cout << "************ TRAJ FOUND***************" << std::endl;
+  // for (auto xi : snlopt_->traj_solution_)
+  // {
+  //   xi.printHorizontal();
+  // }
+
+  // std::cout << "Erasing" << std::endl;
+
+  int plan_size = plan_.size();
+  //  std::cout << "plan_.size()= " << plan_.size() << std::endl;
+  //  std::cout << "plan_size - k_index_end = " << plan_size - k_index_end << std::endl;
+  if ((plan_size - 1 - k_index_end) < 0)
   {
+    std::cout << bold << red << "Already published the point A" << reset << std::endl;
+    mtx_plan_.unlock();
     return false;
   }
+  else
+  {
+    // std::cout << "k_index_end= " << k_index_end << std::endl;
+
+    plan_.erase(plan_.end() - k_index_end - 1, plan_.end());  // this deletes also the initial condition...
+
+    for (int i = 0; i < (snlopt_->traj_solution_).size(); i++)  //... which is included in traj_solution_[0]
+    {
+      plan_.push_back(snlopt_->traj_solution_[i]);
+    }
+    // std::cout << "Pushed everything back" << std::endl;
+  }
+
+  // std::cout << "************ PLAN AFTER***************" << std::endl;
+  // plan_.print();
+
+  mtx_plan_.unlock();
+
+  ////////////////////
+  ////////////////////
 
   // std::cout << std::setprecision(30) << "pwp_now.times[0]=" << pwp_now.times[0] << std::endl;
   // std::cout << "t_min= " << t_min << std::endl;
 
   if (exists_previous_pwp_ == true)
   {
-    // std::cout << "k_whole= " << k_whole << std::endl;
-    // std::cout << "k_end_whole= " << k_end_whole << std::endl;
     pwp_out = composePieceWisePol(time_now, par_.dc, pwp_prev_, pwp_now);
     pwp_prev_ = pwp_out;
   }
@@ -916,48 +958,6 @@ void Faster::resetInitialization()
   state_initialized_ = false;
 
   terminal_goal_initialized_ = false;
-}
-
-bool Faster::appendToPlan(int k_end_whole, const std::vector<state>& whole, int k_safe, const std::vector<state>& safe)
-{
-  mtx_plan_.lock();
-
-  // std::cout << "Erasing" << std::endl;
-  bool output;
-  int plan_size = plan_.size();
-  //  std::cout << "plan_.size()= " << plan_.size() << std::endl;
-  //  std::cout << "plan_size - k_end_whole = " << plan_size - k_end_whole << std::endl;
-  if ((plan_size - 1 - k_end_whole) < 0)
-  {
-    std::cout << bold << red << "Already published the point A" << reset << std::endl;
-    output = false;
-  }
-  else
-  {
-    // std::cout << "k_end_whole= " << k_end_whole << std::endl;
-    // std::cout << "k_safe = " << k_safe << std::endl;
-
-    plan_.erase(plan_.end() - k_end_whole - 1, plan_.end());
-
-    //    std::cout << "Erased" << std::endl;
-    //    std::cout << "whole.size() = " << whole.size() << std::endl;
-    //    std::cout << "safe.size() = " << safe.size() << std::endl;
-    for (int i = 0; i <= k_safe; i++)
-    {
-      plan_.push_back(whole[i]);
-    }
-
-    for (int i = 1; i < safe.size(); i++)
-    {
-      plan_.push_back(safe[i]);
-    }
-    // std::cout << "Pushed everything back" << std::endl;
-
-    output = true;
-  }
-
-  mtx_plan_.unlock();
-  return output;
 }
 
 void Faster::yaw(double diff, state& next_goal)

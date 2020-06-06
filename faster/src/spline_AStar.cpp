@@ -994,29 +994,28 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
       // std::cout << "index_interv= " << index_interv << std::endl;
       if (solved == false)
       {
-        std::cout << "\nThis does NOT satisfy the LP:  obstacle= " << obst_index << ", last index=" << index_interv + 3
-                  << std::endl;
+        ////////////////////////////// REMOVE LATER, just for debug
 
-        std::cout << " (in basis_ form)" << std::endl;
+        // std::cout << "\nThis does NOT satisfy the LP:  obstacle= " << obst_index << ", last index=" << index_interv +
+        // 3 << std::endl;
 
-        std::cout << last4Cps_new_basis[0].transpose() << std::endl;
-        std::cout << last4Cps_new_basis[1].transpose() << std::endl;
-        std::cout << last4Cps_new_basis[2].transpose() << std::endl;
-        std::cout << last4Cps_new_basis[3].transpose() << std::endl;
+        // std::cout << " (in basis_ form)" << std::endl;
+
+        // std::cout << last4Cps_new_basis[0].transpose() << std::endl;
+        // std::cout << last4Cps_new_basis[1].transpose() << std::endl;
+        // std::cout << last4Cps_new_basis[2].transpose() << std::endl;
+        // std::cout << last4Cps_new_basis[3].transpose() << std::endl;
+
+        // std::cout << " (in B-Spline form)" << std::endl;
+
+        // std::cout << last4Cps[0].transpose() << std::endl;
+        // std::cout << last4Cps[1].transpose() << std::endl;
+        // std::cout << last4Cps[2].transpose() << std::endl;
+        // std::cout << last4Cps[3].transpose() << std::endl;
+
+        // std::cout << bold << red << "[A*] The node provided doesn't satisfy LPs" << reset << std::endl;
 
         ///////////////////////////
-        /// REMOVE LATER, just for debug
-
-        std::cout << " (in B-Spline form)" << std::endl;
-
-        std::cout << last4Cps[0].transpose() << std::endl;
-        std::cout << last4Cps[1].transpose() << std::endl;
-        std::cout << last4Cps[2].transpose() << std::endl;
-        std::cout << last4Cps[3].transpose() << std::endl;
-
-        ///////////////////////////
-
-        std::cout << bold << red << "[A*] The node provided doesn't satisfy LPs" << reset << std::endl;
 
         isFeasible = false;
       }

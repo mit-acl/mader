@@ -64,12 +64,14 @@ public:
 
   bool optimize();
 
+  // setters
   void setMaxRuntimeKappaAndMu(double runtime, double kappa, double mu);
   bool setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init, double &t_final);
   void setHulls(ConvexHullsOfCurves_Std &hulls);
 
-  trajectory X_temp_;
+  trajectory traj_solution_;
 
+  // getters
   void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
   int getNumOfLPsRun();
   int getNumOfQCQPsRun();
@@ -112,8 +114,6 @@ private:
   void generateRandomD(std::vector<double> &d);
   void generateRandomN(std::vector<Eigen::Vector3d> &n);
   void generateRandomQ(std::vector<Eigen::Vector3d> &q);
-
-  void fillXTempFromCPs(std::vector<Eigen::Vector3d> &q);
 
   nlopt::algorithm getSolver(std::string &solver);
 
@@ -234,7 +234,6 @@ private:
 
   std::vector<double> best_feasible_sol_so_far_;
 
-  std::vector<int> signs_;
   std::vector<Hyperplane3D> planes_;
 
   double epsilon_tol_constraints_;

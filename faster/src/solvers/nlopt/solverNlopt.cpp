@@ -208,39 +208,11 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   }
   M_vel_bs2be.push_back(M_vel_bs2be_seg_last);
 
-  // Mbs2mv_pos << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
-  //     0.70176, 0.6665738, 0.29187, 0.119851669,          ////////////
-  //     0.119851669, 0.2918718, 0.66657, 0.7017652,        //////////////////
-  //     -0.00533879, -0.015455, 0.0570095, 0.18372189;     //////////////////
-
-  // Mbs2mv_pos << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
-  //     0.70176, 0.6665738, 0.29187, 0.119851669,          ////////////
-  //     0.119851669, 0.2918718, 0.66657, 0.7017652,        //////////////////
-  //     -0.00533879, -0.015455, 0.0570095, 0.18372189;     //////////////////
-
-  // Mbs2be_pos << 1, 0, 0, 0,  //////////
-  //     4, 4, 2, 1,            //////////
-  //     1, 2, 4, 4,            //////////
-  //     0, 0, 0, 1;            //////////
-
-  // Mbs2be_pos = (1 / 6.0) * Mbs2be_pos;
-
-  // Mbs2mv_vel << 0.5387, 0.08334, -0.03868,   //////////////////////
-  //     /*//////*/ 0.5, 0.8333, 0.5,           //////////////////////
-  //     /*//////*/ -0.03867, 0.08333, 0.5387;  //////////////////////
-
-  // Mbs2be_vel << 0.5, 0.0, 0.0,   //////////////////////
-  //     /*//////*/ 0.5, 1.0, 0.5,  //////////////////////
-  //     /*//////*/ 0.0, 0.0, 0.5;  //////////////////////
+  ///////////////////////////////////////
+  ///////////////////////////////////////
+  ///////////////////////////////////////
 
   std::cout << "In the SolverNlopt Constructor\n";
-
-  z_ground_ = par.z_min;
-  z_max_ = par.z_max;
-  Ra_ = par.Ra;
-
-  z_ground_ = par.z_min;
-  z_max_ = par.z_max;
 
   a_star_bias_ = par.a_star_bias;
   // basis used for collision
@@ -276,45 +248,30 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
               << std::endl;
     std::cout << red << "============================================" << reset << std::endl;
     abort();
-    // basis_ = B_SPLINE;
-    // M_pos_bs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
-    // Mbs2basis_vel_ = Eigen::Matrix<double, 3, 3>::Identity();
   }
 
-  /////////
+  ///////////////////////////////////////
+  ///////////////////////////////////////
+  ///////////////////////////////////////
 
+  z_ground_ = par.z_min;
+  z_max_ = par.z_max;
+  Ra_ = par.Ra;
   a_star_samp_x_ = par.a_star_samp_x;
   a_star_samp_y_ = par.a_star_samp_y;
   a_star_samp_z_ = par.a_star_samp_z;
   a_star_fraction_voxel_size_ = par.a_star_fraction_voxel_size;
-
-  ////////
   dist_to_use_straight_guess_ = par.dist_to_use_straight_guess;
-
-  ///////
-
   dc_ = par.dc;
-  /////
-
   v_max_ = par.v_max * Eigen::Vector3d::Ones();
   a_max_ = par.a_max * Eigen::Vector3d::Ones();
-
-  /////
-
   allow_infeasible_guess_ = par.allow_infeasible_guess;
-  /////
-
   solver_ = getSolver(par.solver);
-
-  // force_final_state_ = force_final_state;
-
   epsilon_tol_constraints_ = par.epsilon_tol_constraints;  // 1e-1;
   xtol_rel_ = par.xtol_rel;                                // 1e-1;
   ftol_rel_ = par.ftol_rel;                                // 1e-1;
 
   weight_ = par.weight;
-
-  // num_of_variables_ = (3 * (N_ + 1) - 18) + (3 * (M_ - 2 * p_)) + (M_ - 2 * p_);  // total number of variables
 
   separator_solver_ = new separator::Separator();
 }
@@ -609,7 +566,6 @@ void SolverNlopt::generateGuessNDFromQ(const std::vector<Eigen::Vector3d> &q, st
 {
   n.clear();
   d.clear();
-  signs_.clear();
 
   planes_.clear();
 
@@ -629,9 +585,6 @@ void SolverNlopt::generateGuessNDFromQ(const std::vector<Eigen::Vector3d> &q, st
 
       double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
 
-      int sign_d_i = (d_i >= 0) ? 1 : -1;
-
-      signs_.push_back(sign_d_i);
       n.push_back(n_i);  // n'x + 1 = 0
       d.push_back(d_i);  // n'x + 1 = 0
 
@@ -718,9 +671,8 @@ void SolverNlopt::setHulls(ConvexHullsOfCurves_Std &hulls)
   num_of_obst_ = hulls_.size();
 
   i_min_ = 0;
-  i_max_ = 3 * (N_ + 1) - 1 - 9 -
-           6;  //(9 * (force_final_state_));  // 18 is because pos, vel and accel at t_init_ and t_final_
-               // are fixed (not dec variables)
+  i_max_ =
+      3 * (N_ + 1) - 1 - 9 - 6;  // because pos, vel and accel at t_init_ and t_final_ are fixed (not dec variables)
   j_min_ = i_max_ + 1;
   j_max_ = j_min_ + 3 * (M_ - 2 * p_) * num_of_obst_ - 1;
   k_min_ = j_max_ + 1;
@@ -1516,8 +1468,6 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
     {
       int ip = obst_index * num_of_segments_ + i;  // index plane
 
-      // int sign_d_i = signs_[ip];
-
       // impose that all the vertexes of the obstacle are on one side of the plane
       // std::cout << "Vertexes of Obstacle " << obst_index << std::endl;
       // std::cout << "vertexes on one side" << std::endl;
@@ -2097,6 +2047,10 @@ void SolverNlopt::printQVA(const std::vector<Eigen::Vector3d> &q)
 bool SolverNlopt::optimize()
 
 {
+  traj_solution_.clear();
+  best_cost_so_far_ = std::numeric_limits<double>::max();
+  best_feasible_sol_so_far_.clear();
+
   // note that, for a v0 and a0 given, q2_ is not guaranteed to lie within the bounds. If that's the case --> keep
   // executing previous trajectory
   if ((q2_.z() > z_max_ || q2_.z() < z_ground_))
@@ -2308,7 +2262,7 @@ bool SolverNlopt::optimize()
   {
     ROS_INFO_STREAM("[NL] Optimal, code=" << getResultCode(result));
 
-    std::cout << on_green << bold << "[NL] Optimal Solution found" << opt_timer_ << reset << std::endl;
+    std::cout << on_green << bold << "[NL] Optimal Solution found in" << opt_timer_ << reset << std::endl;
     x2qnd(x_, q, n, d);
 
     std::cout << "q[N_]= " << q[N_].transpose() << std::endl;
@@ -2357,10 +2311,12 @@ bool SolverNlopt::optimize()
      reset
               << std::endl;*/
 
-  CPs2TrajAndPwp(q, X_temp_, solution_, N_, p_, num_pol_, knots_, dc_);
+  CPs2TrajAndPwp(q, traj_solution_, solution_, N_, p_, num_pol_, knots_, dc_);
 
+  ///////////////
+  ///////////////
   ///////////////For debugging, remove later
-  for (auto xi : X_temp_)
+  for (auto xi : traj_solution_)
   {
     if (fabs(xi.vel.x()) > (v_max_.x() + epsilon_tol_constraints_) ||
         fabs(xi.vel.y()) > (v_max_.y() + epsilon_tol_constraints_) ||
@@ -2379,6 +2335,15 @@ bool SolverNlopt::optimize()
       abort();
     }
   }
+
+  if ((traj_solution_.back().pos - q0_).norm() > (Ra_ + epsilon_tol_constraints_))
+  {
+    std::cout << "norm(traj_solution_.back().pos-q0_)>Ra + epsilon_tol_constraints_" << std::endl;
+    std::cout << "norm(traj_solution_.back().pos-q0_)=" << (traj_solution_.back().pos - q0_).norm() << std::endl;
+    abort();
+  }
+  ///////////////
+  ///////////////
   ///////////////
 
   // std::cout << "The solution is the following one:" << std::endl;
@@ -2390,16 +2355,9 @@ bool SolverNlopt::optimize()
 
   // Force the last position to be the final_state_ (it's not guaranteed to be because of the discretization with dc_)
 
-  if ((X_temp_.back().pos - q0_).norm() > (Ra_ + epsilon_tol_constraints_))
-  {
-    std::cout << "norm(X_temp_.back().pos-q0_)>Ra + epsilon_tol_constraints_" << std::endl;
-    std::cout << "norm(X_temp_.back().pos-q0_)=" << (X_temp_.back().pos - q0_).norm() << std::endl;
-    abort();
-  }
-
-  X_temp_.back().vel = final_state_.vel;
-  X_temp_.back().accel = final_state_.accel;
-  X_temp_.back().jerk = Eigen::Vector3d::Zero();
+  traj_solution_.back().vel = final_state_.vel;
+  traj_solution_.back().accel = final_state_.accel;
+  traj_solution_.back().jerk = Eigen::Vector3d::Zero();
 
   // std::cout << "Done filling the solution" << std::endl;
 
@@ -2517,7 +2475,7 @@ void SolverNlopt::generateStraightLineGuess()
 
             int sign_d_i = (d_i >= 0) ? 1 : -1;
 
-            signs_.push_back(sign_d_i);
+
             n.push_back(n_i);  // n'x + 1 = 0
             d.push_back(d_i);  // n'x + 1 = 0
 
@@ -2527,38 +2485,6 @@ void SolverNlopt::generateStraightLineGuess()
       // d.push_back(d_i);
     }
   }
-
-  // for (int seg_index = 0; seg_index < num_of_segments_; seg_index++)
-  // {
-  //   for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
-  //   {
-  //     Eigen::Vector3d n_i;
-  //     double d_i;
-
-  //     bool satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][current.index + 1 - 3],
-  //     last4Cps);
-
-  //     /*      if (satisfies_LP == false)
-  //           {
-  //             // std::cout << neighbor_va.qi.transpose() << " does not satisfy constraints" << std::endl;
-  //             break;
-  //           }*/
-  //   }
-  // }
-  //////////////////////
-
-  /*  generateRandomD(d_guess_);
-    generateRandomN(n_guess_);*/
-  // generateGuessNDFromQ(q_guess_, n_guess_, d_guess_);
-  // generateRandomN(n_guess_);
-  // Guesses for the planes
-  /*
-    std::cout << "This is the initial guess: " << std::endl;
-    std::cout << "q.size()= " << q_guess_.size() << std::endl;
-    std::cout << "n.size()= " << n_guess_.size() << std::endl;
-    std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
-
-    printQND(q_guess_, n_guess_, d_guess_);*/
 }
 
 nlopt::algorithm SolverNlopt::getSolver(std::string &solver)
@@ -2672,468 +2598,3 @@ std::string SolverNlopt::getResultCode(int &result)
       return "Result_Code_unknown";
   }
 }
-
-/*void SolverNlopt::computeVeli(Eigen::Vector3d &vel, std::vector<Eigen::Vector3d> &q)
-{
-  int i = q.size() - 2;
-
-  if (i >= (q.size() - 1))
-  {
-    std::cout << "Velocity cannot be ccomputed for this index" << std::endl;
-    return;
-  }
-  vel = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
-}
-
-void SolverNlopt::computeAcceli(Eigen::Vector3d &accel, std::vector<Eigen::Vector3d> &q)
-{
-  int i = q.size() - 3;
-
-  std::vector<Eigen::Vector3d> q_reduced;
-  q_reduced.push_back(q[q.size() - 4]);
-  q_reduced.push_back(q[q.size() - 3]);
-  q_reduced.push_back(q[q.size() - 2]);
-
-  Eigen::Vector3d vi;
-  computeVeli(vi, q_reduced);
-
-  Eigen::Vector3d viP1;
-  computeVeli(viP1, q);
-
-  std::cout << "In computeAcceli q=" << std::endl;
-  printStd(q);
-  std::cout << "In computeAcceli vi=" << vi.transpose() << std::endl;
-  std::cout << "In computeAcceli viP1" << viP1.transpose() << std::endl;
-
-  accel = (p_ - 1) * (viP1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
-}
-
-// Given a vector of control points q0,...,qj
-// it checks if v_{j-1} satisfies vmax constraints
-// and if  a_{j-2} satisfies amax constraints
-bool SolverNlopt::satisfiesVmaxAmax(std::vector<Eigen::Vector3d> &q)
-{
-  if (q.size() <= 2)
-  {
-    std::cout << bold << red << "Velocity and accel cannot be computed for this q" << reset << std::endl;
-    return false;
-  }
-
-  Eigen::Vector3d vi;
-  computeVeli(vi, q);
-  Eigen::Vector3d aiM1;
-  computeAcceli(aiM1, q);
-
-  std::cout << "vi= " << vi.transpose() << std::endl;
-  std::cout << "ai= " << aiM1.transpose() << std::endl;
-
-  return ((vi.array().abs() <= v_max_.array()).all() && (aiM1.array().abs() <= a_max_.array()).all());
-}*/
-
-// Given std::vector<Eigen::Vector3d> &q, this generates a sample that satisfies the vmax and amax constraints wrt the
-// last 3 cpoints of q
-/*void SolverNlopt::sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vector3d> &q)
-{
- if (q.size() <= 2)
- {
-   std::cout << bold << red << "q should be bigger" << reset << std::endl;
- }
-
- int i = q.size() - 1;
-
- double tmp = (knots_(i + p_ + 1) - knots_(i + 2)) / (1.0 * (p_ - 1));
-
- double constraint_x = std::min(v_max_.x(), a_max_.x() * tmp);
- double constraint_y = std::min(v_max_.y(), a_max_.y() * tmp);
- double constraint_z = std::min(v_max_.z(), a_max_.z() * tmp);
-
- std::default_random_engine generator;
- generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
- std::uniform_real_distribution<double> distribution_x(-constraint_x, +constraint_x);
- std::uniform_real_distribution<double> distribution_y(-constraint_y, +constraint_y);
- std::uniform_real_distribution<double> distribution_z(-constraint_z, +constraint_z);
-
- Eigen::Vector3d vi(distribution_x(generator), distribution_y(generator),
-                    distribution_z(generator));  // velocity sample
-
- std::cout << "q[i]= " << q[i].transpose() << std::endl;
- std::cout << "Velocity sample= " << vi.transpose() << std::endl;
-
- qiP1 = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q[i];
-
- std::cout << "q[i+1]= " << qiP1.transpose() << std::endl;
-
- std::cout << "====================" << std::endl;
- // test
-  std::vector<Eigen::Vector3d> last4Cps(4);
-   std::copy(q.end() - 3, q.end(), last4Cps.begin());  // copy three elements
-   last4Cps[3] = qiP1;
-   satisfiesVmaxAmax(last4Cps);
-
-
-   // more tests
-   Eigen::Vector3d vel_test;
-   Eigen::Vector3d accel_test;
-   computeVeli(vel_test, 2, last4Cps);
-   computeAcceli(accel_test, 1, last4Cps);
-   std::cout << "vel_test=" << vel_test.transpose() << std::endl;
-   std::cout << "accel_test=" << accel_test.transpose() << std::endl;
-
-   std::cout << "====================" << std::endl;
-   std::cout << "====================" << std::endl;
-
- // vel = p_ * (qiP1 - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
- // accel = (p_ - 1) * (viP1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
-}*/
-
-/*void SolverNlopt::useJPSGuess(vec_Vecf<3> &jps_path)
-{
-  q_guess_.clear();
-  n_guess_.clear();
-  d_guess_.clear();
-  // std::vector<double> d;
-
-  // Guesses for the control points
-  int num_of_intermediate_cps = N_ + 1 - 6;
-  vec_Vecf<3> intermediate_cps =
-      sampleJPS(jps_path, num_of_intermediate_cps + 1);  //+1 because the first vertex is always returned
-
-  intermediate_cps.erase(intermediate_cps.begin());  // remove the first vertex
-
-  std::cout << "intermediate_cps has size= " << intermediate_cps.size() << std::endl;
-
-  q_guess_.push_back(q0_);  // Not a decision variable
-  q_guess_.push_back(q1_);  // Not a decision variable
-  q_guess_.push_back(q2_);  // Not a decision variable
-
-  for (auto q_i : intermediate_cps)
-  {
-    q_guess_.push_back(q_i);
-  }
-
-  q_guess_.push_back(final_state_.pos);  // three last cps are the same because of the vel/accel final conditions
-  q_guess_.push_back(final_state_.pos);
-  q_guess_.push_back(final_state_.pos);
-
-  generateGuessNDFromQ(q_guess_, n_guess_, d_guess_);
-  // generateRandomN(n_guess_);
-  // Guesses for the planes
-
-  std::cout << "This is the initial guess: " << std::endl;
-  std::cout << "q.size()= " << q_guess_.size() << std::endl;
-  std::cout << "n.size()= " << n_guess_.size() << std::endl;
-  std::cout << "num_of_variables_= " << num_of_variables_ << std::endl;
-
-  printQND(q_guess_, n_guess_, d_guess_);
-}*/
-
-/*void SolverNlopt::useRRTGuess()  // vec_E<Polyhedron<3>> &polyhedra
-{
-  // sleep(1);
-  n_guess_.clear();
-  q_guess_.clear();
-  d_guess_.clear();
-  planes_.clear();
-
-  generateRandomN(n_guess_);
-  generateRandomD(d_guess_);
-  generateRandomQ(q_guess_);
-
-  int num_of_intermediate_cps = N_ + 1 - 6;
-
-  Eigen::Vector3d qNm2 = final_state_.pos;
-
-  Eigen::Vector3d high_value = 100 * Eigen::Vector3d::Ones();  // to avoid very extreme values
-
-  double best_cost = std::numeric_limits<double>::max();
-
-  signs_.clear();
-  for (int i = 0; i < n_guess_.size(); i++)
-  {
-    signs_.push_back(1);
-  }
-
-  planes_.clear();
-
-  MyTimer guess_timer(true);
-
-  for (int trial = 0; trial < 1; trial++)
-  {
-    std::cout << "trial= " << trial << std::endl;
-    std::cout << "num_of_normals_= " << num_of_normals_ << std::endl;
-    std::vector<Eigen::Vector3d> q;
-    // n-2 because the three last cpoints have the same normals
-    std::vector<Eigen::Vector3d> n(std::max(num_of_normals_ - 2, 0),
-                                   Eigen::Vector3d::Zero());  // Initialize all elements
-
-    std::vector<double> d(std::max(num_of_normals_ - 2, 0),
-                          0.0);  // Initialize all elements
-
-    q.push_back(q0_);
-    q.push_back(q1_);
-    q.push_back(q2_);
-
-    std::cout << "q0_=" << q0_.transpose() << std::endl;
-    std::cout << "q1_=" << q1_.transpose() << std::endl;
-    std::cout << "q2_=" << q2_.transpose() << std::endl;
-
-    // sample next cp in a sphere (or spherical surface?) near q2_ (limited by v_max)
-    for (int i = 3; i <= (N_ - 2); i++)  // all the intermediate control points, and cp N_-2 of the trajectory
-    {
-      std::cout << "i= " << i << std::endl;
-      Eigen::Vector3d tmp;
-
-      //      Eigen::Vector3d mean = q2_ + (qNm2 - q2_) * (i - 2) / (1.0 * num_of_intermediate_cps);
-      //      Eigen::Vector3d max_value = mean + high_value;
-      //      std::default_random_engine generator;
-      //      generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
-      //      std::normal_distribution<double> distribution_x(mean(0), 1.0);
-      //      std::normal_distribution<double> distribution_y(mean(1), 1.0);
-      //      std::normal_distribution<double> distribution_z(mean(2), 1.0);
-
-    initloop:
-      if (guess_timer.ElapsedMs() > max_runtime_ * 1000)
-      {
-        return;
-      }
-
-      // take sample
-      std::vector<Eigen::Vector3d> last3Cps;
-      last3Cps.push_back(q[q.size() - 3]);
-      last3Cps.push_back(q[q.size() - 2]);
-      last3Cps.push_back(q[q.size() - 1]);
-      sampleFeasible(tmp, last3Cps);
-
-      // tmp = q.back();  // hack;
-      // tmp << distribution_x(generator), distribution_y(generator), distribution_z(generator);
-      // saturate(tmp, -max_value, max_value);
-
-      std::vector<Eigen::Vector3d> last4Cps;
-      last4Cps.push_back(q[q.size() - 3]);
-      last4Cps.push_back(q[q.size() - 2]);
-      last4Cps.push_back(q[q.size() - 1]);
-      last4Cps.push_back(tmp);
-
-      // std::copy(q.end() - 3, q.end(), last4Cps.begin());  // copy three elements
-      last4Cps[3] = tmp;
-
-      if ((satisfiesVmaxAmax(last4Cps) == false))
-      {
-        std::cout << "vmax and amax are not satisfied" << std::endl;
-        std::cout << "knots_=" << knots_ << std::endl;
-
-        for (auto x : last4Cps)
-        {
-          std::cout << x.transpose() << std::endl;
-        }
-
-        goto initloop;
-      }
-
-      // check that it doesn't collide with the  obstacles at t=i-3
-      for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
-      {
-        Eigen::Vector3d n_i;
-        double d_i;
-        if (separator_solver->solveModel(n_i, d_i, hulls_[obst_index][i - 3], last4Cps) == false)
-        {
-          std::cout << "Didn't work, i=" << i << std::endl;
-          std::cout << "Obstacle: " << std::endl;
-          printStd(hulls_[obst_index][i - 3]);
-          std::cout << "Trajectory" << std::endl;
-          std::cout << last4Cps[0].transpose() << std::endl;
-          std::cout << last4Cps[1].transpose() << std::endl;
-          std::cout << last4Cps[2].transpose() << std::endl;
-          std::cout << last4Cps[3].transpose() << std::endl;
-
-          goto initloop;
-        }  // n_i will point to the points in the obstacle (hulls_)
-
-        std::cout << "Index of n filled= " << obst_index * num_of_segments_ << std::endl;
-        n[obst_index * num_of_segments_ + i - 3] = n_i;  // will be overwritten until the solution is found
-        d[obst_index * num_of_segments_ + i - 3] = d_i;  // will be overwritten until the solution is found
-      }
-
-      std::cout << "Found intermediatee cp " << i << "= " << tmp.transpose() << ", N_-3=" << (N_ - 3) << std::endl;
-      q.push_back(tmp);
-    }
-
-    std::cout << "Filling last two elements of n" << std::endl;
-    std::cout << "n.size() - 3=" << n.size() - 3 << std::endl;
-
-    if (n.size() > 0)
-    {  // only do this if there are obstacles
-      n.push_back(n.back());
-      n.push_back(n.back());
-
-      d.push_back(d.back());
-      d.push_back(d.back());
-    }
-
-    std::cout << "Filled" << std::endl;
-
-    // sample last cp in a sphere near qNm2_
-    q.push_back(q.back());
-    q.push_back(q.back());
-    // q.push_back(qNm2);
-
-    std::vector<Eigen::Vector3d> n_novale;
-    std::vector<double> d_novale;
-
-    double cost = computeObjFuction(num_of_variables_, nullptr, q, n_novale, d_novale);
-    if (cost < best_cost)
-    {
-      best_cost = cost;
-      q_guess_ = q;
-      n_guess_ = n;
-      d_guess_ = d;
-    }
-  }
-
-  fillPlanesFromNDQ(planes_, n_guess_, d_guess_, q_guess_);
-
-  //  for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
-  //  {
-  //    for (int i = 0; i < num_of_segments_; i++)
-  //    {
-  //      Eigen::Vector3d centroid_hull;
-  //      findCentroidHull(hulls_[obst_index][i], centroid_hull);
-  //
-  //      Eigen::Vector3d n_i =
-  //          (centroid_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
-  //
-  //      double alpha = 0.01;  // the smaller, the higher the chances the plane is outside the obstacle. Should be <1
-  //
-  //      Eigen::Vector3d point_in_middle = q[i] + (centroid_hull - q[i]) * alpha;
-  //
-  //       double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
-  //
-  //       int sign_d_i = (d_i >= 0) ? 1 : -1;
-  //
-  //       signs_.push_back(sign_d_i);
-  //      n.push_back(n_i / d_i);  // n'x + 1 = 0*/
-//
-//  for (int i = 0; i < n_guess_.size(); i++)
-//  {
-//     double x = q[i]
-//
-//         Eigen::Vector3d point_in_plane =
-//
-//             Hyperplane3D plane(point_in_plane, n_i / d_i);
-//     planes_.push_back(plane);
-//  }
-//
-// generateGuessNFromQ(q_best, n);
-//  generateRandomN(n_guess_);
-//}
-//* /
-
-/*void SolverNlopt::multi_eq_constraint(unsigned m, double *result, unsigned nn, const double *x, double *grad, void
-*f_data)
-{
-  std::cout << "in multi_eq_constraint" << std::endl;
-
-  std::vector<Eigen::Vector3d> q;
-  std::vector<Eigen::Vector3d> n;
-  std::vector<double> d;
-  x2qnd(x, q, n, d);
-
-  int r = 0;
-  assignEigenToVector(result, r, q[0] - initial_point);
-  // std::cout << "going to assign the gradient" << std::endl;
-  if (grad)
-  {
-    assignEigenToVector(grad, r + gIndexQ(0, 0), Eigen::Vector3d::Ones());
-  }
-  r = r + 3;  // Note that the previous assignment to result is 3x1
-
-  // std::cout << "in the middle of multi_eq_constraint" << std::endl;
-
-  assignEigenToVector(result, r, q[N] - final_point);  // f1==0
-  if (grad)
-  {
-    assignEigenToVector(grad, r + gIndexQ(q.size() - 1, 0), Eigen::Vector3d::Ones());
-  }
-
-  return;
-}*/
-
-/*    double epsilon = 0.01;
-    Eigen::Vector3d eps_vector(epsilon, epsilon, epsilon);
-#ifdef DEBUG_MODE_NLOPT
-    std::cout << "Going to add vf constraints, r= " << r << std::endl;
-#endif
-    // For vf
-    assignEigenToVector(constraints, r, vf - final_state_.vel - eps_vector);  // f<=0
-    double tmp5 = p_ / (-tN + tNPp);
-    double tmp6 = p_ / (tN - tNPp);
-
-    if (grad)
-    {
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_), ones * tmp5, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_ - 1), ones * tmp6, grad, r, nn);
-    }
-    r = r + 3;
-
-    assignEigenToVector(constraints, r, final_state_.vel - vf - eps_vector);  // f<=0
-    if (grad)
-    {
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_), -ones * tmp5, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_ - 1), -ones * tmp6, grad, r, nn);
-    }
-    r = r + 3;
-#ifdef DEBUG_MODE_NLOPT
-    std::cout << "Going to add af constraints, r= " << r << std::endl;
-#endif
-    // For af
-    assignEigenToVector(constraints, r, af - final_state_.accel - eps_vector);  // f<=0
-
-    double tmp1 = (((-1 + p_) * p_) / ((tN - tNm1Pp) * (tN - tNPp)));
-    double tmp2 = ((-1 + p_) * p_ * (1 / (tNm1 - tNm1Pp) + 1 / (tN - tNPp))) / (-tN + tNm1Pp);
-    double tmp3 = ((-1 + p_) * p_) / ((-tN + tNm1Pp) * (-tNm1 + tNm1Pp));
-
-    if (grad)
-    {
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_), ones * tmp1, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_ - 1), ones * tmp2, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_ - 2), ones * tmp3, grad, r, nn);
-    }
-    r = r + 3;
-
-    assignEigenToVector(constraints, r, final_state_.accel - af - eps_vector);  // f<=0
-    if (grad)
-    {
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_), -ones * tmp1, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_ - 1), -ones * tmp2, grad, r, nn);
-      toGradDiffConstraintsDiffVariables(gIndexQ(N_ - 2), -ones * tmp3, grad, r, nn);
-    }
-    r = r + 3;*/
-
-// std::cout << "here2" << std::endl;
-
-// Now add the "equality" constraints (for final velocity and acceleration) using inequalities with an epsilon:
-
-/*  if (force_final_state_ == false)
-  {
-#ifdef DEBUG_MODE_NLOPT
-    if ((N_ + p_) >= knots_.size())
-    {
-      std::cout << "There is something wrong here, (N_+p)=" << (N_ + p_) << std::endl;
-      std::cout << "but knots_.size()=" << knots_.size() << std::endl;
-    }
-#endif
-    double tN = knots_(N_);
-    double tNm1 = knots_(N_ - 1);
-    double tNPp = knots_(N_ + p_);
-    double tNm1Pp = knots_(N_ - 1 + p_);
-
-    // See Mathematica Notebook
-
-    Eigen::Vector3d qNm2 = q[N_ - 2];
-    Eigen::Vector3d qNm1 = q[N_ - 1];
-    Eigen::Vector3d qN = q[N_];
-
-    Eigen::Vector3d vf = p_ * (qN - qNm1) / (tNPp - tN);
-    Eigen::Vector3d vNm2 = (p_ * (qNm1 - qNm2)) / (tNm1Pp - tNm1);
-    Eigen::Vector3d af = ((p_ - 1) * (vf - vNm2)) / (tNm1Pp - tN);
-  }*/
