@@ -36,180 +36,10 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   N_ = M_ - p_ - 1;
   num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
 
-  ////////////
-
-  Eigen::Matrix<double, 4, 4> M_pos_bs2mv_seg0, M_pos_bs2mv_seg1, M_pos_bs2mv_rest, M_pos_bs2mv_seg_last2,
-      M_pos_bs2mv_seg_last;
-
-  Eigen::Matrix<double, 4, 4> M_pos_bs2be_seg0, M_pos_bs2be_seg1, M_pos_bs2be_rest, M_pos_bs2be_seg_last2,
-      M_pos_bs2be_seg_last;
-
-  Eigen::Matrix<double, 3, 3> M_vel_bs2mv_seg0, M_vel_bs2mv_rest, M_vel_bs2mv_seg_last;
-  Eigen::Matrix<double, 3, 3> M_vel_bs2be_seg0, M_vel_bs2be_rest, M_vel_bs2be_seg_last;
-
-  // see matlab.
-  // This is for t \in [0 1];
-
-  // clang-format off
-
-  //////BSPLINE to MINVO POSITION/////////
-
-  M_pos_bs2mv_seg0 <<
-
-      1.1023,    0.3421,   -0.0927,   -0.0320,
-     -0.0497,    0.6578,    0.5305,    0.2118,
-     -0.0473,    0.0156,    0.5052,    0.6365,
-     -0.0053,   -0.0155,    0.0570,    0.1837;
-
-  M_pos_bs2mv_seg1 <<
-
-      0.2756,    0.0855,   -0.0232,   -0.0080,
-      0.6099,    0.6381,    0.2996,    0.1225,
-      0.1199,    0.2919,    0.6666,    0.7018,
-     -0.0053,   -0.0155,    0.0570,    0.1837;
-
-  M_pos_bs2mv_rest <<
-
-      0.1837,    0.0570,   -0.0155,   -0.0053,
-      0.7018,    0.6666,    0.2919,    0.1199,
-      0.1199,    0.2919,    0.6666,    0.7018,
-     -0.0053,   -0.0155,    0.0570,    0.1837;
-
-
-  M_pos_bs2mv_seg_last2 <<
-
-      0.1837,    0.0570,   -0.0155,   -0.0053,
-      0.7018,    0.6666,    0.2919,    0.1199,
-      0.1225,    0.2996,    0.6381,    0.6099,
-     -0.0080,   -0.0232,    0.0855,    0.2756;
-
-  M_pos_bs2mv_seg_last <<
-
-      0.1837,    0.0570,   -0.0155,   -0.0053,
-      0.6365,    0.5052,    0.0156,   -0.0473,
-      0.2118,    0.5305,    0.6578,   -0.0497,
-     -0.0320,   -0.0927,    0.3421,    1.1023;
-
-  //////BSPLINE to BEZIER POSITION/////////
-
-  M_pos_bs2be_seg0 <<
-
-      1.0000,    0.0000,   -0.0000,         0,
-           0,    1.0000,    0.5000,    0.2500,
-           0,   -0.0000,    0.5000,    0.5833,
-           0,         0,         0,    0.1667;
-
-  M_pos_bs2be_seg1 <<
-
-      0.2500,    0.0000,   -0.0000,         0,
-      0.5833,    0.6667,    0.3333,    0.1667,
-      0.1667,    0.3333,    0.6667,    0.6667,
-           0,         0,         0,    0.1667;
-
-  M_pos_bs2be_rest <<
-
-      0.1667,    0.0000,         0,         0,
-      0.6667,    0.6667,    0.3333,    0.1667,
-      0.1667,    0.3333,    0.6667,    0.6667,
-           0,         0,         0,    0.1667;
-
-  M_pos_bs2be_seg_last2 <<
-
-      0.1667,         0,   -0.0000,         0,
-      0.6667,    0.6667,    0.3333,    0.1667,
-      0.1667,    0.3333,    0.6667,    0.5833,
-           0,         0,         0,    0.2500;
-
-  M_pos_bs2be_seg_last <<
-
-      0.1667,    0.0000,         0,         0,
-      0.5833,    0.5000,         0,         0,
-      0.2500,    0.5000,    1.0000,         0,
-           0,         0,         0,    1.0000;
-
-  /////BSPLINE to MINVO VELOCITY
-  M_vel_bs2mv_seg0 <<
-
-    1.0773,    0.1667,   -0.0774,
-   -0.0387,    0.7500,    0.5387,
-   -0.0387,    0.0833,    0.5387;
-
-  M_vel_bs2mv_rest <<
-
-      0.5387,    0.0833,   -0.0387,
-      0.5000,    0.8333,    0.5000,
-     -0.0387,    0.0833,    0.5387;
-
-  M_vel_bs2mv_seg_last <<
-
-      0.5387,    0.0833,   -0.0387,
-      0.5387,    0.7500,   -0.0387,
-     -0.0773,    0.1667,    1.0773;
-
-/////BSPLINE to BEZIER VELOCITY
-  M_vel_bs2be_seg0 <<
-
-      1.0000,         0,         0,
-           0,    1.0000,    0.5000,
-           0,         0,    0.5000;
-
-  M_vel_bs2be_rest <<
-
-      0.5000,         0,         0,
-      0.5000,    1.0000,    0.5000,
-           0,         0,    0.5000;
-
-  M_vel_bs2be_seg_last <<
-
-      0.5000,         0,         0,
-      0.5000,    1.0000,         0,
-           0,         0,    1.0000;
-
-  // clang-format on
-
-  //////BSPLINE to MINVO POSITION/////////
-  std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2mv;  // will have as many elements as segments
-  M_pos_bs2mv.push_back(M_pos_bs2mv_seg0);
-  M_pos_bs2mv.push_back(M_pos_bs2mv_seg1);
-  for (int i = 0; i < (num_of_segments_ - 4); i++)
-  {
-    M_pos_bs2mv.push_back(M_pos_bs2mv_rest);
-  }
-  M_pos_bs2mv.push_back(M_pos_bs2mv_seg_last2);
-  M_pos_bs2mv.push_back(M_pos_bs2mv_seg_last);
-
-  //////BSPLINE to BEZIER POSITION/////////
-  std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2be;  // will have as many elements as segments
-  M_pos_bs2be.push_back(M_pos_bs2be_seg0);
-  M_pos_bs2be.push_back(M_pos_bs2be_seg1);
-  for (int i = 0; i < (num_of_segments_ - 4); i++)
-  {
-    M_pos_bs2be.push_back(M_pos_bs2be_rest);
-  }
-  M_pos_bs2be.push_back(M_pos_bs2be_seg_last2);
-  M_pos_bs2be.push_back(M_pos_bs2be_seg_last);
-
-  //////BSPLINE to MINVO Velocity/////////
-  std::vector<Eigen::Matrix<double, 3, 3>> M_vel_bs2mv;  // will have as many elements as segments
-  M_vel_bs2mv.push_back(M_vel_bs2mv_seg0);
-  for (int i = 0; i < (num_of_segments_ - 2 - 1); i++)
-  {
-    M_vel_bs2mv.push_back(M_vel_bs2mv_rest);
-  }
-  M_vel_bs2mv.push_back(M_vel_bs2mv_seg_last);
-
-  //////BSPLINE to BEZIER Velocity/////////
-  std::vector<Eigen::Matrix<double, 3, 3>> M_vel_bs2be;  // will have as many elements as segments
-  M_vel_bs2be.push_back(M_vel_bs2be_seg0);
-  for (int i = 0; i < (num_of_segments_ - 2 - 1); i++)
-  {
-    M_vel_bs2be.push_back(M_vel_bs2be_rest);
-  }
-  M_vel_bs2be.push_back(M_vel_bs2be_seg_last);
-
   ///////////////////////////////////////
   ///////////////////////////////////////
-  ///////////////////////////////////////
+
+  basisConverter basis_converter;
 
   std::cout << "In the SolverNlopt Constructor\n";
 
@@ -218,28 +48,20 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   if (par.basis == "MINVO")
   {
     basis_ = MINVO;
-    M_pos_bs2basis_ = M_pos_bs2mv;
-    M_vel_bs2basis_ = M_vel_bs2mv;
+    M_pos_bs2basis_ = basis_converter.getMinvoPosConverters(num_of_segments_);
+    M_vel_bs2basis_ = basis_converter.getMinvoVelConverters(num_of_segments_);
   }
   else if (par.basis == "BEZIER")
   {
     basis_ = BEZIER;
-    M_pos_bs2basis_ = M_pos_bs2be;
-    M_vel_bs2basis_ = M_vel_bs2be;
+    M_pos_bs2basis_ = basis_converter.getBezierPosConverters(num_of_segments_);
+    M_vel_bs2basis_ = basis_converter.getBezierVelConverters(num_of_segments_);
   }
   else if (par.basis == "B_SPLINE")
   {
     basis_ = B_SPLINE;
-
-    for (int i = 0; i < num_of_segments_; i++)
-    {
-      M_pos_bs2basis_.push_back(Eigen::Matrix<double, 4, 4>::Identity());
-    }
-
-    for (int i = 0; i < (num_of_segments_ - 1); i++)
-    {
-      M_vel_bs2basis_.push_back(Eigen::Matrix<double, 3, 3>::Identity());
-    }
+    M_pos_bs2basis_ = basis_converter.getBSplinePosConverters(num_of_segments_);
+    M_vel_bs2basis_ = basis_converter.getBSplineVelConverters(num_of_segments_);
   }
   else
   {
@@ -249,7 +71,6 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
     abort();
   }
 
-  ///////////////////////////////////////
   ///////////////////////////////////////
   ///////////////////////////////////////
 

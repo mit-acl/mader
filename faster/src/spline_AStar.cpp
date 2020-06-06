@@ -1064,7 +1064,7 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
   if (intervalIsNotZero == false)  // constraintxL>constraint_xU (or with other axes)
   {
-    std::cout << "Interval is Zero" << std::endl;
+    // std::cout << "Interval is Zero" << std::endl;
     return;
   }
 
