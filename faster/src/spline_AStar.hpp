@@ -100,7 +100,8 @@ struct matrix_hash : std::unary_function<T, size_t>
 class SplineAStar
 {
 public:
-  SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls);
+  SplineAStar(std::string basis, int num_pol, int deg_pol);
+  void setUp(double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls);
   ~SplineAStar();
 
   void setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int num_samples_x, int num_samples_y,
@@ -185,10 +186,6 @@ private:
   ConvexHullsOfCurves_Std hulls_;
   separator::Separator* separator_solver_;
 
-  std::vector<double> vx_;
-  std::vector<double> vy_;
-  std::vector<double> vz_;
-
   int num_samples_x_ = 3;
   int num_samples_y_ = 3;
   int num_samples_z_ = 3;
@@ -254,8 +251,6 @@ private:
   // transformation between the B-spline control points and other basis
   Eigen::Matrix<double, 4, 4> Mbs2basis_;
   Eigen::Matrix<double, 4, 4> Mbs2basis_inverse_;
-
-  Eigen::Vector3d epsilons_;
 
   int num_pol_;
 

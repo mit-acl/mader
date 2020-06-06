@@ -6,12 +6,12 @@
 #include <iomanip>  //set precision
 #include <nlopt.hpp>
 #include "./../../faster_types.hpp"
-//#include <sstream>
 #include "./../../utils.hpp"
 #include "./../../timer.hpp"
 //#include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
 #include <decomp_geometry/polyhedron.h>  //For Polyhedron  and Hyperplane definition
 #include "separator.hpp"
+#include "./../../spline_AStar.hpp"
 
 //#include "./../../cgal_utils.hpp"
 
@@ -325,6 +325,7 @@ private:
   bool allow_infeasible_guess_ = false;
 
   separator::Separator *separator_solver_;
+  SplineAStar *myAStarSolver_;
 
   double Ra_ = 1e10;
 };

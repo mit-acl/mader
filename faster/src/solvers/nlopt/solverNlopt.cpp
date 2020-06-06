@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include "./../../termcolor.hpp"
-#include "./../../spline_AStar.hpp"
 
 #include <random>
 
@@ -274,6 +273,8 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   weight_ = par.weight;
 
   separator_solver_ = new separator::Separator();
+
+  myAStarSolver_ = new SplineAStar(par.basis, num_pol_, deg_pol_);
 }
 
 SolverNlopt::~SolverNlopt()
@@ -430,51 +431,51 @@ void SolverNlopt::generateAStarGuess()
   // printStd(q_guess_);
   // std::cout << "************" << std::endl;
 
-  SplineAStar myAStarSolver(num_pol_, deg_pol_, hulls_.size(), t_init_, t_final_, hulls_);
+  myAStarSolver_->setUp(t_init_, t_final_, hulls_);
 
   // std::cout << "q0_=" << q0_.transpose() << std::endl;
   // std::cout << "q1_=" << q1_.transpose() << std::endl;
   // std::cout << "q2_=" << q2_.transpose() << std::endl;
 
-  myAStarSolver.setq0q1q2(q0_, q1_, q2_);
-  myAStarSolver.setGoal(final_state_.pos);
+  myAStarSolver_->setq0q1q2(q0_, q1_, q2_);
+  myAStarSolver_->setGoal(final_state_.pos);
 
   // double runtime = 0.05;   //[seconds]
   double goal_size = 0.05;  //[meters]
 
-  myAStarSolver.setZminZmaxAndRa(z_ground_, z_max_, Ra_);  // z limits for the search, in world frame
-  myAStarSolver.setBBoxSearch(2000.0, 2000.0, 2000.0);     // limits for the search, centered on q2
-  myAStarSolver.setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
-                                       a_star_fraction_voxel_size_);
+  myAStarSolver_->setZminZmaxAndRa(z_ground_, z_max_, Ra_);  // z limits for the search, in world frame
+  myAStarSolver_->setBBoxSearch(2000.0, 2000.0, 2000.0);     // limits for the search, centered on q2
+  myAStarSolver_->setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
+                                         a_star_fraction_voxel_size_);
 
-  myAStarSolver.setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
-  myAStarSolver.setGoalSize(goal_size);
+  myAStarSolver_->setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
+  myAStarSolver_->setGoalSize(goal_size);
 
-  myAStarSolver.setBias(a_star_bias_);
-  if (basis_ == MINVO)
-  {
-    // std::cout << green << bold << "snlopt is using MINVO" << reset << std::endl;
-    myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);
-  }
-  else if (basis_ == BEZIER)
-  {
-    // std::cout << green << bold << "snlopt is using BEZIER" << reset << std::endl;
-    myAStarSolver.setBasisUsedForCollision(myAStarSolver.BEZIER);
-  }
-  else
-  {
-    // std::cout << green << bold << "snlopt is using B_SPLINE" << reset << std::endl;
-    myAStarSolver.setBasisUsedForCollision(myAStarSolver.B_SPLINE);
-  }
+  myAStarSolver_->setBias(a_star_bias_);
+  // if (basis_ == MINVO)
+  // {
+  //   // std::cout << green << bold << "snlopt is using MINVO" << reset << std::endl;
+  //   myAStarSolver_->setBasisUsedForCollision(myAStarSolver_->MINVO);
+  // }
+  // else if (basis_ == BEZIER)
+  // {
+  //   // std::cout << green << bold << "snlopt is using BEZIER" << reset << std::endl;
+  //   myAStarSolver_->setBasisUsedForCollision(myAStarSolver_->BEZIER);
+  // }
+  // else
+  // {
+  //   // std::cout << green << bold << "snlopt is using B_SPLINE" << reset << std::endl;
+  //   myAStarSolver_->setBasisUsedForCollision(myAStarSolver_->B_SPLINE);
+  // }
 
-  myAStarSolver.setVisual(false);
+  myAStarSolver_->setVisual(false);
 
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
-  bool is_feasible = myAStarSolver.run(q, n, d);
+  bool is_feasible = myAStarSolver_->run(q, n, d);
 
-  num_of_LPs_run_ = myAStarSolver.getNumOfLPsRun();
+  num_of_LPs_run_ = myAStarSolver_->getNumOfLPsRun();
   // std::cout << "After Running solved, n= " << std::endl;
   // printStd(n);
 

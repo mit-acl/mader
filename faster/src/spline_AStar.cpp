@@ -20,16 +20,62 @@ typedef JPS::Timer MyTimer;
 
 namespace plt = matplotlibcpp;
 
-SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, double t_max,
-                         const ConvexHullsOfCurves_Std& hulls)
+SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol)
 {
+  // see matlab.
+  // This is for the interval [0 1];
+  Mbs2mv_ << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
+      0.70176, 0.6665738, 0.29187, 0.119851669,       ////////////
+      0.119851669, 0.2918718, 0.66657, 0.7017652,     //////////////////
+      -0.00533879, -0.015455, 0.0570095, 0.18372189;  //////////////////
+
+  Mbs2be_ << 1, 0, 0, 0,  //////////
+      4, 4, 2, 1,         //////////
+      1, 2, 4, 4,         //////////
+      0, 0, 0, 1;         //////////
+
+  Mbs2be_ = (1 / 6.0) * Mbs2be_;
+
   p_ = deg_pol;
   M_ = num_pol + 2 * p_;
   N_ = M_ - p_ - 1;
-  num_of_obst_ = num_obst;
-  num_of_segments_ = (M_ - 2 * p_);
-  num_of_normals_ = num_of_segments_ * num_of_obst_;
   num_pol_ = num_pol;
+
+  if (basis == "MINVO")
+  {
+    // std::cout << green << bold << "A* is using MINVO" << reset << std::endl;
+    Mbs2basis_ = Mbs2mv_;
+    basis_ = MINVO;
+  }
+  else if (basis == "BEZIER")
+  {
+    // std::cout << green << bold << "A* is using BEZIER" << reset << std::endl;
+
+    Mbs2basis_ = Mbs2be_;
+    basis_ = BEZIER;
+  }
+  else if (basis == "B_SPLINE")
+  {
+    std::cout << green << bold << "A* is using B_SPLINE" << reset << std::endl;
+
+    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+    basis_ = B_SPLINE;
+  }
+  else
+  {
+    std::cout << bold << red << "Basis not implemented yet" << std::endl;
+    abort();
+  }
+
+  Mbs2basis_inverse_ = Mbs2basis_.inverse();
+}
+
+void SplineAStar::setUp(double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls)
+{
+  num_of_segments_ = (M_ - 2 * p_);
+
+  num_of_obst_ = hulls.size();
+  num_of_normals_ = num_of_segments_ * num_of_obst_;
 
   hulls_ = hulls;
 
@@ -52,29 +98,13 @@ SplineAStar::SplineAStar(int num_pol, int deg_pol, int num_obst, double t_min, d
   }
 
   knots_ = knots;
-  // std::cout << "knots_=" << knots_ << std::endl;
-
-  separator_solver_ = new separator::Separator();  // 0.0, 0.0, 0.0
+  std::cout << "knots_=" << knots_ << std::endl;
 
   // Mbs2mv_ << 182, 685, 100, -7,  //////////////////
   //     56, 640, 280, -16,         //////////////////
   //     -16, 280, 640, 56,         //////////////////
   //     -7, 100, 685, 182;
   // Mbs2mv_ = (1.0 / 960.0) * Mbs2mv_;
-
-  // see matlab.
-  // This is for the interval [0 1];
-  Mbs2mv_ << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
-      0.70176, 0.6665738, 0.29187, 0.119851669,       ////////////
-      0.119851669, 0.2918718, 0.66657, 0.7017652,     //////////////////
-      -0.00533879, -0.015455, 0.0570095, 0.18372189;  //////////////////
-
-  Mbs2be_ << 1, 0, 0, 0,  //////////
-      4, 4, 2, 1,         //////////
-      1, 2, 4, 4,         //////////
-      0, 0, 0, 1;         //////////
-
-  Mbs2be_ = (1 / 6.0) * Mbs2be_;
 
   // std::default_random_engine eng{ static_cast<long unsigned int>(time(0)) };
   // double delta = 0.0;
@@ -182,35 +212,10 @@ void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
   }
 }
 
-void SplineAStar::setBasisUsedForCollision(int basis)
-{
-  if (basis == MINVO)
-  {
-    // std::cout << green << bold << "A* is using MINVO" << reset << std::endl;
-    Mbs2basis_ = Mbs2mv_;
-  }
-  else if (basis == BEZIER)
-  {
-    // std::cout << green << bold << "A* is using BEZIER" << reset << std::endl;
+// void SplineAStar::setBasisUsedForCollision(int basis)
+// {
 
-    Mbs2basis_ = Mbs2be_;
-  }
-  else if (basis == B_SPLINE)
-  {
-    // std::cout << green << bold << "A* is using B_SPLINE" << reset << std::endl;
-
-    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
-  }
-  else
-  {
-    std::cout << red << "Basis not implemented yet, using the one for B-Spline" << std::endl;
-    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
-  }
-
-  Mbs2basis_inverse_ = Mbs2basis_.inverse();
-
-  basis_ = basis;
-}
+// }
 
 void SplineAStar::setBBoxSearch(double x, double y, double z)
 {
@@ -222,6 +227,11 @@ void SplineAStar::setBBoxSearch(double x, double y, double z)
 void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int num_samples_x,
                                          int num_samples_y, int num_samples_z, double fraction_voxel_size)
 {
+  all_combinations_.clear();
+  indexes_samples_x_.clear();
+  indexes_samples_y_.clear();
+  indexes_samples_z_.clear();
+
   v_max_ = v_max;
   a_max_ = a_max;
 
@@ -247,24 +257,6 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
     indexes_samples_z_.push_back(i);
   }
 
-  // std::srand(unsigned(std::time(0)));
-  /*  std::srand(unsigned(std::time(0)));
-
-    if (rand() % 2 == 1)  // o or 1
-    {
-      std::reverse(indexes_samples_x_.begin(), indexes_samples_x_.end());
-    }
-
-    if (rand() % 2 == 1)
-    {
-      std::reverse(indexes_samples_y_.begin(), indexes_samples_y_.end());
-    }
-
-    if (rand() % 2 == 1)
-    {
-      std::reverse(indexes_samples_z_.begin(), indexes_samples_z_.end());
-    }*/
-
   for (int jx : indexes_samples_x_)
   {
     for (int jy : indexes_samples_y_)
@@ -280,35 +272,6 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   shuffle(all_combinations_.begin(), all_combinations_.end(), std::default_random_engine(seed));
 
-  //  std::random_shuffle(all_combinations_.begin(), all_combinations_.end());
-
-  /*  std::random_shuffle(indexes_samples_x_.begin(), indexes_samples_x_.end());
-    std::random_shuffle(indexes_samples_y_.begin(), indexes_samples_y_.end());
-    std::random_shuffle(indexes_samples_z_.begin(), indexes_samples_z_.end());*/
-  /*
-    std::cout << "indexes_samples_x_" << std::endl;
-    for (auto index : indexes_samples_x_)
-    {
-      std::cout << index << ", " << std::endl;
-    }
-    std::cout << "indexes_samples_y_" << std::endl;
-
-    for (auto index : indexes_samples_y_)
-    {
-      std::cout << index << ", " << std::endl;
-    }
-
-    std::cout << "indexes_samples_z_" << std::endl;
-    for (auto index : indexes_samples_z_)
-    {
-      std::cout << index << ", " << std::endl;
-    }
-  */
-  // TODO: remove hand-coded stuff
-  // int i = 6;
-  // voxel_size_ = v_max_(0) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
-  // voxel_size_ = fabs(vx_[1] - vx_[0]) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
-
   double min_voxel_size;
   double max_voxel_size;
   computeLimitsVoxelSize(min_voxel_size, max_voxel_size);
@@ -322,28 +285,7 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
 
   voxel_size_ = min_voxel_size + fraction_voxel_size * (max_voxel_size - min_voxel_size);
 
-  // std::cout << green << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", "
-  //           << max_voxel_size << ")" << reset << std::endl;
-
-  // Make sure voxel_size_<= (min_voxel_size + max_voxel_size) / 2.0  (if not, very few nodes are expanded)
-  // voxel_size_ = (min_voxel_size + max_voxel_size) / 2.0;
-
-  // std::cout << "Using voxel_size_= " << voxel_size_ << std::endl;
-
-  // note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of voxel_size_
-
-  /*  int length_x = bbox_x_ / voxel_size_;
-    int length_y = bbox_y_ / voxel_size_;
-    int length_z = bbox_z_ / voxel_size_;*/
-
-  /*  std::cout << "Allocating vector" << std::endl;
-    std::vector<std::vector<std::vector<bool>>> novale(
-        length_x, std::vector<std::vector<bool>>(length_y, std::vector<bool>(length_z, false)));
-    std::cout << "Vector allocated" << std::endl;*/
-
   orig_ = q2_ - Eigen::Vector3d(bbox_x_ / 2.0, bbox_y_ / 2.0, bbox_z_ / 2.0);
-
-  // matrixExpandedNodes_ = novale;
 }
 
 void SplineAStar::setZminZmaxAndRa(double z_min, double z_max, double Ra)
@@ -1122,6 +1064,7 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
   if (intervalIsNotZero == false)  // constraintxL>constraint_xU (or with other axes)
   {
+    std::cout << "Interval is Zero" << std::endl;
     return;
   }
 
@@ -1186,6 +1129,8 @@ void SplineAStar::expandAndAddToQueue(Node& current)
     bool already_exist = (ptr_to_voxel != map_open_list_.end());
     /////
 
+    // std::cout << "already_exist= " << already_exist << std::endl;
+
     // bool already_exists_with_lower_cost = false;
     // already_exist
     if (already_exist ||                                          // Element already exists in the search box
@@ -1210,6 +1155,7 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
     if (collidesWithObstacles(last4Cps, neighbor.index) == true)
     {
+      // std::cout << "Collides with obs" << std::endl;
       continue;
     }
     else
@@ -1321,6 +1267,27 @@ exit:
 
 bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d)
 {
+  /////////// reset some stuff
+  // stores the closest node found
+  closest_dist_so_far_ = std::numeric_limits<double>::max();
+  closest_result_so_far_ptr_ = NULL;
+
+  // stores the closest node found that has full length (i.e. its index == (N_ - 2) )
+  complete_closest_dist_so_far_ = std::numeric_limits<double>::max();
+  complete_closest_result_so_far_ptr_ = NULL;
+
+  num_of_LPs_run_ = 0;
+  time_solving_lps_ = 0.0;
+  time_expanding_ = 0.0;
+
+  expanded_nodes_.clear();
+  result_.clear();
+  map_open_list_.clear();
+
+  separator_solver_ = new separator::Separator();  // 0.0, 0.0, 0.0
+
+  ////////////////////////////
+
   // Option 1
   CompareCost comparer;
   comparer.bias = bias_;
@@ -1337,8 +1304,6 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
   // openList_ = openList_tmp;
 
   std::cout << "[A*] Running..." << std::endl;
-
-  expanded_nodes_.clear();
 
   MyTimer timer_astar(true);
   // std::cout << "this->bias_ =" << this->bias_ << std::endl;
@@ -1378,8 +1343,6 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
 
   while (openList_.size() > 0)
   {
-    // std::cout << red << "=============================" << reset << std::endl;
-
     current_ptr = new Node;
 
     // Option 1
@@ -1392,10 +1355,6 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     // printPath(*current_ptr);
 
     double dist = ((*current_ptr).qi - goal_).norm();
-    // std::cout << "dist2Goal=" << dist << ", index=" << (*current_ptr).index << std::endl;
-    // std::cout << "bias_=" << bias_ << std::endl;
-    // std::cout << "N_-2=" << N_ - 2 << std::endl;
-    // std::cout << "index=" << (*current_ptr).index << std::endl;
 
     // log the closest solution so far
     // if ((*current_ptr).index == (N_ - 2))

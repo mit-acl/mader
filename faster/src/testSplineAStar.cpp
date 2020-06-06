@@ -122,7 +122,8 @@ int main(int argc, char **argv)
 
     hulls_curves.push_back(hulls_curve);*/
 
-  SplineAStar myAStarSolver(num_pol, deg_pol, hulls_std.size(), t_min, t_max, hulls_std);
+  SplineAStar myAStarSolver(basis, num_pol, deg_pol);
+  myAStarSolver.setUp(t_min, t_max, hulls_std);
 
   myAStarSolver.setq0q1q2(q0, q1, q2);
   myAStarSolver.setGoal(goal);
@@ -135,18 +136,7 @@ int main(int argc, char **argv)
   myAStarSolver.setGoalSize(goal_size);
 
   myAStarSolver.setBias(2.0);
-  if (basis == "MINVO")
-  {
-    myAStarSolver.setBasisUsedForCollision(myAStarSolver.MINVO);  // MINVO //B_SPLINE
-  }
-  else if (basis == "BEZIER")
-  {
-    myAStarSolver.setBasisUsedForCollision(myAStarSolver.BEZIER);  // MINVO //B_SPLINE
-  }
-  else
-  {
-    myAStarSolver.setBasisUsedForCollision(myAStarSolver.B_SPLINE);  // MINVO //B_SPLINE
-  }
+
   myAStarSolver.setVisual(false);
 
   std::vector<Eigen::Vector3d> q;

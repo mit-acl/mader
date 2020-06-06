@@ -1,4 +1,73 @@
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+// std::srand(unsigned(std::time(0)));
+/*  std::srand(unsigned(std::time(0)));
 
+  if (rand() % 2 == 1)  // o or 1
+  {
+    std::reverse(indexes_samples_x_.begin(), indexes_samples_x_.end());
+  }
+
+  if (rand() % 2 == 1)
+  {
+    std::reverse(indexes_samples_y_.begin(), indexes_samples_y_.end());
+  }
+
+  if (rand() % 2 == 1)
+  {
+    std::reverse(indexes_samples_z_.begin(), indexes_samples_z_.end());
+  }*/
+
+//  std::random_shuffle(all_combinations_.begin(), all_combinations_.end());
+
+/*  std::random_shuffle(indexes_samples_x_.begin(), indexes_samples_x_.end());
+  std::random_shuffle(indexes_samples_y_.begin(), indexes_samples_y_.end());
+  std::random_shuffle(indexes_samples_z_.begin(), indexes_samples_z_.end());*/
+/*
+  std::cout << "indexes_samples_x_" << std::endl;
+  for (auto index : indexes_samples_x_)
+  {
+    std::cout << index << ", " << std::endl;
+  }
+  std::cout << "indexes_samples_y_" << std::endl;
+
+  for (auto index : indexes_samples_y_)
+  {
+    std::cout << index << ", " << std::endl;
+  }
+
+  std::cout << "indexes_samples_z_" << std::endl;
+  for (auto index : indexes_samples_z_)
+  {
+    std::cout << index << ", " << std::endl;
+  }
+*/
+// TODO: remove hand-coded stuff
+// int i = 6;
+// voxel_size_ = v_max_(0) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
+// voxel_size_ = fabs(vx_[1] - vx_[0]) * (knots_(i + p_ + 1) - knots_(i + 1)) / (1.0 * p_);
+// std::cout << green << "[A*] voxel_size= " << voxel_size_ << ", limits are (" << min_voxel_size << ", "
+//           << max_voxel_size << ")" << reset << std::endl;
+
+// Make sure voxel_size_<= (min_voxel_size + max_voxel_size) / 2.0  (if not, very few nodes are expanded)
+// voxel_size_ = (min_voxel_size + max_voxel_size) / 2.0;
+
+// std::cout << "Using voxel_size_= " << voxel_size_ << std::endl;
+
+// note that (neighbor.qi - current.qi) is guaranteed to be an integer multiple of voxel_size_
+
+/*  int length_x = bbox_x_ / voxel_size_;
+  int length_y = bbox_y_ / voxel_size_;
+  int length_z = bbox_z_ / voxel_size_;*/
+
+/*  std::cout << "Allocating vector" << std::endl;
+  std::vector<std::vector<std::vector<bool>>> novale(
+      length_x, std::vector<std::vector<bool>>(length_y, std::vector<bool>(length_z, false)));
+  std::cout << "Vector allocated" << std::endl;*/
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////////
 
 // for (int seg_index = 0; seg_index < num_of_segments_; seg_index++)
 // {
