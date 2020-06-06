@@ -218,9 +218,9 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_s
     t_ = t_start + i * inc;
     // std::cout << "calling value(), traj_compiled.function.size()= " << traj.function.size() << std::endl;
 
-    double x = traj.function[0].value();  //    sin(t) + 2 * sin(2 * t);
-    double y = traj.function[1].value();  // cos(t) - 2 * cos(2 * t);
-    double z = traj.function[2].value();  //-sin(3 * t);
+    double x = traj.function[0].value();
+    double y = traj.function[1].value();
+    double z = traj.function[2].value();
 
     Eigen::Vector3d traj_bbox_with_uncertainty;
 

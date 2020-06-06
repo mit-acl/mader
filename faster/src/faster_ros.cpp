@@ -2,7 +2,7 @@
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <nav_msgs/Path.h>
-#include <pcl_conversions/pcl_conversions.h>
+
 #include <decomp_ros_msgs/PolyhedronArray.h>
 #include <decomp_ros_utils/data_ros_utils.h>  //For DecompROS::polyhedron_array_to_ros
 #include <decomp_geometry/polyhedron.h>       //For hyperplane
@@ -429,7 +429,7 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     faster_types::Edges edges_obstacles;
     std::vector<state> X_safe;
     std::vector<state> X_whole;
-    pcl::PointCloud<pcl::PointXYZ>::Ptr pcloud_jps(new pcl::PointCloud<pcl::PointXYZ>);
+
     std::vector<Hyperplane3D> planes_guesses;
     PieceWisePol pwp;
 
