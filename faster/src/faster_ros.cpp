@@ -43,8 +43,6 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "z_ground", par_.z_ground);
   safeGetParam(nh_, "z_max", par_.z_max);
-  safeGetParam(nh_, "inflation_jps", par_.inflation_jps);
-  safeGetParam(nh_, "factor_jps", par_.factor_jps);
 
   safeGetParam(nh_, "v_max", par_.v_max);
   safeGetParam(nh_, "a_max", par_.a_max);
@@ -52,26 +50,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "factor_v_max", par_.factor_v_max);
 
-  safeGetParam(nh_, "gamma_whole", par_.gamma_whole);
-  safeGetParam(nh_, "gammap_whole", par_.gammap_whole);
-  safeGetParam(nh_, "increment_whole", par_.increment_whole);
-  safeGetParam(nh_, "gamma_safe", par_.gamma_safe);
-  safeGetParam(nh_, "gammap_safe", par_.gammap_safe);
   safeGetParam(nh_, "alpha", par_.alpha);
-
-  safeGetParam(nh_, "increment_safe", par_.increment_safe);
-
-  safeGetParam(nh_, "delta_a", par_.delta_a);
-  safeGetParam(nh_, "delta_H", par_.delta_H);
-
-  safeGetParam(nh_, "max_poly_whole", par_.max_poly_whole);
-  safeGetParam(nh_, "max_poly_safe", par_.max_poly_safe);
-  safeGetParam(nh_, "dist_max_vertexes", par_.dist_max_vertexes);
-
-  safeGetParam(nh_, "gurobi_threads", par_.gurobi_threads);
-  safeGetParam(nh_, "gurobi_verbose", par_.gurobi_verbose);
-
-  safeGetParam(nh_, "use_faster", par_.use_faster);
 
   safeGetParam(nh_, "num_pol", par_.num_pol);
   safeGetParam(nh_, "deg_pol", par_.deg_pol);
@@ -100,37 +79,6 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "beta", par_.beta);
   safeGetParam(nh_, "gamma", par_.gamma);
-
-  // Parameters for the ground robot (jackal):
-  /*  safeGetParam(nh_,"kw", par_.kw);
-    safeGetParam(nh_,"kyaw", par_.kyaw);
-    safeGetParam(nh_,"kdalpha", par_.kdalpha);
-    safeGetParam(nh_,"kv", par_.kv);
-    safeGetParam(nh_,"kdist", par_.kdist);
-    safeGetParam(nh_,"kalpha", par_.kalpha);*/
-
-  // And now obtain the parameters from the mapper
-
-  // MODIFICATION to be able to work without the mapper
-  // std::vector<double> world_dimensions;
-  // safeGetParam(nh_, "mapper/world_dimensions", world_dimensions);
-  // safeGetParam(nh_, "mapper/resolution", par_.res);
-  std::vector<double> world_dimensions = { 15, 15, 15 };
-
-  par_.res = 0.15;
-
-  /// End of MODIFICATION
-
-  par_.wdx = world_dimensions[0];
-  par_.wdy = world_dimensions[1];
-  par_.wdz = world_dimensions[2];
-
-  std::cout << "par_.wdx= " << par_.wdx << std::endl;
-  std::cout << "par_.wdy= " << par_.wdy << std::endl;
-  std::cout << "par_.wdz= " << par_.wdz << std::endl;
-
-  std::cout << bold << green << "world_dimensions=" << world_dimensions << reset << std::endl;
-  std::cout << bold << green << "resolution=" << par_.res << reset << std::endl;
 
   std::cout << "Parameters obtained" << std::endl;
 
@@ -161,30 +109,15 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
     abort();
   }
 
-  if (par_.N_safe <= par_.max_poly_safe + 2)
+  if (par_.kappa < 0 || par_.mu < 0)
   {
-    std::cout << bold << red << "Needed: N_safe>=max_poly+ 2 at least" << reset
-              << std::endl;  // To decrease the probability of not finding a solution
-    abort();
-  }
-  if (par_.N_whole <= par_.max_poly_whole + 2)
-  {
-    std::cout << bold << red << "Needed: N_whole>=max_poly + 2 at least" << reset
-              << std::endl;  // To decrease the probability of not finding a solution
-    abort();
-  }
-
-  if (par_.factor_jps * par_.res / 2.0 > par_.inflation_jps)
-  {
-    std::cout << bold << red << "Needed: par_.factor_jps * par_.res / 2 <= par_.inflation_jps" << reset
-              << std::endl;  // If not JPS will find a solution between the voxels.
+    std::cout << bold << red << "Needed: kappa and mu > 0" << reset << std::endl;
     abort();
   }
 
   if ((par_.kappa + par_.mu) > 1)
   {
-    std::cout << bold << red << "Needed: (par_.kappa + par_.mu) <= 1" << reset
-              << std::endl;  // To decrease the probability of not finding a solution
+    std::cout << bold << red << "Needed: (par_.kappa + par_.mu) <= 1" << reset << std::endl;
     abort();
   }
 
@@ -218,56 +151,28 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
     abort();
   }
 
-  /*  if (par_.Ra_max > (par_.wdx / 2.0) || (par_.Ra_max > par_.wdy / 2.0))
-    {
-      std::cout << bold << red << "Needed: par_.Ra_max > par_.wdx/2.0|| par_.Ra_max > par_.wdy/2.0" << reset
-                << std::endl;  // To decrease the probability of not finding a solution
-      abort();f
-    }*/
-
-  /*  if (par_.drone_radius <= 2 * par_.res)
-    {
-      std::cout << bold << red << "Needed: par_.drone_radius > 2*par_.res" << reset
-                << std::endl;  // If not the convex decomposition finds polytopes between the voxels of the obstacles
-      abort();
-    }*/
-
-  /*  if (par_.inflation_jps <= par_.res/2.0 + par_.drone_radius)
-    {
-      std::cout << bold << red << "Needed: par_.inflation_jps > par_.res/2.0 + par_.drone_radius" << reset
-                << std::endl; //JPS should be run with at least drone_radius + half of the size of a voxel
-      abort();
-    }
-  */
-
   // Publishers
   // pub_goal_jackal_ = nh_.advertise<geometry_msgs::Twist>("goal_jackal", 1);
   pub_goal_ = nh_.advertise<snapstack_msgs::QuadGoal>("goal", 1);
   pub_traj_whole_ = nh_.advertise<nav_msgs::Path>("traj_whole", 1);
   pub_traj_safe_ = nh_.advertise<nav_msgs::Path>("traj_safe", 1);
   pub_setpoint_ = nh_.advertise<visualization_msgs::Marker>("setpoint", 1);
-  pub_intersectionI_ = nh_.advertise<visualization_msgs::Marker>("intersection_I", 1);
+
   pub_point_G_ = nh_.advertise<geometry_msgs::PointStamped>("point_G", 1);
   pub_point_G_term_ = nh_.advertise<geometry_msgs::PointStamped>("point_G_term", 1);
-  pub_point_E_ = nh_.advertise<visualization_msgs::Marker>("point_E", 1);
-  pub_point_R_ = nh_.advertise<visualization_msgs::Marker>("point_R", 1);
-  pub_point_M_ = nh_.advertise<visualization_msgs::Marker>("point_M", 1);
-  pub_point_H_ = nh_.advertise<visualization_msgs::Marker>("point_H", 1);
+
   pub_point_A_ = nh_.advertise<visualization_msgs::Marker>("point_A", 1);
   pub_actual_traj_ = nh_.advertise<visualization_msgs::Marker>("actual_traj", 1);
-  pub_path_jps1_ = nh_.advertise<visualization_msgs::MarkerArray>("path_jps1", 1);
-  pub_path_jps2_ = nh_.advertise<visualization_msgs::MarkerArray>("path_jps2", 1);
-  pub_path_jps_whole_ = nh_.advertise<visualization_msgs::MarkerArray>("path_jps_whole", 1);
-  pub_path_jps_safe_ = nh_.advertise<visualization_msgs::MarkerArray>("path_jps_safe", 1);
+
   poly_whole_pub_ = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_whole", 1, true);
   poly_safe_pub_ = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_safe", 1, true);
-  pub_jps_inters_ = nh_.advertise<geometry_msgs::PointStamped>("jps_intersection", 1);
+
   pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
-  // pub_log_ = nh_.advertise<snapstack_msgs::Cvx>("log_topic", 1);
+
   pub_traj_committed_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_committed_colored", 1);
   pub_traj_whole_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_whole_colored", 1);
   pub_traj_safe_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
-  pub_cloud_jps_ = nh_.advertise<sensor_msgs::PointCloud2>("cloud_jps", 1);
+
   pub_traj_ = nh_.advertise<faster_msgs::DynTraj>("/trajs", 1, true);  // The last parameter is latched or not
   pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
 
@@ -275,10 +180,6 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   pub_obstacles_ = nh_.advertise<visualization_msgs::Marker>("obstacles", 1);
 
   // Subscribers
-  occup_grid_sub_.subscribe(nh_, "occup_grid", 1);
-  unknown_grid_sub_.subscribe(nh_, "unknown_grid", 1);
-  sync_.reset(new Sync(MySyncPolicy(1), occup_grid_sub_, unknown_grid_sub_));
-  sync_->registerCallback(boost::bind(&FasterRos::mapCB, this, _1, _2));
   sub_goal_ = nh_.subscribe("term_goal", 1, &FasterRos::terminalGoalCB, this);
   sub_mode_ = nh_.subscribe("mode", 1, &FasterRos::modeCB, this);
   sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);
@@ -524,8 +425,6 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
   {
     vec_Vecf<3> JPS_safe;
     vec_Vecf<3> JPS_whole;
-    /*    vec_E<Polyhedron<3>> poly_safe;
-        vec_E<Polyhedron<3>> poly_whole;*/
 
     faster_types::Edges edges_obstacles;
     std::vector<state> X_safe;
@@ -534,8 +433,8 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     std::vector<Hyperplane3D> planes_guesses;
     PieceWisePol pwp;
 
-    bool replanned = faster_ptr_->replan(JPS_safe, JPS_whole, edges_obstacles, X_safe, X_whole, pcloud_jps,
-                                         planes_guesses, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
+    bool replanned =
+        faster_ptr_->replan(edges_obstacles, X_safe, planes_guesses, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
 
     if (par_.visual)
     {
@@ -543,29 +442,10 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
       // visual_tools_->deleteAllMarkers();
       visual_tools_->enableBatchPublishing();
 
-      pcl::PCLPointCloud2 pcloud_jps2;
-      pcl::toPCLPointCloud2(*pcloud_jps.get(), pcloud_jps2);
-      sensor_msgs::PointCloud2 cloud_jps_msg;
-      pcl_conversions::fromPCL(pcloud_jps2, cloud_jps_msg);
-      // cloud_jps_msg.header = mesh_cloud_msg_->header;
-      cloud_jps_msg.header.frame_id = "world";
-      pub_cloud_jps_.publish(cloud_jps_msg);
-
-      clearJPSPathVisualization(2);
-      publishJPSPath(JPS_safe, JPS_SAFE);
-      publishJPSPath(JPS_whole, JPS_WHOLE);
-
-      // publishPoly(poly_safe, SAFE);
-      // publishPoly(poly_whole, WHOLE);
-
       pubObstacles(edges_obstacles);
-
       pubTraj(X_safe, SAFE_COLORED);
-
       pubTraj(X_whole, WHOLE_COLORED);
-      // std::cout << "Plane Guesses has" << planes_guesses.size() << std::endl;
       publishPlanes(planes_guesses);
-
       publishText();
     }
 
@@ -749,25 +629,6 @@ void FasterRos::pubCB(const ros::TimerEvent& e)
   }
 }
 
-void FasterRos::clearJPSPathVisualization(int i)
-{
-  switch (i)
-  {
-    case JPSk_NORMAL:
-      clearMarkerArray(&path_jps1_, &pub_path_jps1_);
-      break;
-    case JPS2_NORMAL:
-      clearMarkerArray(&path_jps2_, &pub_path_jps2_);
-      break;
-    case JPS_WHOLE:
-      clearMarkerArray(&path_jps_whole_, &pub_path_jps_whole_);
-      break;
-    case JPS_SAFE:
-      clearMarkerArray(&path_jps_safe_, &pub_path_jps_safe_);
-      break;
-  }
-}
-
 void FasterRos::clearMarkerArray(visualization_msgs::MarkerArray* tmp, ros::Publisher* publisher)
 {
   if ((*tmp).markers.size() == 0)
@@ -793,32 +654,6 @@ void FasterRos::clearMarkerArray(visualization_msgs::MarkerArray* tmp, ros::Publ
 
   (*publisher).publish(*tmp);
   (*tmp).markers.clear();
-}
-
-void FasterRos::publishJPSPath(vec_Vecf<3>& path, int i)
-{
-  /*vec_Vecf<3> traj, visualization_msgs::MarkerArray* m_array*/
-  clearJPSPathVisualization(i);
-  switch (i)
-  {
-    case JPSk_NORMAL:
-      vectorOfVectors2MarkerArray(path, &path_jps1_, color(BLUE_NORMAL));
-      pub_path_jps1_.publish(path_jps1_);
-      break;
-
-    case JPS2_NORMAL:
-      vectorOfVectors2MarkerArray(path, &path_jps2_, color(RED_NORMAL));
-      pub_path_jps2_.publish(path_jps2_);
-      break;
-    case JPS_WHOLE:
-      vectorOfVectors2MarkerArray(path, &path_jps_whole_, color(GREEN_NORMAL));
-      pub_path_jps_whole_.publish(path_jps_whole_);
-      break;
-    case JPS_SAFE:
-      vectorOfVectors2MarkerArray(path, &path_jps_safe_, color(YELLOW_NORMAL));
-      pub_path_jps_safe_.publish(path_jps_safe_);
-      break;
-  }
 }
 
 void FasterRos::pubTraj(const std::vector<state>& data, int type)
@@ -883,16 +718,6 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
     traj_safe_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_, scale);
     pub_traj_safe_colored_.publish(traj_safe_colored_);
   }
-
-  // std::cout << "here6" << std::endl;
-}
-
-void FasterRos::pubJPSIntersection(Eigen::Vector3d& inters)
-{
-  geometry_msgs::PointStamped p;
-  p.header.frame_id = world_name_;
-  p.point = eigen2point(inters);
-  pub_jps_inters_.publish(p);
 }
 
 void FasterRos::pubActualTraj()
@@ -902,17 +727,6 @@ void FasterRos::pubActualTraj()
   state current_state;
   faster_ptr_->getState(current_state);
   Eigen::Vector3d act_pos = current_state.pos;
-
-  /*  // mtx_G.lock();
-    Eigen::Vector3d t_goal = G_;
-    // mtx_G.unlock();
-    float dist_to_goal = (t_goal - act_pos).norm();
-
-    if (dist_to_goal < 2 * par_.goal_radius)
-    {
-      return;
-    }
-  */
 
   visualization_msgs::Marker m;
   m.type = visualization_msgs::Marker::ARROW;
@@ -948,16 +762,6 @@ void FasterRos::pubActualTraj()
   pub_actual_traj_.publish(m);
 }
 
-/*void FasterRos::pubG(state G)
-{
-  geometry_msgs::PointStamped p;
-  p.header.frame_id =world_name_;
-  // mtx_G.lock();
-  p.point = eigen2point(G.pos);
-  // mtx_G.unlock();
-  pub_point_G_.publish(p);
-}*/
-
 void FasterRos::clearMarkerActualTraj()
 {
   // printf("In clearMarkerActualTraj\n");
@@ -984,20 +788,6 @@ void FasterRos::clearMarkerColoredTraj()
   m.scale.z = 1;
   pub_actual_traj_.publish(m);
   // actual_trajID_ = 0;
-}
-
-// Occupied CB
-void FasterRos::mapCB(const sensor_msgs::PointCloud2::ConstPtr& pcl2ptr_map_ros,
-                      const sensor_msgs::PointCloud2::ConstPtr& pcl2ptr_unk_ros)
-{
-  // Occupied Space Point Cloud
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_map(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::fromROSMsg(*pcl2ptr_map_ros, *pclptr_map);
-  // Unknown Space Point Cloud
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_unk(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::fromROSMsg(*pcl2ptr_unk_ros, *pclptr_unk);
-
-  faster_ptr_->updateMap(pclptr_map, pclptr_unk);
 }
 
 void FasterRos::pubState(const state& data, const ros::Publisher pub)
@@ -1032,83 +822,3 @@ void FasterRos::terminalGoalCB(const geometry_msgs::PoseStamped& msg)
   clearMarkerActualTraj();
   // std::cout << "Exiting from goalCB\n";
 }
-
-// Odometry Callback (for the Jackal)
-/*void FasterRos::odomCB(const nav_msgs::Odometry& msg)
-{
-  // ROS_ERROR("In state CB");
-  // printf("(State): %0.2f  %0.2f  %0.2f %0.2f  %0.2f  %0.2f\n", msg.pos.x, msg.pos.y, msg.pos.z, msg.vel.x, msg.vel.y,
-  //       msg.vel.z);
-
-  mtx_state.lock();
-
-  state state_;
-  state_.setPos(msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z);
-  state_.setPos(msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z);
-  state_.setAccel(0.0, 0.0, 0.0);
-
-  double roll, pitch, yaw;
-  quaternion2Euler(msg.pose.pose.orientation, roll, pitch, yaw);
-
-  if (state_initialized_ == false)
-  {
-    quadGoal_.pos.x = msg.pose.pose.position.x;
-    quadGoal_.pos.y = msg.pose.pose.position.y;
-    quadGoal_.pos.z = msg.pose.pose.position.z;
-
-    quadGoal_.vel.x = msg.twist.twist.linear.x;
-    quadGoal_.vel.y = msg.twist.twist.linear.y;
-    quadGoal_.vel.z = msg.twist.twist.linear.z;
-
-    quadGoal_.yaw = yaw;
-  }
-
-  state_initialized_ = true;
-  // printf("(State): %0.2f  %0.2f  %0.2f %0.2f  %0.2f  %0.2f\n", msg.pos.x, msg.pos.y, msg.pos.z, msg.vel.x,
-  //     msg.vel.y, msg.vel.z);
-
-  std::cout << bold << red << "IN ODOM CB:" << msg.pose.pose.orientation << reset << std::endl;
-  std::cout << bold << red << "Yaw=" << yaw * 180 / 3.14 << reset << std::endl;
-  current_yaw_ = yaw;
-
-  mtx_state.unlock();
-  // Stop updating when we get GO
-  if (flight_mode_.mode == flight_mode_.NOT_FLYING || flight_mode_.mode == flight_mode_.KILL)
-  {
-    quadGoal_.pos.x = msg.pose.pose.position.x;
-    quadGoal_.pos.y = msg.pose.pose.position.y;
-    quadGoal_.pos.z = msg.pose.pose.position.z;
-
-    quadGoal_.vel.x = msg.twist.twist.linear.x;
-    quadGoal_.vel.y = msg.twist.twist.linear.y;
-    quadGoal_.vel.z = msg.twist.twist.linear.z;
-
-    double roll, pitch, yaw;
-    quaternion2Euler(msg.pose.pose.orientation, roll, pitch, yaw);
-    current_yaw_ = yaw;
-    quadGoal_.yaw = yaw;
-    z_start_ = msg.pose.pose.position.z;
-    z_start_ = std::max(0.0, z_start_);
-    mtx_initial_cond.lock();
-    stateA_.setPos(msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z);
-    mtx_initial_cond.unlock();
-  }
-
-  static int i = 0;
-  i++;
-
-  if (status_ != GOAL_REACHED && par_.visual == true)
-  {
-    pubActualTraj();
-  }
-
-  if (i % 10 == 0 && status_ != GOAL_REACHED && i != 0)
-  {
-    Eigen::Vector3d actual_pos(msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z);
-    // Don't use the state to compute the total distance (it's very noisy)
-    // log_.total_dist = log_.total_dist + (actual_pos - pos_old_).norm();
-    // pos_old_ = actual_pos;
-  }
-  Eigen::Vector3d vel(msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.linear.z);
-  log_.veloc_norm = vel.norm();
-}*/

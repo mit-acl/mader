@@ -169,38 +169,12 @@ struct parameters
 
   double z_ground;
   double z_max;
-  double inflation_jps;
-  double factor_jps;
 
   double v_max;
   double a_max;
   double j_max;
 
-  double gamma_whole;
-  double gammap_whole;
-  double increment_whole;
-  double gamma_safe;
-  double gammap_safe;
-  double increment_safe;
-
   double alpha;
-
-  double delta_a;
-  double delta_H;
-
-  int max_poly_whole;
-  int max_poly_safe;
-  double dist_max_vertexes;
-
-  int gurobi_threads;
-  int gurobi_verbose;
-
-  bool use_faster;
-
-  double wdx;
-  double wdy;
-  double wdz;
-  double res;
 
   int num_pol;
   int deg_pol;
@@ -231,13 +205,6 @@ struct parameters
 
   double beta = 1.0;
   double gamma = 0.0;
-
-  /*  double kw;
-    double kyaw;
-    double kdalpha;
-    double kv;
-    double kdist;
-    double kalpha;*/
 };
 
 struct state

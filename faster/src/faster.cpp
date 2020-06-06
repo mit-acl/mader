@@ -12,12 +12,6 @@
 
 #include "solvers/nlopt/nlopt_utils.hpp"
 
-/*#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Surface_mesh.h>
-#include <CGAL/Homogeneous.h>
-#include <CGAL/Polyhedron_traits_with_normals_3.h>*/
-
 using namespace JPS;
 using namespace termcolor;
 
@@ -38,51 +32,7 @@ Faster::Faster(parameters par) : par_(par)
   stateA_.setZero();
   mtx_initial_cond.unlock();
 
-  // Setup of jps_manager
-  std::cout << "par_.wdx /par_.res =" << par_.wdx / par_.res << std::endl;
-  jps_manager_.setNumCells((int)par_.wdx / par_.res, (int)par_.wdy / par_.res, (int)par_.wdz / par_.res);
-  jps_manager_.setFactorJPS(par_.factor_jps);
-  jps_manager_.setResolution(par_.res);
-  jps_manager_.setInflationJPS(par_.inflation_jps);
-  jps_manager_.setZGroundAndZMax(par_.z_ground, par_.z_max);
-  // jps_manager_.setVisual(par_.visual);
-  jps_manager_.setDroneRadius(par_.drone_radius);
-
-  // Setup of jps_manager_dyn_
-  jps_manager_dyn_.setNumCells((int)par_.wdx / par_.res, (int)par_.wdy / par_.res, (int)par_.wdz / par_.res);
-  jps_manager_dyn_.setFactorJPS(par_.factor_jps);
-  jps_manager_dyn_.setResolution(par_.res);
-  jps_manager_dyn_.setInflationJPS(par_.inflation_jps);
-  jps_manager_dyn_.setZGroundAndZMax(par_.z_ground, par_.z_max);
-  // jps_manager_dyn_.setVisual(par_.visual);
-  jps_manager_dyn_.setDroneRadius(2 * par_.drone_radius);
-
   double max_values[3] = { par_.v_max, par_.a_max, par_.j_max };
-
-  // // Setup of sg_whole_
-  // sg_whole_.setN(par_.N_whole);
-  // sg_whole_.createVars();
-  // sg_whole_.setDC(par_.dc);
-  // sg_whole_.setBounds(max_values);
-  // sg_whole_.setForceFinalConstraint(true);
-  // sg_whole_.setFactorInitialAndFinalAndIncrement(1, 10, par_.increment_whole);
-  // sg_whole_.setVerbose(par_.gurobi_verbose);
-  // sg_whole_.setThreads(par_.gurobi_threads);
-  // sg_whole_.setWMax(par_.w_max);
-
-  // // Setup of sg_safe_
-  // sg_safe_.setN(par_.N_safe);
-  // sg_safe_.createVars();
-  // sg_safe_.setDC(par_.dc);
-  // sg_safe_.setBounds(max_values);
-  // sg_safe_.setForceFinalConstraint(false);
-  // sg_safe_.setFactorInitialAndFinalAndIncrement(1, 10, par_.increment_safe);
-  // sg_safe_.setVerbose(par_.gurobi_verbose);
-  // sg_safe_.setThreads(par_.gurobi_threads);
-  // sg_safe_.setWMax(par_.w_max);
-
-  pclptr_unk_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
-  pclptr_map_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
 
   // Check that the gradients are right
   if (nlopt_utils::checkGradientsNlopt(par_.basis) == false)
@@ -104,7 +54,7 @@ Faster::Faster(parameters par) : par_(par)
   resetInitialization();
 
   ////
-  system("rosservice call /change_mode 'mode: 1'");  // to avoid having to click on the GUI
+  bool success_service_call = system("rosservice call /change_mode 'mode: 1'");  // to avoid having to click on the GUI
   ////
 }
 
@@ -428,68 +378,6 @@ ConvexHullsOfCurves Faster::convexHullsOfCurves(double t_start, double t_end)
   return result;
 }
 
-void Faster::createMoreVertexes(vec_Vecf<3>& path, double d)
-{
-  for (int j = 0; j < path.size() - 1; j++)
-  {
-    double dist = (path[j + 1] - path[j]).norm();
-    int vertexes_to_add = floor(dist / d);
-    Eigen::Vector3d v = (path[j + 1] - path[j]).normalized();
-    // std::cout << "Vertexes to add=" << vertexes_to_add << std::endl;
-    if (dist > d)
-    {
-      for (int i = 0; i < vertexes_to_add; i++)
-      {
-        path.insert(path.begin() + j + 1, path[j] + v * d);
-        j = j + 1;
-      }
-    }
-  }
-}
-
-void Faster::updateMap(pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_map, pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_unk)
-{
-  mtx_map.lock();
-  mtx_unk.lock();
-
-  // TODO
-  pclptr_map_ = pclptr_map;
-  pclptr_unk_ = pclptr_unk;
-
-  // Update even when there are no points
-  jps_manager_.createNewMap(state_.pos);
-  jps_manager_.addToMap(pclptr_map_, par_.inflation_jps, par_.inflation_jps,
-                        par_.inflation_jps);  // same inflation in all directions
-
-  if (pclptr_map_->width != 0 && pclptr_map_->height != 0)  // Point Cloud is not empty
-  {
-    kdtree_map_.setInputCloud(pclptr_map_);
-    kdtree_map_initialized_ = 1;
-    jps_manager_.vec_o_ = pclptr_to_vec(pclptr_map_);  // Needed for the ellipsoid decomp
-  }
-  else
-  {
-    std::cout << "Occupancy Grid received is empty, maybe map is too small?" << std::endl;
-  }
-
-  if (pclptr_unk_->points.size() == 0)
-  {
-    std::cout << "Unkown cloud has 0 points" << std::endl;
-    return;
-  }
-  else
-  {
-    kdtree_unk_.setInputCloud(pclptr_unk_);
-    kdtree_unk_initialized_ = 1;
-    jps_manager_.vec_uo_ = pclptr_to_vec(pclptr_unk_);  // insert unknown space
-    jps_manager_.vec_uo_.insert(jps_manager_.vec_uo_.end(), jps_manager_.vec_o_.begin(),
-                                jps_manager_.vec_o_.end());  // append known space
-  }
-
-  mtx_map.unlock();
-  mtx_unk.unlock();
-}
-
 void Faster::setTerminalGoal(state& term_goal)
 {
   mtx_G_term.lock();
@@ -499,7 +387,7 @@ void Faster::setTerminalGoal(state& term_goal)
 
   G_term_.pos = term_goal.pos;
   Eigen::Vector3d temp = state_.pos;
-  G_.pos = projectPointToBox(temp, G_term_.pos, par_.wdx, par_.wdy, par_.wdz);
+  G_.pos = G_term_.pos;
   if (drone_status_ == DroneStatus::GOAL_REACHED)
   {
     // std::cout << bold << green << "[Faster] state_.yaw=" << state_.yaw << reset << std::endl;
@@ -532,292 +420,6 @@ void Faster::getState(state& data)
   mtx_state.unlock();
 }
 
-// int Faster::findIndexR(int indexH)
-// {
-//   // Ignore z to obtain this heuristics (if not it can become very conservative)
-//   // mtx_X_U_temp.lock();
-//   Eigen::Vector2d posHk;
-//   posHk << sg_whole_.X_temp_[indexH].pos(0), sg_whole_.X_temp_[indexH].pos(1);
-//   int indexR = indexH;
-
-//   for (int i = 0; i <= indexH; i = i + 1)  // Loop from A to H
-//   {
-//     Eigen::Vector2d vel;
-//     vel << sg_whole_.X_temp_[i].vel(0), sg_whole_.X_temp_[i].vel(1);  //(i, 3), sg_whole_.X_temp_(i, 4);
-
-//     Eigen::Vector2d pos;
-//     pos << sg_whole_.X_temp_[i].pos(0), sg_whole_.X_temp_[i].pos(1);
-
-//     Eigen::Vector2d braking_distance =
-//         (vel.array() * (posHk - pos).array()).sign() * vel.array().square() / (2 * par_.delta_a * par_.a_max);
-
-//     // std::cout << "braking_distance=" << braking_distance.transpose() << std::endl;
-//     // std::cout << "(posHk - pos).cwiseAbs().array())=" << (posHk - pos).cwiseAbs().array().transpose() <<
-//     std::endl;
-
-//     bool thereWillBeCollision =
-//         (braking_distance.array() > (posHk - pos).cwiseAbs().array()).any();  // Any of the braking distances (in x,
-//         y,
-//                                                                               // z) is bigger than the distance to
-//                                                                               the
-//                                                                               // obstacle in that direction
-//     if (thereWillBeCollision)
-//     {
-//       indexR = i;
-
-//       if (indexR == 0)
-//       {
-//         std::cout << bold << red << "R was taken in A" << reset << std::endl;
-//       }
-
-//       break;
-//     }
-//   }
-//   std::cout << red << bold << "indexR=" << indexR << " /" << sg_whole_.X_temp_.size() - 1 << reset << std::endl;
-//   // std::cout << red << bold << "indexH=" << indexH << " /" << sg_whole_.X_temp_.rows() - 1 << reset << std::endl;
-//   // mtx_X_U_temp.unlock();
-
-//   return indexR;
-// }
-
-// int Faster::findIndexH(bool& needToComputeSafePath)
-// {
-//   int n = 1;  // find one neighbour
-//   std::vector<int> pointIdxNKNSearch(n);
-//   std::vector<float> pointNKNSquaredDistance(n);
-
-//   needToComputeSafePath = false;
-
-//   mtx_unk.lock();
-//   mtx_X_U_temp.lock();
-//   int indexH = sg_whole_.X_temp_.size() - 1;
-
-//   for (int i = 0; i < sg_whole_.X_temp_.size(); i = i + 10)
-//   {  // Sample points along the trajectory
-
-//     Eigen::Vector3d tmp = sg_whole_.X_temp_[i].pos;
-//     pcl::PointXYZ searchPoint(tmp(0), tmp(1), tmp(2));
-
-//     if (kdtree_unk_.nearestKSearch(searchPoint, n, pointIdxNKNSearch, pointNKNSquaredDistance) > 0)
-//     {
-//       if (sqrt(pointNKNSquaredDistance[0]) < par_.drone_radius)
-//       {
-//         needToComputeSafePath = true;  // There is intersection, so there is need to compute safe path
-//         indexH = (int)(par_.delta_H * i);
-//         break;
-//       }
-//     }
-//   }
-//   std::cout << red << bold << "indexH=" << indexH << " /" << sg_whole_.X_temp_.size() - 1 << reset << std::endl;
-//   mtx_unk.unlock();
-//   mtx_X_U_temp.unlock();
-
-//   return indexH;
-// }
-
-// bool Faster::ARisInFreeSpace(int index)
-// {  // We have to check only against the unkown space (A-R won't intersect the obstacles for sure)
-
-//   // std::cout << "In ARisInFreeSpace, radius_drone= " << par_.drone_radius << std::endl;
-//   int n = 1;  // find one neighbour
-
-//   std::vector<int> pointIdxNKNSearch(n);
-//   std::vector<float> pointNKNSquaredDistance(n);
-
-//   bool isFree = true;
-
-//   // std::cout << "Before mtx_unk" << std::endl;
-//   mtx_unk.lock();
-//   mtx_X_U_temp.lock();
-//   // std::cout << "After mtx_unk. index=" << index << std::endl;
-//   for (int i = 0; i < index; i = i + 10)
-//   {  // Sample points along the trajectory
-//      // std::cout << "i=" << i << std::endl;
-//     Eigen::Vector3d tmp = sg_whole_.X_temp_[i].pos;
-//     pcl::PointXYZ searchPoint(tmp(0), tmp(1), tmp(2));
-
-//     if (kdtree_unk_.nearestKSearch(searchPoint, n, pointIdxNKNSearch, pointNKNSquaredDistance) > 0)
-//     {
-//       if (sqrt(pointNKNSquaredDistance[0]) < 0.2)
-//       {  // TODO: 0.2 is the radius of the drone.
-//         std::cout << "A->R collides, with d=" << sqrt(pointNKNSquaredDistance[0])
-//                   << ", radius_drone=" << par_.drone_radius << std::endl;
-//         isFree = false;
-//         break;
-//       }
-//     }
-//   }
-
-//   mtx_unk.unlock();
-//   mtx_X_U_temp.unlock();
-
-//   return isFree;
-// }
-
-// Returns the first collision of JPS with the map (i.e. with the known obstacles). Note that JPS will collide with a
-// map B if JPS was computed using an older map A
-// If type_return==Intersection, it returns the last point in the JPS path that is at least par_.inflation_jps from map
-Eigen::Vector3d Faster::getFirstCollisionJPS(vec_Vecf<3>& path, bool* thereIsIntersection, int map, int type_return)
-{
-  vec_Vecf<3> original = path;
-
-  Eigen::Vector3d first_element = path[0];
-  Eigen::Vector3d last_search_point = path[0];
-  Eigen::Vector3d inters = path[0];
-  pcl::PointXYZ pcl_search_point = eigenPoint2pclPoint(path[0]);
-
-  Eigen::Vector3d result;
-
-  // occupied (map)
-  int n = 1;
-  std::vector<int> id_map(n);
-  std::vector<float> dist2_map(n);  // squared distance
-  double r = 1000000;
-  // printElementsOfJPS(path);
-  // printf("In 2\n");
-
-  mtx_map.lock();
-  mtx_unk.lock();
-
-  // Find the next eig_search_point
-  int last_id = -1;  // this is the last index inside the sphere
-  int iteration = 0;
-  while (path.size() > 0)
-  {
-    // std::cout<<red<<"New Iteration, iteration="<<iteration<<reset<<std::endl;
-    // std::cout << red << "Searching from point=" << path[0].transpose() << reset << std::endl;
-    pcl_search_point = eigenPoint2pclPoint(path[0]);
-
-    int number_of_neigh;
-
-    if (map == MAP)
-    {
-      number_of_neigh = kdtree_map_.nearestKSearch(pcl_search_point, n, id_map, dist2_map);
-    }
-    else  // map == UNKNOWN_MAP
-    {
-      number_of_neigh = kdtree_unk_.nearestKSearch(pcl_search_point, n, id_map, dist2_map);
-      // std::cout << "In unknown_map, number of neig=" << number_of_neigh << std::endl;
-    }
-    // printf("************NearestSearch: TotalTime= %0.2f ms\n", 1000 * (ros::Time::now().toSec() - before));
-
-    if (number_of_neigh > 0)
-    {
-      r = sqrt(dist2_map[0]);
-
-      // std::cout << "r=" << r << std::endl;
-      // std::cout << "Point=" << r << std::endl;
-
-      if (r < par_.drone_radius)  // collision of the JPS path and an inflated obstacle --> take last search point
-      {
-        // std::cout << "Collision detected" << std::endl;  // We will return the search_point
-        // pubJPSIntersection(inters);
-        // inters = path[0];  // path[0] is the search_point I'm using.
-        if (iteration == 0)
-        {
-          std::cout << red << bold << "The first point is in collision --> Hacking" << reset << std::endl;
-        }
-        switch (type_return)
-        {
-          case RETURN_LAST_VERTEX:
-            result = last_search_point;
-            break;
-          case RETURN_INTERSECTION:
-            if (iteration == 0)
-            {  // Hacking (TODO)
-              Eigen::Vector3d tmp;
-              tmp << original[0](0) + 0.01, original[0](1), original[0](2);
-              path.clear();
-              path.push_back(original[0]);
-              path.push_back(tmp);
-              result = path[path.size() - 1];
-              // result=original[original.size() - 1];
-            }
-            else
-            {
-              // std::cout << "In Return Intersection, last_id=" << last_id<<el_eliminated<< std::endl;
-              int vertexes_eliminated_tmp = original.size() - path.size() + 1;
-              // std::cout << "In Return Intersection, vertexes_eliminated_tmp=" << vertexes_eliminated_tmp <<
-              // std::endl;
-              original.erase(original.begin() + vertexes_eliminated_tmp,
-                             original.end());  // Now original contains all the elements eliminated
-              original.push_back(path[0]);
-
-              /*              std::cout << "Result before reduceJPSbyDistance" << original[original.size() -
-                 1].transpose()
-                                      << std::endl;*/
-
-              // This is to force the intersection point to be at least par_.drone_radius away from the obstacles
-              reduceJPSbyDistance(original, par_.drone_radius);
-
-              result = original[original.size() - 1];
-
-              // std::cout<<"Result here is"<<result.transpose()<<std::endl;
-
-              path = original;
-            }
-            // Copy the resulting path to the reference
-            /*     std::reverse(original.begin(), original.end());  // flip all the vector
-               result = getFirstIntersectionWithSphere(original, par_.inflation_jps, original[0]);*/
-            break;
-        }
-
-        *thereIsIntersection = true;
-
-        break;  // Leave the while loop
-      }
-
-      bool no_points_outside_sphere = false;
-
-      inters = getFirstIntersectionWithSphere(path, r, path[0], &last_id, &no_points_outside_sphere);
-      // printf("**********Found it*****************\n");
-      if (no_points_outside_sphere == true)
-      {  // JPS doesn't intersect with any obstacle
-        *thereIsIntersection = false;
-        /*        std::cout << "JPS provided doesn't intersect any obstacles, returning the first element of the path
-           you gave " "me\n"
-                          << std::endl;*/
-        result = first_element;
-
-        if (type_return == RETURN_INTERSECTION)
-        {
-          result = original[original.size() - 1];
-          path = original;
-        }
-
-        break;  // Leave the while loop
-      }
-      // printf("In 4\n");
-
-      last_search_point = path[0];
-      // Remove all the points of the path whose id is <= to last_id:
-      path.erase(path.begin(), path.begin() + last_id + 1);
-
-      // and add the intersection as the first point of the path
-      path.insert(path.begin(), inters);
-    }
-    else
-    {  // There is no neighbours
-      *thereIsIntersection = false;
-      ROS_INFO("JPS provided doesn't intersect any obstacles, returning the first element of the path you gave me\n");
-      result = first_element;
-
-      if (type_return == RETURN_INTERSECTION)
-      {
-        result = original[original.size() - 1];
-        path = original;
-      }
-
-      break;
-    }
-    iteration = iteration + 1;
-  }
-  mtx_map.unlock();
-  mtx_unk.unlock();
-
-  return result;
-}
-
 void Faster::updateState(state data)
 {
   state_ = data;
@@ -836,11 +438,9 @@ void Faster::updateState(state data)
 
 bool Faster::initializedAllExceptPlanner()
 {
-  if (!state_initialized_ || !kdtree_map_initialized_ || !kdtree_unk_initialized_ || !terminal_goal_initialized_)
+  if (!state_initialized_ || !terminal_goal_initialized_)
   {
     /*    std::cout << "state_initialized_= " << state_initialized_ << std::endl;
-        std::cout << "kdtree_map_initialized_= " << kdtree_map_initialized_ << std::endl;
-        std::cout << "kdtree_unk_initialized_= " << kdtree_unk_initialized_ << std::endl;
         std::cout << "terminal_goal_initialized_= " << terminal_goal_initialized_ << std::endl;*/
     return false;
   }
@@ -858,12 +458,9 @@ bool Faster::initializedStateAndTermGoal()
 
 bool Faster::initialized()
 {
-  if (!state_initialized_ || !kdtree_map_initialized_ || !kdtree_unk_initialized_ || !terminal_goal_initialized_ ||
-      !planner_initialized_)
+  if (!state_initialized_ || !terminal_goal_initialized_ || !planner_initialized_)
   {
     /*    std::cout << "state_initialized_= " << state_initialized_ << std::endl;
-        std::cout << "kdtree_map_initialized_= " << kdtree_map_initialized_ << std::endl;
-        std::cout << "kdtree_unk_initialized_= " << kdtree_unk_initialized_ << std::endl;
         std::cout << "terminal_goal_initialized_= " << terminal_goal_initialized_ << std::endl;
         std::cout << "planner_initialized_= " << planner_initialized_ << std::endl;*/
     return false;
@@ -956,31 +553,17 @@ bool Faster::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
   // traj_compiled.time_received = ros::Time::now().toSec();
 }
 
-// vec_E<Polyhedron<3>>& poly_safe_out,
-// vec_E<Polyhedron<3>>& poly_whole_out
-bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faster_types::Edges& edges_obstacles_out,
-                    std::vector<state>& X_safe_out, std::vector<state>& X_whole_out,
-                    pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps, std::vector<Hyperplane3D>& planes_guesses,
-                    int& num_of_LPs_run, int& num_of_QCQPs_run, PieceWisePol& pwp_out)
+bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
+                    std::vector<Hyperplane3D>& planes_guesses, int& num_of_LPs_run, int& num_of_QCQPs_run,
+                    PieceWisePol& pwp_out)
 {
   MyTimer replanCB_t(true);
 
-  /*  if (initializedAllExceptPlanner() == false)
-    {
-      std::cout << "Not Replanning" << std::endl;
-      return;
-    }
-  */
   if (initializedStateAndTermGoal() == false)
   {
     // std::cout << "Not Replanning" << std::endl;
     return false;
   }
-
-  // std::cout << "here3" << std::endl;
-
-  // sg_whole_.ResetToNormalState();
-  // sg_safe_.ResetToNormalState();
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// G <-- Project GTerm ////////////////////////////
@@ -991,14 +574,10 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   mtx_G_term.lock();
 
   state state_local = state_;
-  state G;
-  // std::cout << bold << std::setprecision(3) << "G_term_.pos= " << G_term_.pos.transpose() << reset << std::endl;
-  G.pos = projectPointToBox(state_local.pos, G_term_.pos, par_.wdx, par_.wdy, par_.wdz);
-  // std::cout << bold << std::setprecision(3) << "G.pos= " << G.pos.transpose() << reset << std::endl;
-  // std::cout << bold << std::setprecision(3) << "state_local.pos= " << state_local.pos.transpose() << reset <<
-  // std::endl;
 
   state G_term = G_term_;  // Local copy of the terminal terminal goal
+
+  state G = G_term;
 
   mtx_G.unlock();
   mtx_G_term.unlock();
@@ -1034,7 +613,6 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   ROS_INFO_STREAM("_________________________");
 
   std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
-  // std::cout << bold << on_white << "******************************************************" << reset << std::endl;
 
   /////////////////////////////////// DEBUGGING ///////////////////////////////////
   mtx_trajs_.lock();
@@ -1098,7 +676,6 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   // If k_end_whole=0, then A = plan_.back() = plan_[plan_.size() - 1]
   k_end_whole = std::max((int)(plan_.size() - deltaT_), 0);
-  // k_end_whole = std::max((int)(plan_.size() * 0.25), 0);  // HACK, COMMENT THIS!! (this chooses A at 3/4)
   k_whole = plan_.size() - 1 - k_end_whole;
   A = plan_.get(k_whole);
 
@@ -1115,7 +692,6 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   MyTimer timer_jps(true);
 
   vec_Vecf<3> JPSk;
-  // JPSk = jps_manager_.solveJPS3D(A.pos, G.pos, &solvedjps, 1);
   JPSk.push_back(A.pos);  // hack to ignore the static obstacles for now
   JPSk.push_back(G.pos);  // hack to ignore the static obstacles for now
   solvedjps = true;       // hack to ignore the static obstacles for now
@@ -1149,185 +725,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   {
     JPS_in.push_back(E.pos);
   }
-  // createMoreVertexes in case dist between vertexes is too big
-  createMoreVertexes(JPS_in, par_.dist_max_vertexes);
-  /*
-    //////////////////////////////////////////////////////////////////////////
-    ///////////////// Solve with GUROBI Whole trajectory /////////////////////
-    //////////////////////////////////////////////////////////////////////////
 
-    if (par_.use_faster == true)
-    {
-      vec_Vecf<3> JPS_whole = JPS_in;
-      deleteVertexes(JPS_whole, par_.max_poly_whole);
-      E.pos = JPS_whole[JPS_whole.size() - 1];
-
-      // Convex Decomp around JPS_whole
-      MyTimer cvx_ellip_decomp_t(true);
-      jps_manager_.cvxEllipsoidDecomp(JPS_whole, OCCUPIED_SPACE, l_constraints_whole_, poly_whole_out);
-      std::cout << "poly_whole_out= " << poly_whole_out.size() << std::endl;
-
-      // Check if G is inside poly_whole
-      bool isGinside_whole = l_constraints_whole_[l_constraints_whole_.size() - 1].inside(G.pos);
-      E.pos = (isGinside_whole == true) ? G.pos : E.pos;
-
-      // Set Initial cond, Final cond, and polytopes for the whole traj
-      sg_whole_.setX0(A);
-      sg_whole_.setXf(E);
-      sg_whole_.setPolytopes(l_constraints_whole_);
-
-      std::cout << "Initial Position is inside= " << l_constraints_whole_[l_constraints_whole_.size() - 1].inside(A.pos)
-                << std::endl;
-      std::cout << "Final Position is inside= " << l_constraints_whole_[l_constraints_whole_.size() - 1].inside(E.pos)
-                << std::endl;
-
-      // Solve with Gurobi
-      MyTimer whole_gurobi_t(true);
-      bool solved_whole = sg_whole_.genNewTraj();
-
-      if (solved_whole == false)
-      {
-        std::cout << bold << red << "No solution found for the whole trajectory" << reset << std::endl;
-        return;
-      }
-
-      // Get Results
-      sg_whole_.fillX();
-
-      // Copy for visualization
-      X_whole_out = sg_whole_.X_temp_;
-      JPS_whole_out = JPS_whole;
-    }
-    else
-    {  // Dummy whole trajectory
-      state dummy;
-      std::vector<state> dummy_vector;
-      dummy_vector.push_back(dummy);
-      sg_whole_.X_temp_ = dummy_vector;
-    }
-
-    // std::cout << "This is the WHOLE TRAJECTORY" << std::endl;
-    // printStateVector(sg_whole_.X_temp_);
-    // std::cout << "===========================" << std::endl;
-
-    //////////////////////////////////////////////////////////////////////////
-    ///////////////// Solve with GUROBI Safe trajectory /////////////////////
-    //////////////////////////////////////////////////////////////////////////
-
-    vec_Vecf<3> JPSk_inside_sphere_tmp = JPS_in;
-    bool thereIsIntersection2;
-    // state M;
-    M_.pos = getFirstCollisionJPS(JPSk_inside_sphere_tmp, &thereIsIntersection2, UNKNOWN_MAP,
-                                  RETURN_INTERSECTION);  // results saved in JPSk_inside_sphere_tmp
-
-    bool needToComputeSafePath;
-    int indexH = findIndexH(needToComputeSafePath);
-
-    std::cout << "NeedToComputeSafePath=" << needToComputeSafePath << std::endl;
-
-    if (par_.use_faster == false)
-    {
-      needToComputeSafePath = true;
-    }
-
-    if (needToComputeSafePath == false)
-    {
-      k_safe = indexH;
-      sg_safe_.X_temp_ = std::vector<state>();  // 0 elements
-    }
-    else
-    {
-      mtx_X_U_temp.lock();
-
-      k_safe = findIndexR(indexH);
-      state R = sg_whole_.X_temp_[k_safe];
-
-      mtx_X_U_temp.unlock();
-
-      // if (ARisInFreeSpace(indexR_) == false and takeoff_done_ == true)
-      // {
-      //  std::cout << red << bold << "The piece A-->R is not in Free Space" << std::endl;
-      //  return;
-      //}
-
-      JPSk_inside_sphere_tmp[0] = R.pos;
-
-      if (par_.use_faster == false)
-      {
-        JPSk_inside_sphere_tmp[0] = A.pos;
-      }
-
-      vec_Vecf<3> JPS_safe = JPSk_inside_sphere_tmp;
-
-      // delete extra vertexes
-      deleteVertexes(JPS_safe, par_.max_poly_safe);
-      M_.pos = JPS_safe[JPS_safe.size() - 1];
-
-      // compute convex decomposition of JPS_safe
-      jps_manager_.cvxEllipsoidDecomp(JPS_safe, UNKOWN_AND_OCCUPIED_SPACE, l_constraints_safe_, poly_safe_out);
-
-      JPS_safe_out = JPS_safe;
-
-      bool isGinside = l_constraints_safe_[l_constraints_safe_.size() - 1].inside(G.pos);
-      M_.pos = (isGinside == true) ? G.pos : M_.pos;
-
-      state x0_safe;
-      x0_safe = R;
-
-      if (par_.use_faster == false)
-      {
-        x0_safe = stateA_;
-      }
-
-      bool shouldForceFinalConstraint_for_Safe = (par_.use_faster == false) ? true : false;
-
-      if (l_constraints_safe_[0].inside(x0_safe.pos) == false)
-      {
-        std::cout << red << "First point of safe traj is outside" << reset << std::endl;
-      }
-
-      sg_safe_.setX0(x0_safe);
-      sg_safe_.setXf(M_);  // only used to compute dt
-      sg_safe_.setPolytopes(l_constraints_safe_);
-      sg_safe_.setForceFinalConstraint(shouldForceFinalConstraint_for_Safe);
-      MyTimer safe_gurobi_t(true);
-      std::cout << "Calling to Gurobi" << std::endl;
-      bool solved_safe = sg_safe_.genNewTraj();
-
-      if (solved_safe == false)
-      {
-        std::cout << red << "No solution found for the safe path" << reset << std::endl;
-        return;
-      }
-
-      // Get the solution
-      sg_safe_.fillX();
-      X_safe_out = sg_safe_.X_temp_;
-    }
-
-     // std::cout << "This is the SAFE TRAJECTORY" << std::endl;
-      //printStateVector(sg_safe_.X_temp_);
-     // std::cout << "===========================" << std::endl;
-
-    ///////////////////////////////////////////////////////////
-    ///////////////       Append RESULTS    ////////////////////
-    ///////////////////////////////////////////////////////////
-    std::cout << "Going to append" << std::endl;
-
-      if (appendToPlan(k_end_whole, sg_whole_.X_temp_, k_safe, sg_safe_.X_temp_) != true)
-      {
-        return;
-      }
-    */
-
-  //######################### Solve with the NLOPT solver: //#########################
-
-  // Create a map with the moving obstacles as occupied space
-
-  // DEBUGGING
-
-  // int num_pol = par_.num_pol;
-  // int deg = par_.deg;
   int samples_per_interval = par_.samples_per_interval;
 
   state initial = A;
@@ -1337,31 +735,35 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   // std::cout << "Final.pos= " << final.pos << std::endl;
   // std::cout << "norm= " << (initial.pos - final.pos).norm() << std::endl;
 
-  par_snlopt par;
+  ////////////////////////////////
 
-  par.z_min = par_.z_ground;
-  par.z_max = par_.z_max;
-  par.Ra = par_.Ra;
-  par.v_max = par_.v_max;
-  par.a_max = par_.a_max;
-  par.dc = par_.dc;
-  par.dist_to_use_straight_guess = par_.goal_radius;
-  par.a_star_samp_x = par_.a_star_samp_x;
-  par.a_star_samp_y = par_.a_star_samp_y;
-  par.a_star_samp_z = par_.a_star_samp_z;
-  par.a_star_fraction_voxel_size = par_.a_star_fraction_voxel_size;
-  par.num_pol = par_.num_pol;
-  par.deg_pol = par_.deg_pol;
-  par.weight = par_.weight;
-  par.epsilon_tol_constraints = par_.epsilon_tol_constraints;
-  par.xtol_rel = par_.xtol_rel;
-  par.ftol_rel = par_.ftol_rel;
-  par.solver = par_.solver;
-  par.basis = par_.basis;
-  par.a_star_bias = par_.a_star_bias;
-  par.allow_infeasible_guess = par_.allow_infeasible_guess;
+  par_snlopt par_for_solver;
 
-  SolverNlopt snlopt(par);
+  par_for_solver.z_min = par_.z_ground;
+  par_for_solver.z_max = par_.z_max;
+  par_for_solver.Ra = par_.Ra;
+  par_for_solver.v_max = par_.v_max;
+  par_for_solver.a_max = par_.a_max;
+  par_for_solver.dc = par_.dc;
+  par_for_solver.dist_to_use_straight_guess = par_.goal_radius;
+  par_for_solver.a_star_samp_x = par_.a_star_samp_x;
+  par_for_solver.a_star_samp_y = par_.a_star_samp_y;
+  par_for_solver.a_star_samp_z = par_.a_star_samp_z;
+  par_for_solver.a_star_fraction_voxel_size = par_.a_star_fraction_voxel_size;
+  par_for_solver.num_pol = par_.num_pol;
+  par_for_solver.deg_pol = par_.deg_pol;
+  par_for_solver.weight = par_.weight;
+  par_for_solver.epsilon_tol_constraints = par_.epsilon_tol_constraints;
+  par_for_solver.xtol_rel = par_.xtol_rel;
+  par_for_solver.ftol_rel = par_.ftol_rel;
+  par_for_solver.solver = par_.solver;
+  par_for_solver.basis = par_.basis;
+  par_for_solver.a_star_bias = par_.a_star_bias;
+  par_for_solver.allow_infeasible_guess = par_.allow_infeasible_guess;
+
+  snlopt_ = new SolverNlopt(par_for_solver);
+
+  ///////////////////////////////
 
   double runtime_snlopt;
 
@@ -1375,7 +777,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
                               par_.upper_bound_runtime_snlopt);  // I'm stopped at the end of the trajectory --> take my
                                                                  // time to replan
   }
-  snlopt.setMaxRuntimeKappaAndMu(runtime_snlopt, par_.kappa, par_.mu);
+  snlopt_->setMaxRuntimeKappaAndMu(runtime_snlopt, par_.kappa, par_.mu);
 
   //////////////////////
   double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
@@ -1385,8 +787,8 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
                                 (par_.factor_v_max * par_.v_max);  // time to execute the optimized path
 
   bool correctInitialCond =
-      snlopt.setInitStateFinalStateInitTFinalT(initial, final, t_init,
-                                               t_final);  // note that here t_final may have been updated
+      snlopt_->setInitStateFinalStateInitTFinalT(initial, final, t_init,
+                                                 t_final);  // note that here t_final may have been updated
 
   if (correctInitialCond == false)
   {
@@ -1407,7 +809,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   edges_obstacles_out = vectorGCALPol2edges(hulls);
   mtx_trajs_.unlock();
 
-  snlopt.setHulls(hulls_std);
+  snlopt_->setHulls(hulls_std);
 
   //////////////////////
   std::cout << on_cyan << bold << "Solved so far" << solutions_found_ << "/" << total_replannings_ << reset
@@ -1415,12 +817,12 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   std::cout << "[FA] Calling NL" << std::endl;
 
-  bool result = snlopt.optimize();
+  bool result = snlopt_->optimize();
 
-  num_of_LPs_run += snlopt.getNumOfLPsRun();
-  num_of_QCQPs_run += snlopt.getNumOfQCQPsRun();
+  num_of_LPs_run += snlopt_->getNumOfLPsRun();
+  num_of_QCQPs_run += snlopt_->getNumOfQCQPsRun();
 
-  snlopt.getGuessForPlanes(planes_guesses);
+  snlopt_->getGuessForPlanes(planes_guesses);
 
   total_replannings_++;
   if (result == false)
@@ -1435,13 +837,13 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   solutions_found_++;
 
-  av_improvement_nlopt_ = ((solutions_found_ - 1) * av_improvement_nlopt_ + snlopt.improvement_) / solutions_found_;
+  av_improvement_nlopt_ = ((solutions_found_ - 1) * av_improvement_nlopt_ + snlopt_->improvement_) / solutions_found_;
 
   std::cout << blue << "Average improvement so far" << std::setprecision(5) << av_improvement_nlopt_ << reset
             << std::endl;
 
   PieceWisePol pwp_now;
-  snlopt.getSolution(pwp_now);
+  snlopt_->getSolution(pwp_now);
 
   MyTimer check_t(true);
   bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now);
@@ -1453,8 +855,6 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
     return false;
   }
 
-  // std::cout << "Below of loop\n";
-
   /////// END OF DEBUGGING
 
   std::vector<state> dummy_vector;
@@ -1465,7 +865,7 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
 
   k_safe = 0;
 
-  bool result_appending = appendToPlan(k_end_whole, dummy_vector, k_safe, snlopt.X_temp_);
+  bool result_appending = appendToPlan(k_end_whole, dummy_vector, k_safe, snlopt_->X_temp_);
 
   // std::cout << "After appendToPlan, plan_= " << std::endl;
   // plan_.print();
@@ -1493,25 +893,9 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
     exists_previous_pwp_ = true;
   }
 
-  // std::cout << std::setprecision(30) << "pwp_composed.times[0]=" << pwp_prev_.times[0] << std::endl;
-  // std::cout << "t_min= " << t_min << std::endl;
-
   X_safe_out = plan_.toStdVector();
-  // novale_already_done_ = true;
+
   //######################### End of solve with the NLOPT solver: //#########################
-  /*
-    std::cout << "This is the Whole TRAJECTORY" << std::endl;
-    printStateVector(sg_whole_.X_temp_);
-
-    std::cout << "This is the Safe TRAJECTORY" << std::endl;
-    printStateVector(snlopt.X_temp_);
-
-    mtx_plan_.lock();
-    std::cout << "This is the COMMITED TRAJECTORY" << std::endl;
-    plan_.print();
-    // printStateDeque(plan_);
-    std::cout << "===========================" << std::endl;
-    mtx_plan_.unlock();*/
 
   ///////////////////////////////////////////////////////////
   ///////////////       OTHER STUFF    //////////////////////
@@ -1537,90 +921,16 @@ bool Faster::replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faste
   // std::max(par_.alpha * states_last_replan,(double)par_.min_states_deltaT);  // Delta_t
   mtx_offsets.unlock();
 
-  // Time allocation
-  // double new_init_whole = std::max(sg_whole_.factor_that_worked_ - par_.gamma_whole, 1.0);
-  // double new_final_whole = sg_whole_.factor_that_worked_ + par_.gammap_whole;
-  // sg_whole_.setFactorInitialAndFinalAndIncrement(new_init_whole, new_final_whole, par_.increment_whole);
-
-  // double new_init_safe = std::max(sg_safe_.factor_that_worked_ - par_.gamma_safe, 1.0);
-  // double new_final_safe = sg_safe_.factor_that_worked_ + par_.gammap_safe;
-  // sg_safe_.setFactorInitialAndFinalAndIncrement(new_init_safe, new_final_safe, par_.increment_safe);
-
   planner_initialized_ = true;
 
   return true;
-}
-
-/*template <typename T>
-struct myfunc : public exprtk::ifunction<T>
-{
-  myfunc() : exprtk::ifunction<T>(2)
-  {
-    exprtk::disable_has_side_effects(*this);
-  }
-
-  inline T operator()(const T& v1, const T& v2)
-  {
-    return T(1) + (v1 * v2) / T(3);
-  }
-};*/
-
-/*template <typename T>
-inline T eval_x(PieceWisePol piecewisepol, double t)
-{
-  double x, y, z;
-  //(piecewisepol.times - 1) is the numbe of intervals
-  for (int i = 1; i < (piecewisepol.times - 1); i++)
-  {
-    if (piecewisepol.times[i - 1] <= t < piecewisepol.times[i])
-    {
-      u = (t - times[i - 1]) / (times[i] - times[i - 1]);
-
-      Eigen::Matrix<double, 1, 4> tmp;
-      tmp << u * u * u, u * u, u, 1.0;
-      x = coefficients_x.dot(tmp);
-      // TODO: This is hand-coded for a third-degree polynomial
-      // x = coefficients_x[0] * u * u * u + coefficients_x[1] * u * u + coefficients_x[2] * u + coefficients_x[3];
-      // y = coefficients_y[0] * u * u * u + coefficients_y[1] * u * u + coefficients_y[2] * u + coefficients_y[3];
-      // z = coefficients_z[0] * u * u * u + coefficients_z[1] * u * u + coefficients_z[2] * u + coefficients_z[3];
-      break;
-    }
-  }
-  return x;
-}*/
-
-void Faster::createObstacleMapFromTrajs(double t_min, double t_max)
-{
-  jps_manager_dyn_.createNewMap(state_.pos);
-
-  int number_of_samples = 10;
-
-  for (auto traj : trajs_)
-  {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr tmp(new pcl::PointCloud<pcl::PointXYZ>);
-    tmp->width = number_of_samples;  // number of samples
-    tmp->height = 1;
-    tmp->points.resize(tmp->width * tmp->height);
-
-    for (int j = 0; j < number_of_samples; j++)
-    {
-      t_ = t_min + j * (t_max - t_min) / (1.0 * number_of_samples);
-
-      tmp->points[j].x = traj.function[0].value();
-      tmp->points[j].y = traj.function[1].value();
-      tmp->points[j].z = traj.function[2].value();
-    }
-
-    jps_manager_dyn_.addToMap(tmp, traj.bbox[0] / 2.0 + 0, traj.bbox[1] / 2.0 + 0, traj.bbox[2] / 2.0 + 0);
-  }
 }
 
 void Faster::resetInitialization()
 {
   planner_initialized_ = false;
   state_initialized_ = false;
-  kdtree_map_initialized_ = false;
-  kdtree_unk_initialized_ = false;
+
   terminal_goal_initialized_ = false;
 }
 

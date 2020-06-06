@@ -30,8 +30,6 @@ Ra: 3.0           # [m] Radius of my planning sphere (planning horizon). Should 
 
 z_ground: 0.2         #[m] points below this are considered ground
 z_max: 3         #[m] JPS is not allowed to give a solution that goes higher than this height
-inflation_jps: 0.35  #[m] The obstacles are inflated (to run JPS) by this amount
-factor_jps: 1  #[m] JPS is run with resolution=factor_jps*(resolution of the map)
 
 #For multi-agent simulations
 # v_max: 2.5   #[m/s]  
@@ -43,27 +41,8 @@ v_max: 5.0   #[m/s]  7.0
 a_max: 20.0   #[m/s2] 20.0
 j_max: 50.0  #[m/s3] 10.0
 
-#Factors for time allocation
-gamma_whole: 20       #[-]
-gammap_whole: 20  #[-]
-increment_whole: 1.0 #[-]
-gamma_safe: 20         #[-]
-gammap_safe: 20    #[-]
-increment_safe: 1.0   #[-]
-
 
 alpha: 2.0 #[-] DeltaT = alpha*States_took_previous_replan
-
-delta_a: 1.0
-delta_H: 1.0
-
-max_poly_whole: 3 #Should be less than N_whole 
-max_poly_safe: 3 #Should be less than N_safe
-dist_max_vertexes: 1.5 #[m] Maximum distance between two vertexes in the JPS before doing the cvx decomp (more vertexes are added to force this)
-gurobi_threads: 1 #[threads] Number of threads that Gurobi will use. If computer is maxed out, threads=1 works faster!
-gurobi_verbose: 0 #Verbosity of Gurobi. 0 or 1
-
-use_faster: true  #if false, it will plan only in free space
 
 #Parameters for NLOPT
 num_pol: 5
@@ -104,14 +83,5 @@ factor_v_max: 0.6 #\in [0,1]. Used to find the total duration of a given traject
 
 beta: 1.0 #[-] >=1 Parameter modelling the uncertainty of the current position of the obstacles
 gamma: 0.0 #[-] >=0 Parameter modelling the uncertainty of the future trajectory of the obstacles
-
-
-# Parameters for the ground robot (jackal):
-# kw: 1
-# kyaw: 1.5
-# kdalpha: 0.0
-# kalpha: 3
-# kv: 2
-# kdist: 2
 
 

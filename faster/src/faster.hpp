@@ -2,30 +2,15 @@
 #ifndef FASTER_HPP
 #define FASTER_HPP
 
-#include <pcl/kdtree/kdtree.h>
 #include <vector>
-
 #include "cgal_utils.hpp"
+
+#include <mutex>
 
 #include "faster_types.hpp"
 // Solvers includes
-//#include "solvers/solverGurobi.hpp"
-#include "solvers/nlopt/solverNlopt.hpp"
-#include "jps_manager.hpp"
 
-//#include "solvers/solvers.hpp" CVXGEN solver interface
-//#include <CGAL/point_generators_3.h>
-//#include <vector>
-/*#include <pcl/filters/filter.h>
-#include <pcl/filters/crop_box.h>
-#include <pcl/filters/passthrough.h>*/
-//#include <Eigen/StdVector>
-//#include <stdio.h>
-//#include <math.h>
-//#include <algorithm>
-// replanCB(const ros::TimerEvent& e)
-//#include <pcl_conversions/pcl_conversions.h>
-//#include <stdlib.h>
+#include "solvers/nlopt/solverNlopt.hpp"
 
 #define MAP 1          // MAP refers to the occupancy grid
 #define UNKNOWN_MAP 2  // UNKNOWN_MAP refers to the unkown grid
@@ -57,13 +42,11 @@ class Faster
 {
 public:
   Faster(parameters par);
-  bool replan(vec_Vecf<3>& JPS_safe_out, vec_Vecf<3>& JPS_whole_out, faster_types::Edges& edges_obstacles_out,
-              std::vector<state>& X_safe_out, std::vector<state>& X_whole_out,
-              pcl::PointCloud<pcl::PointXYZ>::Ptr& pcloud_jps, std::vector<Hyperplane3D>& planes_guesses,
-              int& num_of_LPs_run, int& num_of_QCQPs_run, PieceWisePol& pwp_out);
+  bool replan(faster_types::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
+              std::vector<Hyperplane3D>& planes_guesses, int& num_of_LPs_run, int& num_of_QCQPs_run,
+              PieceWisePol& pwp_out);
   void updateState(state data);
-  // void changeMode(int new_mode);
-  void updateMap(pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_map, pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_unk);
+
   bool getNextGoal(state& next_goal);
   void getState(state& data);
   void getG(state& G);
@@ -78,14 +61,6 @@ private:
   committedTrajectory plan_;
 
   double previous_yaw_ = 0.0;
-
-  SolverNlopt* snlopt_;
-
-  // SolverGurobi sg_whole_;  // solver gurobi whole trajectory
-  // SolverGurobi sg_safe_;   // solver gurobi safe trajectory
-
-  JPS_Manager jps_manager_;      // Manager of JPS
-  JPS_Manager jps_manager_dyn_;  // Manager of JPS
 
   void dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compiled);
 
@@ -108,17 +83,7 @@ private:
 
   void getDesiredYaw(state& next_goal);
 
-  // void yaw(double diff, snapstack_msgs::QuadGoal& quad_goal);
-  void createMoreVertexes(vec_Vecf<3>& path, double d);
-
-  int findIndexR(int indexH);
-
-  int findIndexH(bool& needToComputeSafePath);
-  bool ARisInFreeSpace(int index);
-
   void updateInitialCond(int i);
-
-  void createObstacleMapFromTrajs(double t_min, double t_max);
 
   void changeDroneStatus(int new_status);
 
@@ -127,15 +92,6 @@ private:
 
   Eigen::Vector3d getAccel(int i);
   Eigen::Vector3d getJerk(int i);
-  // Returns the first collision of JPS with the map (i.e. with the known obstacles). Note that JPS will collide with a
-  // map B if JPS was computed using an older map A
-  // If type_return==Intersection, it returns the last point in the JPS path that is at least par_.inflation_jps from
-  // map
-  Eigen::Vector3d getFirstCollisionJPS(vec_Vecf<3>& path, bool* thereIsIntersection, int map, int type_return);
-
-  //  void replanCB(const ros::TimerEvent& e);
-  // void Faster::pubCB(const ros::TimerEvent& e)
-  // void pubCB();
 
   bool appendToPlan(int k_end_whole, const std::vector<state>& whole, int k_safe, const std::vector<state>& safe);
 
@@ -151,78 +107,22 @@ private:
   std::mutex mtx_trajs_;
   std::vector<dynTrajCompiled> trajs_;
 
-  // SeedDecomp3D seed_decomp_util_;
-
   bool state_initialized_ = false;
   bool planner_initialized_ = false;
 
-  double current_yaw_ = 0;
-
-  double desired_yaw_old_ = 0;
-
-  double alpha_before_ = 0;
-  double desired_yaw_B_ = 0;
-
-  vec_E<Polyhedron<3>> polyhedra_;
-  std::vector<LinearConstraint3D> l_constraints_whole_;  // Polytope (Linear) constraints
-  std::vector<LinearConstraint3D> l_constraints_safe_;   // Polytope (Linear) constraints
-
-  // int deltaTp_old_ = 1000;
-  // int deltaTp_ = 10;
   int deltaT_ = 75;
-  int deltaT_min_ = 10;
-  int indexR_ = 0;
-
-  Eigen::MatrixXd U_safe_, X_safe_;
-  double spinup_time_;
-  double z_start_;
-  // double u_min_, u_max_, z_start_, spinup_time_, z_land_;
-  // int N_ = 20;
-  pcl::KdTreeFLANN<pcl::PointXYZ> kdtree_map_;       // kdtree of the point cloud of the occuppancy grid
-  pcl::KdTreeFLANN<pcl::PointXYZ> kdtree_unk_;       // kdtree of the point cloud of the unknown grid
-  pcl::KdTreeFLANN<pcl::PointXYZ> kdtree_frontier_;  // kdtree of the frontier
-
-  bool kdtree_map_initialized_ = 0;
-  bool kdtree_unk_initialized_ = 0;
 
   bool terminal_goal_initialized_ = false;
-
-  int cells_x_;  // Number of cells of the map in X
-  int cells_y_;  // Number of cells of the map in Y
-  int cells_z_;  // Number of cells of the map in Z
-
-  int n_states_publised_ = 0;  // Number of goals=states published
 
   int drone_status_ = DroneStatus::TRAVELING;  // status_ can be TRAVELING, GOAL_SEEN, GOAL_REACHED
   int planner_status_ = PlannerStatus::FIRST_PLAN;
 
-  bool force_reset_to_0_ = 1;
-
-  /*  int k_ = 0;               // Row of X_ that will be published next;
-    int k_initial_cond_ = 0;  // Row of X_ chosen as the initial condition for the planner
-
-    int k_initial_cond_1_ = 0;
-    int k_initial_cond_2_ = 0;*/
-
-  vec_Vecf<3> JPS_old_;
-
   double dyaw_filtered_ = 0;
 
-  // pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_map_;
-
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_map_;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pclptr_unk_;
-
-  std::mutex mtx_map;  // mutex of occupied map (kdtree_map_)
-  std::mutex mtx_unk;  // mutex of unkonwn map (pclptr_unk_)
-  std::mutex mtx_frontier;
-  std::mutex mtx_inst;  // mutex of instanteneous data (v_kdtree_new_pcls_)
   std::mutex mtx_goals;
 
   std::mutex mtx_k;
-  std::mutex mtx_X_U_temp;
-  std::mutex mtx_X_U_safe;
-  std::mutex mtx_X_U;
+
   std::mutex mtx_planner_status_;
   std::mutex mtx_initial_cond;
   std::mutex mtx_state;
@@ -233,14 +133,8 @@ private:
   std::mutex mtx_G;
   std::mutex mtx_G_term;
 
-  Eigen::Vector3d pos_old_;
-  Eigen::Vector3d B_;
-
-  bool to_land_ = false;
-  bool JPSk_solved_ = false;
-
   state stateA_;  // It's the initial condition for the solver
-  // flightmode flight_mode_;
+
   state state_;
   state G_;       // This goal is always inside of the map
   state G_term_;  // This goal is the clicked goal
@@ -259,6 +153,8 @@ private:
   double time_init_opt_;
 
   double av_improvement_nlopt_ = 0.0;
+
+  SolverNlopt* snlopt_;  // pointer to the nonconvex solver
 };
 
 #endif

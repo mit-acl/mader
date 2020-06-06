@@ -5,7 +5,7 @@ project(faster)
 
 ## Add support for C++11, supported in ROS Kinetic and newer
 add_definitions(-std=c++11)
-
+#add_definitions(-std=c99)
 
 
 #For unity build, 
@@ -27,9 +27,6 @@ function(enable_unity_build UB_SUFFIX SOURCE_VARIABLE_NAME)
 endfunction(enable_unity_build)
 
 
-
-#add_definitions(-std=c99)
-
 #find_program(iwyu_path NAMES /home/jtorde/iwyu/build/include-what-you-use)
 
 #if(NOT iwyu_path)
@@ -37,24 +34,14 @@ endfunction(enable_unity_build)
 #endif()
 
 find_package( Eigen3 REQUIRED )
-include_directories(${EIGEN3_INCLUDE_DIR} ${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
+include_directories(${EIGEN3_INCLUDE_DIR})
 
-#In the ws/ directory there must be the file FindGUROBI.cmake (available https://github.com/joschu/trajopt/blob/master/cmake/modules/FindGUROBI.cmake ). I had to modify it a little bit. 
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
-# find_package(GUROBI REQUIRED)
+
 find_package(NLOPT REQUIRED)
 find_package(CGAL REQUIRED)
 include(${CGAL_USE_FILE})
-
-# if(GUROBI_FOUND)
-#   message(STATUS "GUROBI FOUND")
-# else(GUROBI_FOUND)
-#   message(FATAL_ERROR "GUROBI NOT FOUND!")
-# endif(GUROBI_FOUND)
-
-# include_directories(${GUROBI_INCLUDE_DIRS})
 
 
 
@@ -67,7 +54,6 @@ find_package(catkin REQUIRED COMPONENTS
 	snapstack_msgs
 	faster_msgs
 	sensor_msgs
-	pcl_ros
 	decomp_util
 	decomp_ros_utils
 	rviz_visual_tools
@@ -89,8 +75,6 @@ catkin_package(
 
 include_directories(${catkin_INCLUDE_DIRS})
 
-#set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;$ENV{GUROBI_HOME}/lib/libgurobi90.so;$ENV{GUROBI_HOME}/lib/" )
-
 
 #For precompile headers see example here
 #https://gitlab.kitware.com/cmake/cmake/tree/375d01c6808713a0cfeef9ea092c8236ba063525/Tests/PrecompileHeaders
@@ -103,7 +87,7 @@ add_library(utils STATIC src/utils.cpp src/utils.hpp)
 #set_property(TARGET utils PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 #target_precompile_headers(utils PUBLIC src/utils.hpp)
-target_link_libraries(utils PUBLIC ${PCL_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(utils PUBLIC ${catkin_LIBRARIES})
 
 add_library(spline_AStar STATIC src/spline_AStar.cpp)
 target_include_directories (spline_AStar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -117,27 +101,11 @@ target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DEC
 target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils spline_AStar ${catkin_LIBRARIES} cgal_utils)
 
 
-add_library(jps_manager STATIC src/jps_manager.cpp)
-target_include_directories (jps_manager PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-#target_precompile_headers(utils PUBLIC src/jps_manager.hpp)
-target_link_libraries(jps_manager PUBLIC ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES})
 
-# add_library(solverGurobi STATIC src/solvers/solverGurobi.cpp )
-# target_include_directories (solverGurobi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-# target_link_libraries(solverGurobi PUBLIC ${GUROBI_LIBRARIES})
-
-
-
-
-add_library(faster_hpp STATIC src/faster.hpp)
-target_include_directories (faster_hpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(faster_hpp PUBLIC ${CGAL_LIBS} jps_manager solverNlopt) #solverGurobi
-
-
-add_library(faster STATIC src/faster.cpp)
+add_library(faster STATIC src/faster.cpp src/faster.hpp)
 #set_property(TARGET faster PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 target_include_directories (faster PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(faster PUBLIC faster_hpp)
+target_link_libraries(faster PUBLIC utils ${CGAL_LIBS} solverNlopt)
 
 
 add_library(faster_ros STATIC src/faster_ros.cpp src/faster_ros.hpp)
@@ -146,18 +114,10 @@ target_include_directories (faster_ros PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(faster_ros PUBLIC ${catkin_LIBRARIES} faster)
 
 
-enable_unity_build(UNITY_BUILD_NAME src/main.cpp)
+#enable_unity_build(UNITY_BUILD_NAME src/main.cpp)
 
 add_executable(${PROJECT_NAME}_node src/main.cpp)
 
-#IF CVXGEN and GUROBI are required:
-#target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/libcvx_vel.so ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/libcvx_accel.so ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/libcvx_jerk.so ${GUROBI_LIBRARIES})
-
-#IF only GUROBI is required:
-#target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${JPS3D_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} ${GUROBI_LIBRARIES} )
-
-
-#If GUROBI and NLOPT are required
 target_link_libraries(${PROJECT_NAME}_node PUBLIC faster_ros)
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
@@ -182,35 +142,5 @@ target_link_libraries(predictor_node ${catkin_LIBRARIES} utils)
 add_executable(test_predictor_node src/test_predictor.cpp src/predictor.cpp src/bspline_utils.cpp)
 add_dependencies(test_predictor_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_predictor_node ${catkin_LIBRARIES} utils)
-
-# add_executable(simplex_example src/solvers/simplex/example.cpp)
-# add_dependencies(simplex_example ${catkin_EXPORTED_TARGETS} )
-# target_link_libraries(simplex_example ${catkin_LIBRARIES})
-
-
-#add_executable(${PROJECT_NAME}_node_novale src/main_novale.cpp)
-#add_dependencies(${PROJECT_NAME}_node_novale ${catkin_EXPORTED_TARGETS} )
-#target_link_libraries(${PROJECT_NAME}_node_novale ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-
-
-
-# add_executable(test_nlopt src/solvers/nlopt/test_nlopt.cpp) #src/solvers/nlopt/solverNlopt.cpp
-# add_dependencies(test_nlopt ${catkin_EXPORTED_TARGETS} )
-# target_link_libraries(test_nlopt ${NLOPT_LIBRARIES} spline_AStar solverNlopt)
-
-
-#add_executable(gurobi_continuous_exec gurobi_continuous.cpp)
-#target_link_libraries(gurobi_continuous_exec ${GUROBI_LIBRARIES})
-
-#add_executable(gurobi_discrete_exec gurobi_discrete.cpp)
-#target_link_libraries(gurobi_discrete_exec ${GUROBI_LIBRARIES} )
-
-
-
-#add_executable(solverGurobi_exec src/solvers/solverGurobi.cpp)
-#target_link_libraries(solverGurobi_exec ${GUROBI_LIBRARIES})
-#add_executable(${PROJECT_NAME}_deubg_node src/debug.cpp)
-#target_link_libraries(${PROJECT_NAME}_deubg_node ${catkin_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/libcvx.so)
-#add_dependencies(${PROJECT_NAME}_deubg_node ${catkin_EXPORTED_TARGETS})
 
 

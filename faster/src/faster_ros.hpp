@@ -73,11 +73,6 @@ private:
   // void clearMarkerSetOfArrows();
   void clearMarkerActualTraj();
   void clearMarkerColoredTraj();
-  void mapCB(const sensor_msgs::PointCloud2::ConstPtr& pcl2ptr_msg,
-             const sensor_msgs::PointCloud2::ConstPtr& pcl2ptr_msg2);  // Callback for the occupancy pcloud
-  void unkCB(const sensor_msgs::PointCloud2ConstPtr& pcl2ptr_msg);     // Callback for the unkown pcloud
-  void pclCB(const sensor_msgs::PointCloud2ConstPtr& pcl2ptr_msg);
-  void frontierCB(const sensor_msgs::PointCloud2ConstPtr& pcl2ptr_msg);
 
   void pubActualTraj();
   visualization_msgs::MarkerArray clearArrows();
@@ -146,26 +141,18 @@ private:
   ros::Publisher pub_traj_safe_;
   ros::Publisher pub_setpoint_;
   ros::Publisher pub_actual_traj_;
-  ros::Publisher pub_path_jps1_;
-  ros::Publisher pub_path_jps2_;
-  ros::Publisher pub_path_jps_safe_;
-  ros::Publisher pub_path_jps_whole_;
-  ros::Publisher pub_intersectionI_;
-  ros::Publisher pub_point_R_;
-  ros::Publisher pub_point_M_;
-  ros::Publisher pub_point_E_;
-  ros::Publisher pub_point_H_;
+
   ros::Publisher pub_point_A_;
   ros::Publisher pub_traj_committed_colored_;
   ros::Publisher pub_traj_whole_colored_;
   ros::Publisher pub_traj_safe_colored_;
-  ros::Publisher pub_cloud_jps_;
+
   ros::Publisher pub_text_;
   ros::Publisher pub_traj_;
 
   ros::Publisher pub_planning_vis_;
   ros::Publisher pub_intersec_points_;
-  ros::Publisher pub_jps_inters_;
+
   ros::Publisher pub_samples_safe_path_;
   ros::Publisher pub_log_;
   ros::Publisher poly_whole_pub_;

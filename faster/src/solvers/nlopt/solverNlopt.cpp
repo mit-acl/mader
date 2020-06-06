@@ -29,31 +29,211 @@ using namespace termcolor;
 
 SolverNlopt::SolverNlopt(par_snlopt &par)
 {
-  Eigen::Matrix<double, 4, 4> Mbs2mv_pos, Mbs2be_pos;
-  Eigen::Matrix<double, 3, 3> Mbs2mv_vel, Mbs2be_vel;
+  deg_pol_ = par.deg_pol;
+  num_pol_ = par.num_pol;
+
+  p_ = deg_pol_;
+  M_ = num_pol_ + 2 * p_;
+  N_ = M_ - p_ - 1;
+  num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
+
+  ////////////
+
+  Eigen::Matrix<double, 4, 4> M_pos_bs2mv_seg0, M_pos_bs2mv_seg1, M_pos_bs2mv_rest, M_pos_bs2mv_seg_last2,
+      M_pos_bs2mv_seg_last;
+
+  Eigen::Matrix<double, 4, 4> M_pos_bs2be_seg0, M_pos_bs2be_seg1, M_pos_bs2be_rest, M_pos_bs2be_seg_last2,
+      M_pos_bs2be_seg_last;
+
+  Eigen::Matrix<double, 3, 3> M_vel_bs2mv_seg0, M_vel_bs2mv_rest, M_vel_bs2mv_seg_last;
+  Eigen::Matrix<double, 3, 3> M_vel_bs2be_seg0, M_vel_bs2be_rest, M_vel_bs2be_seg_last;
+
   // see matlab.
-  // This is for the interval [0 1];
-  Mbs2mv_pos << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
-      0.70176, 0.6665738, 0.29187, 0.119851669,          ////////////
-      0.119851669, 0.2918718, 0.66657, 0.7017652,        //////////////////
-      -0.00533879, -0.015455, 0.0570095, 0.18372189;     //////////////////
+  // This is for t \in [0 1];
 
-  Mbs2be_pos << 1, 0, 0, 0,  //////////
-      4, 4, 2, 1,            //////////
-      1, 2, 4, 4,            //////////
-      0, 0, 0, 1;            //////////
+  // clang-format off
 
-  Mbs2be_pos = (1 / 6.0) * Mbs2be_pos;
+  //////BSPLINE to MINVO POSITION/////////
 
-  Mbs2mv_vel << 0.5387, 0.08334, -0.03868,   //////////////////////
-      /*//////*/ 0.5, 0.8333, 0.5,           //////////////////////
-      /*//////*/ -0.03867, 0.08333, 0.5387;  //////////////////////
+  M_pos_bs2mv_seg0 <<
 
-  Mbs2be_vel << 0.5, 0.0, 0.0,   //////////////////////
-      /*//////*/ 0.5, 1.0, 0.5,  //////////////////////
-      /*//////*/ 0.0, 0.0, 0.5;  //////////////////////
+      1.1023,    0.3421,   -0.0927,   -0.0320,
+     -0.0497,    0.6578,    0.5305,    0.2118,
+     -0.0473,    0.0156,    0.5052,    0.6365,
+     -0.0053,   -0.0155,    0.0570,    0.1837;
 
-  // std::cout << "In the SolverNlopt Constructor\n";
+  M_pos_bs2mv_seg1 <<
+
+      0.2756,    0.0855,   -0.0232,   -0.0080,
+      0.6099,    0.6381,    0.2996,    0.1225,
+      0.1199,    0.2919,    0.6666,    0.7018,
+     -0.0053,   -0.0155,    0.0570,    0.1837;
+
+  M_pos_bs2mv_rest <<
+
+      0.1837,    0.0570,   -0.0155,   -0.0053,
+      0.7018,    0.6666,    0.2919,    0.1199,
+      0.1199,    0.2919,    0.6666,    0.7018,
+     -0.0053,   -0.0155,    0.0570,    0.1837;
+
+
+  M_pos_bs2mv_seg_last2 <<
+
+      0.1837,    0.0570,   -0.0155,   -0.0053,
+      0.7018,    0.6666,    0.2919,    0.1199,
+      0.1225,    0.2996,    0.6381,    0.6099,
+     -0.0080,   -0.0232,    0.0855,    0.2756;
+
+  M_pos_bs2mv_seg_last <<
+
+      0.1837,    0.0570,   -0.0155,   -0.0053,
+      0.6365,    0.5052,    0.0156,   -0.0473,
+      0.2118,    0.5305,    0.6578,   -0.0497,
+     -0.0320,   -0.0927,    0.3421,    1.1023;
+
+  //////BSPLINE to BEZIER POSITION/////////
+
+  M_pos_bs2be_seg0 <<
+
+      1.0000,    0.0000,   -0.0000,         0,
+           0,    1.0000,    0.5000,    0.2500,
+           0,   -0.0000,    0.5000,    0.5833,
+           0,         0,         0,    0.1667;
+
+  M_pos_bs2be_seg1 <<
+
+      0.2500,    0.0000,   -0.0000,         0,
+      0.5833,    0.6667,    0.3333,    0.1667,
+      0.1667,    0.3333,    0.6667,    0.6667,
+           0,         0,         0,    0.1667;
+
+  M_pos_bs2be_rest <<
+
+      0.1667,    0.0000,         0,         0,
+      0.6667,    0.6667,    0.3333,    0.1667,
+      0.1667,    0.3333,    0.6667,    0.6667,
+           0,         0,         0,    0.1667;
+
+  M_pos_bs2be_seg_last2 <<
+
+      0.1667,         0,   -0.0000,         0,
+      0.6667,    0.6667,    0.3333,    0.1667,
+      0.1667,    0.3333,    0.6667,    0.5833,
+           0,         0,         0,    0.2500;
+
+  M_pos_bs2be_seg_last <<
+
+      0.1667,    0.0000,         0,         0,
+      0.5833,    0.5000,         0,         0,
+      0.2500,    0.5000,    1.0000,         0,
+           0,         0,         0,    1.0000;
+
+  /////BSPLINE to MINVO VELOCITY
+  M_vel_bs2mv_seg0 <<
+
+    1.0773,    0.1667,   -0.0774,
+   -0.0387,    0.7500,    0.5387,
+   -0.0387,    0.0833,    0.5387;
+
+  M_vel_bs2mv_rest <<
+
+      0.5387,    0.0833,   -0.0387,
+      0.5000,    0.8333,    0.5000,
+     -0.0387,    0.0833,    0.5387;
+
+  M_vel_bs2mv_seg_last <<
+
+      0.5387,    0.0833,   -0.0387,
+      0.5387,    0.7500,   -0.0387,
+     -0.0773,    0.1667,    1.0773;
+
+/////BSPLINE to BEZIER VELOCITY
+  M_vel_bs2be_seg0 <<
+
+      1.0000,         0,         0,
+           0,    1.0000,    0.5000,
+           0,         0,    0.5000;
+
+  M_vel_bs2be_rest <<
+
+      0.5000,         0,         0,
+      0.5000,    1.0000,    0.5000,
+           0,         0,    0.5000;
+
+  M_vel_bs2be_seg_last <<
+
+      0.5000,         0,         0,
+      0.5000,    1.0000,         0,
+           0,         0,    1.0000;
+
+  // clang-format on
+
+  //////BSPLINE to MINVO POSITION/////////
+  std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2mv;  // will have as many elements as segments
+  M_pos_bs2mv.push_back(M_pos_bs2mv_seg0);
+  M_pos_bs2mv.push_back(M_pos_bs2mv_seg1);
+  for (int i = 0; i < (num_of_segments_ - 4); i++)
+  {
+    M_pos_bs2mv.push_back(M_pos_bs2mv_rest);
+  }
+  M_pos_bs2mv.push_back(M_pos_bs2mv_seg_last2);
+  M_pos_bs2mv.push_back(M_pos_bs2mv_seg_last);
+
+  //////BSPLINE to BEZIER POSITION/////////
+  std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2be;  // will have as many elements as segments
+  M_pos_bs2be.push_back(M_pos_bs2be_seg0);
+  M_pos_bs2be.push_back(M_pos_bs2be_seg1);
+  for (int i = 0; i < (num_of_segments_ - 4); i++)
+  {
+    M_pos_bs2be.push_back(M_pos_bs2be_rest);
+  }
+  M_pos_bs2be.push_back(M_pos_bs2be_seg_last2);
+  M_pos_bs2be.push_back(M_pos_bs2be_seg_last);
+
+  //////BSPLINE to MINVO Velocity/////////
+  std::vector<Eigen::Matrix<double, 3, 3>> M_vel_bs2mv;  // will have as many elements as segments
+  M_vel_bs2mv.push_back(M_vel_bs2mv_seg0);
+  for (int i = 0; i < (num_of_segments_ - 2 - 1); i++)
+  {
+    M_vel_bs2mv.push_back(M_vel_bs2mv_rest);
+  }
+  M_vel_bs2mv.push_back(M_vel_bs2mv_seg_last);
+
+  //////BSPLINE to BEZIER Velocity/////////
+  std::vector<Eigen::Matrix<double, 3, 3>> M_vel_bs2be;  // will have as many elements as segments
+  M_vel_bs2be.push_back(M_vel_bs2be_seg0);
+  for (int i = 0; i < (num_of_segments_ - 2 - 1); i++)
+  {
+    M_vel_bs2be.push_back(M_vel_bs2be_rest);
+  }
+  M_vel_bs2be.push_back(M_vel_bs2be_seg_last);
+
+  // Mbs2mv_pos << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
+  //     0.70176, 0.6665738, 0.29187, 0.119851669,          ////////////
+  //     0.119851669, 0.2918718, 0.66657, 0.7017652,        //////////////////
+  //     -0.00533879, -0.015455, 0.0570095, 0.18372189;     //////////////////
+
+  // Mbs2mv_pos << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
+  //     0.70176, 0.6665738, 0.29187, 0.119851669,          ////////////
+  //     0.119851669, 0.2918718, 0.66657, 0.7017652,        //////////////////
+  //     -0.00533879, -0.015455, 0.0570095, 0.18372189;     //////////////////
+
+  // Mbs2be_pos << 1, 0, 0, 0,  //////////
+  //     4, 4, 2, 1,            //////////
+  //     1, 2, 4, 4,            //////////
+  //     0, 0, 0, 1;            //////////
+
+  // Mbs2be_pos = (1 / 6.0) * Mbs2be_pos;
+
+  // Mbs2mv_vel << 0.5387, 0.08334, -0.03868,   //////////////////////
+  //     /*//////*/ 0.5, 0.8333, 0.5,           //////////////////////
+  //     /*//////*/ -0.03867, 0.08333, 0.5387;  //////////////////////
+
+  // Mbs2be_vel << 0.5, 0.0, 0.0,   //////////////////////
+  //     /*//////*/ 0.5, 1.0, 0.5,  //////////////////////
+  //     /*//////*/ 0.0, 0.0, 0.5;  //////////////////////
+
+  std::cout << "In the SolverNlopt Constructor\n";
 
   z_ground_ = par.z_min;
   z_max_ = par.z_max;
@@ -67,27 +247,38 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   if (par.basis == "MINVO")
   {
     basis_ = MINVO;
-    Mbs2basis_pos_ = Mbs2mv_pos;
-    Mbs2basis_vel_ = Mbs2mv_vel;
+    M_pos_bs2basis_ = M_pos_bs2mv;
+    M_vel_bs2basis_ = M_vel_bs2mv;
   }
   else if (par.basis == "BEZIER")
   {
     basis_ = BEZIER;
-    Mbs2basis_pos_ = Mbs2be_pos;
-    Mbs2basis_vel_ = Mbs2be_vel;
+    M_pos_bs2basis_ = M_pos_bs2be;
+    M_vel_bs2basis_ = M_vel_bs2be;
   }
   else if (par.basis == "B_SPLINE")
   {
     basis_ = B_SPLINE;
-    Mbs2basis_pos_ = Eigen::Matrix<double, 4, 4>::Identity();
-    Mbs2basis_vel_ = Eigen::Matrix<double, 3, 3>::Identity();
+
+    for (int i = 0; i < num_of_segments_; i++)
+    {
+      M_pos_bs2basis_.push_back(Eigen::Matrix<double, 4, 4>::Identity());
+    }
+
+    for (int i = 0; i < (num_of_segments_ - 1); i++)
+    {
+      M_vel_bs2basis_.push_back(Eigen::Matrix<double, 3, 3>::Identity());
+    }
   }
   else
   {
-    std::cout << red << "Basis " << par.basis << " not implemented yet, using the one for B-Spline" << std::endl;
-    basis_ = B_SPLINE;
-    Mbs2basis_pos_ = Eigen::Matrix<double, 4, 4>::Identity();
-    Mbs2basis_vel_ = Eigen::Matrix<double, 3, 3>::Identity();
+    std::cout << red << "Basis " << par.basis << " not implemented yet, using the one for B-Spline" << reset
+              << std::endl;
+    std::cout << red << "============================================" << reset << std::endl;
+    abort();
+    // basis_ = B_SPLINE;
+    // M_pos_bs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+    // Mbs2basis_vel_ = Eigen::Matrix<double, 3, 3>::Identity();
   }
 
   /////////
@@ -122,12 +313,7 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   ftol_rel_ = par.ftol_rel;                                // 1e-1;
 
   weight_ = par.weight;
-  deg_pol_ = par.deg_pol;
-  num_pol_ = par.num_pol;
 
-  p_ = deg_pol_;
-  M_ = num_pol_ + 2 * p_;
-  N_ = M_ - p_ - 1;
   // num_of_variables_ = (3 * (N_ + 1) - 18) + (3 * (M_ - 2 * p_)) + (M_ - 2 * p_);  // total number of variables
 
   separator_solver_ = new separator::Separator();
@@ -135,8 +321,8 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
 
 SolverNlopt::~SolverNlopt()
 {
-  delete opt_;
-  delete local_opt_;
+  // delete opt_;
+  // delete local_opt_;
 }
 
 void SolverNlopt::getGuessForPlanes(std::vector<Hyperplane3D> &planes)
@@ -542,7 +728,6 @@ void SolverNlopt::setHulls(ConvexHullsOfCurves_Std &hulls)
 
   num_of_variables_ = k_max_ + 1;  // k_max_ + 1;
 
-  num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
   int num_of_cpoints = N_ + 1;
 
   num_of_normals_ = num_of_segments_ * num_of_obst_;
@@ -1175,15 +1360,15 @@ int SolverNlopt::lastDecCP()
 }
 
 void SolverNlopt::transformPosBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs,
-                                                 Eigen::Matrix<double, 3, 4> &Qmv)
+                                                 Eigen::Matrix<double, 3, 4> &Qmv, int interval)
 {
-  Qmv = Qbs * Mbs2basis_pos_;
+  Qmv = Qbs * M_pos_bs2basis_[interval];
 }
 
 void SolverNlopt::transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3, 3> &Qbs,
-                                                 Eigen::Matrix<double, 3, 3> &Qmv)
+                                                 Eigen::Matrix<double, 3, 3> &Qmv, int interval)
 {
-  Qmv = Qbs * Mbs2basis_vel_;
+  Qmv = Qbs * M_vel_bs2basis_[interval];
 }
 
 bool SolverNlopt::checkGradientsUsingFiniteDiff()
@@ -1370,8 +1555,8 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         Qbs.col(1) = q[i + 1];
         Qbs.col(2) = q[i + 2];
         Qbs.col(3) = q[i + 3];
-        transformPosBSpline2otherBasis(Qbs,
-                                       Qmv);  // Now Qmv is a matrix whose each row contains a "basis_" control point
+        transformPosBSpline2otherBasis(Qbs, Qmv,
+                                       i);  // Now Qmv is a matrix whose each row contains a "basis_" control point
 
         Eigen::Vector3d q_ipu;
         for (int u = 0; u <= 3 && (i + u) <= (N_ - 2); u++)
@@ -1395,7 +1580,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
               {  // The last control point of the interval is qNm1, and the variable is qNm2
                 // Needed because qN=qNm1=qNm2
                 toGradSameConstraintDiffVariables(
-                    gIndexQ(i + k), (Mbs2basis_pos_(k, u) + Mbs2basis_pos_(k + 1, u)) * n[ip], grad, r, nn);
+                    gIndexQ(i + k), (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u)) * n[ip], grad, r, nn);
               }
 
               else if ((i + 3) == (N_) && k == 1)
@@ -1404,14 +1589,15 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
 
                 toGradSameConstraintDiffVariables(
                     gIndexQ(i + k),
-                    (Mbs2basis_pos_(k, u) + Mbs2basis_pos_(k + 1, u) + Mbs2basis_pos_(k + 2, u)) * n[ip], grad, r, nn);
+                    (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u) + M_pos_bs2basis_[i](k + 2, u)) * n[ip],
+                    grad, r, nn);
               }
 
               else
               {
                 if (isADecisionCP(i + k))  // If Q[i] is a decision variable
                 {
-                  toGradSameConstraintDiffVariables(gIndexQ(i + k), Mbs2basis_pos_(k, u) * n[ip], grad, r, nn);
+                  toGradSameConstraintDiffVariables(gIndexQ(i + k), M_pos_bs2basis_[i](k, u) * n[ip], grad, r, nn);
                 }
               }
               //}
@@ -1469,7 +1655,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
     Qbs.col(1) = v_iM1;
     Qbs.col(2) = v_i;
 
-    transformVelBSpline2otherBasis(Qbs, Qmv);
+    transformVelBSpline2otherBasis(Qbs, Qmv, i - 2);
 
     ///////////////////////// ANY BASIS //////////////////////////////
 
@@ -1491,8 +1677,8 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         for (int u = 0; u < 3; u++)
         {  // v_{i-2+j} depends on v_{i-2}, v_{i-1}, v_{i} of the old basis
 
-          partials.block(0, u, 3, 1) += -Mbs2basis_vel_(u, j) * c1 * ones;
-          partials.block(0, u + 1, 3, 1) += Mbs2basis_vel_(u, j) * c1 * ones;
+          partials.block(0, u, 3, 1) += -M_vel_bs2basis_[i - 2](u, j) * c1 * ones;
+          partials.block(0, u + 1, 3, 1) += M_vel_bs2basis_[i - 2](u, j) * c1 * ones;
         }
         // and now assign it to the vector grad
         for (int u = 0; u < 3; u++)
@@ -1521,8 +1707,8 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         for (int u = 0; u < 3; u++)
         {  // v_{i-2+j} depends on v_{i-2}, v_{i-1}, v_{i} of the old basis
 
-          partials.block(0, u, 3, 1) += Mbs2basis_vel_(u, j) * c1 * ones;
-          partials.block(0, u + 1, 3, 1) += -Mbs2basis_vel_(u, j) * c1 * ones;
+          partials.block(0, u, 3, 1) += M_vel_bs2basis_[i - 2](u, j) * c1 * ones;
+          partials.block(0, u + 1, 3, 1) += -M_vel_bs2basis_[i - 2](u, j) * c1 * ones;
         }
         // and now assign it to the vector grad
         for (int u = 0; u < 3; u++)
@@ -1935,16 +2121,16 @@ bool SolverNlopt::optimize()
 
   // the creations of the solvers should be done here, and NOT on the constructor (not sure why, but if you do it in the
   // construtor of this class, and use the same ones forever, it gets stuck very often)
-  if (opt_)
-  {
-    (*opt_).~opt();  // Call the destructor
-    delete opt_;
-  }
-  if (local_opt_)
-  {
-    (*local_opt_).~opt();  // Call the destructor
-    delete local_opt_;
-  }
+  // if (opt_)
+  // {
+  //   (*opt_).~opt();  // Call the destructor
+  //   delete opt_;
+  // }
+  // if (local_opt_)
+  // {
+  //   (*local_opt_).~opt();  // Call the destructor
+  //   delete local_opt_;
+  // }
 
   // https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#augmented-lagrangian-algorithm
   // The augmented Lagrangian method is specified in NLopt as NLOPT_AUGLAG. We also provide a variant, NLOPT_AUGLAG_EQ,
@@ -1952,27 +2138,30 @@ bool SolverNlopt::optimize()
   // subsidiary algorithm to be handled directly; in this case, the subsidiary algorithm must handle inequality
   // constraints (e.g. MMA or COBYLA)
 
-  opt_ = new nlopt::opt(nlopt::AUGLAG_EQ, num_of_variables_);  // nlopt::AUGLAG
-  local_opt_ = new nlopt::opt(solver_, num_of_variables_);
+  nlopt::opt opt(nlopt::AUGLAG_EQ, num_of_variables_);  // need to create it here because I need the # of variables
+  nlopt::opt local_opt(solver_, num_of_variables_);     // need to create it here because I need the # of variables
 
-  local_opt_->set_xtol_rel(xtol_rel_);  // stopping criteria. If >=1e-1, it leads to weird trajectories
-  local_opt_->set_ftol_rel(ftol_rel_);  // stopping criteria. If >=1e-1, it leads to weird trajectories
-  local_opt_->set_maxtime(std::max(mu_ * max_runtime_, 0.001));
+  // opt_ = new nlopt::opt(nlopt::AUGLAG_EQ, num_of_variables_);  // nlopt::AUGLAG
+  // local_opt_ = new nlopt::opt(solver_, num_of_variables_);
 
-  opt_->set_local_optimizer(*local_opt_);
-  opt_->set_xtol_rel(xtol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
-  opt_->set_ftol_rel(ftol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
+  local_opt.set_xtol_rel(xtol_rel_);  // stopping criteria.
+  local_opt.set_ftol_rel(ftol_rel_);  // stopping criteria.
+  local_opt.set_maxtime(std::max(mu_ * max_runtime_, 0.001));
+
+  opt.set_local_optimizer(local_opt);
+  opt.set_xtol_rel(xtol_rel_);  // Stopping criteria.
+  opt.set_ftol_rel(ftol_rel_);  // Stopping criteria.
 
   // opt_ = new nlopt::opt(solver_, num_of_variables_);
-  // opt_->set_xtol_rel(xtol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
-  // opt_->set_ftol_rel(ftol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
+  // opt.set_xtol_rel(xtol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
+  // opt.set_ftol_rel(ftol_rel_);  // Stopping criteria. If >=1e-1, it leads to weird trajectories
 
-  // opt_->set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
+  // opt.set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
 
-  opt_->set_maxtime(std::max(mu_ * max_runtime_, 0.001));  // 0.001 to make sure this criterion is used  // maximum time
-                                                           // in seconds. Negative --> don't use this criterion
+  opt.set_maxtime(std::max(mu_ * max_runtime_, 0.001));  // 0.001 to make sure this criterion is used  // maximum time
+                                                         // in seconds. Negative --> don't use this criterion
 
-  // opt_->set_maxtime(max_runtime_);
+  // opt.set_maxtime(max_runtime_);
   initializeNumOfConstraints();
 
   // see https://github.com/stevengj/nlopt/issues/168
@@ -2009,18 +2198,18 @@ bool SolverNlopt::optimize()
     lb.push_back(-HUGE_VAL);
     ub.push_back(HUGE_VAL);
   }
-  opt_->set_lower_bounds(lb);
-  opt_->set_upper_bounds(ub);
-  if (local_opt_)
-  {
-    local_opt_->set_lower_bounds(lb);
-    local_opt_->set_upper_bounds(ub);
-  }
+  opt.set_lower_bounds(lb);
+  opt.set_upper_bounds(ub);
+  // if (local_opt_)
+  // {
+  local_opt.set_lower_bounds(lb);
+  local_opt.set_upper_bounds(ub);
+  // }
 
   // set constraint and objective
-  opt_->add_inequality_mconstraint(SolverNlopt::myIneqConstraints, this, tol_constraints);
-  opt_->set_min_objective(SolverNlopt::myObjFunc,
-                          this);  // this is passed as a parameter (the obj function has to be static)
+  opt.add_inequality_mconstraint(SolverNlopt::myIneqConstraints, this, tol_constraints);
+  opt.set_min_objective(SolverNlopt::myObjFunc,
+                        this);  // this is passed as a parameter (the obj function has to be static)
 
   best_feasible_sol_so_far_.resize(num_of_variables_);
   got_a_feasible_solution_ = false;
@@ -2063,12 +2252,12 @@ bool SolverNlopt::optimize()
 
   // std::cout << "std::max(mu_ * max_runtime_, 0.001)=" << std::max(mu_ * max_runtime_, 0.001) << std::endl;
 
-  // std::cout << "get_maxtime()= " << opt_->get_maxtime() << std::endl;
+  // std::cout << "get_maxtime()= " << opt.get_maxtime() << std::endl;
 
   int result;
   try
   {
-    result = opt_->optimize(x_, obj_obtained);
+    result = opt.optimize(x_, obj_obtained);
   }
   catch (...)
   {
@@ -2273,8 +2462,8 @@ void SolverNlopt::generateStraightLineGuess()
         Qbs.col(2) = q_guess_[i + 2];
         Qbs.col(3) = q_guess_[i + 3];
 
-        transformPosBSpline2otherBasis(Qbs,
-                                       Qmv);  // Now Qmv is a matrix whose each row contains a MINVO control point
+        transformPosBSpline2otherBasis(Qbs, Qmv,
+                                       i);  // Now Qmv is a matrix whose each row contains a MINVO control point
 
         std::vector<Eigen::Vector3d> last4Cps(4);
         last4Cps[0] = Qmv.col(0);
