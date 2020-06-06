@@ -684,46 +684,30 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
       exists_previous_pwp_ = false;
     }*/
 
+  /////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Get global plan /////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
-  ///////////////////////// Solve JPS //////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////
 
-  bool solvedjps = false;
-  MyTimer timer_jps(true);
-
-  vec_Vecf<3> JPSk;
-  JPSk.push_back(A.pos);  // hack to ignore the static obstacles for now
-  JPSk.push_back(G.pos);  // hack to ignore the static obstacles for now
-  solvedjps = true;       // hack to ignore the static obstacles for now
-
-  if (solvedjps == false)
-  {
-    std::cout << bold << red << "JPS didn't find a solution" << reset << std::endl;
-    return false;
-  }
+  std::vector<Eigen::Vector3d> global_plan;
+  global_plan.push_back(A.pos);
+  global_plan.push_back(G.pos);
 
   //////////////////////////////////////////////////////////////////////////
-  ///////////////////////// Find JPS_in ////////////////////////////////////
+  ///////////////////////// Get point E ////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
 
   double ra = std::min((dist_to_goal - 0.001), par_.Ra);  // radius of the sphere S
   bool noPointsOutsideS;
-  int li1;  // last index inside the sphere of JPSk
+  int li1;  // last index inside the sphere of global_plan
   state E;
   // std::cout << bold << std::setprecision(3) << "A.pos= " << A.pos.transpose() << reset << std::endl;
   // std::cout << "A= " << A.pos.transpose() << std::endl;
   // std::cout << "G= " << G.pos.transpose() << std::endl;
   // std::cout << "ra= " << ra << std::endl;
-  E.pos = getFirstIntersectionWithSphere(JPSk, ra, JPSk[0], &li1, &noPointsOutsideS);
+  E.pos = getFirstIntersectionWithSphere(global_plan, ra, global_plan[0], &li1, &noPointsOutsideS);
   if (noPointsOutsideS == true)  // if G is inside the sphere
   {
     E.pos = G.pos;
-  }
-  // std::cout << bold << std::setprecision(3) << "E.pos= " << E.pos.transpose() << reset << std::endl;
-  vec_Vecf<3> JPS_in(JPSk.begin(), JPSk.begin() + li1 + 1);
-  if (noPointsOutsideS == false)
-  {
-    JPS_in.push_back(E.pos);
   }
 
   int samples_per_interval = par_.samples_per_interval;

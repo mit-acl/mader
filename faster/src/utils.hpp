@@ -81,10 +81,6 @@ std::vector<std::string> pieceWisePol2String(const PieceWisePol& piecewisepol);
 
 void printStateVector(std::vector<state>& data);
 
-void vectorOfVectors2MarkerArray(vec_Vecf<3> traj, visualization_msgs::MarkerArray* m_array, std_msgs::ColorRGBA color,
-                                 int type = visualization_msgs::Marker::ARROW,
-                                 std::vector<double> radii = std::vector<double>());
-
 std_msgs::ColorRGBA getColorJet(double v, double vmin, double vmax);
 
 std_msgs::ColorRGBA color(int id);
@@ -145,7 +141,7 @@ Eigen::Vector3d getIntersectionWithSphere(Eigen::Vector3d& A, Eigen::Vector3d& B
 // it returns its first intersection with a sphere of radius=r and center=center
 // the center is added as the first point of the path to ensure that the first element of the path is inside the sphere
 // (to avoid issues with the first point of JPS2)
-Eigen::Vector3d getFirstIntersectionWithSphere(vec_Vecf<3>& path, double r, Eigen::Vector3d& center,
+Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& path, double r, Eigen::Vector3d& center,
                                                int* last_index_inside_sphere = NULL,
                                                bool* noPointsOutsideSphere = NULL);
 

@@ -435,67 +435,6 @@ void printStateVector(std::vector<state>& data)
   }
 }
 
-void vectorOfVectors2MarkerArray(vec_Vecf<3> traj, visualization_msgs::MarkerArray* m_array, std_msgs::ColorRGBA color,
-                                 int type, std::vector<double> radii)
-{
-  if (traj.size() == 0)
-  {
-    return;
-  }
-
-  // printf("In vectorOfVectors2MarkerArray\n");
-  geometry_msgs::Point p_last = eigen2point(traj[0]);
-
-  bool first_element = true;
-  int i = 50000;  // large enough to prevent conflict with other markers
-  int j = 0;
-
-  for (const auto& it : traj)
-  {
-    if (first_element and type == visualization_msgs::Marker::ARROW)  // skip the first element
-    {
-      first_element = false;
-      continue;
-    }
-
-    visualization_msgs::Marker m;
-    m.type = type;
-    m.action = visualization_msgs::Marker::ADD;
-    m.id = i;
-    i++;
-
-    m.color = color;
-    // m.scale.z = 1;
-
-    m.header.frame_id = "world";
-    m.header.stamp = ros::Time::now();
-    geometry_msgs::Point p = eigen2point(it);
-    if (type == visualization_msgs::Marker::ARROW)
-    {
-      m.scale.x = 0.02;
-      m.scale.y = 0.04;
-      m.points.push_back(p_last);
-      m.points.push_back(p);
-      // std::cout << "pushing marker\n" << m << std::endl;
-      p_last = p;
-    }
-    else
-    {
-      double scale = 0.1;  // Scale is the diameter of the sphere
-      if (radii.size() != 0)
-      {  // If argument provided
-        scale = 2 * radii[j];
-      }
-      m.scale.x = scale;
-      m.scale.y = scale;
-      m.scale.z = scale;
-      m.pose.position = p;
-    }
-    (*m_array).markers.push_back(m);
-    j = j + 1;
-  }
-}
-
 geometry_msgs::Pose identityGeometryMsgsPose()
 {
   geometry_msgs::Pose pose;
@@ -887,7 +826,7 @@ Eigen::Vector3d getIntersectionWithSphere(Eigen::Vector3d& A, Eigen::Vector3d& B
 // it returns its first intersection with a sphere of radius=r and center=center
 // the center is added as the first point of the path to ensure that the first element of the path is inside the sphere
 // (to avoid issues with the first point of JPS2)
-Eigen::Vector3d getFirstIntersectionWithSphere(vec_Vecf<3>& path, double r, Eigen::Vector3d& center,
+Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& path, double r, Eigen::Vector3d& center,
                                                int* last_index_inside_sphere, bool* noPointsOutsideSphere)
 {
   // printf("Utils: In getFirstIntersectionWithSphere\n");
