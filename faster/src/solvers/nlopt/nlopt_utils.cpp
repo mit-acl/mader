@@ -25,7 +25,7 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   int samples_per_interval = 1;
   double weight = 10000.0;  // Note that internally, this weight will be changed to other value for the check (to get
                             // rid of numerical issues)
-  double epsilon_tol_constraints = 0.1;
+  double epsilon_tol_constraints = 0.001;
   double xtol_rel = 1e-07;
   double ftol_rel = 1e-07;
   std::string solver = "LD_MMA";
@@ -39,9 +39,9 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   double v_max = 10;
   double a_max = 60;
   state initial;
-  initial.pos = Eigen::Vector3d(-4.0, 0.0, 0.0);
+  initial.pos = Eigen::Vector3d(-4.0, 1.0, -2.0);
   state final;
-  final.pos = Eigen::Vector3d(4.0, 0.0, 0.0);
+  final.pos = Eigen::Vector3d(4.0, 2.0, 3.0);
   double dist_to_use_straight_guess = 1.0;
   double a_star_fraction_voxel_size = 0.0;
   int num_pol = 8;

@@ -24,41 +24,43 @@ SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol)
 {
   // see matlab.
   // This is for the interval [0 1];
-  Mbs2mv_ << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
-      0.70176, 0.6665738, 0.29187, 0.119851669,       ////////////
-      0.119851669, 0.2918718, 0.66657, 0.7017652,     //////////////////
-      -0.00533879, -0.015455, 0.0570095, 0.18372189;  //////////////////
 
-  Mbs2be_ << 1, 0, 0, 0,  //////////
-      4, 4, 2, 1,         //////////
-      1, 2, 4, 4,         //////////
-      0, 0, 0, 1;         //////////
+  // Mbs2mv_ << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
+  //     0.70176, 0.6665738, 0.29187, 0.119851669,       ////////////
+  //     0.119851669, 0.2918718, 0.66657, 0.7017652,     //////////////////
+  //     -0.00533879, -0.015455, 0.0570095, 0.18372189;  //////////////////
 
-  Mbs2be_ = (1 / 6.0) * Mbs2be_;
+  // Mbs2be_ << 1, 0, 0, 0,  //////////
+  //     4, 4, 2, 1,         //////////
+  //     1, 2, 4, 4,         //////////
+  //     0, 0, 0, 1;         //////////
+
+  // Mbs2be_ = (1 / 6.0) * Mbs2be_;
 
   p_ = deg_pol;
   M_ = num_pol + 2 * p_;
   N_ = M_ - p_ - 1;
   num_pol_ = num_pol;
 
+  basisConverter basis_converter;
+
   if (basis == "MINVO")
   {
     // std::cout << green << bold << "A* is using MINVO" << reset << std::endl;
-    Mbs2basis_ = Mbs2mv_;
+    M_pos_bs2basis_ = basis_converter.getMinvoPosConverters(num_pol);
     basis_ = MINVO;
   }
   else if (basis == "BEZIER")
   {
     // std::cout << green << bold << "A* is using BEZIER" << reset << std::endl;
-
-    Mbs2basis_ = Mbs2be_;
+    M_pos_bs2basis_ = basis_converter.getBezierPosConverters(num_pol);
     basis_ = BEZIER;
   }
   else if (basis == "B_SPLINE")
   {
-    std::cout << green << bold << "A* is using B_SPLINE" << reset << std::endl;
+    // std::cout << green << bold << "A* is using B_SPLINE" << reset << std::endl;
 
-    Mbs2basis_ = Eigen::Matrix<double, 4, 4>::Identity();
+    M_pos_bs2basis_ = basis_converter.getBSplinePosConverters(num_pol);
     basis_ = B_SPLINE;
   }
   else
@@ -67,7 +69,13 @@ SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol)
     abort();
   }
 
-  Mbs2basis_inverse_ = Mbs2basis_.inverse();
+  M_pos_bs2basis_inverse_.clear();
+  for (auto matrix_i : M_pos_bs2basis_)
+  {
+    M_pos_bs2basis_inverse_.push_back(matrix_i.inverse());
+  }
+
+  // Mbs2basis_inverse_ = Mbs2basis_.inverse();
 }
 
 void SplineAStar::setUp(double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls)
@@ -149,13 +157,15 @@ void SplineAStar::getEdgesConvexHulls(faster_types::Edges& edges_convex_hulls)
     last4Cps[1] = result_[i - 2];
     last4Cps[2] = result_[i - 1];
     last4Cps[3] = result_[i];
+
+    int interval = i - 3;
     // std::cout << "[BSpline] Plotting these last4Cps" << std::endl;
     // std::cout << last4Cps[0].transpose() << std::endl;
     // std::cout << last4Cps[1].transpose() << std::endl;
     // std::cout << last4Cps[2].transpose() << std::endl;
     // std::cout << last4Cps[3].transpose() << std::endl;
 
-    std::vector<Eigen::Vector3d> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps);
+    std::vector<Eigen::Vector3d> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps, interval);
 
     // std::cout << last4Cps[0].transpose() << std::endl;
     // std::cout << last4Cps[1].transpose() << std::endl;
@@ -826,7 +836,8 @@ void SplineAStar::recoverPath(Node* result_ptr)
 
 }*/
 
-std::vector<Eigen::Vector3d> SplineAStar::transformBSpline2otherBasis(const std::vector<Eigen::Vector3d>& last4Cps)
+std::vector<Eigen::Vector3d> SplineAStar::transformBSpline2otherBasis(const std::vector<Eigen::Vector3d>& last4Cps,
+                                                                      int interval)
 {
   std::vector<Eigen::Vector3d> last4Cps_new_basis;
   /////////////////////
@@ -843,7 +854,7 @@ std::vector<Eigen::Vector3d> SplineAStar::transformBSpline2otherBasis(const std:
     std::cout << "tmp BS= " << tmp << std::endl;
     std::cout << "Determinant BS=" << tmp.determinant() << std::endl;*/
 
-  Qmv = Qbs * Mbs2basis_;
+  Qmv = Qbs * M_pos_bs2basis_[interval];
 
   /*  tmp.block(0, 0, 4, 3) = Qmv;
     std::cout << "tmp OV= " << tmp << std::endl;
@@ -864,7 +875,7 @@ std::vector<Eigen::Vector3d> SplineAStar::transformBSpline2otherBasis(const std:
 }
 
 std::vector<Eigen::Vector3d>
-SplineAStar::transformOtherBasis2BSpline(const std::vector<Eigen::Vector3d>& last4Cps_new_basis)
+SplineAStar::transformOtherBasis2BSpline(const std::vector<Eigen::Vector3d>& last4Cps_new_basis, int interval)
 {
   std::vector<Eigen::Vector3d> last4Cps;
 
@@ -876,7 +887,7 @@ SplineAStar::transformOtherBasis2BSpline(const std::vector<Eigen::Vector3d>& las
   Qmv.col(2) = last4Cps[2];
   Qmv.col(3) = last4Cps[3];
 
-  Qbs = Qmv * Mbs2basis_inverse_;
+  Qbs = Qmv * M_pos_bs2basis_inverse_[interval];
 
   // last4Cps[0] = Qbs.col(0);
   // last4Cps[1] = Qbs.col(1);
@@ -924,7 +935,7 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
     last4Cps[2] = q[index_interv + 2];
     last4Cps[3] = q[index_interv + 3];
 
-    std::vector<Eigen::Vector3d> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps);
+    std::vector<Eigen::Vector3d> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps, index_interv);
 
     for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
     {
@@ -1217,7 +1228,9 @@ bool SplineAStar::collidesWithObstacles(const std::vector<Eigen::Vector3d>& last
   // MyTimer timer_function(true);
   // std::cout << "In collidesWithObstacles, index_lastCP= " << index_lastCP << std::endl;
 
-  std::vector<Eigen::Vector3d> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps);
+  int interval = index_lastCP - 3;
+
+  std::vector<Eigen::Vector3d> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps, interval);
 
   ///////////////////////
   bool satisfies_LP = true;
@@ -1226,7 +1239,7 @@ bool SplineAStar::collidesWithObstacles(const std::vector<Eigen::Vector3d>& last
   {
     Eigen::Vector3d n_i;
     double d_i;
-    satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][index_lastCP - 3], last4Cps_new_basis);
+    satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][interval], last4Cps_new_basis);
     num_of_LPs_run_++;
     if (satisfies_LP == false)
     {

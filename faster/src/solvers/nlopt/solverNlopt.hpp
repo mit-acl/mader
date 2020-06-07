@@ -316,7 +316,7 @@ private:
   // Eigen::Matrix<double, 4, 4> Mbs2be_inverse_;
 
   // transformation between the B-spline control points and other basis
-  std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2basis_;  // Mbs2basis_pos_
+  std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2basis_;
   std::vector<Eigen::Matrix<double, 3, 3>> M_vel_bs2basis_;
   // Eigen::Matrix<double, 4, 4> Mbs2basis_inverse_;
 

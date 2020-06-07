@@ -155,8 +155,9 @@ public:
 
 protected:
 private:
-  std::vector<Eigen::Vector3d> transformBSpline2otherBasis(const std::vector<Eigen::Vector3d>& last4Cps);
-  std::vector<Eigen::Vector3d> transformOtherBasis2BSpline(const std::vector<Eigen::Vector3d>& last4Cps_new_basis);
+  std::vector<Eigen::Vector3d> transformBSpline2otherBasis(const std::vector<Eigen::Vector3d>& last4Cps, int interval);
+  std::vector<Eigen::Vector3d> transformOtherBasis2BSpline(const std::vector<Eigen::Vector3d>& last4Cps_new_basis,
+                                                           int interval);
 
   void computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size);
   bool computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM2, const Eigen::Vector3d& qiM1,
@@ -243,14 +244,18 @@ private:
   int num_of_LPs_run_ = 0;
 
   // transformation between the B-spline control points and the MINVO control points
-  Eigen::Matrix<double, 4, 4> Mbs2mv_;
+  // Eigen::Matrix<double, 4, 4> Mbs2mv_;
 
   // transformation between the B-spline control points and the Bezier control points
-  Eigen::Matrix<double, 4, 4> Mbs2be_;
+  // Eigen::Matrix<double, 4, 4> Mbs2be_;
 
   // transformation between the B-spline control points and other basis
-  Eigen::Matrix<double, 4, 4> Mbs2basis_;
-  Eigen::Matrix<double, 4, 4> Mbs2basis_inverse_;
+  // Eigen::Matrix<double, 4, 4> Mbs2basis_;
+  // Eigen::Matrix<double, 4, 4> Mbs2basis_inverse_;
+
+  // transformation between the B-spline control points and other basis (MINVO or Bezier)
+  std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2basis_;
+  std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2basis_inverse_;  // Mbs2basis_
 
   int num_pol_;
 

@@ -1413,12 +1413,24 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   //#endif
 
   // VELOCITY CONSTRAINTS:
-  for (int i = 2; i <= (N_ - 3); i++)  // v0 and v1 are already determined by initial_state
+  for (int i = 2; i <= (N_ - 3); i++)  // If using BSpline basis, v0 and v1 are already determined by initial_state
   {
-    double c1 = p_ / ((p_)*deltaT_);  // (p_ + 1) * deltaT_ \equiv knots_(i + p_ + 1) - knots_(i + 1)
-    Eigen::Vector3d v_iM2 = c1 * (q[i - 1] - q[i - 2]);
-    Eigen::Vector3d v_iM1 = c1 * (q[i] - q[i - 1]);
-    Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
+    double ciM2 = p_ / (knots_(i + p_ + 1 - 2) - knots_(i + 1 - 2));
+    double ciM1 = p_ / (knots_(i + p_ + 1 - 1) - knots_(i + 1 - 1));
+    double ci = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
+
+    // std::cout << "ciM2= " << ciM2 << std::endl;
+    // std::cout << "ciM1= " << ciM1 << std::endl;
+    // std::cout << "ci= " << ci << std::endl;
+
+    std::vector<double> c;
+    c.push_back(ciM2);
+    c.push_back(ciM1);
+    c.push_back(ci);
+
+    Eigen::Vector3d v_iM2 = ciM2 * (q[i - 1] - q[i - 2]);
+    Eigen::Vector3d v_iM1 = ciM1 * (q[i] - q[i - 1]);
+    Eigen::Vector3d v_i = ci * (q[i + 1] - q[i]);
 
     Eigen::Matrix<double, 3, 3> Qbs;  // b-spline
     Eigen::Matrix<double, 3, 3> Qmv;  // other basis "basis_" (minvo, bezier,...).
@@ -1449,8 +1461,8 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         for (int u = 0; u < 3; u++)
         {  // v_{i-2+j} depends on v_{i-2}, v_{i-1}, v_{i} of the old basis
 
-          partials.block(0, u, 3, 1) += -M_vel_bs2basis_[i - 2](u, j) * c1 * ones;
-          partials.block(0, u + 1, 3, 1) += M_vel_bs2basis_[i - 2](u, j) * c1 * ones;
+          partials.block(0, u, 3, 1) += -M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
+          partials.block(0, u + 1, 3, 1) += M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
         }
         // and now assign it to the vector grad
         for (int u = 0; u < 3; u++)
@@ -1479,8 +1491,8 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         for (int u = 0; u < 3; u++)
         {  // v_{i-2+j} depends on v_{i-2}, v_{i-1}, v_{i} of the old basis
 
-          partials.block(0, u, 3, 1) += M_vel_bs2basis_[i - 2](u, j) * c1 * ones;
-          partials.block(0, u + 1, 3, 1) += -M_vel_bs2basis_[i - 2](u, j) * c1 * ones;
+          partials.block(0, u, 3, 1) += M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
+          partials.block(0, u + 1, 3, 1) += -M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
         }
         // and now assign it to the vector grad
         for (int u = 0; u < 3; u++)
@@ -1846,11 +1858,18 @@ void SolverNlopt::printIndexesConstraints()
 void SolverNlopt::printQVA(const std::vector<Eigen::Vector3d> &q)
 {
   std::cout << red << "Position cps, " << blue << "Velocity cps, " << green << "Accel cps" << reset << std::endl;
+
+  std::cout << "BSPLINE Basis: " << std::endl;
+
+  std::vector<Eigen::Vector3d> cps_vel;
+
   for (int i = 0; i <= (N_ - 2); i++)
   {
     Eigen::Vector3d vi = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
     Eigen::Vector3d vip1 = p_ * (q[i + 1 + 1] - q[i + 1]) / (knots_(i + 1 + p_ + 1) - knots_(i + 1 + 1));
     Eigen::Vector3d ai = (p_ - 1) * (vip1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
+
+    cps_vel.push_back(vi);
 
     std::cout << "***i= " << red << q[i].transpose() << blue << "   " << vi.transpose() << green << "   "
               << ai.transpose() << reset << std::endl;
@@ -1860,10 +1879,41 @@ void SolverNlopt::printQVA(const std::vector<Eigen::Vector3d> &q)
 
   Eigen::Vector3d vi = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
   std::cout << "***i= " << red << q[i].transpose() << blue << "   " << vi.transpose() << reset << std::endl;
+  cps_vel.push_back(vi);
 
   i = N_;
 
   std::cout << "***i= " << i << red << q[i].transpose() << reset << std::endl;
+
+  std::cout << std::endl;
+  if (basis_ == MINVO)
+  {
+    std::cout << "MINVO Basis: " << std::endl;
+    std::cout << blue << "Velocity cps" << reset << std::endl;
+
+    std::cout << "cps_vel.size()= " << cps_vel.size() << std::endl;
+
+    for (int j = 2; j < cps_vel.size(); j++)
+    {  // Note that for each interval there are 3 cps, but in the next interval they'll be different
+      int interval = j - 2;
+      // std::vector<Eigen::Vector3d> last3Cps;
+      // last3Cps.push_back(cps_vel[j - 2]);
+      // last3Cps.push_back(cps_vel[j - 1]);
+      // last3Cps.push_back(cps_vel[j]);
+
+      Eigen::Matrix<double, 3, 3> Qbs;
+      Eigen::Matrix<double, 3, 3> Qmv;
+
+      Qbs.col(0) = cps_vel[j - 2];
+      Qbs.col(1) = cps_vel[j - 1];
+      Qbs.col(2) = cps_vel[j];
+
+      transformVelBSpline2otherBasis(Qbs, Qmv, interval);
+
+      std::cout << "***i= " << interval << std::endl;
+      std::cout << Qmv << std::endl;
+    }
+  }
 }
 
 bool SolverNlopt::optimize()
