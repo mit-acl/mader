@@ -2192,11 +2192,15 @@ bool SolverNlopt::optimize()
   {
     if (fabs(xi.vel.x()) > (v_max_.x() + epsilon_tol_constraints_) ||
         fabs(xi.vel.y()) > (v_max_.y() + epsilon_tol_constraints_) ||
-        (fabs(xi.vel.z()) > v_max_.z() + epsilon_tol_constraints_))
+        (fabs(xi.vel.z()) > v_max_.z() + epsilon_tol_constraints_) ||
+        (fabs(xi.accel.x()) > a_max_.x() + epsilon_tol_constraints_) ||
+        (fabs(xi.accel.y()) > a_max_.y() + epsilon_tol_constraints_) ||
+        (fabs(xi.accel.z()) > a_max_.z() + epsilon_tol_constraints_))
     {
-      std::cout << bold << red << "Velocity constraints are not satisfied,v_max_= " << v_max_.transpose() << reset
-                << std::endl;
+      std::cout << bold << red << "Velocity or Accel constraints are not satisfied,v_max_= " << v_max_.transpose()
+                << " a_max_=" << a_max_.transpose() << reset << std::endl;
       std::cout << "Velocity_i=" << xi.vel.transpose() << std::endl;
+      std::cout << "Accel_i=" << xi.accel.transpose() << std::endl;
 
       std::cout << "These are the control points" << std::endl;
       printQVA(q);
