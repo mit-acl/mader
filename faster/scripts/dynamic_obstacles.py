@@ -4,6 +4,7 @@
 
 #This files plots in gazebo with the position and orientation of the drone according to the desired position and acceleration specified in the goal topic
 
+import random
 import roslib
 import rospy
 import math
@@ -50,10 +51,12 @@ class MovingCorridor:
         self.num_of_stat_objects=50;
         self.x_min= 2.0
         self.x_max= 50.0
-        # self.x_min= -2.0
-        # self.x_max= 2.0
         self.y_min= -2.0 
-        self.y_max= +2.0
+        self.y_max= 2.0
+        # self.x_min= 0.0
+        # self.x_max= 0.0
+        # self.y_min= 0.0 
+        # self.y_max= 0.0
         self.z_min= 1.0 
         self.z_max= 1.0
         self.scale=1.0;
@@ -82,34 +85,44 @@ class FakeSim:
         if(world_type=="MovingCircle"):
             self.world=MovingCircle()
    
+        available_meshes_static=["package://faster/meshes/ConcreteDamage01b/model3.dae", "package://faster/meshes/ConcreteDamage01b/model2.dae"]
+        available_meshes_dynamic=["package://faster/meshes/ConcreteDamage01b/model4.dae"]
+        # available_meshes=["package://faster/meshes/ConcreteDamage01b/model3.dae"]
 
         self.x_all=[];
         self.y_all=[];
         self.z_all=[];
         self.offset_all=[];
         self.slower=[];
+        self.meshes=[];
         self.type=[];#"dynamic" or "static"
         for i in range(self.world.num_of_dyn_objects):          
             self.x_all.append(random.uniform(self.world.x_min, self.world.x_max));
             self.y_all.append(random.uniform(self.world.y_min, self.world.y_max));
-            self.z_all.append(1);
+            self.z_all.append(random.uniform(self.world.z_min, self.world.z_max));
             self.offset_all.append(random.uniform(-2*math.pi, 2*math.pi));
             self.slower.append(random.uniform(self.world.slower_min, self.world.slower_max));
             self.type.append("dynamic")
+            self.meshes.append(random.choice(available_meshes_dynamic));
 
         for i in range(self.world.num_of_stat_objects):          
             self.x_all.append(random.uniform(self.world.x_min-self.world.scale, self.world.x_max+self.world.scale));
             self.y_all.append(random.uniform(self.world.y_min-self.world.scale, self.world.y_max+self.world.scale));
-            self.z_all.append(random.uniform(self.world.z_min, self.world.z_max));
+            self.z_all.append(self.world.bbox_static[2]/2.0);
             self.offset_all.append(random.uniform(-2*math.pi, 2*math.pi));
             self.slower.append(random.uniform(self.world.slower_min, self.world.slower_max));
             self.type.append("static")
+            self.meshes.append(random.choice(available_meshes_static));
 
         self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=1, latch=True)
         self.pubShapes_static = rospy.Publisher('/shapes_static', Marker, queue_size=1, latch=True)
+        self.pubShapes_static_mesh = rospy.Publisher('/shapes_static_mesh', MarkerArray, queue_size=1, latch=True)
+        self.pubShapes_dynamic_mesh = rospy.Publisher('/shapes_dynamic_mesh', MarkerArray, queue_size=1, latch=True)
         self.pubShapes_dynamic = rospy.Publisher('/shapes_dynamic', Marker, queue_size=1, latch=True)
         self.timer = rospy.Timer(rospy.Duration(0.001), self.pubTF)
         self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
+
+        self.already_published_static_shapes=False;
 
         rospy.sleep(0.5)
 
@@ -134,6 +147,10 @@ class FakeSim:
         marker_static.scale.x=self.world.bbox_static[0]
         marker_static.scale.y=self.world.bbox_static[1]
         marker_static.scale.z=self.world.bbox_static[2]
+
+        ###################3
+        marker_array_static_mesh=MarkerArray();
+        marker_array_dynamic_mesh=MarkerArray();
 
         for i in range(self.world.num_of_dyn_objects + self.world.num_of_stat_objects):
             t_ros=rospy.Time.now()
@@ -180,13 +197,58 @@ class FakeSim:
             point.x=x;
             point.y=y;
             point.z=z;
+
+            ##########################
+            marker=Marker();
+            marker.id=i;
+            marker.ns="mesh";
+            marker.header.frame_id="world"
+            marker.type=marker.MESH_RESOURCE;
+            marker.action=marker.ADD;
+
+            marker.pose.position.x=x
+            marker.pose.position.y=y
+            marker.pose.position.z=z
+            marker.pose.orientation.x=0.0;
+            marker.pose.orientation.y=0.0;
+            marker.pose.orientation.z=0.0;
+            marker.pose.orientation.w=1.0;
+            marker.lifetime = rospy.Duration.from_sec(0.0);
+            marker.mesh_use_embedded_materials=True
+            marker.mesh_resource=self.meshes[i]
+
             if(self.type[i]=="dynamic"):
                 marker_dynamic.points.append(point);
+
+                marker.scale.x=self.world.bbox_dynamic[0];
+                marker.scale.y=self.world.bbox_dynamic[1];
+                marker.scale.z=self.world.bbox_dynamic[2];
+
+                marker_array_dynamic_mesh.markers.append(marker);
+
+
             if(self.type[i]=="static"):
+
+                marker.scale.x=self.world.bbox_static[0];
+                marker.scale.y=self.world.bbox_static[1];
+                marker.scale.z=self.world.bbox_static[2];
+                
+                marker_array_static_mesh.markers.append(marker);
+
+                ##########################
+
                 marker_static.points.append(point);
 
-        self.pubShapes_static.publish(marker_static)
+        self.pubShapes_dynamic_mesh.publish(marker_array_dynamic_mesh)
         self.pubShapes_dynamic.publish(marker_dynamic)
+
+
+        if(self.already_published_static_shapes==False):
+
+            self.pubShapes_static_mesh.publish(marker_array_static_mesh)
+            self.pubShapes_static.publish(marker_static)
+
+            self.already_published_static_shapes=True;
 
 
 
