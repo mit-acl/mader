@@ -44,9 +44,17 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "z_ground", par_.z_ground);
   safeGetParam(nh_, "z_max", par_.z_max);
 
-  safeGetParam(nh_, "v_max", par_.v_max);
-  safeGetParam(nh_, "a_max", par_.a_max);
-  safeGetParam(nh_, "j_max", par_.j_max);
+  std::vector<double> v_max_tmp;
+  std::vector<double> a_max_tmp;
+  std::vector<double> j_max_tmp;
+
+  safeGetParam(nh_, "v_max", v_max_tmp);
+  safeGetParam(nh_, "a_max", a_max_tmp);
+  safeGetParam(nh_, "j_max", j_max_tmp);
+
+  par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
+  par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
+  par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
 
   safeGetParam(nh_, "factor_v_max", par_.factor_v_max);
 
@@ -100,6 +108,12 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
               << "The tolerance on the constraints is too big. Note that we are saturating v0 and a0 in snlopt.cpp --> "
                  "there will be jumps in accel/vel"
               << std::endl;
+    abort();
+  }
+
+  if (par_.a_max.z() >= 9.81)
+  {
+    std::cout << bold << red << "par_.a_max.z() >= 9.81, the drone will flip" << std::endl;
     abort();
   }
 
@@ -703,19 +717,20 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
 
   if (type == COMMITTED_COLORED)
   {
-    traj_committed_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_, scale);
+    traj_committed_colored_ =
+        trajectory2ColoredMarkerArray(data, type, par_.v_max.maxCoeff(), increm, name_drone_, scale);
     pub_traj_committed_colored_.publish(traj_committed_colored_);
   }
 
   if (type == WHOLE_COLORED)
   {
-    traj_whole_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_, scale);
+    traj_whole_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max.maxCoeff(), increm, name_drone_, scale);
     pub_traj_whole_colored_.publish(traj_whole_colored_);
   }
 
   if (type == SAFE_COLORED)
   {
-    traj_safe_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_, scale);
+    traj_safe_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max.maxCoeff(), increm, name_drone_, scale);
     pub_traj_safe_colored_.publish(traj_safe_colored_);
   }
 }
@@ -734,7 +749,7 @@ void FasterRos::pubActualTraj()
   m.id = actual_trajID_;  // % 3000;  // Start the id again after ___ points published (if not RVIZ goes very slow)
   m.ns = "ActualTraj_" + name_drone_;
   actual_trajID_++;
-  m.color = getColorJet(current_state.vel.norm(), 0, par_.v_max);  // color(RED_NORMAL);
+  m.color = getColorJet(current_state.vel.norm(), 0, par_.v_max.maxCoeff());  // color(RED_NORMAL);
   m.scale.x = 0.15;
   m.scale.y = 0.0001;
   m.scale.z = 0.0001;

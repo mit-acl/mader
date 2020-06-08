@@ -83,8 +83,8 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   a_star_fraction_voxel_size_ = par.a_star_fraction_voxel_size;
   dist_to_use_straight_guess_ = par.dist_to_use_straight_guess;
   dc_ = par.dc;
-  v_max_ = par.v_max * Eigen::Vector3d::Ones();
-  a_max_ = par.a_max * Eigen::Vector3d::Ones();
+  v_max_ = par.v_max;
+  a_max_ = par.a_max;
   allow_infeasible_guess_ = par.allow_infeasible_guess;
   solver_ = getSolver(par.solver);
   epsilon_tol_constraints_ = par.epsilon_tol_constraints;  // 1e-1;

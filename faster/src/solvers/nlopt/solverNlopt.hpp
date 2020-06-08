@@ -23,8 +23,8 @@ struct par_snlopt
 
   double z_min;
   double z_max;
-  double v_max;
-  double a_max;
+  Eigen::Vector3d v_max;
+  Eigen::Vector3d a_max;
   double dc;
   double dist_to_use_straight_guess;
   int a_star_samp_x;

@@ -384,9 +384,9 @@ struct parameters
   double z_ground;
   double z_max;
 
-  double v_max;
-  double a_max;
-  double j_max;
+  Eigen::Vector3d v_max;
+  Eigen::Vector3d a_max;
+  Eigen::Vector3d j_max;
 
   double alpha;
 

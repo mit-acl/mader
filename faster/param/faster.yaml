@@ -7,7 +7,7 @@ drone_radius: 0.0001  #(m) Used for collision checking
 N_whole: 6 #[-] Number of discretization points in the whole trajectory
 N_safe: 6 #[-] Number of discretization points in the safe path
 
-w_max: 1           # [rd/s] Maximum angular velocity. 0.4 for Hardware
+w_max: 1.0           # [rd/s] Maximum angular velocity. 0.4 for Hardware
 alpha_filter_dyaw: 0 #was 0.92  #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
 
 ##########################################
@@ -37,9 +37,9 @@ z_max: 3         #[m] JPS is not allowed to give a solution that goes higher tha
 # j_max: 20.0  #[m/s3] 
 
 #For single-agent simulations
-v_max: 5.0   #[m/s]  7.0
-a_max: 20.0   #[m/s2] 20.0
-j_max: 50.0  #[m/s3] 10.0
+v_max: [5.0, 5.0, 5.0]   #[m/s]  7.0
+a_max: [20.0, 20.0, 9.6]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
+j_max: [50.0, 50.0, 50.0]  #[m/s3] 10.0
 
 
 alpha: 2.0 #[-] DeltaT = alpha*States_took_previous_replan

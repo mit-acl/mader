@@ -51,8 +51,8 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   par_snlopt param;
   param.z_min = z_ground;
   param.z_max = z_max;
-  param.v_max = v_max;
-  param.a_max = a_max;
+  param.v_max = Eigen::Vector3d(v_max, v_max, v_max);
+  param.a_max = Eigen::Vector3d(a_max, a_max, a_max);
   param.dc = dc;
   param.dist_to_use_straight_guess = dist_to_use_straight_guess;
   param.a_star_samp_x = a_star_samp_x;

@@ -32,8 +32,6 @@ Faster::Faster(parameters par) : par_(par)
   stateA_.setZero();
   mtx_initial_cond.unlock();
 
-  double max_values[3] = { par_.v_max, par_.a_max, par_.j_max };
-
   // Check that the gradients are right
   if (nlopt_utils::checkGradientsNlopt(par_.basis) == false)
   {
@@ -780,7 +778,7 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
 
   double t_init = k_index * par_.dc + time_now;
   double t_final = t_init + (initial.pos - final.pos).array().abs().maxCoeff() /
-                                (par_.factor_v_max * par_.v_max);  // time to execute the optimized path
+                                (par_.factor_v_max * par_.v_max.x());  // time to execute the optimized path
 
   bool correctInitialCond =
       snlopt_->setInitStateFinalStateInitTFinalT(initial, final, t_init,
