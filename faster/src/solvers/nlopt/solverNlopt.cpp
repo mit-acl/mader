@@ -1284,6 +1284,10 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   // http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
   double epsilon = 1.0;
 
+  /////////////////////////////////////////////////
+  //////////// PLANES CONSTRAINTS    //////////////
+  /////////////////////////////////////////////////
+
   for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
   {
     for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
@@ -1291,20 +1295,9 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
       int ip = obst_index * num_of_segments_ + i;  // index plane
 
       // impose that all the vertexes of the obstacle are on one side of the plane
-      // std::cout << "Vertexes of Obstacle " << obst_index << std::endl;
-      // std::cout << "vertexes on one side" << std::endl;
       for (Eigen::Vector3d vertex : hulls_[obst_index][i])  // opt->hulls_[i].size()
       {
         constraints[r] = -(n[ip].dot(vertex) + d[ip] - epsilon);  //+d[ip] // f<=0
-
-        /*        if (constraints[r] > epsilon_tol_constraints_)
-                {
-                  std::cout << bold << red << "sign_d_i= " << sign_d_i << reset << std::endl;
-                  std::cout << "n[ip]= " << n[ip] << std::endl;
-                  std::cout << "ip= " << ip << std::endl;
-                  std::cout << "vertex= " << vertex << std::endl;
-                  std::cout << "constraints[r]= " << constraints[r] << std::endl;
-                }*/
 
         if (grad)
         {
@@ -1314,96 +1307,86 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         r++;
       }
 
-      // std::cout << "Control Points" << std::endl;
       // and the control points on the other side
 
-      // std::cout << "and cpoints on the other side, r=" << r << std::endl;
+      // if (basis_ == MINVO || basis_ == BEZIER)
+      // {
+      Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+      Eigen::Matrix<double, 3, 4> Qmv;  // other basis "basis_" (minvo, bezier,...).
+      Qbs.col(0) = q[i];
+      Qbs.col(1) = q[i + 1];
+      Qbs.col(2) = q[i + 2];
+      Qbs.col(3) = q[i + 3];
+      transformPosBSpline2otherBasis(Qbs, Qmv,
+                                     i);  // Now Qmv is a matrix whose each row contains a "basis_" control point
 
-      if (basis_ == MINVO || basis_ == BEZIER)
+      Eigen::Vector3d q_ipu;
+      for (int u = 0; u <= 3; u++)
       {
-        Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
-        Eigen::Matrix<double, 3, 4> Qmv;  // other basis "basis_" (minvo, bezier,...).
-        Qbs.col(0) = q[i];
-        Qbs.col(1) = q[i + 1];
-        Qbs.col(2) = q[i + 2];
-        Qbs.col(3) = q[i + 3];
-        transformPosBSpline2otherBasis(Qbs, Qmv,
-                                       i);  // Now Qmv is a matrix whose each row contains a "basis_" control point
+        q_ipu = Qmv.col(u);                                     // if using the MINVO basis
+        constraints[r] = (n[ip].dot(q_ipu) + d[ip] + epsilon);  //  // fi<=0
 
-        Eigen::Vector3d q_ipu;
-        for (int u = 0; u <= 3 && (i + u) <= (N_ - 2); u++)
-        // For qNm1 and qN (which are = to qNm2 due to the stop condition,
-        // I've 2 options:
-        // a) don't include their constraints (since it's the same one as for qNm2) [This is the option I use]
-        // b) include their constraints, but use qNm2 as the variable
+        if (grad)
         {
-          q_ipu = Qmv.col(u);                                     // if using the MINVO basis
-          constraints[r] = (n[ip].dot(q_ipu) + d[ip] + epsilon);  //  // fi<=0
+          toGradSameConstraintDiffVariables(gIndexN(ip), q_ipu, grad, r, nn);
 
-          if (grad)
+          // If using the MINVO basis
+          for (int k = 0; (k <= 3); k++)
+          // This loop is needed because each q in MINVO depends on every q in BSpline
           {
-            toGradSameConstraintDiffVariables(gIndexN(ip), q_ipu, grad, r, nn);
+            if ((i + 3) == (N_ - 1) && k == 2)
+            {  // The last control point of the interval is qNm1, and the variable is qNm2
+              // Needed because qN=qNm1=qNm2
+              toGradSameConstraintDiffVariables(
+                  gIndexQ(i + k), (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u)) * n[ip], grad, r, nn);
+            }
 
-            // If using the MINVO basis
-            for (int k = 0; (k <= 3); k++)
-            // This loop is needed because each q in MINVO depends on every q in BSpline
+            else if ((i + 3) == (N_) && k == 1)
+            {  // The last 2 control points of the interval are qNm1 and qN, and the variable is qNm2
+              // Needed because qN=qNm1=qNm2
+
+              toGradSameConstraintDiffVariables(
+                  gIndexQ(i + k),
+                  (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u) + M_pos_bs2basis_[i](k + 2, u)) * n[ip],
+                  grad, r, nn);
+            }
+
+            else
             {
-              if ((i + 3) == (N_ - 1) && k == 2)
-              {  // The last control point of the interval is qNm1, and the variable is qNm2
-                // Needed because qN=qNm1=qNm2
-                toGradSameConstraintDiffVariables(
-                    gIndexQ(i + k), (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u)) * n[ip], grad, r, nn);
-              }
-
-              else if ((i + 3) == (N_) && k == 1)
-              {  // The last 2 control points of the interval are qNm1 and qN, and the variable is qNm2
-                // Needed because qN=qNm1=qNm2
-
-                toGradSameConstraintDiffVariables(
-                    gIndexQ(i + k),
-                    (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u) + M_pos_bs2basis_[i](k + 2, u)) * n[ip],
-                    grad, r, nn);
-              }
-
-              else
+              if (isADecisionCP(i + k))  // If Q[i] is a decision variable
               {
-                if (isADecisionCP(i + k))  // If Q[i] is a decision variable
-                {
-                  toGradSameConstraintDiffVariables(gIndexQ(i + k), M_pos_bs2basis_[i](k, u) * n[ip], grad, r, nn);
-                }
+                toGradSameConstraintDiffVariables(gIndexQ(i + k), M_pos_bs2basis_[i](k, u) * n[ip], grad, r, nn);
               }
-              //}
             }
-            assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
+            //}
           }
-          r++;
+          assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
         }
+        r++;
       }
-      else  // NOT using the MINVO Basis
-      {
-        // std::cout << "Not using MINVO" << std::endl;
-        for (int u = 0; (u <= 3 && (i + u) <= (N_ - 2)); u++)
-        // For qNm1 and qN (which are = to qNm2 due to the stop condition,
-        // I've 2 options:
-        // a) don't include their constraints (since it's the same one as for qNm2) [This is the option I use]
-        // b) include their constraints, but use qNm2 as the variable
-        {
-          constraints[r] = (n[ip].dot(q[i + u]) + d[ip] + epsilon);  //  // f<=0
+      // }
+      // else  // NOT using the MINVO Basis
+      // {
+      //   // std::cout << "Not using MINVO" << std::endl;
+      //   for (int u = 0; (u <= 3 && (i + u) <= (N_ - 2)); u++)
 
-          if (grad)
-          {
-            toGradSameConstraintDiffVariables(gIndexN(ip), q[i + u], grad, r, nn);
-            if (isADecisionCP(i + u))  // If Q[i] is a decision variable
-            {
-              toGradSameConstraintDiffVariables(gIndexQ(i + u), n[ip], grad, r, nn);
-            }
+      //   {
+      //     constraints[r] = (n[ip].dot(q[i + u]) + d[ip] + epsilon);  //  // f<=0
 
-            assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
-          }
+      //     if (grad)
+      //     {
+      //       toGradSameConstraintDiffVariables(gIndexN(ip), q[i + u], grad, r, nn);
+      //       if (isADecisionCP(i + u))  // If Q[i] is a decision variable
+      //       {
+      //         toGradSameConstraintDiffVariables(gIndexQ(i + u), n[ip], grad, r, nn);
+      //       }
 
-          r++;
-        }
-      }
+      //       assignValueToGradConstraints(gIndexD(ip), 1, grad, r, nn);
+      //     }
+
+      //     r++;
+      //   }
+      // }
     }
   }
 
@@ -1412,7 +1395,10 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   // std::cout << "Going to add velocity constraints, r= " << r << std::endl;
   //#endif
 
-  // VELOCITY CONSTRAINTS:
+  /////////////////////////////////////////////////
+  ////////// VELOCITY CONSTRAINTS    //////////////
+  /////////////////////////////////////////////////
+
   for (int i = 2; i <= (N_ - 3); i++)  // If using BSpline basis, v0 and v1 are already determined by initial_state
   {
     double ciM2 = p_ / (knots_(i + p_ + 1 - 2) - knots_(i + 1 - 2));
@@ -1550,7 +1536,11 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   // std::cout << "Going to add acceleration constraints, r= " << r << std::endl;
   //#endif
   index_const_accel_ = r;
-  // ACCELERATION CONSTRAINTS:
+
+  /////////////////////////////////////////////////
+  ////////// ACCELERATION CONSTRAINTS    //////////
+  /////////////////////////////////////////////////
+
   for (int i = 1; i <= (N_ - 3); i++)  // a0 is already determined by the initial state
 
   {
@@ -1678,17 +1668,86 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   //   r++;
   // }
 
+  /////////////////////////////////////////////////
+  //////////// SPHERE CONSTRAINTS    /////////////
+  /////////////////////////////////////////////////
+
   // Impose that all the control points are inside an sphere of radius Ra (so that )
-  for (int i = 2; i <= N_ - 2; i++)  // Asumming q0_, q1_ and q2_ are inside the sphere TODO: Add this check
-                                     // when computing q0_, q1_ and q2_ (and return false if not)
+  // for (int i = 2; i <= N_ - 2; i++)  // Asumming q0_, q1_ and q2_ are inside the sphere TODO: Add this check
+  //                                    // when computing q0_, q1_ and q2_ (and return false if not)
+  // {
+  //   constraints[r] = (q[i] - q0_).squaredNorm() - Ra_ * Ra_;  // fi<=0
+  //   if (grad)
+  //   {
+  //     toGradSameConstraintDiffVariables(gIndexQ(i), 2 * (q[i] - q0_), grad, r, nn);
+  //   }
+
+  //////////////////////////////////////////////////////////////////////////////////
+  for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
   {
-    constraints[r] = (q[i] - q0_).squaredNorm() - Ra_ * Ra_;  // fi<=0
-    if (grad)
+    Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+    Eigen::Matrix<double, 3, 4> Qmv;  // other basis "basis_" (minvo, bezier,...).
+    Qbs.col(0) = q[i];
+    Qbs.col(1) = q[i + 1];
+    Qbs.col(2) = q[i + 2];
+    Qbs.col(3) = q[i + 3];
+
+    // std::cout << "Qbs= " << Qbs << std::endl;
+
+    transformPosBSpline2otherBasis(Qbs, Qmv,
+                                   i);  // Now Qmv is a matrix whose each row contains a "basis_" control point
+
+    Eigen::Vector3d q_ipu;
+    for (int u = 0; u <= 3; u++)
     {
-      toGradSameConstraintDiffVariables(gIndexQ(i), 2 * (q[i] - q0_), grad, r, nn);
+      q_ipu = Qmv.col(u);  // if using the MINVO basis
+
+      constraints[r] = (q_ipu - q0_).squaredNorm() - Ra_ * Ra_;  // fi<=0
+
+      // std::cout << "q_ipu= " << q_ipu.transpose() << std::endl;
+      // std::cout << "(q_ipu - q0_).squaredNorm()= " << (q_ipu - q0_).squaredNorm() << " vs  Ra_*Ra_=" << Ra_ * Ra_
+      // << std::endl;
+
+      if (grad)
+      {
+        for (int k = 0; (k <= 3); k++)
+        // This loop is needed because each q in MINVO depends on every q in BSpline
+        {
+          if ((i + 3) == (N_ - 1) && k == 2)
+          {  // The last control point of the interval is qNm1, and the variable is qNm2
+            // Needed because qN=qNm1=qNm2
+            toGradSameConstraintDiffVariables(
+                gIndexQ(i + k), 2 * (q_ipu - q0_) * (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u)), grad, r,
+                nn);
+          }
+
+          else if ((i + 3) == (N_) && k == 1)
+          {  // The last 2 control points of the interval are qNm1 and qN, and the variable is qNm2
+            // Needed because qN=qNm1=qNm2
+            toGradSameConstraintDiffVariables(
+                gIndexQ(i + k),
+                2 * (q_ipu - q0_) *
+                    (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u) + M_pos_bs2basis_[i](k + 2, u)),
+                grad, r, nn);
+          }
+
+          else
+          {
+            if (isADecisionCP(i + k))  // If Q[i] is a decision variable
+            {
+              toGradSameConstraintDiffVariables(gIndexQ(i + k), 2 * (q_ipu - q0_) * M_pos_bs2basis_[i](k, u), grad, r,
+                                                nn);
+            }
+          }
+        }
+      }
+      r++;
     }
-    r = r + 1;
   }
+  //////////////////////////////////////////////////////////////////////////////////
+
+  // r = r + 1;
+  //}
 
 #ifdef DEBUG_MODE_NLOPT
 
@@ -1871,14 +1930,14 @@ void SolverNlopt::printQVA(const std::vector<Eigen::Vector3d> &q)
 
     cps_vel.push_back(vi);
 
-    std::cout << "***i= " << red << q[i].transpose() << blue << "   " << vi.transpose() << green << "   "
+    std::cout << "***i= " << i << red << q[i].transpose() << blue << "   " << vi.transpose() << green << "   "
               << ai.transpose() << reset << std::endl;
   }
 
   int i = N_ - 1;
 
   Eigen::Vector3d vi = p_ * (q[i + 1] - q[i]) / (knots_(i + p_ + 1) - knots_(i + 1));
-  std::cout << "***i= " << red << q[i].transpose() << blue << "   " << vi.transpose() << reset << std::endl;
+  std::cout << "***i= " << i << red << q[i].transpose() << blue << "   " << vi.transpose() << reset << std::endl;
   cps_vel.push_back(vi);
 
   i = N_;
@@ -1889,17 +1948,41 @@ void SolverNlopt::printQVA(const std::vector<Eigen::Vector3d> &q)
   if (basis_ == MINVO)
   {
     std::cout << "MINVO Basis: " << std::endl;
-    std::cout << blue << "Velocity cps" << reset << std::endl;
 
-    std::cout << "cps_vel.size()= " << cps_vel.size() << std::endl;
+    std::cout << blue << "Position cps" << reset << std::endl;
+
+    for (int j = 3; j < q.size(); j++)
+    {  // Note that for each interval there are 3 cps, but in the next interval they'll be different
+      int interval = j - 3;
+
+      Eigen::Matrix<double, 3, 4> Qbs;
+      Eigen::Matrix<double, 3, 4> Qmv;
+
+      Qbs.col(0) = q[j - 3];
+      Qbs.col(1) = q[j - 2];
+      Qbs.col(2) = q[j - 1];
+      Qbs.col(3) = q[j];
+
+      transformPosBSpline2otherBasis(Qbs, Qmv, interval);
+
+      std::cout << "***i= " << interval << std::endl;
+      std::cout << Qmv << std::endl;
+
+      std::cout << "norm= " << std::endl;
+      for (int jj = 0; jj < Qmv.cols(); jj++)
+      {
+        std::cout << (Qmv.col(jj) - q0_).norm() << ", ";
+      }
+      std::cout << std::endl;
+    }
+
+    /////
+
+    std::cout << blue << "Velocity cps" << reset << std::endl;
 
     for (int j = 2; j < cps_vel.size(); j++)
     {  // Note that for each interval there are 3 cps, but in the next interval they'll be different
       int interval = j - 2;
-      // std::vector<Eigen::Vector3d> last3Cps;
-      // last3Cps.push_back(cps_vel[j - 2]);
-      // last3Cps.push_back(cps_vel[j - 1]);
-      // last3Cps.push_back(cps_vel[j]);
 
       Eigen::Matrix<double, 3, 3> Qbs;
       Eigen::Matrix<double, 3, 3> Qmv;
@@ -2202,22 +2285,29 @@ bool SolverNlopt::optimize()
       std::cout << "Velocity_i=" << xi.vel.transpose() << std::endl;
       std::cout << "Accel_i=" << xi.accel.transpose() << std::endl;
 
-      std::cout << "These are the control points" << std::endl;
-      printQVA(q);
+      // std::cout << "These are the control points" << std::endl;
+      // printQVA(q);
 
-      std::cout << "is Feasible= " << isFeasible(q, n, d) << std::endl;
+      bool is_feasible = isFeasible(q, n, d);
+      std::cout << "is Feasible= " << is_feasible << std::endl;
 
       std::cout << red << "====================================" << reset << std::endl;
       abort();
     }
+
+    if ((xi.pos - q0_).norm() > (Ra_ + epsilon_tol_constraints_))
+    {
+      std::cout << "norm(xi.pos-q0_)=" << (traj_solution_.back().pos - q0_).norm() << std::endl;
+      std::cout << "These are the control points" << std::endl;
+      printQVA(q);
+
+      bool is_feasible = isFeasible(q, n, d);
+      std::cout << "is Feasible= " << is_feasible << std::endl;
+
+      abort();
+    }
   }
 
-  if ((traj_solution_.back().pos - q0_).norm() > (Ra_ + epsilon_tol_constraints_))
-  {
-    std::cout << "norm(traj_solution_.back().pos-q0_)>Ra + epsilon_tol_constraints_" << std::endl;
-    std::cout << "norm(traj_solution_.back().pos-q0_)=" << (traj_solution_.back().pos - q0_).norm() << std::endl;
-    abort();
-  }
   ///////////////
   ///////////////
   ///////////////

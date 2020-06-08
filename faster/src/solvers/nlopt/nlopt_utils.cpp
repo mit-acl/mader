@@ -40,6 +40,8 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   double a_max = 60;
   state initial;
   initial.pos = Eigen::Vector3d(-4.0, 1.0, -2.0);
+  initial.vel = Eigen::Vector3d(1.2, 3.5, 1.2);
+  initial.vel = Eigen::Vector3d(-1.3, 0.6, 1.5);
   state final;
   final.pos = Eigen::Vector3d(4.0, 2.0, 3.0);
   double dist_to_use_straight_guess = 1.0;
