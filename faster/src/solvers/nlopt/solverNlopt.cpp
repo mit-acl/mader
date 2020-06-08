@@ -2270,23 +2270,24 @@ bool SolverNlopt::optimize()
 
   ///////////////
   ///////////////
+
   ///////////////For debugging, remove later
+
+  double epsilon = 0.001;  // note that epsilon_tol_constraints_ applies to the control points
+
   for (auto xi : traj_solution_)
   {
-    if (fabs(xi.vel.x()) > (v_max_.x() + epsilon_tol_constraints_) ||
-        fabs(xi.vel.y()) > (v_max_.y() + epsilon_tol_constraints_) ||
-        (fabs(xi.vel.z()) > v_max_.z() + epsilon_tol_constraints_) ||
-        (fabs(xi.accel.x()) > a_max_.x() + epsilon_tol_constraints_) ||
-        (fabs(xi.accel.y()) > a_max_.y() + epsilon_tol_constraints_) ||
-        (fabs(xi.accel.z()) > a_max_.z() + epsilon_tol_constraints_))
+    if (fabs(xi.vel.x()) > (v_max_.x() + epsilon) || fabs(xi.vel.y()) > (v_max_.y() + epsilon) ||
+        (fabs(xi.vel.z()) > v_max_.z() + epsilon) || (fabs(xi.accel.x()) > a_max_.x() + epsilon) ||
+        (fabs(xi.accel.y()) > a_max_.y() + epsilon) || (fabs(xi.accel.z()) > a_max_.z() + epsilon))
     {
       std::cout << bold << red << "Velocity or Accel constraints are not satisfied,v_max_= " << v_max_.transpose()
                 << " a_max_=" << a_max_.transpose() << reset << std::endl;
       std::cout << "Velocity_i=" << xi.vel.transpose() << std::endl;
       std::cout << "Accel_i=" << xi.accel.transpose() << std::endl;
 
-      // std::cout << "These are the control points" << std::endl;
-      // printQVA(q);
+      std::cout << "These are the control points" << std::endl;
+      printQVA(q);
 
       bool is_feasible = isFeasible(q, n, d);
       std::cout << "is Feasible= " << is_feasible << std::endl;
@@ -2295,7 +2296,7 @@ bool SolverNlopt::optimize()
       abort();
     }
 
-    if ((xi.pos - q0_).norm() > (Ra_ + epsilon_tol_constraints_))
+    if ((xi.pos - q0_).norm() > (Ra_ + epsilon))
     {
       std::cout << "norm(xi.pos-q0_)=" << (traj_solution_.back().pos - q0_).norm() << std::endl;
       std::cout << "These are the control points" << std::endl;
