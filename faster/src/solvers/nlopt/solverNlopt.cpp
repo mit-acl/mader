@@ -2200,14 +2200,14 @@ bool SolverNlopt::optimize()
   // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
   // printQND(q_guess_, n_guess_, d_guess_);
 
-  // // x2qnd(x_, q_guess_, n_guess_);
+  // x2qnd(x_, q_guess_, n_guess_);
 
-  // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
+  std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
 
-  // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
+  printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
-  // printIndexesConstraints();
-  // printIndexesVariables();
+  printIndexesConstraints();
+  printIndexesVariables();
 
   // std::cout << "====================================" << std::endl;
 

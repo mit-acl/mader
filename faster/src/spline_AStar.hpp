@@ -149,8 +149,8 @@ public:
     }
   };
 
-  bool collidesWithObstacles(const Eigen::Matrix<double, 3, 4>& last4Cps, int index_lastCP);
-
+  bool collidesWithObstaclesGivenVertexes(const Eigen::Matrix<double, 3, 4>& last4Cps, int index_lastCP);
+  bool collidesWithObstacles(Node& current);
   double getCost();
 
 protected:
@@ -242,25 +242,16 @@ private:
 
   int num_of_LPs_run_ = 0;
 
-  // transformation between the B-spline control points and the MINVO control points
-  // Eigen::Matrix<double, 4, 4> Mbs2mv_;
-
-  // transformation between the B-spline control points and the Bezier control points
-  // Eigen::Matrix<double, 4, 4> Mbs2be_;
-
-  // transformation between the B-spline control points and other basis
-  // Eigen::Matrix<double, 4, 4> Mbs2basis_;
-  // Eigen::Matrix<double, 4, 4> Mbs2basis_inverse_;
-
   // transformation between the B-spline control points and other basis (MINVO or Bezier)
   std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2basis_;
+  std::vector<Eigen::Matrix<double, 3, 3>> M_vel_bs2basis_;
   std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2basis_inverse_;  // Mbs2basis_
 
   int num_pol_;
 
   std::vector<Eigen::Vector3d> result_;
 
-  std::vector<Node> expanded_nodes_;
+  std::vector<Node> expanded_valid_nodes_;
 
   // std::unordered_map<Eigen::Vector3i, std::list<Node>::iterator, matrix_hash<Eigen::Vector3i>> map_open_list_;
   std::unordered_map<Eigen::Vector3i, bool, matrix_hash<Eigen::Vector3i>> map_open_list_;
