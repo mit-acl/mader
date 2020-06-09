@@ -149,15 +149,14 @@ public:
     }
   };
 
-  bool collidesWithObstacles(const std::vector<Eigen::Vector3d>& last4Cps, int index_lastCP);
+  bool collidesWithObstacles(const Eigen::Matrix<double, 3, 4>& last4Cps, int index_lastCP);
 
   double getCost();
 
 protected:
 private:
-  std::vector<Eigen::Vector3d> transformBSpline2otherBasis(const std::vector<Eigen::Vector3d>& last4Cps, int interval);
-  std::vector<Eigen::Vector3d> transformOtherBasis2BSpline(const std::vector<Eigen::Vector3d>& last4Cps_new_basis,
-                                                           int interval);
+  Eigen::Matrix<double, 3, 4> transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4>& Qbs, int interval);
+  Eigen::Matrix<double, 3, 4> transformOtherBasis2BSpline(const Eigen::Matrix<double, 3, 4>& Qmv, int interval);
 
   void computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size);
   bool computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM2, const Eigen::Vector3d& qiM1,

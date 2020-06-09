@@ -371,17 +371,17 @@ void SolverNlopt::generateRandomQ(std::vector<Eigen::Vector3d> &q)
   saturateQ(q);  // make sure is inside the bounds specified
 }
 
-void SolverNlopt::findCentroidHull(const std::vector<Eigen::Vector3d> &hull, Eigen::Vector3d &centroid)
+void SolverNlopt::findCentroidHull(const Polyhedron_Std &hull, Eigen::Vector3d &centroid)
 {
   centroid = Eigen::Vector3d::Zero();
 
-  for (auto vertex : hull)
+  for (int i = 0; i < hull.cols(); i++)
   {
-    centroid += vertex;
+    centroid += hull.col(i);
   }
-  if (hull.size() > 0)
+  if (hull.cols() > 0)
   {
-    centroid = centroid / hull.size();
+    centroid = centroid / hull.cols();
   }
 }
 
@@ -1051,7 +1051,7 @@ double SolverNlopt::computeObjFunctionJerk(unsigned nn, double *grad, std::vecto
   }
 
   ////////////This part below is valid when it is a uniform Non-clamped Bspline. I.e. when the matrices A don't change
-  ///every interval
+  /// every interval
   // for (int i = p_; i <= N_; i++)  // i is the index of the control point
   // {
   //   cost += (-q[i - 3] + 3 * q[i - 2] - 3 * q[i - 1] + q[i]).squaredNorm();  // the jerk of the interval i-4
@@ -1358,8 +1358,9 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
       int ip = obst_index * num_of_segments_ + i;  // index plane
 
       // impose that all the vertexes of the obstacle are on one side of the plane
-      for (Eigen::Vector3d vertex : hulls_[obst_index][i])  // opt->hulls_[i].size()
+      for (int j = 0; j < hulls_[obst_index][i].cols(); j++)  // Eigen::Vector3d vertex : hulls_[obst_index][i]
       {
+        Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
         constraints[r] = -(n[ip].dot(vertex) + d[ip] - epsilon);  //+d[ip] // f<=0
 
         if (grad)
@@ -2441,78 +2442,23 @@ void SolverNlopt::generateStraightLineGuess()
     for (int i = 0; i < num_of_segments_; i++)
     {
       std::vector<Eigen::Vector3d> last4Cps(4);
-      if (basis_ == MINVO || basis_ == BEZIER)
-      {
-        Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
-        Eigen::Matrix<double, 3, 4> Qmv;  // minvo
-        Qbs.col(0) = q_guess_[i];
-        Qbs.col(1) = q_guess_[i + 1];
-        Qbs.col(2) = q_guess_[i + 2];
-        Qbs.col(3) = q_guess_[i + 3];
 
-        transformPosBSpline2otherBasis(Qbs, Qmv,
-                                       i);  // Now Qmv is a matrix whose each row contains a MINVO control point
+      Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+      Eigen::Matrix<double, 3, 4> Qmv;  // minvo. each column contains a MINVO control point
+      Qbs.col(0) = q_guess_[i];
+      Qbs.col(1) = q_guess_[i + 1];
+      Qbs.col(2) = q_guess_[i + 2];
+      Qbs.col(3) = q_guess_[i + 3];
 
-        std::vector<Eigen::Vector3d> last4Cps(4);
-        last4Cps[0] = Qmv.col(0);
-        last4Cps[1] = Qmv.col(1);
-        last4Cps[2] = Qmv.col(2);
-        last4Cps[3] = Qmv.col(3);
-      }
-      else
-      {
-        last4Cps[0] = q_guess_[i].transpose();
-        last4Cps[1] = q_guess_[i + 1].transpose();
-        last4Cps[2] = q_guess_[i + 2].transpose();
-        last4Cps[3] = q_guess_[i + 3].transpose();
-      }
+      transformPosBSpline2otherBasis(Qbs, Qmv, i);
 
       Eigen::Vector3d n_i;
       double d_i;
-      // std::cout << "===================================" << std::endl;
 
-      bool satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][i], last4Cps);
-      /*      std::cout << "satisfies_LP= " << satisfies_LP << std::endl;
-            std::cout << "last4Cps[0]=" << last4Cps[0].transpose() << std::endl;
-            std::cout << "last4Cps[1]=" << last4Cps[1].transpose() << std::endl;
-            std::cout << "last4Cps[2]=" << last4Cps[2].transpose() << std::endl;
-            std::cout << "last4Cps[3]=" << last4Cps[3].transpose() << std::endl;
-
-            std::cout << "hulls_[obst_index][i][0]= " << hulls_[obst_index][i][0].transpose() << std::endl;
-            std::cout << "hulls_[obst_index][i][1]= " << hulls_[obst_index][i][1].transpose() << std::endl;
-            std::cout << "hulls_[obst_index][i][2]= " << hulls_[obst_index][i][2].transpose() << std::endl;
-            std::cout << "hulls_[obst_index][i][3]= " << hulls_[obst_index][i][3].transpose() << std::endl;
-            std::cout << "hulls_[obst_index][i][4]= " << hulls_[obst_index][i][4].transpose() << std::endl;
-            std::cout << "hulls_[obst_index][i][5]= " << hulls_[obst_index][i][5].transpose() << std::endl;
-            std::cout << "hulls_[obst_index][i][6]= " << hulls_[obst_index][i][6].transpose() << std::endl;
-            std::cout << "hulls_[obst_index][i][7]= " << hulls_[obst_index][i][7].transpose() << std::endl;*/
+      bool satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][i], Qmv);
 
       n_guess_.push_back(n_i);
       d_guess_.push_back(d_i);
-
-      /*      Eigen::Vector3d centroid_hull;
-            findCentroidHull(hulls_[obst_index][i], centroid_hull);
-
-            Eigen::Vector3d n_i =
-                (centroid_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
-
-            double alpha = 0.01;  // the smaller, the higher the chances the plane is outside the obstacle. Should be
-         <1
-
-            Eigen::Vector3d point_in_middle = q[i] + (centroid_hull - q[i]) * alpha;
-
-            double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
-
-            int sign_d_i = (d_i >= 0) ? 1 : -1;
-
-
-            n.push_back(n_i);  // n'x + 1 = 0
-            d.push_back(d_i);  // n'x + 1 = 0
-
-            Hyperplane3D plane(point_in_middle, n_i);
-            planes_.push_back(plane);
-      */
-      // d.push_back(d_i);
     }
   }
 }

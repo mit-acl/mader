@@ -25,7 +25,7 @@ faster_types::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls)
 
   faster_types::Edges all_edges;
 
-  for (int index_curve = 0; index_curve < convexHulls.size(); index_curve++)
+  for (int index_curve = 0; index_curve < convexHulls.size(); index_curve++)  // for each curve
   {
     for (int i = 0; i < convexHulls[index_curve].size(); i++)  // for each interval along the curve
     {
@@ -60,18 +60,23 @@ ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convex
 
   // std::cout << "convexHulls.size()= " << convexHulls.size() << std::endl;
 
-  for (int index_curve = 0; index_curve < convexHulls.size(); index_curve++)
+  for (int index_curve = 0; index_curve < convexHulls.size(); index_curve++)  // for each curve
   {
     ConvexHullsOfCurve_Std convexHulls_of_curve_std;
 
     for (int i = 0; i < convexHulls[index_curve].size(); i++)  // for each interval along the curve
     {
       CGAL_Polyhedron_3 poly = convexHulls[index_curve][i];
-      std::vector<Eigen::Vector3d> convexHull_std;
+
+      Polyhedron_Std convexHull_std(3, poly.size_of_vertices());  // poly.size_of_vertices() is the number of vertexes
+      // std::vector<Eigen::Vector3d> convexHull_std;
+      int j = 0;
       for (CGAL_Polyhedron_3::Vertex_iterator v = poly.vertices_begin(); v != poly.vertices_end(); ++v)
       {
         Eigen::Vector3d vertex(v->point().x(), v->point().y(), v->point().z());
-        convexHull_std.push_back(vertex);
+        convexHull_std.col(j) = vertex;
+        // convexHull_std.push_back(vertex);
+        j = j + 1;
         // std::cout << v->point() << std::endl;
       }
 

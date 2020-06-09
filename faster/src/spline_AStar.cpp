@@ -152,31 +152,24 @@ void SplineAStar::getBestTrajFound(trajectory& best_traj_found)
 
 void SplineAStar::getEdgesConvexHulls(faster_types::Edges& edges_convex_hulls)
 {
+  Eigen::Matrix<double, 3, 4> last4Cps;
+  Eigen::Matrix<double, 3, 4> last4Cps_new_basis;
+
   for (int i = 3; i < result_.size(); i++)
   {
-    std::vector<Eigen::Vector3d> last4Cps(4);
-    last4Cps[0] = result_[i - 3];
-    last4Cps[1] = result_[i - 2];
-    last4Cps[2] = result_[i - 1];
-    last4Cps[3] = result_[i];
+    last4Cps.col(0) = result_[i - 3];
+    last4Cps.col(1) = result_[i - 2];
+    last4Cps.col(2) = result_[i - 1];
+    last4Cps.col(3) = result_[i];
 
     int interval = i - 3;
-    // std::cout << "[BSpline] Plotting these last4Cps" << std::endl;
-    // std::cout << last4Cps[0].transpose() << std::endl;
-    // std::cout << last4Cps[1].transpose() << std::endl;
-    // std::cout << last4Cps[2].transpose() << std::endl;
-    // std::cout << last4Cps[3].transpose() << std::endl;
 
-    std::vector<Eigen::Vector3d> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps, interval);
+    last4Cps_new_basis = transformBSpline2otherBasis(last4Cps, interval);
 
-    // std::cout << last4Cps[0].transpose() << std::endl;
-    // std::cout << last4Cps[1].transpose() << std::endl;
-    // std::cout << last4Cps[2].transpose() << std::endl;
-    // std::cout << last4Cps[3].transpose() << std::endl;
     for (int j = 0; j < 4; j++)
     {  // For every point in the convex hull
       faster_types::Edge edge;
-      edge.first = last4Cps_new_basis[j];
+      edge.first = last4Cps_new_basis.col(j);
       for (int i = 0; i < 4; i++)
       {  // generate an edge from that point j to the other points i!=j
         if (i == j)
@@ -185,7 +178,7 @@ void SplineAStar::getEdgesConvexHulls(faster_types::Edges& edges_convex_hulls)
         }
         else
         {
-          edge.second = last4Cps_new_basis[i];
+          edge.second = last4Cps_new_basis.col(i);
           edges_convex_hulls.push_back(edge);
         }
       }
@@ -838,17 +831,17 @@ void SplineAStar::recoverPath(Node* result_ptr)
 
 }*/
 
-std::vector<Eigen::Vector3d> SplineAStar::transformBSpline2otherBasis(const std::vector<Eigen::Vector3d>& last4Cps,
-                                                                      int interval)
+Eigen::Matrix<double, 3, 4> SplineAStar::transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4>& Qbs,
+                                                                     int interval)
 {
-  std::vector<Eigen::Vector3d> last4Cps_new_basis;
+  // std::vector<Eigen::Vector3d> last4Cps_new_basis;
   /////////////////////
-  Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
-  Eigen::Matrix<double, 3, 4> Qmv;  // new basis
-  Qbs.col(0) = last4Cps[0];
-  Qbs.col(1) = last4Cps[1];
-  Qbs.col(2) = last4Cps[2];
-  Qbs.col(3) = last4Cps[3];
+  // Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+  // Eigen::Matrix<double, 3, 4> Qmv;  // new basis
+  // Qbs.col(0) = last4Cps[0];
+  // Qbs.col(1) = last4Cps[1];
+  // Qbs.col(2) = last4Cps[2];
+  // Qbs.col(3) = last4Cps[3];
 
   /*  Eigen::Matrix<double, 4, 4> tmp;
     tmp.block(0, 0, 4, 3) = Qbs;
@@ -856,52 +849,54 @@ std::vector<Eigen::Vector3d> SplineAStar::transformBSpline2otherBasis(const std:
     std::cout << "tmp BS= " << tmp << std::endl;
     std::cout << "Determinant BS=" << tmp.determinant() << std::endl;*/
 
-  Qmv = Qbs * M_pos_bs2basis_[interval];
+  return Qbs * M_pos_bs2basis_[interval];
 
   /*  tmp.block(0, 0, 4, 3) = Qmv;
     std::cout << "tmp OV= " << tmp << std::endl;
     std::cout << "Determinant OV=" << tmp.determinant() << std::endl;*/
 
-  last4Cps_new_basis.push_back(Qmv.col(0));
-  last4Cps_new_basis.push_back(Qmv.col(1));
-  last4Cps_new_basis.push_back(Qmv.col(2));
-  last4Cps_new_basis.push_back(Qmv.col(3));
+  // last4Cps_new_basis.push_back(Qmv.col(0));
+  // last4Cps_new_basis.push_back(Qmv.col(1));
+  // last4Cps_new_basis.push_back(Qmv.col(2));
+  // last4Cps_new_basis.push_back(Qmv.col(3));
 
   //     last4Cps[0] = Qmv.col(0);
   // last4Cps[1] = Qmv.col(1);
   // last4Cps[2] = Qmv.col(2);
   // last4Cps[3] = Qmv.col(3);
 
-  return last4Cps_new_basis;
+  // return last4Cps_new_basis;
   /////////////////////
 }
 
-std::vector<Eigen::Vector3d>
-SplineAStar::transformOtherBasis2BSpline(const std::vector<Eigen::Vector3d>& last4Cps_new_basis, int interval)
+Eigen::Matrix<double, 3, 4> SplineAStar::transformOtherBasis2BSpline(const Eigen::Matrix<double, 3, 4>& Qmv,
+                                                                     int interval)
 {
-  std::vector<Eigen::Vector3d> last4Cps;
+  return Qmv * M_pos_bs2basis_inverse_[interval];
 
-  /////////////////////
-  Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
-  Eigen::Matrix<double, 3, 4> Qmv;  // new basis
-  Qmv.col(0) = last4Cps[0];
-  Qmv.col(1) = last4Cps[1];
-  Qmv.col(2) = last4Cps[2];
-  Qmv.col(3) = last4Cps[3];
+  // std::vector<Eigen::Vector3d> last4Cps;
 
-  Qbs = Qmv * M_pos_bs2basis_inverse_[interval];
+  // /////////////////////
+  // Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+  // Eigen::Matrix<double, 3, 4> Qmv;  // new basis
+  // Qmv.col(0) = last4Cps[0];
+  // Qmv.col(1) = last4Cps[1];
+  // Qmv.col(2) = last4Cps[2];
+  // Qmv.col(3) = last4Cps[3];
 
-  // last4Cps[0] = Qbs.col(0);
-  // last4Cps[1] = Qbs.col(1);
-  // last4Cps[2] = Qbs.col(2);
-  // last4Cps[3] = Qbs.col(3);
+  // Qbs = Qmv * M_pos_bs2basis_inverse_[interval];
 
-  last4Cps.push_back(Qbs.col(0));
-  last4Cps.push_back(Qbs.col(1));
-  last4Cps.push_back(Qbs.col(2));
-  last4Cps.push_back(Qbs.col(3));
+  // // last4Cps[0] = Qbs.col(0);
+  // // last4Cps[1] = Qbs.col(1);
+  // // last4Cps[2] = Qbs.col(2);
+  // // last4Cps[3] = Qbs.col(3);
 
-  return last4Cps;
+  // last4Cps.push_back(Qbs.col(0));
+  // last4Cps.push_back(Qbs.col(1));
+  // last4Cps.push_back(Qbs.col(2));
+  // last4Cps.push_back(Qbs.col(3));
+
+  // return last4Cps;
   /////////////////////
 }
 
@@ -911,7 +906,9 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
   n.resize(std::max(num_of_normals_, 0), Eigen::Vector3d::Zero());
   d.resize(std::max(num_of_normals_, 0), 0.0);
 
-  std::vector<Eigen::Vector3d> last4Cps(4);
+  // std::vector<Eigen::Vector3d> last4Cps(4);
+
+  Eigen::Matrix<double, 3, 4> last4Cps;  // Each column contains a control point
 
   bool isFeasible = true;
 
@@ -932,12 +929,17 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
   // Check obstacles constraints (and compute n and d)
   for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++)
   {
-    last4Cps[0] = q[index_interv];
-    last4Cps[1] = q[index_interv + 1];
-    last4Cps[2] = q[index_interv + 2];
-    last4Cps[3] = q[index_interv + 3];
+    // last4Cps[0] = q[index_interv];
+    // last4Cps[1] = q[index_interv + 1];
+    // last4Cps[2] = q[index_interv + 2];
+    // last4Cps[3] = q[index_interv + 3];
 
-    std::vector<Eigen::Vector3d> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps, index_interv);
+    last4Cps.col(0) = q[index_interv];
+    last4Cps.col(1) = q[index_interv + 1];
+    last4Cps.col(2) = q[index_interv + 2];
+    last4Cps.col(3) = q[index_interv + 3];
+
+    Eigen::Matrix<double, 3, 4> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps, index_interv);
 
     for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
     {
@@ -1083,25 +1085,27 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
   //////////////////////////////
 
-  std::vector<Eigen::Vector3d> last4Cps(4);
+  // std::vector<Eigen::Vector3d> last4Cps(4);
+
+  Eigen::Matrix<double, 3, 4> last4Cps;  // Each column contains a control point
 
   if (current.index == 2)
   {
-    last4Cps[0] = q0_;
-    last4Cps[1] = q1_;
-    last4Cps[2] = current.qi;
+    last4Cps.col(0) = q0_;
+    last4Cps.col(1) = q1_;
+    last4Cps.col(2) = current.qi;
   }
   else if (current.index == 3)
   {
-    last4Cps[0] = q1_;
-    last4Cps[1] = current.previous->qi;
-    last4Cps[2] = current.qi;
+    last4Cps.col(0) = q1_;
+    last4Cps.col(1) = current.previous->qi;
+    last4Cps.col(2) = current.qi;
   }
   else
   {
-    last4Cps[0] = current.previous->previous->qi;
-    last4Cps[1] = current.previous->qi;
-    last4Cps[2] = current.qi;
+    last4Cps.col(0) = current.previous->previous->qi;
+    last4Cps.col(1) = current.previous->qi;
+    last4Cps.col(2) = current.qi;
   }
 
   // stuff used in the loop (here to reduce time)
@@ -1164,7 +1168,7 @@ void SplineAStar::expandAndAddToQueue(Node& current)
     neighbor.h = h(neighbor);
 
     //////////////////////////////////// // Now let's check if it satisfies the LPs
-    last4Cps[3] = neighbor.qi;
+    last4Cps.col(3) = neighbor.qi;
 
     if (collidesWithObstacles(last4Cps, neighbor.index) == true)
     {
@@ -1176,11 +1180,14 @@ void SplineAStar::expandAndAddToQueue(Node& current)
       if (neighbor.index == (N_ - 2))
       {
         // Check for the convex hull qNm4, qNm3, qNm2, qNm1 (where qNm1==qNm2)
-        std::vector<Eigen::Vector3d> last4Cps_tmp;
-        last4Cps_tmp.push_back(last4Cps[1]);
-        last4Cps_tmp.push_back(last4Cps[2]);
-        last4Cps_tmp.push_back(last4Cps[3]);
-        last4Cps_tmp.push_back(last4Cps[3]);
+        // std::vector<Eigen::Vector3d> last4Cps_tmp;
+
+        Eigen::Matrix<double, 3, 4> last4Cps_tmp;  // Each column contains a control point
+
+        last4Cps_tmp.col(0) = last4Cps.col(1);  //.push_back(last4Cps[1]);
+        last4Cps_tmp.col(1) = last4Cps.col(2);  //.push_back(last4Cps[2]);
+        last4Cps_tmp.col(2) = last4Cps.col(3);  //.push_back(last4Cps[3]);
+        last4Cps_tmp.col(3) = last4Cps.col(3);  //.push_back(last4Cps[3]);
 
         if (collidesWithObstacles(last4Cps_tmp, N_ - 1) == true)
         {
@@ -1188,10 +1195,16 @@ void SplineAStar::expandAndAddToQueue(Node& current)
         }
 
         // Check for the convex hull qNm3, qNm2, qNm1, qN (where qN==qNm1==qNm2)
-        last4Cps_tmp[0] = last4Cps[2];
-        last4Cps_tmp[1] = last4Cps[3];
-        last4Cps_tmp[2] = last4Cps[3];
-        last4Cps_tmp[3] = last4Cps[3];
+
+        last4Cps_tmp.col(0) = last4Cps.col(2);
+        last4Cps_tmp.col(1) = last4Cps.col(3);
+        last4Cps_tmp.col(2) = last4Cps.col(3);
+        last4Cps_tmp.col(3) = last4Cps.col(3);
+
+        // last4Cps_tmp[0] = last4Cps[2];
+        // last4Cps_tmp[1] = last4Cps[3];
+        // last4Cps_tmp[2] = last4Cps[3];
+        // last4Cps_tmp[3] = last4Cps[3];
 
         if (collidesWithObstacles(last4Cps_tmp, N_) == true)
         {
@@ -1225,14 +1238,14 @@ void SplineAStar::expandAndAddToQueue(Node& current)
   // std::cout << "End of expand Function" << std::endl;
 }
 
-bool SplineAStar::collidesWithObstacles(const std::vector<Eigen::Vector3d>& last4Cps, int index_lastCP)
+bool SplineAStar::collidesWithObstacles(const Eigen::Matrix<double, 3, 4>& last4Cps, int index_lastCP)
 {
   // MyTimer timer_function(true);
   // std::cout << "In collidesWithObstacles, index_lastCP= " << index_lastCP << std::endl;
 
   int interval = index_lastCP - 3;
 
-  std::vector<Eigen::Vector3d> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps, interval);
+  Eigen::Matrix<double, 3, 4> last4Cps_new_basis = transformBSpline2otherBasis(last4Cps, interval);
 
   ///////////////////////
   bool satisfies_LP = true;

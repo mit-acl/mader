@@ -7,7 +7,7 @@
 #include "termcolor.hpp"
 #include <Eigen/Dense>
 
-typedef std::vector<Eigen::Vector3d> Polyhedron_Std;
+typedef Eigen::Matrix<double, 3, Eigen::Dynamic> Polyhedron_Std;
 typedef std::vector<Polyhedron_Std> ConvexHullsOfCurve_Std;
 typedef std::vector<ConvexHullsOfCurve_Std> ConvexHullsOfCurves_Std;
 

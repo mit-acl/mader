@@ -1,3 +1,44 @@
+///////////////////////////////////////////////
+///////////////////////////////////////////////
+/*      Eigen::Vector3d centroid_hull;
+      findCentroidHull(hulls_[obst_index][i], centroid_hull);
+
+      Eigen::Vector3d n_i =
+          (centroid_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
+
+      double alpha = 0.01;  // the smaller, the higher the chances the plane is outside the obstacle. Should be
+   <1
+
+      Eigen::Vector3d point_in_middle = q[i] + (centroid_hull - q[i]) * alpha;
+
+      double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
+
+      int sign_d_i = (d_i >= 0) ? 1 : -1;
+
+
+      n.push_back(n_i);  // n'x + 1 = 0
+      d.push_back(d_i);  // n'x + 1 = 0
+
+      Hyperplane3D plane(point_in_middle, n_i);
+      planes_.push_back(plane);
+*/
+// d.push_back(d_i);
+
+/*      std::cout << "satisfies_LP= " << satisfies_LP << std::endl;
+      std::cout << "last4Cps[0]=" << last4Cps[0].transpose() << std::endl;
+      std::cout << "last4Cps[1]=" << last4Cps[1].transpose() << std::endl;
+      std::cout << "last4Cps[2]=" << last4Cps[2].transpose() << std::endl;
+      std::cout << "last4Cps[3]=" << last4Cps[3].transpose() << std::endl;
+
+      std::cout << "hulls_[obst_index][i][0]= " << hulls_[obst_index][i][0].transpose() << std::endl;
+      std::cout << "hulls_[obst_index][i][1]= " << hulls_[obst_index][i][1].transpose() << std::endl;
+      std::cout << "hulls_[obst_index][i][2]= " << hulls_[obst_index][i][2].transpose() << std::endl;
+      std::cout << "hulls_[obst_index][i][3]= " << hulls_[obst_index][i][3].transpose() << std::endl;
+      std::cout << "hulls_[obst_index][i][4]= " << hulls_[obst_index][i][4].transpose() << std::endl;
+      std::cout << "hulls_[obst_index][i][5]= " << hulls_[obst_index][i][5].transpose() << std::endl;
+      std::cout << "hulls_[obst_index][i][6]= " << hulls_[obst_index][i][6].transpose() << std::endl;
+      std::cout << "hulls_[obst_index][i][7]= " << hulls_[obst_index][i][7].transpose() << std::endl;*/
+
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 // std::srand(unsigned(std::time(0)));

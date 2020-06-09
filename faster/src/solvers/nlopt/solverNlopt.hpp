@@ -188,7 +188,7 @@ private:
 
   std::string getResultCode(int &result);
 
-  void findCentroidHull(const std::vector<Eigen::Vector3d> &hull, Eigen::Vector3d &centroid);
+  void findCentroidHull(const Polyhedron_Std &hull, Eigen::Vector3d &centroid);
 
   int lastDecCP();
 
