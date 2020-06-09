@@ -56,7 +56,8 @@ disp("distances")
 disp("times")
 [mean(time_minvo), mean(time_bezier), mean(time_bspline)]
 
-
+disp("n_times_stopped")
+[mean(n_times_stopped_minvo) mean(n_times_stopped_bezier) mean(n_times_stopped_bspline) ]
 
 % ax=figure;
 % subplot(3,1,1);
@@ -66,11 +67,11 @@ disp("times")
 %%
 figure
 subplot(3,1,1)
- scatter3(vel_minvo(1,:),vel_minvo(2,:),vel_minvo(3,:))
+ scatter3(vel_minvo(1,:),vel_minvo(2,:),vel_minvo(3,:)); title('MINVO')
 subplot(3,1,2)
- scatter3(vel_bezier(1,:),vel_bezier(2,:),vel_bezier(3,:))
+ scatter3(vel_bezier(1,:),vel_bezier(2,:),vel_bezier(3,:)); title('Bezier')
 subplot(3,1,3)
- scatter3(vel_bspline(1,:),vel_bspline(2,:),vel_bspline(3,:))
+ scatter3(vel_bspline(1,:),vel_bspline(2,:),vel_bspline(3,:)); title('BSpline')
 %%
 
 %B-SPLINE costs
@@ -132,12 +133,16 @@ function [vel dist time n_times_stopped]=readBagsThatStartWith(name)
         topics = readMessages(select(bag, 'Topic', '/SQ01s/goal'));
         total_distance=0.0;
         n_times_stopped_per_bag=0;
+        
+        times_filtered=[];
+        
         for j=1:size(topics,1)
              %%%%%%%%%%%%%%%%%%%%%%%%%
              min_x=1;
              max_x=47;
              if(topics{j}.Pos.X>min_x && topics{j}.Pos.X<max_x)
               vel_j=[topics{j}.Vel.X; topics{j}.Vel.Y; topics{j}.Vel.Z];
+              times_filtered=[times_filtered topics{j}.Header.Stamp.Sec + topics{j}.Header.Stamp.Nsec*(1e-9)];
               if(norm(vel_j)<1e-7 && stopped==0)
                   stopped=1;
                   n_times_stopped_per_bag=n_times_stopped_per_bag+1;
@@ -161,8 +166,8 @@ function [vel dist time n_times_stopped]=readBagsThatStartWith(name)
         
          n_times_stopped=[n_times_stopped n_times_stopped_per_bag];
 
-        t_init=topics{1}.Header.Stamp.Sec + topics{1}.Header.Stamp.Nsec*(1e-9);
-        t_final=topics{end}.Header.Stamp.Sec + topics{end}.Header.Stamp.Nsec*(1e-9);
+        t_init=min(times_filtered);
+        t_final=max(times_filtered);
 
         time=[time t_final-t_init];
         dist=[dist total_distance];

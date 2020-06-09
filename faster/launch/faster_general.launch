@@ -1,6 +1,6 @@
 <launch>
 	<arg name="quad" default="SQ01s"/>
-	<arg name="gui" default="false"/>
+	<arg name="gui" default="true"/>
 	<arg name="rviz" default="true"/>
 	
 	<!-- Start faster commands 

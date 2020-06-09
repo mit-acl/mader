@@ -15,14 +15,15 @@ if __name__ == '__main__':
 
     ########################################################
     #Remember to comment the parameter "basis" in faster.yaml before running this file
+    #Remember to comment the parameter "visual" in faster.yaml before running this file
     ########################################################
 
-    num_of_sims=10;
+    num_of_sims=5;
 
     commands = []
 
     folder_bags="/home/jtorde/Desktop/ws/src/faster/results/single_agent";
-    all_basis=["MINVO", "BEZIER", "B_SPLINE"] #or BEZIER or MINVO
+    all_basis=["BEZIER", "B_SPLINE"] #or"MINVO", "BEZIER", "B_SPLINE"
     name_node_record="bag_recorder"
     kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill faster_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f faster_commands"
 
@@ -31,17 +32,18 @@ if __name__ == '__main__':
 
 
     
-    for j in range(3):
+    for j in len(all_basis):
         basis=all_basis[j]
 
         for i in range(num_of_sims):
 
             commands = []
 
-            commands.append("11");
+            commands.append("roslaunch faster all.launch gui:=false rviz:=false");
             commands.append("sleep 1.5 && rosparam set /SQ01s/faster/basis "+basis); #Remember to comment the parameter "basis" in faster.yaml before running this file
+            commands.append("sleep 1.5 && rosparam set /SQ01s/faster/visual false"); #Remember to comment the parameter "visual" in faster.yaml before running this file
 
-            commands.append("sleep 4.0 && 22");
+            commands.append("sleep 4.0 && roslaunch faster faster.launch");
             commands.append("sleep 4.0 && cd "+folder_bags+" && rosbag record -o "+basis+"_"+str(i)+" /SQ01s/goal __name:="+name_node_record);
             #publishing the goal should be the last command
             commands.append("sleep 4.0 && rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped \'{header: {stamp: now, frame_id: \"world\"}, pose: {position: {x: 50, y: 0, z: 1}, orientation: {w: 1.0}}}\'");
@@ -61,11 +63,15 @@ if __name__ == '__main__':
 
             print("Commands sent")
 
-            time.sleep(2.0)
+            time.sleep(3.0)
             pos_string=""
             while (pos_string.find('49.')==-1 and pos_string.find('50.')==-1): #note the point after the 49, to make sure they are the first two numbers, and not the decimals
-                pos_string =str(subprocess.check_output(['rostopic', 'echo', '/SQ01s/state/pos/x', '-n', '1']))
-                print("Currently at ",pos_string)
+                try:
+                    pos_string =str(subprocess.check_output(['rostopic', 'echo', '/SQ01s/state/pos/x', '-n', '1']))
+                    print("Currently at ",pos_string)
+                except:
+                    print("An Error occurred")
+
 
             print("Currently at ",pos_string)
             print("Goal is reached, killing the bag node")

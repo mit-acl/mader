@@ -1,6 +1,8 @@
 <launch>
 
 	<arg name="quad" default="SQ01s"/>
+  <arg name="gui" default="true"/>
+  <arg name="rviz" default="true"/>
 <!--
   <include file="$(find acl_sim)/launch/start_world.launch">
   	<arg name="quad" value="$(arg quad)"/>
@@ -20,6 +22,8 @@
  
   <include file="$(find faster)/launch/faster_general.launch">
       <arg name="quad" value="$(arg quad)"/>
+      <arg name="gui" value="$(arg gui)"/>
+      <arg name="rviz" value="$(arg rviz)"/>
   </include> 
 
 
