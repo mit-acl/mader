@@ -1463,7 +1463,7 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
   ////////// VELOCITY CONSTRAINTS    //////////////
   /////////////////////////////////////////////////
 
-  for (int i = 2; i <= (N_ - 3); i++)  // If using BSpline basis, v0 and v1 are already determined by initial_state
+  for (int i = 2; i <= (N_ - 2); i++)  // If using BSpline basis, v0 and v1 are already determined by initial_state
   {
     double ciM2 = p_ / (knots_(i + p_ + 1 - 2) - knots_(i + 1 - 2));
     double ciM1 = p_ / (knots_(i + p_ + 1 - 1) - knots_(i + 1 - 1));
@@ -1488,8 +1488,13 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
     Qbs.col(0) = v_iM2;
     Qbs.col(1) = v_iM1;
     Qbs.col(2) = v_i;
+    // std::cout << "_____________________" << std::endl;
+    // std::cout << "interval= " << i - 2 << std::endl;
+    // std::cout << "Qbs= " << Qbs << std::endl;
 
     transformVelBSpline2otherBasis(Qbs, Qmv, i - 2);
+
+    // std::cout << "Qmv= " << Qmv << std::endl;
 
     ///////////////////////// ANY BASIS //////////////////////////////
 
@@ -1511,21 +1516,27 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         for (int u = 0; u < 3; u++)
         {  // v_{i-2+j} depends on v_{i-2}, v_{i-1}, v_{i} of the old basis
 
-          partials.block(0, u, 3, 1) += -M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
-          partials.block(0, u + 1, 3, 1) += M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
+          partials.col(u) += -M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
+          partials.col(u + 1) += M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
         }
+
+        if (i == (N_ - 2))
+        {
+          partials.col(2) = partials.col(2) + partials.col(3);
+        }
+
         // and now assign it to the vector grad
         for (int u = 0; u < 3; u++)
         {
           if (isADecisionCP(i - 2 + u))  // If Q[i] is a decision variable
           {
-            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u), partials.block(0, u, 3, 1), grad, r, nn);
+            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u), partials.col(u), grad, r, nn);
           }
 
           // v_{i-2+u} depends on q_{i-2+u+1}
           if (isADecisionCP(i - 2 + u + 1))  // If Q[i+1] is a decision variable
           {
-            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u + 1), partials.block(0, u + 1, 3, 1), grad, r, nn);
+            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u + 1), partials.col(u + 1), grad, r, nn);
           }
         }
       }
@@ -1541,21 +1552,27 @@ void SolverNlopt::computeConstraints(unsigned m, double *constraints, unsigned n
         for (int u = 0; u < 3; u++)
         {  // v_{i-2+j} depends on v_{i-2}, v_{i-1}, v_{i} of the old basis
 
-          partials.block(0, u, 3, 1) += M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
-          partials.block(0, u + 1, 3, 1) += -M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
+          partials.col(u) += M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
+          partials.col(u + 1) += -M_vel_bs2basis_[i - 2](u, j) * c[u] * ones;
         }
+
+        if (i == (N_ - 2))
+        {
+          partials.col(2) = partials.col(2) + partials.col(3);
+        }
+
         // and now assign it to the vector grad
         for (int u = 0; u < 3; u++)
         {
-          if (isADecisionCP(i - 2 + u))
+          if (isADecisionCP(i - 2 + u))  // If Q[i] is a decision variable
           {
-            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u), partials.block(0, u, 3, 1), grad, r, nn);
+            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u), partials.col(u), grad, r, nn);
           }
 
           // v_{i-2+u} depends on q_{i-2+u+1}
-          if (isADecisionCP(i - 2 + u + 1))
+          if (isADecisionCP(i - 2 + u + 1))  // If Q[i+1] is a decision variable
           {
-            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u + 1), partials.block(0, u + 1, 3, 1), grad, r, nn);
+            toGradDiffConstraintsDiffVariables(gIndexQ(i - 2 + u + 1), partials.col(u + 1), grad, r, nn);
           }
         }
       }
