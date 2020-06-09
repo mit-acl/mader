@@ -71,6 +71,8 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
     abort();
   }
 
+  A_pos_bs_ = basis_converter.getABSpline(num_of_segments_);
+
   ///////////////////////////////////////
   ///////////////////////////////////////
 
@@ -999,10 +1001,34 @@ double SolverNlopt::computeObjFunctionJerk(unsigned nn, double *grad, std::vecto
 {
   // Cost. See Lyx derivation (notes.lyx)
   double cost = 0.0;
-  for (int i = p_; i <= N_; i++)  // i is the index of the control point
+
+  Eigen::Matrix<double, 4, 1> tmp;
+  tmp << 6.0, 0.0, 0.0, 0.0;
+
+  std::vector<Eigen::Vector3d> gradient;
+  for (int i = 0; i <= N_; i++)
   {
-    cost += (-q[i - 3] + 3 * q[i - 2] - 3 * q[i - 1] + q[i]).squaredNorm();  // the jerk of the interval i-4
-                                                                             // ///////////////////
+    gradient.push_back(Eigen::Vector3d::Zero());
+  }
+
+  for (int i = 0; i < num_of_segments_; i++)
+  {
+    Eigen::Matrix<double, 4, 1> A_i_times_tmp = A_pos_bs_[i] * tmp;
+
+    Eigen::Matrix<double, 3, 4> Q;
+    Q.col(0) = q[i];
+    Q.col(1) = q[i + 1];
+    Q.col(2) = q[i + 2];
+    Q.col(3) = q[i + 3];
+
+    cost += (Q * A_i_times_tmp).squaredNorm();
+
+    // I only need to do this if grad!=NULL
+    for (int u = 0; u <= 3; u++)
+    {
+      gradient[i + u] += 2 * (Q * A_i_times_tmp) * A_i_times_tmp(u);
+    }
+    ///////////////
   }
 
   cost += weight_modified_ * (q[N_] - final_state_.pos).squaredNorm();
@@ -1015,29 +1041,54 @@ double SolverNlopt::computeObjFunctionJerk(unsigned nn, double *grad, std::vecto
       grad[i] = 0.0;
     }
 
-    // Gradient for the control points that are decision variables
-    for (int i = p_; i <= (lastDecCP() - 1); i++)
-    // q0,q1,q2,qNm1,qN are not decision variables. //qNm2 is done outside the loop
+    gradient[N_ - 2] = gradient[N_ - 2] + 2 * weight_modified_ * (q[N_ - 2] - final_state_.pos);
+    gradient[N_ - 2] = gradient[N_ - 2] + gradient[N_ - 1] + gradient[N_];  // because qNm2=qNm1=qN
+
+    for (int i = 3; i <= (N_ - 2); i++)  // q0_. q1_ and q2_ are already fixed by p0, v0, a0
     {
-      Eigen::Vector3d gradient;
-
-      gradient = 2 * (-q[i - 3] + 3 * q[i - 2] - 3 * q[i - 1] + q[i])     // Right
-                 - 6 * (-q[i - 2] + 3 * q[i - 1] - 3 * q[i] + q[i + 1])   // Center-right
-                 + 6 * (-q[i - 1] + 3 * q[i] - 3 * q[i + 1] + q[i + 2])   // Center-right
-                 - 2 * (-q[i] + 3 * q[i + 1] - 3 * q[i + 2] + q[i + 3]);  // Left
-
-      assignEigenToVector(grad, gIndexQ(i), gradient);
+      assignEigenToVector(grad, gIndexQ(i), gradient[i]);
     }
-
-    // and now do qNm2. Note that qN=qNm1=qNm2
-    int i = N_ - 2;
-    Eigen::Vector3d gradient = 2 * (-q[i - 3] + 3 * q[i - 2] - 3 * q[i - 1] + q[i])  // Right
-                               - 4 * (-q[i - 2] + 3 * q[i - 1] - 2 * q[i])           // Center-right
-                               + 2 * (-q[i - 1] + q[i])                              // Center-right
-                               + 2 * weight_modified_ * (q[i] - final_state_.pos);
-
-    assignEigenToVector(grad, gIndexQ(i), gradient);
   }
+
+  ////////////This part below is valid when it is a uniform Non-clamped Bspline. I.e. when the matrices A don't change
+  ///every interval
+  // for (int i = p_; i <= N_; i++)  // i is the index of the control point
+  // {
+  //   cost += (-q[i - 3] + 3 * q[i - 2] - 3 * q[i - 1] + q[i]).squaredNorm();  // the jerk of the interval i-4
+  //                                                                            // ///////////////////
+  // }
+
+  // if (grad)
+  // {
+  //   // Initialize to zero all the elements, IT IS NEEDED (if not it doesn't converge)
+  //   for (int i = 0; i < nn; i++)
+  //   {
+  //     grad[i] = 0.0;
+  //   }
+
+  //   // Gradient for the control points that are decision variables
+  //   for (int i = p_; i <= (lastDecCP() - 1); i++)
+  //   // q0,q1,q2,qNm1,qN are not decision variables. //qNm2 is done outside the loop
+  //   {
+  //     Eigen::Vector3d gradient;
+
+  //     gradient = 2 * (-q[i - 3] + 3 * q[i - 2] - 3 * q[i - 1] + q[i])     // Right
+  //                - 6 * (-q[i - 2] + 3 * q[i - 1] - 3 * q[i] + q[i + 1])   // Center-right
+  //                + 6 * (-q[i - 1] + 3 * q[i] - 3 * q[i + 1] + q[i + 2])   // Center-right
+  //                - 2 * (-q[i] + 3 * q[i + 1] - 3 * q[i + 2] + q[i + 3]);  // Left
+
+  //     assignEigenToVector(grad, gIndexQ(i), gradient);
+  //   }
+
+  //   // and now do qNm2. Note that qN=qNm1=qNm2
+  //   int i = N_ - 2;
+  //   Eigen::Vector3d gradient = 2 * (-q[i - 3] + 3 * q[i - 2] - 3 * q[i - 1] + q[i])  // Right
+  //                              - 4 * (-q[i - 2] + 3 * q[i - 1] - 2 * q[i])           // Center-right
+  //                              + 2 * (-q[i - 1] + q[i])                              // Center-right
+  //                              + 2 * weight_modified_ * (q[i] - final_state_.pos);
+
+  //   assignEigenToVector(grad, gIndexQ(i), gradient);
+  // }
 
   return cost;
 }
@@ -1147,7 +1198,9 @@ void SolverNlopt::transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3, 
 
 bool SolverNlopt::checkGradientsUsingFiniteDiff()
 {
+  std::cout << "CALLING OPTIMIZE!!" << std::endl;
   optimize();  // we need to call optimize first so that all the variables and constraints are set up
+  std::cout << "CALLED OPTIMIZE!!" << std::endl;
 
   double weight_modified_original = weight_modified_;
   weight_modified_ =
@@ -1179,10 +1232,20 @@ bool SolverNlopt::checkGradientsUsingFiniteDiff()
   // grad is a vector with nn *m elements
 
   double constraints[num_of_constraints_];
+
+  std::cout << "CALLING computeConstraints!!" << std::endl;
+
   computeConstraints(m, constraints, num_of_variables_, grad_constraints, q, n, d);
 
+  std::cout << "CALLed computeConstraints!!" << std::endl;
+
   double grad_f[nn];
+
+  std::cout << "CALLING computeObjFunctionJerk!!" << std::endl;
+
   double f = computeObjFunctionJerk(nn, grad_f, q, n, d);
+
+  std::cout << "CALLed computeObjFunctionJerk!!" << std::endl;
 
   double epsilon = 1e-6;
 

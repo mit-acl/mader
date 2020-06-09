@@ -21,6 +21,8 @@ typedef std::vector<Edge> Edges;
 // TODO: move this to a class (so that no one can modify these matrices)
 struct basisConverter
 {
+  Eigen::Matrix<double, 4, 4> A_pos_bs_seg0, A_pos_bs_seg1, A_pos_bs_rest, A_pos_bs_seg_last2, A_pos_bs_seg_last;
+
   Eigen::Matrix<double, 4, 4> M_pos_bs2mv_seg0, M_pos_bs2mv_seg1, M_pos_bs2mv_rest, M_pos_bs2mv_seg_last2,
       M_pos_bs2mv_seg_last;
 
@@ -36,6 +38,42 @@ struct basisConverter
     // This is for t \in [0 1];
 
     // clang-format off
+
+        //////MATRICES A FOR BSPLINE POSITION/////////
+        A_pos_bs_seg0 <<
+
+           -1.0000,    3.0000,   -3.0000,    1.0000,
+            1.7500,   -4.5000,    3.0000,         0,
+           -0.9167,    1.5000,         0,         0,
+            0.1667,         0,         0,         0;
+
+        A_pos_bs_seg1 <<
+
+           -0.2500,    0.7500,   -0.7500,    0.2500,
+            0.5833,   -1.2500,    0.2500,    0.5833,
+           -0.5000,    0.5000,    0.5000,    0.1667,
+            0.1667,         0,         0,         0;
+
+        A_pos_bs_rest << 
+
+           -0.1667,    0.5000,   -0.5000,    0.1667,
+            0.5000,   -1.0000,         0,    0.6667,
+           -0.5000,    0.5000,    0.5000,    0.1667,
+            0.1667,         0,         0,         0;
+
+        A_pos_bs_seg_last2 <<
+           -0.1667,    0.5000,   -0.5000,    0.1667,
+            0.5000,   -1.0000,    0.0000,    0.6667,
+           -0.5833,    0.5000,    0.5000,    0.1667,
+            0.2500,         0,         0,         0;
+
+        A_pos_bs_seg_last <<
+
+           -0.1667,    0.5000,   -0.5000,   0.1667,
+            0.9167,   -1.2500,   -0.2500,   0.5833,
+           -1.7500,    0.7500,    0.7500,   0.2500,
+            1.0000,         0,         0,        0;
+
 
         //////BSPLINE to MINVO POSITION/////////
 
@@ -151,6 +189,21 @@ struct basisConverter
                  0,         0,    1.0000;
 
     // clang-format on
+  }
+
+  //////MATRICES A FOR BSPLINE POSITION/////////
+  std::vector<Eigen::Matrix<double, 4, 4>> getABSpline(int num_pol)
+  {
+    std::vector<Eigen::Matrix<double, 4, 4>> A_pos_bs;  // will have as many elements as num_pol
+    A_pos_bs.push_back(A_pos_bs_seg0);
+    A_pos_bs.push_back(A_pos_bs_seg1);
+    for (int i = 0; i < (num_pol - 4); i++)
+    {
+      A_pos_bs.push_back(A_pos_bs_rest);
+    }
+    A_pos_bs.push_back(A_pos_bs_seg_last2);
+    A_pos_bs.push_back(A_pos_bs_seg_last);
+    return A_pos_bs;
   }
 
   //////BSPLINE to MINVO POSITION/////////
