@@ -75,6 +75,8 @@ SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol)
     M_pos_bs2basis_inverse_.push_back(matrix_i.inverse());
   }
 
+  separator_solver_ = new separator::Separator();  // 0.0, 0.0, 0.0
+
   // Mbs2basis_inverse_ = Mbs2basis_.inverse();
 }
 
@@ -1296,8 +1298,6 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
   expanded_nodes_.clear();
   result_.clear();
   map_open_list_.clear();
-
-  separator_solver_ = new separator::Separator();  // 0.0, 0.0, 0.0
 
   ////////////////////////////
 
