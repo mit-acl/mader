@@ -41,6 +41,12 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   // safeGetParam(nh_, "R_consider_agents", par_.R_consider_agents);
   // safeGetParam(nh_, "R_consider_obstacles", par_.R_consider_obstacles);
 
+  safeGetParam(nh_, "x_min", par_.x_min);
+  safeGetParam(nh_, "x_max", par_.x_max);
+
+  safeGetParam(nh_, "y_min", par_.y_min);
+  safeGetParam(nh_, "y_max", par_.y_max);
+
   safeGetParam(nh_, "z_ground", par_.z_ground);
   safeGetParam(nh_, "z_max", par_.z_max);
 

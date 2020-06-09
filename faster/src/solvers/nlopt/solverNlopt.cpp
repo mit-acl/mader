@@ -76,7 +76,13 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   ///////////////////////////////////////
   ///////////////////////////////////////
 
-  z_ground_ = par.z_min;
+  x_min_ = par.x_min;
+  x_max_ = par.x_max;
+
+  y_min_ = par.y_min;
+  y_max_ = par.y_max;
+
+  z_min_ = par.z_min;
   z_max_ = par.z_max;
   Ra_ = par.Ra;
   a_star_samp_x_ = par.a_star_samp_x;
@@ -266,8 +272,9 @@ void SolverNlopt::generateAStarGuess()
   // double runtime = 0.05;   //[seconds]
   double goal_size = 0.05;  //[meters]
 
-  myAStarSolver_->setZminZmaxAndRa(z_ground_, z_max_, Ra_);  // z limits for the search, in world frame
-  myAStarSolver_->setBBoxSearch(2000.0, 2000.0, 2000.0);     // limits for the search, centered on q2
+  myAStarSolver_->setXYZMinMaxAndRa(x_min_, x_max_, y_min_, y_max_, z_min_, z_max_,
+                                    Ra_);                 // z limits for the search, in world frame
+  myAStarSolver_->setBBoxSearch(2000.0, 2000.0, 2000.0);  // limits for the search, centered on q2
   myAStarSolver_->setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
                                          a_star_fraction_voxel_size_);
 
@@ -361,7 +368,7 @@ void SolverNlopt::generateRandomQ(std::vector<Eigen::Vector3d> &q)
   generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
   std::uniform_real_distribution<double> dist_x(0, 1);  // TODO
   std::uniform_real_distribution<double> dist_y(0, 1);  // TODO
-  std::uniform_real_distribution<double> dist_z(z_ground_, z_max_);
+  std::uniform_real_distribution<double> dist_z(z_min_, z_max_);
 
   for (int i = 0; i <= N_; i++)
   {
@@ -2089,9 +2096,15 @@ bool SolverNlopt::optimize()
 
   // note that, for a v0 and a0 given, q2_ is not guaranteed to lie within the bounds. If that's the case --> keep
   // executing previous trajectory
-  if ((q2_.z() > z_max_ || q2_.z() < z_ground_))
+  if (q2_.x() > x_max_ || q2_.x() < x_min_ ||  //////////////
+      q2_.y() > y_max_ || q2_.y() < y_min_ ||  /////////////////
+      q2_.z() > z_max_ || q2_.z() < z_min_)
   {
-    std::cout << bold << red << "q2_ is not in [z_min, z_max]" << reset << std::endl;
+    std::cout << bold << red << "q2_ is not in [min, max]" << reset << std::endl;
+    std::cout << "q2_= " << q2_.transpose() << std::endl;
+    std::cout << "x_min_= " << x_min_ << ", x_max_=" << x_max_ << std::endl;
+    std::cout << "y_min_= " << y_min_ << ", y_max_=" << y_max_ << std::endl;
+    std::cout << "z_min_= " << z_min_ << ", z_max_=" << z_max_ << std::endl;
     return false;
   }
 
@@ -2167,13 +2180,14 @@ bool SolverNlopt::optimize()
   // control points q
   for (int i = 0; i <= i_max_; i = i + 3)
   {
-    lb.push_back(-HUGE_VAL);
-    ub.push_back(HUGE_VAL);
+    // x component
+    lb.push_back(x_min_);
+    ub.push_back(x_max_);
     // y component
-    lb.push_back(-HUGE_VAL);
-    ub.push_back(HUGE_VAL);
+    lb.push_back(y_min_);
+    ub.push_back(y_max_);
     // z component
-    lb.push_back(z_ground_);
+    lb.push_back(z_min_);
     ub.push_back(z_max_);
   }
   // normals n
@@ -2421,8 +2435,8 @@ void SolverNlopt::saturateQ(std::vector<Eigen::Vector3d> &q)
 {
   for (int i = 0; i < q.size(); i++)
   {
-    q[i].z() = std::max(q[i].z(), z_ground_);  // Make sure it's within the limits
-    q[i].z() = std::min(q[i].z(), z_max_);     // Make sure it's within the limits
+    q[i].z() = std::max(q[i].z(), z_min_);  // Make sure it's within the limits
+    q[i].z() = std::min(q[i].z(), z_max_);  // Make sure it's within the limits
   }
 }
 

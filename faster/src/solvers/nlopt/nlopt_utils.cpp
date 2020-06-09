@@ -17,8 +17,14 @@
 
 bool nlopt_utils::checkGradientsNlopt(std::string basis)
 {
-  double z_ground = -2.0;
-  double z_max = 2.0;
+  double x_min = -10.0;
+  double x_max = 10.0;
+
+  double y_min = -10.0;
+  double y_max = 10.0;
+
+  double z_ground = -4.0;
+  double z_max = 4.0;
   double dc = 0.01;
   double Ra = 4.0;
   int deg_pol = 3;
@@ -49,6 +55,13 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   int num_pol = 8;
 
   par_snlopt param;
+
+  param.x_min = x_min;
+  param.x_max = x_max;
+
+  param.y_min = y_min;
+  param.y_max = y_max;
+
   param.z_min = z_ground;
   param.z_max = z_max;
   param.v_max = Eigen::Vector3d(v_max, v_max, v_max);

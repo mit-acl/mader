@@ -57,8 +57,15 @@ Faster::Faster(parameters par) : par_(par)
 
   par_snlopt par_for_solver;
 
+  par_for_solver.x_min = par_.x_min;
+  par_for_solver.x_max = par_.x_max;
+
+  par_for_solver.y_min = par_.y_min;
+  par_for_solver.y_max = par_.y_max;
+
   par_for_solver.z_min = par_.z_ground;
   par_for_solver.z_max = par_.z_max;
+
   par_for_solver.Ra = par_.Ra;
   par_for_solver.v_max = par_.v_max;
   par_for_solver.a_max = par_.a_max;

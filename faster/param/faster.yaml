@@ -28,8 +28,14 @@ fov_depth: 3.0 #[m] Should be < Ra
 
 Ra: 3.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
+x_min: -1000000000.0  # [m] don't forget the .0
+x_max: 10000000000.0  # [m] don't forget the .0
+
+y_min: -1000000000.0  # [m] don't forget the .0
+y_max: 1000000000.0 # [m] don't forget the .0
+
 z_ground: 0.2         #[m] points below this are considered ground
-z_max: 3         #[m] JPS is not allowed to give a solution that goes higher than this height
+z_max: 3.0         #[m] JPS is not allowed to give a solution that goes higher than this height
 
 #For multi-agent simulations
 # v_max: 2.5   #[m/s]  
@@ -62,8 +68,8 @@ solver: "LD_SLSQP"
 # //MMA and SLSQP
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
 upper_bound_runtime_snlopt: 0.3 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
-kappa: 0.35 #% of time spent to find initial guess
-mu: 0.6    #% of time spent to solve the optimization
+kappa: 0.6 #% of time spent to find initial guess
+mu: 0.35    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
 a_star_samp_x: 5

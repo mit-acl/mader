@@ -434,6 +434,12 @@ struct parameters
 
   double R_local_map;
 
+  double x_min;
+  double x_max;
+
+  double y_min;
+  double y_max;
+
   double z_ground;
   double z_max;
 

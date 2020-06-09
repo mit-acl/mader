@@ -21,8 +21,14 @@ struct par_snlopt
 {
   // Will not change between iterations
 
-  double z_min;
-  double z_max;
+  double x_min = -std::numeric_limits<double>::max();
+  double x_max = std::numeric_limits<double>::max();
+
+  double y_min = -std::numeric_limits<double>::max();
+  double y_max = std::numeric_limits<double>::max();
+
+  double z_min = -std::numeric_limits<double>::max();
+  double z_max = std::numeric_limits<double>::max();
   Eigen::Vector3d v_max;
   Eigen::Vector3d a_max;
   double dc;
@@ -294,7 +300,13 @@ private:
   double kappa_ = 0.2;  // kappa_*max_runtime_ is spent on the initial guess
   double mu_ = 0.5;     // mu_*max_runtime_ is spent on the optimization
 
-  double z_ground_ = std::numeric_limits<double>::min();
+  double x_min_ = -std::numeric_limits<double>::max();
+  double x_max_ = std::numeric_limits<double>::max();
+
+  double y_min_ = -std::numeric_limits<double>::max();
+  double y_max_ = std::numeric_limits<double>::max();
+
+  double z_min_ = -std::numeric_limits<double>::max();
   double z_max_ = std::numeric_limits<double>::max();
 
   int num_of_LPs_run_ = 0;

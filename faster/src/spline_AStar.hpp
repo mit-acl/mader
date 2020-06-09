@@ -129,7 +129,7 @@ public:
 
   void setVisual(bool visual);
 
-  void setZminZmaxAndRa(double z_min, double z_max, double Ra);
+  void setXYZMinMaxAndRa(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max, double Ra);
 
   int getNumOfLPsRun();
 
@@ -237,7 +237,13 @@ private:
 
   bool visual_ = false;
 
-  double z_min_ = std::numeric_limits<double>::min();
+  double x_min_ = -std::numeric_limits<double>::max();
+  double x_max_ = std::numeric_limits<double>::max();
+
+  double y_min_ = -std::numeric_limits<double>::max();
+  double y_max_ = std::numeric_limits<double>::max();
+
+  double z_min_ = -std::numeric_limits<double>::max();
   double z_max_ = std::numeric_limits<double>::max();
 
   int num_of_LPs_run_ = 0;
