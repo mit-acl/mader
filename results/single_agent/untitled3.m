@@ -10,10 +10,10 @@ max_x=50;
 
 
 clc;
-[vel_minvo dist_minvo time_minvo n_times_stopped_minvo]=readBagsThatStartWith('MINVO');
-[vel_bezier dist_bezier time_bezier n_times_stopped_bezier]=readBagsThatStartWith('BEZIER');
+[vel_minvo, dist_minvo, time_minvo, n_times_stopped_minvo]=readBagsThatStartWith('MINVO');
+[vel_bezier, dist_bezier, time_bezier, n_times_stopped_bezier]=readBagsThatStartWith('BEZIER');
 
-[vel_bspline dist_bspline time_bspline n_times_stopped_bspline]=readBagsThatStartWith('B_SPLINE');
+[vel_bspline, dist_bspline, time_bspline, n_times_stopped_bspline]=readBagsThatStartWith('B_SPLINE');
 
 %%
 close all; clc

@@ -13,17 +13,19 @@ import subprocess
 
 if __name__ == '__main__':
 
-    ########################################################
-    #Remember to comment the parameter "basis" in faster.yaml before running this file
-    #Remember to comment the parameter "visual" in faster.yaml before running this file
-    ########################################################
+
+    #Let's start by commenting the visual and basis params (we will set them in this file)
+
+    #https://stackoverflow.com/questions/24889346/how-to-uncomment-a-line-that-contains-a-specific-string-using-sed/24889374
+    os.system("sed -i '/visual/s/^/#/g' $(rospack find faster)/param/faster.yaml") #comment visual param
+    os.system("sed -i '/basis/s/^/#/g' $(rospack find faster)/param/faster.yaml") #comment basis param
 
     num_of_sims=5;
 
     commands = []
 
     folder_bags="/home/jtorde/Desktop/ws/src/faster/results/single_agent";
-    all_basis=["BEZIER", "B_SPLINE"] #or"MINVO", "BEZIER", "B_SPLINE"
+    all_basis=["MINVO", "BEZIER", "B_SPLINE"] #or"MINVO", "BEZIER", "B_SPLINE"
     name_node_record="bag_recorder"
     kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill faster_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f faster_commands"
 
@@ -32,7 +34,7 @@ if __name__ == '__main__':
 
 
     
-    for j in len(all_basis):
+    for j in range(len(all_basis)):
         basis=all_basis[j]
 
         for i in range(num_of_sims):
@@ -79,3 +81,7 @@ if __name__ == '__main__':
             time.sleep(0.5)
             print("Killing the rest")
             os.system(kill_all)
+
+    time.sleep(3.0)
+    os.system("sed -i '/visual/s/^#//g' $(rospack find faster)/param/faster.yaml") #comment out visual param
+    os.system("sed -i '/basis/s/^#//g' $(rospack find faster)/param/faster.yaml") #comment out basis param
