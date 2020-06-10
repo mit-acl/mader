@@ -778,6 +778,7 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
                               par_.upper_bound_runtime_snlopt);  // I'm stopped at the end of the trajectory --> take my
                                                                  // time to replan
   }
+  std::cout << green << "Runtime snlopt= " << runtime_snlopt << reset << std::endl;
   snlopt_->setMaxRuntimeKappaAndMu(runtime_snlopt, par_.kappa, par_.mu);
 
   //////////////////////

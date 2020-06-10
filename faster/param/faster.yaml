@@ -58,24 +58,32 @@ weight: 10.0 #The .0 is needed #10000  #1000000
 epsilon_tol_constraints: 0.000001
 xtol_rel: 0.0000000000001 #negative value --> stopping criterion not used
 ftol_rel: 0.0000000001 #negative value --> stopping criterion not used
-solver: "LD_SLSQP"
+solver: "LD_MMA"
 
-#  // work:  //LD_MMA (fastest) // //LN_NELDERMEAD // LN_SBPLX //LN_PRAXIS //LD_AUGLAG //LD_AUGLAG_EQ // LD_SLSQP
-#  // don't work: LN_BOBYQA //  //LN_NEWUOA //LN_NEWUOA_BOUND //LN_COBYLA
-#  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1 //LD_VAR2 //LD_LBFGS_NOCEDAL //LD_LBFGS
+# LD_CCSAQ: really good
+# LD_MMA: only improves over the initial guess if it runs for a lot of time NOT TRUE
+# LN_NELDERMEAD: good, but doesn't seem to improve over the initial guess
+# LD_LBFGS: good
+# LD_VAR2: good
+# LD_AUGLAG: good
+# LD_SLSQP: sometimes it calls the obj_function and the constraints functions very few times. This leads to MUCH higher comp times than max_runtime (\implies A is published by then)
+
+#  // work:  / LN_SBPLX //LN_PRAXIS  //LD_AUGLAG_EQ //
+#  // don't work: LN_BOBYQA //  //LN_NEWUOA //LN_NEWUOA_BOUND //LN_COBYLA //LD_CCSAQ
+#  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1  //LD_LBFGS_NOCEDAL //
 
 # //COBYLA
 # //MMA and SLSQP
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
 upper_bound_runtime_snlopt: 0.3 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
-kappa: 0.6 #% of time spent to find initial guess
-mu: 0.35    #% of time spent to solve the optimization
+kappa: 0.3 #% of time spent to find initial guess
+mu: 0.15    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
-a_star_samp_x: 5
-a_star_samp_y: 5 
-a_star_samp_z: 5 
-a_star_fraction_voxel_size: 0.6 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
+a_star_samp_x: 3
+a_star_samp_y: 3 
+a_star_samp_z: 3 
+a_star_fraction_voxel_size: 0.5 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
 allow_infeasible_guess: true  #whether allow infeasible guesses to be used for the optimization. If false, straight line guess will be used in the case of an infeasible guess
 
 a_star_bias: 10000.0 #Bias (cost=g+bias*h) in the A* search 

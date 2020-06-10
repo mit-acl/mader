@@ -135,7 +135,7 @@ int main(int argc, char **argv)
   myAStarSolver.setRunTime(runtime);
   myAStarSolver.setGoalSize(goal_size);
 
-  myAStarSolver.setBias(2.0);
+  myAStarSolver.setBias(10000.0);
 
   myAStarSolver.setVisual(false);
 

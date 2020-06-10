@@ -23,6 +23,11 @@
 //#include <CGAL/Polyhedron_3.h>
 //#include <CGAL/AABB_face_graph_triangle_primitive.h>
 
+#include <chrono>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
 //#define DEBUG_MODE_NLOPT 1  // any value will make the debug output appear (comment line if you don't want debug)
 using namespace termcolor;
 
@@ -94,7 +99,7 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   v_max_ = par.v_max;
   a_max_ = par.a_max;
   allow_infeasible_guess_ = par.allow_infeasible_guess;
-  solver_ = getSolver(par.solver);
+  solver_ = getSolver(par.solver);                         // getSolver(nlopt::LD_VAR2);
   epsilon_tol_constraints_ = par.epsilon_tol_constraints;  // 1e-1;
   xtol_rel_ = par.xtol_rel;                                // 1e-1;
   ftol_rel_ = par.ftol_rel;                                // 1e-1;
@@ -1006,6 +1011,8 @@ void SolverNlopt::assignValueToGradConstraints(int var_gindex, const double &tmp
 double SolverNlopt::computeObjFunctionJerk(unsigned nn, double *grad, std::vector<Eigen::Vector3d> &q,
                                            std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
 {
+  // std::cout << "[Ineq] Time so far= " << (opt_timer_.ElapsedMs() / 1000) << std::endl;
+
   // Cost. See Lyx derivation (notes.lyx)
   double cost = 0.0;
 
@@ -1858,19 +1865,21 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
 {
   SolverNlopt *opt = reinterpret_cast<SolverNlopt *>(f_data);
 
+  // std::cout << "[Ineq] Time so far= " << (opt->opt_timer_.ElapsedMs() / 1000) << std::endl;
   // sometimes max_runtime in nlopt doesn't work --> force stop execution
-  if ((opt->opt_timer_.ElapsedMs() / 1000) > (opt->mu_ * opt->max_runtime_))
-  {
-    try
-    {
-      throw 20;
-    }
-    catch (int e)
-    {
-      // std::cout << "An exception occurred. Exception Nr. " << e << '\n';
-    }
-    // https://nlopt.readthedocs.io/en/latest/NLopt_C-plus-plus_Reference/
-  }
+  // if ((opt->opt_timer_.ElapsedMs() / 1000) > (opt->mu_ * opt->max_runtime_))
+  // {
+  //   //nlopt::set_force_stop();
+  //   // try
+  //   // {
+  //   //   throw 20;
+  //   // }
+  //   // catch (int e)
+  //   // {
+  //   //   // std::cout << "An exception occurred. Exception Nr. " << e << '\n';
+  //   // }
+  //   // // https://nlopt.readthedocs.io/en/latest/NLopt_C-plus-plus_Reference/
+  // }
 
   // std::cout << "in myIneqConstraints, m=" << m << ", n=" << nn << std::endl;
 
@@ -1885,7 +1894,6 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
   // opt->printInfeasibleConstraints(constraints);
   if (opt->areTheseConstraintsFeasible(constraints))
   {
-    opt->got_a_feasible_solution_ = true;
     double cost_now = opt->computeObjFunctionJerk(nn, nullptr, q, n, d);
     if (cost_now < opt->best_cost_so_far_)
     {
@@ -1896,6 +1904,7 @@ void SolverNlopt::myIneqConstraints(unsigned m, double *constraints, unsigned nn
       {
         opt->best_feasible_sol_so_far_[i] = x[i];
       }
+      opt->got_a_feasible_solution_ = true;
     }
   }
   // else
@@ -2087,12 +2096,29 @@ void SolverNlopt::printQVA(const std::vector<Eigen::Vector3d> &q)
   }
 }
 
+void *func(void *arg)
+{
+  // detach the current thread
+  // from the calling thread
+  pthread_detach(pthread_self());
+
+  printf("Inside the thread\n");
+
+  // exit the current thread
+  pthread_exit(NULL);
+}
+
 bool SolverNlopt::optimize()
 
 {
+  // reset some stuff
   traj_solution_.clear();
   best_cost_so_far_ = std::numeric_limits<double>::max();
   best_feasible_sol_so_far_.clear();
+  got_a_feasible_solution_ = false;
+  best_feasible_sol_so_far_.resize(num_of_variables_);
+
+  ////
 
   // note that, for a v0 and a0 given, q2_ is not guaranteed to lie within the bounds. If that's the case --> keep
   // executing previous trajectory
@@ -2141,8 +2167,8 @@ bool SolverNlopt::optimize()
   // subsidiary algorithm to be handled directly; in this case, the subsidiary algorithm must handle inequality
   // constraints (e.g. MMA or COBYLA)
 
-  nlopt::opt opt(nlopt::AUGLAG_EQ, num_of_variables_);  // need to create it here because I need the # of variables
-  nlopt::opt local_opt(solver_, num_of_variables_);     // need to create it here because I need the # of variables
+  nlopt::opt opt(nlopt::AUGLAG, num_of_variables_);  // need to create it here because I need the # of variables
+  nlopt::opt local_opt(solver_, num_of_variables_);  // need to create it here because I need the # of variables
 
   // opt_ = new nlopt::opt(nlopt::AUGLAG_EQ, num_of_variables_);  // nlopt::AUGLAG
   // local_opt_ = new nlopt::opt(solver_, num_of_variables_);
@@ -2193,30 +2219,27 @@ bool SolverNlopt::optimize()
   // normals n
   for (int j = j_min_; j <= j_max_; j++)
   {
-    lb.push_back(-HUGE_VAL);
-    ub.push_back(HUGE_VAL);
+    lb.push_back(-1e9);
+    ub.push_back(1e9);
   }
   // coefficients d
   for (int k = k_min_; k <= k_max_; k++)
   {
-    lb.push_back(-HUGE_VAL);
-    ub.push_back(HUGE_VAL);
+    lb.push_back(-1e9);
+    ub.push_back(1e9);
   }
-  opt.set_lower_bounds(lb);
-  opt.set_upper_bounds(ub);
-  // if (local_opt_)
-  // {
-  local_opt.set_lower_bounds(lb);
-  local_opt.set_upper_bounds(ub);
+  // opt.set_lower_bounds(lb);
+  // opt.set_upper_bounds(ub);
+  // // if (local_opt_)
+  // // {
+  // local_opt.set_lower_bounds(lb);
+  // local_opt.set_upper_bounds(ub);
   // }
 
   // set constraint and objective
   opt.add_inequality_mconstraint(SolverNlopt::myIneqConstraints, this, tol_constraints);
   opt.set_min_objective(SolverNlopt::myObjFunc,
                         this);  // this is passed as a parameter (the obj function has to be static)
-
-  best_feasible_sol_so_far_.resize(num_of_variables_);
-  got_a_feasible_solution_ = false;
 
   qnd2x(q_guess_, n_guess_, d_guess_, x_);
 
@@ -2231,14 +2254,14 @@ bool SolverNlopt::optimize()
   // std::cout << bold << blue << "GUESSES: " << reset << std::endl;
   // printQND(q_guess_, n_guess_, d_guess_);
 
-  // // x2qnd(x_, q_guess_, n_guess_);
+  // x2qnd(x_, q_guess_, n_guess_);
 
-  // std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
+  std::cout << bold << "The infeasible constraints of the initial Guess" << reset << std::endl;
 
-  // printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
+  printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
-  // printIndexesConstraints();
-  // printIndexesVariables();
+  printIndexesConstraints();
+  printIndexesVariables();
 
   // std::cout << "====================================" << std::endl;
 
@@ -2262,10 +2285,75 @@ bool SolverNlopt::optimize()
   try
   {
     result = opt.optimize(x_, obj_obtained);
+    ////////////////////////////////////////////////
+    ////////////////////////////////////////////////
+    // pthread_t ptid;
+
+    // // Creating a new thread
+    // pthread_create(&ptid, NULL, &func, NULL);
+    // printf("This line may be printed"
+    //        " before thread terminates\n");
+
+    // // The following line terminates
+    // // the thread manually
+    // // pthread_cancel(ptid);
+
+    // // Waiting for the created thread to terminate
+    // pthread_join(ptid, NULL);
+
+    // printf("This line will be printed"
+    //        " after thread ends\n");
+
+    // pthread_exit(NULL);
+    ////////////////////////////////////////////////
+    ////////////////////////////////////////////////
+
+    // // https://stackoverflow.com/questions/40550730/how-to-implement-timeout-for-function-in-c
+    // std::mutex m;
+    // std::condition_variable cv;
+    // int result;
+
+    // std::thread t([&]() {
+    //   /////////////////////////////////////////
+    //   // cresult = opt.optimize(x_, obj_obtained);
+
+    //   std::this_thread::sleep_for(std::chrono::seconds(1));
+    //   std::cout << "Executing thread" << std::endl;
+    //   std::this_thread::sleep_for(std::chrono::seconds(1));
+    //   std::cout << "Executing thread" << std::endl;
+    //   std::this_thread::sleep_for(std::chrono::seconds(1));
+    //   std::cout << "Executing thread" << std::endl;
+    //   std::this_thread::sleep_for(std::chrono::seconds(1));
+    //   std::cout << "Executing thread" << std::endl;
+    //   std::this_thread::sleep_for(std::chrono::seconds(1));
+    //   std::cout << "Executing thread" << std::endl;
+    //   std::this_thread::sleep_for(std::chrono::seconds(1));
+    //   std::cout << "Executing thread" << std::endl;
+    //   std::this_thread::sleep_for(std::chrono::seconds(1));
+    //   std::cout << "Executing thread" << std::endl;
+    //   result = 6;
+    //   ///////////////////////////////////////
+    //   cv.notify_one();
+    // });
+
+    // t.detach();
+
+    // std::unique_lock<std::mutex> l(m);
+    // if (cv.wait_for(l, std::chrono::milliseconds((long int)(2))) == std::cv_status::timeout)
+    // {
+    //   std::cout << "Throwing error" << std::endl;
+    //   result = 6;
+    //   t.jo
+    //   t.~thread();
+    // }
+    // else
+    // {
+    //   std::cout << "Waiting" << std::endl;
+    // }
   }
   catch (...)
   {
-    std::cout << red << "An exception occurred in the solver" << reset << std::endl;
+    std::cout << bold << red << "An exception occurred in the solver" << reset << std::endl;
     return false;
   }
   // std::cout << "[NL] Finished optimizing " << std::endl;
@@ -2399,6 +2487,7 @@ bool SolverNlopt::optimize()
 
       bool is_feasible = isFeasible(q, n, d);
       std::cout << "is Feasible= " << is_feasible << std::endl;
+      std::cout << "got_a_feasible_solution_= " << got_a_feasible_solution_ << std::endl;
 
       abort();
     }
@@ -2567,6 +2656,10 @@ nlopt::algorithm SolverNlopt::getSolver(std::string &solver)
   else if (solver == "LD_LBFGS")
   {
     return nlopt::LD_LBFGS;
+  }
+  else if (solver == "LD_CCSAQ")
+  {
+    return nlopt::LD_CCSAQ;
   }
   else
   {

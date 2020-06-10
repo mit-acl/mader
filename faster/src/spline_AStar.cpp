@@ -48,12 +48,14 @@ SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol)
   {
     // std::cout << green << bold << "A* is using MINVO" << reset << std::endl;
     M_pos_bs2basis_ = basis_converter.getMinvoPosConverters(num_pol);
+    M_vel_bs2basis_ = basis_converter.getMinvoVelConverters(num_pol);
     basis_ = MINVO;
   }
   else if (basis == "BEZIER")
   {
     // std::cout << green << bold << "A* is using BEZIER" << reset << std::endl;
     M_pos_bs2basis_ = basis_converter.getBezierPosConverters(num_pol);
+    M_vel_bs2basis_ = basis_converter.getBezierVelConverters(num_pol);
     basis_ = BEZIER;
   }
   else if (basis == "B_SPLINE")
@@ -61,6 +63,8 @@ SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol)
     // std::cout << green << bold << "A* is using B_SPLINE" << reset << std::endl;
 
     M_pos_bs2basis_ = basis_converter.getBSplinePosConverters(num_pol);
+    M_vel_bs2basis_ = basis_converter.getBSplineVelConverters(num_pol);
+
     basis_ = B_SPLINE;
   }
   else
@@ -190,7 +194,7 @@ void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
 {
   all_trajs_found.clear();
 
-  for (auto node : expanded_nodes_)
+  for (auto node : expanded_valid_nodes_)
   {
     // std::cout << "using expanded_node= " << node.qi.transpose() << std::endl;
 
@@ -407,33 +411,21 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
 {
   // std::cout << "In computeUpperAndLowerConstraints " << std::endl;
 
-  Eigen::Vector3d viM2 = p_ * (qiM1 - qiM2) / (knots_(i - 1 + p_) - knots_(i - 1));
-  Eigen::Vector3d viM1 = p_ * (qi - qiM1) / (knots_(i + p_) - knots_(i));  // velocity_{current.index -1}
+  Eigen::Vector3d viM2 = p_ * (qiM1 - qiM2) / (knots_(i - 1 + p_) - knots_(i - 1));  // velocity_{current.index -2}
+  Eigen::Vector3d viM1 = p_ * (qi - qiM1) / (knots_(i + p_) - knots_(i));            // velocity_{current.index -1}
 
+  // Eigen::Matrix<double, 3, 3> M_interv = M_vel_bs2basis_[i - 2];
   // Eigen::Matrix<double, 3, 2> Vbs_firstblock;
   // Vbs_firstblock.block(0, 0, 3, 1) = viM2;
   // Vbs_firstblock.block(0, 1, 3, 1) = viM1;
+  // Eigen::Matrix<double, 3, 3> tmp = Vbs_firstblock * M_interv.block(0, 0, 2, 3);
 
   // std::cout << bold << "***************************" << reset << std::endl;
 
   // std::cout << "viM2= " << viM2.transpose() << std::endl;
   // std::cout << "viM1= " << viM1.transpose() << std::endl;
-
-  // Eigen::Matrix<double, 3, 3> Mvel_bs2basis_;
-  // Mvel_bs2basis_ << 0.5387, 0.08334, -0.03868,    //////////////////////
-  //     /*///////////*/ 0.5, 0.8333, 0.5,           //////////////////////
-  //     /*///////////*/ -0.03867, 0.08333, 0.5387;  //////////////////////
-
-  // // Mvel_bs2basis_ << 1.0, 0.0, 0.0,    //////////////////////
-  // //     /*///////////*/ 0.0, 1.0, 0.0,  //////////////////////
-  // //     /*///////////*/ 0.0, 0.0, 1.0;  //////////////////////
-
-  // Eigen::Matrix<double, 3, 3> tmp = Vbs_firstblock * Mvel_bs2basis_.block(0, 0, 2, 3);
-
   // std::cout << "Vbs_firstblock= " << Vbs_firstblock << std::endl;
-
-  // std::cout << "Mvel_bs2basis_.block(0, 0, 2, 3)= \n" << Mvel_bs2basis_.block(0, 0, 2, 3) << std::endl;
-
+  // std::cout << "M_interv.block(0, 0, 2, 3)= \n" << M_interv.block(0, 0, 2, 3) << std::endl;
   // std::cout << " tmp is " << std::endl;
   // std::cout << tmp << std::endl;
 
@@ -450,11 +442,11 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   // for (int j = 0; j < 3; j++)  // For the three velocity control points
   // {
   //   std::cout << "_________" << std::endl;
-  //   double vi_bound1 = (v_max_.x() - tmp(0, j)) / Mvel_bs2basis_(2, j);
-  //   double vi_bound2 = (-v_max_.x() - tmp(0, j)) / Mvel_bs2basis_(2, j);
+  //   double vi_bound1 = (v_max_.x() - tmp(0, j)) / M_interv(2, j);
+  //   double vi_bound2 = (-v_max_.x() - tmp(0, j)) / M_interv(2, j);
   //   std::cout << "v_max_.x()= " << v_max_.x() << std::endl;
   //   std::cout << "tmp(0, j)= " << tmp(0, j) << std::endl;
-  //   std::cout << "Mvel_bs2basis_(2, j)= " << Mvel_bs2basis_(2, j) << std::endl;
+  //   std::cout << "Mvel_bs2basis_(2, j)= " << M_interv(2, j) << std::endl;
   //   std::cout << "vi_bound1= " << vi_bound1 << std::endl;
   //   std::cout << "vi_bound2= " << vi_bound2 << std::endl;
   //   vi_x_lower_bound = std::max(std::min(vi_bound1, vi_bound2), vi_x_lower_bound);
@@ -468,8 +460,8 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   // // For y
   // for (int j = 0; j < 3; j++)  // For the three velocity control points
   // {
-  //   double vi_bound1 = (v_max_.y() - tmp(1, j)) / Mvel_bs2basis_(2, j);
-  //   double vi_bound2 = (-v_max_.y() - tmp(1, j)) / Mvel_bs2basis_(2, j);
+  //   double vi_bound1 = (v_max_.y() - tmp(1, j)) / M_interv(2, j);
+  //   double vi_bound2 = (-v_max_.y() - tmp(1, j)) / M_interv(2, j);
   //   vi_y_lower_bound = std::max(std::min(vi_bound1, vi_bound2), vi_x_lower_bound);
   //   vi_y_upper_bound = std::min(std::max(vi_bound1, vi_bound2), vi_x_upper_bound);
   // }
@@ -480,22 +472,19 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   // // For z
   // for (int j = 0; j < 3; j++)  // For the three velocity control points
   // {
-  //   double vi_bound1 = (v_max_.z() - tmp(2, j)) / Mvel_bs2basis_(2, j);
-  //   double vi_bound2 = (-v_max_.z() - tmp(2, j)) / Mvel_bs2basis_(2, j);
+  //   double vi_bound1 = (v_max_.z() - tmp(2, j)) / M_interv(2, j);
+  //   double vi_bound2 = (-v_max_.z() - tmp(2, j)) / M_interv(2, j);
   //   vi_z_lower_bound = std::max(std::min(vi_bound1, vi_bound2), vi_x_lower_bound);
   //   vi_z_upper_bound = std::min(std::max(vi_bound1, vi_bound2), vi_x_upper_bound);
   // }
 
-  // // std::cout << "vi_y_lower_bound= " << vi_y_lower_bound << ", vi_y_upper_bound" << vi_y_upper_bound << std::endl;
-  // // std::cout << "vi_z_lower_bound= " << vi_z_lower_bound << ", vi_z_upper_bound" << vi_z_upper_bound << std::endl;
-
   double d = (knots_(i + p_) - knots_(i + 1)) / (1.0 * (p_ - 1));
 
-  // // |vi - viM1|<=a_max_*d
-  // //  <=>
-  // // (vi - viM1)<=a_max_*d   AND   (vi - viM1)>=-a_max_*d
-  // //  <=>
-  // //  vi<=a_max_*d + viM1   AND     vi>=-a_max_*d + viM1
+  // // // |vi - viM1|<=a_max_*d
+  // // //  <=>
+  // // // (vi - viM1)<=a_max_*d   AND   (vi - viM1)>=-a_max_*d
+  // // //  <=>
+  // // //  vi<=a_max_*d + viM1   AND     vi>=-a_max_*d + viM1
 
   Eigen::Vector3d max_vel = a_max_ * d + viM1;   // this is to ensure that aiM1 is inside the bounds
   Eigen::Vector3d min_vel = -a_max_ * d + viM1;  // this is to ensure that aiM1 is inside the bounds
@@ -960,8 +949,8 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
       {
         ////////////////////////////// REMOVE LATER, just for debug
 
-        // std::cout << "\nThis does NOT satisfy the LP:  obstacle= " << obst_index << ", last index=" << index_interv +
-        // 3 << std::endl;
+        std::cout << red << "\nThis does NOT satisfy the LP:  obstacle= " << obst_index
+                  << ", last index=" << index_interv + 3 << reset << std::endl;
 
         // std::cout << " (in basis_ form)" << std::endl;
 
@@ -1047,6 +1036,77 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
   return isFeasible;
 }
 
+bool SplineAStar::collidesWithObstacles(Node& current)
+{
+  Eigen::Matrix<double, 3, 4> last4Cps;  // Each column contains a control point
+
+  if (current.index >= 3)
+  {
+    if (current.index == 3)
+    {
+      last4Cps.col(0) = q0_;
+      last4Cps.col(1) = q1_;
+      last4Cps.col(2) = current.previous->qi;
+      last4Cps.col(3) = current.qi;
+    }
+    else if (current.index == 4)
+    {
+      last4Cps.col(0) = q1_;
+      last4Cps.col(1) = current.previous->previous->qi;
+      last4Cps.col(2) = current.previous->qi;
+      last4Cps.col(3) = current.qi;
+    }
+    else
+    {
+      last4Cps.col(0) = current.previous->previous->previous->qi;
+      last4Cps.col(1) = current.previous->previous->qi;
+      last4Cps.col(2) = current.previous->qi;
+      last4Cps.col(3) = current.qi;
+    }
+
+    bool collides = collidesWithObstaclesGivenVertexes(last4Cps, current.index);
+
+    ////////
+    if (current.index == (N_ - 2))
+    {
+      // Check for the convex hull qNm4, qNm3, qNm2, qNm1 (where qNm1==qNm2)
+      // std::vector<Eigen::Vector3d> last4Cps_tmp;
+
+      Eigen::Matrix<double, 3, 4> last4Cps_tmp;  // Each column contains a control point
+
+      last4Cps_tmp.col(0) = last4Cps.col(1);  //.push_back(last4Cps[1]);
+      last4Cps_tmp.col(1) = last4Cps.col(2);  //.push_back(last4Cps[2]);
+      last4Cps_tmp.col(2) = last4Cps.col(3);  //.push_back(last4Cps[3]);
+      last4Cps_tmp.col(3) = last4Cps.col(3);  //.push_back(last4Cps[3]);
+
+      collides = (collides || collidesWithObstaclesGivenVertexes(last4Cps_tmp, N_ - 1));
+
+      // Check for the convex hull qNm3, qNm2, qNm1, qN (where qN==qNm1==qNm2)
+
+      last4Cps_tmp.col(0) = last4Cps.col(2);
+      last4Cps_tmp.col(1) = last4Cps.col(3);
+      last4Cps_tmp.col(2) = last4Cps.col(3);
+      last4Cps_tmp.col(3) = last4Cps.col(3);
+
+      collides = (collides || collidesWithObstaclesGivenVertexes(last4Cps_tmp, N_));
+    }
+    ////////
+
+    if (collides)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  else
+  {
+    return false;
+  }
+}
+
 void SplineAStar::expandAndAddToQueue(Node& current)
 {
   // std::cout << bold << "openList_ size " << openList_.size() << reset << std::endl;
@@ -1090,48 +1150,19 @@ void SplineAStar::expandAndAddToQueue(Node& current)
     return;
   }
 
-  //////////////////////////////
-
-  // std::vector<Eigen::Vector3d> last4Cps(4);
-
-  Eigen::Matrix<double, 3, 4> last4Cps;  // Each column contains a control point
-
-  if (current.index == 2)
-  {
-    last4Cps.col(0) = q0_;
-    last4Cps.col(1) = q1_;
-    last4Cps.col(2) = current.qi;
-  }
-  else if (current.index == 3)
-  {
-    last4Cps.col(0) = q1_;
-    last4Cps.col(1) = current.previous->qi;
-    last4Cps.col(2) = current.qi;
-  }
-  else
-  {
-    last4Cps.col(0) = current.previous->previous->qi;
-    last4Cps.col(1) = current.previous->qi;
-    last4Cps.col(2) = current.qi;
-  }
-
-  // stuff used in the loop (here to reduce time)
   Eigen::Vector3d vi;
+  int jx, jy, jz;
+
   Node neighbor;
 
   neighbor.index = current.index + 1;
   neighbor.previous = &current;
-  // Eigen::Vector3d aiM1;
-  unsigned int ix, iy, iz;
-
-  int jx, jy, jz;
 
   double delta_x = ((constraint_xU - constraint_xL) / (num_samples_x_ - 1));
   double delta_y = ((constraint_yU - constraint_yL) / (num_samples_y_ - 1));
   double delta_z = ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));
 
   // MyTimer timer_forLoop(true);
-
   // double time_openList = 0.0;
   for (auto comb : all_combinations_)
   {
@@ -1141,23 +1172,11 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
     vi << constraint_xL + jx * delta_x, constraint_yL + jy * delta_y, constraint_zL + jz * delta_z;
 
-    // std::cout << "vi" << vi.transpose() << std::endl;
-
     neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
-
-    /////
-    ix = round((neighbor.qi.x() - orig_.x()) / voxel_size_);
-    iy = round((neighbor.qi.y() - orig_.y()) / voxel_size_);
-    iz = round((neighbor.qi.z() - orig_.z()) / voxel_size_);
-    auto ptr_to_voxel = map_open_list_.find(Eigen::Vector3i(ix, iy, iz));
-    bool already_exist = (ptr_to_voxel != map_open_list_.end());
-    /////
-
-    // std::cout << "already_exist= " << already_exist << std::endl;
 
     // bool already_exists_with_lower_cost = false;
     // already_exist
-    if (already_exist ||                                         // Element already exists in the search box
+    if (false ||                                                 // Element already exists in the search box
         (vi.x() == 0 && vi.y() == 0 && vi.z() == 0) ||           // Not wanna use v=[0,0,0]
         neighbor.qi.x() > x_max_ || neighbor.qi.x() < x_min_ ||  /// Outside the limits
         neighbor.qi.y() > y_max_ || neighbor.qi.y() < y_min_ ||  /// Outside the limits
@@ -1169,67 +1188,13 @@ void SplineAStar::expandAndAddToQueue(Node& current)
     )
 
     {
-      // std::cout << "already_exist" << std::endl;
       continue;
     }
 
     neighbor.g = current.g + weightEdge(current, neighbor);
     neighbor.h = h(neighbor);
 
-    //////////////////////////////////// // Now let's check if it satisfies the LPs
-    last4Cps.col(3) = neighbor.qi;
-
-    if (collidesWithObstacles(last4Cps, neighbor.index) == true)
-    {
-      // std::cout << "Collides with obs" << std::endl;
-      continue;
-    }
-    else
-    {
-      if (neighbor.index == (N_ - 2))
-      {
-        // Check for the convex hull qNm4, qNm3, qNm2, qNm1 (where qNm1==qNm2)
-        // std::vector<Eigen::Vector3d> last4Cps_tmp;
-
-        Eigen::Matrix<double, 3, 4> last4Cps_tmp;  // Each column contains a control point
-
-        last4Cps_tmp.col(0) = last4Cps.col(1);  //.push_back(last4Cps[1]);
-        last4Cps_tmp.col(1) = last4Cps.col(2);  //.push_back(last4Cps[2]);
-        last4Cps_tmp.col(2) = last4Cps.col(3);  //.push_back(last4Cps[3]);
-        last4Cps_tmp.col(3) = last4Cps.col(3);  //.push_back(last4Cps[3]);
-
-        if (collidesWithObstacles(last4Cps_tmp, N_ - 1) == true)
-        {
-          continue;
-        }
-
-        // Check for the convex hull qNm3, qNm2, qNm1, qN (where qN==qNm1==qNm2)
-
-        last4Cps_tmp.col(0) = last4Cps.col(2);
-        last4Cps_tmp.col(1) = last4Cps.col(3);
-        last4Cps_tmp.col(2) = last4Cps.col(3);
-        last4Cps_tmp.col(3) = last4Cps.col(3);
-
-        // last4Cps_tmp[0] = last4Cps[2];
-        // last4Cps_tmp[1] = last4Cps[3];
-        // last4Cps_tmp[2] = last4Cps[3];
-        // last4Cps_tmp[3] = last4Cps[3];
-
-        if (collidesWithObstacles(last4Cps_tmp, N_) == true)
-        {
-          continue;
-        }
-      }
-
-      //  MyTimer timer_openList(true);
-      openList_.push(neighbor);
-
-      // time_openList = time_openList + timer_openList.ElapsedUs() / 1000.0;
-
-      map_open_list_[Eigen::Vector3i(ix, iy, iz)] = true;
-
-      expanded_nodes_.push_back(neighbor);
-    }
+    openList_.push(neighbor);
   }
 
   // std::cout << "pushing to openList  took " << time_openList << std::endl;
@@ -1247,10 +1212,10 @@ void SplineAStar::expandAndAddToQueue(Node& current)
   // std::cout << "End of expand Function" << std::endl;
 }
 
-bool SplineAStar::collidesWithObstacles(const Eigen::Matrix<double, 3, 4>& last4Cps, int index_lastCP)
+bool SplineAStar::collidesWithObstaclesGivenVertexes(const Eigen::Matrix<double, 3, 4>& last4Cps, int index_lastCP)
 {
   // MyTimer timer_function(true);
-  // std::cout << "In collidesWithObstacles, index_lastCP= " << index_lastCP << std::endl;
+  // std::cout << "In collidesWithObstaclesGivenVertexes, index_lastCP= " << index_lastCP << std::endl;
 
   int interval = index_lastCP - 3;
 
@@ -1317,7 +1282,7 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
   time_solving_lps_ = 0.0;
   time_expanding_ = 0.0;
 
-  expanded_nodes_.clear();
+  expanded_valid_nodes_.clear();
   result_.clear();
   map_open_list_.clear();
 
@@ -1378,22 +1343,54 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
 
   while (openList_.size() > 0)
   {
+    // Check if runtime is over
+    if (timer_astar.ElapsedMs() > (max_runtime_ * 1000))
+    {
+      std::cout << "[A*] Max Runtime was reached" << std::endl;
+      status = RUNTIME_REACHED;
+      goto exitloop;
+    }
+
     current_ptr = new Node;
 
     // Option 1
     //*current_ptr = *openList_.begin();
 
     // Option 2 and 3
-    *current_ptr = openList_.top();
-
-    // std::cout << "Path to current_ptr= " << (*current_ptr).qi.transpose() << std::endl;
-    // printPath(*current_ptr);
+    *current_ptr = openList_.top();  // copy the first element onto (*current_ptr)
+    openList_.pop();
 
     double dist = ((*current_ptr).qi - goal_).norm();
 
-    // log the closest solution so far
-    // if ((*current_ptr).index == (N_ - 2))
-    // {
+    if (closest_result_so_far_ptr_ == NULL)
+    {
+      closest_dist_so_far_ = dist;
+      closest_result_so_far_ptr_ = current_ptr;
+    }
+
+    unsigned int ix, iy, iz;
+    ix = round(((*current_ptr).qi.x() - orig_.x()) / voxel_size_);
+    iy = round(((*current_ptr).qi.y() - orig_.y()) / voxel_size_);
+    iz = round(((*current_ptr).qi.z() - orig_.z()) / voxel_size_);
+    auto ptr_to_voxel = map_open_list_.find(Eigen::Vector3i(ix, iy, iz));
+    bool already_exist = (ptr_to_voxel != map_open_list_.end());
+
+    bool collides = collidesWithObstacles(*current_ptr);
+
+    if (already_exist || collides ||                                         ////////////////////
+        (*current_ptr).qi.x() > x_max_ || (*current_ptr).qi.x() < x_min_ ||  /// Outside the limits
+        (*current_ptr).qi.y() > y_max_ || (*current_ptr).qi.y() < y_min_ ||  /// Outside the limits
+        (*current_ptr).qi.z() > z_max_ || (*current_ptr).qi.z() < z_min_ ||  /// Outside the limits
+        ((*current_ptr).qi - q0_).norm() >= Ra_)                             /// Outside the limits
+    {
+      continue;
+    }
+    else
+    {
+      // std::cout << "pushing, index= " << (*current_ptr).index << std::endl;
+      map_open_list_[Eigen::Vector3i(ix, iy, iz)] = true;
+      expanded_valid_nodes_.push_back(*current_ptr);
+    }
 
     if ((*current_ptr).index == (N_ - 2) && dist < complete_closest_dist_so_far_)
     {
@@ -1406,22 +1403,6 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
       closest_dist_so_far_ = dist;
       closest_result_so_far_ptr_ = current_ptr;
     }
-    // }
-
-    // std::cout << "time_solving_lps_= " << 100 * time_solving_lps_ / (timer_astar.ElapsedMs()) << "%" << std::endl;
-    // std::cout << "time_expanding_= " << time_expanding_ << "ms, " << 100 * time_expanding_ /
-    // (timer_astar.ElapsedMs())
-    //           << "%" << std::endl;
-
-    //////////////////////////////////////////////////////////////////
-    //////////////Check if we are in the goal or if the runtime is over
-
-    if (timer_astar.ElapsedMs() > (max_runtime_ * 1000))
-    {
-      std::cout << "[A*] Max Runtime was reached" << std::endl;
-      status = RUNTIME_REACHED;
-      goto exitloop;
-    }
 
     // check if we are already in the goal
     if ((dist < goal_size_) && (*current_ptr).index == (N_ - 2))
@@ -1430,29 +1411,7 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
       status = GOAL_REACHED;
       goto exitloop;
     }
-    ////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////
 
-    // std::cout << "erasing from openList_" << (*current_ptr).qi.transpose() << std::endl;
-
-    // Option 1
-    // openList_.erase(openList_.begin());
-
-    // Option 2
-    // openList_.pop();  // remove the element
-
-    // Option 3
-    openList_.pop();
-
-    // expanded_nodes_.push_back((*current_ptr));
-
-    //////
-    // unsigned int ix, iy, iz;
-    // ix = round(((*current_ptr).qi.x() - orig_.x()) / voxel_size_);
-    // iy = round(((*current_ptr).qi.y() - orig_.y()) / voxel_size_);
-    // iz = round(((*current_ptr).qi.z() - orig_.z()) / voxel_size_);
-    // map_open_list_[Eigen::Vector3i(ix, iy, iz)] = (*current_ptr).g + bias_ * (*current_ptr).h;
-    ////////
     expandAndAddToQueue(*current_ptr);
   }
 
