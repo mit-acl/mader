@@ -476,8 +476,209 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   constraint_zL = -std::numeric_limits<double>::max();
   constraint_zU = std::numeric_limits<double>::max();
 
+  ////////////////////////IMPOSE VELOCITY CONSTRAINTS
   ////////////////////////
-  //////////////////////// IMPOSE ACCELERATION CONSTRAINTS
+
+  Eigen::Matrix<double, 3, 3> M_interv = M_vel_bs2basis_[interv];
+
+  double eps = 1e-5;
+  auto isNotZero = [&](double a) { return (fabs(a) > eps); };
+
+  if (true)  // basis_ != B_SPLINE
+  {
+    // std::cout << "M_interv= " << M_interv << std::endl;
+
+    Eigen::Matrix<double, 3, 2> Vbs_firstblock;
+    Vbs_firstblock.col(0) = viM2;
+    Vbs_firstblock.col(1) = viM1;
+    Eigen::Matrix<double, 3, 3> tmp = Vbs_firstblock * M_interv.block(0, 0, 2, 3);
+
+    // For x
+    for (int j = 0; j < 3; j++)  // For the three velocity control points
+    {
+      if (isNotZero(M_interv(2, j)))  // If it's zero, no need to impose this constraint
+      {
+        // std::cout << "_________" << std::endl;
+        std::cout << "M_interv(2, j)= " << M_interv(2, j) << std::endl;
+        double vi_bound1 = (v_max_.x() - tmp(0, j)) / M_interv(2, j);
+        double vi_bound2 = (-v_max_.x() - tmp(0, j)) / M_interv(2, j);
+        constraint_xL = std::max(constraint_xL, std::min(vi_bound1, vi_bound2));
+        constraint_xU = std::min(constraint_xU, std::max(vi_bound1, vi_bound2));
+      }
+    }
+    std::cout << green << "GApproach 1: x: " << constraint_xL << " --> " << constraint_xU << reset << std::endl;
+
+    // For y
+    for (int j = 0; j < 3; j++)  // For the three velocity control points
+    {
+      if (isNotZero(M_interv(2, j)))  // If it's zero, no need to impose this constraint
+      {
+        double vi_bound1 = (v_max_.y() - tmp(1, j)) / M_interv(2, j);
+        double vi_bound2 = (-v_max_.y() - tmp(1, j)) / M_interv(2, j);
+        constraint_yL = std::max(constraint_yL, std::min(vi_bound1, vi_bound2));
+        constraint_yU = std::min(constraint_yU, std::max(vi_bound1, vi_bound2));
+      }
+    }
+
+    // For z
+    for (int j = 0; j < 3; j++)  // For the three velocity control points
+    {
+      if (isNotZero(M_interv(2, j)))  // If it's zero, no need to impose this constraint
+      {
+        double vi_bound1 = (v_max_.z() - tmp(2, j)) / M_interv(2, j);
+        double vi_bound2 = (-v_max_.z() - tmp(2, j)) / M_interv(2, j);
+        constraint_zL = std::max(constraint_zL, std::min(vi_bound1, vi_bound2));
+        constraint_zU = std::min(constraint_zU, std::max(vi_bound1, vi_bound2));
+      }
+    }
+
+    /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
+    //// Now let's make sure it's feasible for the next interval
+
+    double constraint_xL2, constraint_xU2;
+    double constraint_yL2, constraint_yU2;
+    double constraint_zL2, constraint_zU2;
+
+    computeAxisForNextInterval(i, viM1, 0, constraint_xL2, constraint_xU2);  // x
+    computeAxisForNextInterval(i, viM1, 1, constraint_yL2, constraint_yU2);  // y
+    computeAxisForNextInterval(i, viM1, 2, constraint_zL2, constraint_zU2);  // z
+
+    constraint_xL = std::max(constraint_xL, constraint_xL2);  // lower bound
+    constraint_xU = std::min(constraint_xU, constraint_xU2);  // upper bound
+
+    constraint_yL = std::max(constraint_yL, constraint_yL2);  // lower bound
+    constraint_yU = std::min(constraint_yU, constraint_yU2);  // upper bound
+
+    constraint_zL = std::max(constraint_zL, constraint_zL2);  // lower bound
+    constraint_zU = std::min(constraint_zU, constraint_zU2);  // upper bound
+
+    /////////////////////////////////////////////
+    /////////////////////////////////////////////
+
+    // Now, if were are sampling vNm3, check that velocities are satisfied
+    if (i == (N_ - 3))
+    {
+      ////////////////  [viM1 vi 0]
+      Eigen::Matrix<double, 3, 3> tmp2 = viM1 * M_interv.row(0);
+
+      M_interv = M_vel_bs2basis_[interv + 1];
+
+      // For x
+      for (int j = 0; j < 3; j++)  // For the three velocity control points
+      {
+        if (isNotZero(M_interv(1, j)))  // If it's zero, no need to impose this constraint
+        {
+          double vi_bound1 = (v_max_.x() - tmp2(0, j)) / M_interv(1, j);
+          double vi_bound2 = (-v_max_.x() - tmp2(0, j)) / M_interv(1, j);
+          constraint_xL = std::max(constraint_xL, std::min(vi_bound1, vi_bound2));
+          constraint_xU = std::min(constraint_xU, std::max(vi_bound1, vi_bound2));
+        }
+      }
+
+      // For y
+      for (int j = 0; j < 3; j++)  // For the three velocity control points
+      {
+        if (isNotZero(M_interv(1, j)))  // If it's zero, no need to impose this constraint
+        {
+          double vi_bound1 = (v_max_.y() - tmp2(1, j)) / M_interv(1, j);
+          double vi_bound2 = (-v_max_.y() - tmp2(1, j)) / M_interv(1, j);
+          constraint_yL = std::max(constraint_yL, std::min(vi_bound1, vi_bound2));
+          constraint_yU = std::min(constraint_yU, std::max(vi_bound1, vi_bound2));
+        }
+      }
+
+      // For z
+      for (int j = 0; j < 3; j++)  // For the three velocity control points
+      {
+        if (isNotZero(M_interv(1, j)))  // If it's zero, no need to impose this constraint
+        {
+          double vi_bound1 = (v_max_.z() - tmp2(2, j)) / M_interv(1, j);
+          double vi_bound2 = (-v_max_.z() - tmp2(2, j)) / M_interv(1, j);
+          constraint_zL = std::max(constraint_zL, std::min(vi_bound1, vi_bound2));
+          constraint_zU = std::min(constraint_zU, std::max(vi_bound1, vi_bound2));
+        }
+      }
+
+      M_interv = M_vel_bs2basis_[interv + 2];
+
+      ////////////////  [vi 0 0]
+      // For x
+      for (int j = 0; j < 3; j++)  // For the three velocity control points
+      {
+        if (isNotZero(M_interv(0, j)))  // If it's zero, no need to impose this constraint
+        {
+          double vi_bound1 = v_max_.x() / M_interv(0, j);
+          double vi_bound2 = -v_max_.x() / M_interv(0, j);
+          constraint_xL = std::max(constraint_xL, std::min(vi_bound1, vi_bound2));
+          constraint_xU = std::min(constraint_xU, std::max(vi_bound1, vi_bound2));
+        }
+      }
+
+      // For y
+      for (int j = 0; j < 3; j++)  // For the three velocity control points
+      {
+        if (isNotZero(M_interv(0, j)))  // If it's zero, no need to impose this constraint
+        {
+          double vi_bound1 = v_max_.y() / M_interv(0, j);
+          double vi_bound2 = -v_max_.y() / M_interv(0, j);
+          constraint_yL = std::max(constraint_yL, std::min(vi_bound1, vi_bound2));
+          constraint_yU = std::min(constraint_yU, std::max(vi_bound1, vi_bound2));
+        }
+      }
+
+      // For z
+      for (int j = 0; j < 3; j++)  // For the three velocity control points
+      {
+        if (isNotZero(M_interv(0, j)))  // If it's zero, no need to impose this constraint
+        {
+          double vi_bound1 = v_max_.z() / M_interv(0, j);
+          double vi_bound2 = -v_max_.z() / M_interv(0, j);
+          constraint_zL = std::max(constraint_zL, std::min(vi_bound1, vi_bound2));
+          constraint_zU = std::min(constraint_zU, std::max(vi_bound1, vi_bound2));
+        }
+      }
+    }
+  }
+  else  /////////////////////////// BSpline basis
+  {
+    constraint_xL = std::max(constraint_xL, -v_max_.x());  // lower bound
+    constraint_xU = std::min(constraint_xU, v_max_.x());   // upper bound
+
+    constraint_yL = std::max(constraint_yL, -v_max_.y());  // lower bound
+    constraint_yU = std::min(constraint_yU, v_max_.y());   // upper bound
+
+    constraint_zL = std::max(constraint_zL, -v_max_.z());  // lower bound
+    constraint_zU = std::min(constraint_zU, v_max_.z());   // upper bound
+  }
+
+  //////////////////////////////////////REMOVE LATER, JUST TO CHECK
+  //////////////////////////////////////
+  std::cout << green << "GApproach: x: " << constraint_xL << " --> " << constraint_xU << reset << std::endl;
+
+  double constraint_xL2 = -std::numeric_limits<double>::max();
+  double constraint_xU2 = std::numeric_limits<double>::max();
+  double constraint_yL2 = -std::numeric_limits<double>::max();
+  double constraint_yU2 = std::numeric_limits<double>::max();
+  double constraint_zL2 = -std::numeric_limits<double>::max();
+  double constraint_zU2 = std::numeric_limits<double>::max();
+
+  constraint_xL2 = std::max(constraint_xL2, -v_max_.x());  // lower bound
+  constraint_xU2 = std::min(constraint_xU2, v_max_.x());   // upper bound
+
+  constraint_yL2 = std::max(constraint_yL2, -v_max_.y());  // lower bound
+  constraint_yU2 = std::min(constraint_yU2, v_max_.y());   // upper bound
+
+  constraint_zL2 = std::max(constraint_zL2, -v_max_.z());  // lower bound
+  constraint_zU2 = std::min(constraint_zU2, v_max_.z());   // upper bound
+
+  std::cout << blue << "BSApproach: x: " << constraint_xL2 << " --> " << constraint_xU2 << reset << std::endl;
+
+  //////////////////////////////////////
+  //////////////////////////////////////
+
+  ////////////////////////IMPOSE ACCELERATION CONSTRAINTS
+  ////////////////////////
 
   // // // |vi - viM1|<=a_max_*d
   // // //  <=>
@@ -517,164 +718,22 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
     constraint_zL = std::max(constraint_zL, vNm3_min.z());  // lower bound
     constraint_zU = std::min(constraint_zU, vNm3_max.z());  // upper bound
   }
-
   ////////////////////////
-  ////////////////////////IMPOSE VELOCITY CONSTRAINTS
-
-  Eigen::Matrix<double, 3, 3> M_interv = M_vel_bs2basis_[interv];
-
-  if (basis_ != B_SPLINE)  // basis_ != B_SPLINE
-  {
-    // std::cout << "M_interv= " << M_interv << std::endl;
-
-    Eigen::Matrix<double, 3, 2> Vbs_firstblock;
-    Vbs_firstblock.col(0) = viM2;
-    Vbs_firstblock.col(1) = viM1;
-    Eigen::Matrix<double, 3, 3> tmp = Vbs_firstblock * M_interv.block(0, 0, 2, 3);
-
-    // For x
-    for (int j = 0; j < 3; j++)  // For the three velocity control points
-    {
-      // std::cout << "_________" << std::endl;
-      double vi_bound1 = (v_max_.x() - tmp(0, j)) / M_interv(2, j);
-      double vi_bound2 = (-v_max_.x() - tmp(0, j)) / M_interv(2, j);
-      constraint_xL = std::max(constraint_xL, std::min(vi_bound1, vi_bound2));
-      constraint_xU = std::min(constraint_xU, std::max(vi_bound1, vi_bound2));
-    }
-
-    // For y
-    for (int j = 0; j < 3; j++)  // For the three velocity control points
-    {
-      double vi_bound1 = (v_max_.y() - tmp(1, j)) / M_interv(2, j);
-      double vi_bound2 = (-v_max_.y() - tmp(1, j)) / M_interv(2, j);
-      constraint_yL = std::max(constraint_yL, std::min(vi_bound1, vi_bound2));
-      constraint_yU = std::min(constraint_yU, std::max(vi_bound1, vi_bound2));
-    }
-
-    // For z
-    for (int j = 0; j < 3; j++)  // For the three velocity control points
-    {
-      double vi_bound1 = (v_max_.z() - tmp(2, j)) / M_interv(2, j);
-      double vi_bound2 = (-v_max_.z() - tmp(2, j)) / M_interv(2, j);
-      constraint_zL = std::max(constraint_zL, std::min(vi_bound1, vi_bound2));
-      constraint_zU = std::min(constraint_zU, std::max(vi_bound1, vi_bound2));
-    }
-
-    /////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////
-    // Now let's make sure it's feasible for the next interval
-
-    double constraint_xL2, constraint_xU2;
-    double constraint_yL2, constraint_yU2;
-    double constraint_zL2, constraint_zU2;
-
-    computeAxisForNextInterval(i, viM1, 0, constraint_xL2, constraint_xU2);  // x
-    computeAxisForNextInterval(i, viM1, 1, constraint_yL2, constraint_yU2);  // y
-    computeAxisForNextInterval(i, viM1, 2, constraint_zL2, constraint_zU2);  // z
-
-    constraint_xL = std::max(constraint_xL, constraint_xL2);  // lower bound
-    constraint_xU = std::min(constraint_xU, constraint_xU2);  // upper bound
-
-    constraint_yL = std::max(constraint_yL, constraint_yL2);  // lower bound
-    constraint_yU = std::min(constraint_yU, constraint_yU2);  // upper bound
-
-    constraint_zL = std::max(constraint_zL, constraint_zL2);  // lower bound
-    constraint_zU = std::min(constraint_zU, constraint_zU2);  // upper bound
-
-    /////////////////////////////////////////////
-    /////////////////////////////////////////////
-
-    // Now, if were are sampling vNm3, check that velocities are satisfied
-    if (i == (N_ - 3))
-    {
-      ////////////////  [viM1 vi 0]
-      Eigen::Matrix<double, 3, 3> tmp2 = viM1 * M_interv.row(0);
-
-      M_interv = M_vel_bs2basis_[interv + 1];
-
-      // For x
-      for (int j = 0; j < 3; j++)  // For the three velocity control points
-      {
-        double vi_bound1 = (v_max_.x() - tmp2(0, j)) / M_interv(1, j);
-        double vi_bound2 = (-v_max_.x() - tmp2(0, j)) / M_interv(1, j);
-        constraint_xL = std::max(constraint_xL, std::min(vi_bound1, vi_bound2));
-        constraint_xU = std::min(constraint_xU, std::max(vi_bound1, vi_bound2));
-      }
-
-      // For y
-      for (int j = 0; j < 3; j++)  // For the three velocity control points
-      {
-        double vi_bound1 = (v_max_.y() - tmp2(1, j)) / M_interv(1, j);
-        double vi_bound2 = (-v_max_.y() - tmp2(1, j)) / M_interv(1, j);
-        constraint_yL = std::max(constraint_yL, std::min(vi_bound1, vi_bound2));
-        constraint_yU = std::min(constraint_yU, std::max(vi_bound1, vi_bound2));
-      }
-
-      // For z
-      for (int j = 0; j < 3; j++)  // For the three velocity control points
-      {
-        double vi_bound1 = (v_max_.z() - tmp2(2, j)) / M_interv(1, j);
-        double vi_bound2 = (-v_max_.z() - tmp2(2, j)) / M_interv(1, j);
-        constraint_zL = std::max(constraint_zL, std::min(vi_bound1, vi_bound2));
-        constraint_zU = std::min(constraint_zU, std::max(vi_bound1, vi_bound2));
-      }
-
-      M_interv = M_vel_bs2basis_[interv + 2];
-
-      ////////////////  [vi 0 0]
-      // For x
-      for (int j = 0; j < 3; j++)  // For the three velocity control points
-      {
-        double vi_bound1 = v_max_.x() / M_interv(0, j);
-        double vi_bound2 = -v_max_.x() / M_interv(0, j);
-        constraint_xL = std::max(constraint_xL, std::min(vi_bound1, vi_bound2));
-        constraint_xU = std::min(constraint_xU, std::max(vi_bound1, vi_bound2));
-      }
-
-      // For y
-      for (int j = 0; j < 3; j++)  // For the three velocity control points
-      {
-        double vi_bound1 = v_max_.y() / M_interv(0, j);
-        double vi_bound2 = -v_max_.y() / M_interv(0, j);
-        constraint_yL = std::max(constraint_yL, std::min(vi_bound1, vi_bound2));
-        constraint_yU = std::min(constraint_yU, std::max(vi_bound1, vi_bound2));
-      }
-
-      // For z
-      for (int j = 0; j < 3; j++)  // For the three velocity control points
-      {
-        double vi_bound1 = v_max_.z() / M_interv(0, j);
-        double vi_bound2 = -v_max_.z() / M_interv(0, j);
-        constraint_zL = std::max(constraint_zL, std::min(vi_bound1, vi_bound2));
-        constraint_zU = std::min(constraint_zU, std::max(vi_bound1, vi_bound2));
-      }
-    }
-  }
-  else  /////////////////////////// BSpline basis
-  {
-    constraint_xL = std::max(constraint_xL, -v_max_.x());  // lower bound
-    constraint_xU = std::min(constraint_xU, v_max_.x());   // upper bound
-
-    constraint_yL = std::max(constraint_yL, -v_max_.y());  // lower bound
-    constraint_yU = std::min(constraint_yU, v_max_.y());   // upper bound
-
-    constraint_zL = std::max(constraint_zL, -v_max_.z());  // lower bound
-    constraint_zU = std::min(constraint_zU, v_max_.z());   // upper bound
-  }
+  ////////////////////////
 
   if (constraint_xL > constraint_xU || constraint_yL > constraint_yU || constraint_zL > constraint_zU)
   {  // can happen when i==(N_-3), but never happens when i<(N_-3)
 
-    std::cout << red << "x: " << constraint_xL << " --> " << constraint_xU << " || "
-              << "y: " << constraint_yL << " --> " << constraint_yU << " || "
-              << "z: " << constraint_zL << " --> " << constraint_zU << reset << std::endl;
+    // std::cout << red << "x: " << constraint_xL << " --> " << constraint_xU << " || "
+    //           << "y: " << constraint_yL << " --> " << constraint_yU << " || "
+    //           << "z: " << constraint_zL << " --> " << constraint_zU << reset << std::endl;
     return false;
   }
   else
   {
-    std::cout << green << "x: " << constraint_xL << " --> " << constraint_xU << " || "
-              << "y: " << constraint_yL << " --> " << constraint_yU << " || "
-              << "z: " << constraint_zL << " --> " << constraint_zU << reset << std::endl;
+    // std::cout << green << "x: " << constraint_xL << " --> " << constraint_xU << " || "
+    //           << "y: " << constraint_yL << " --> " << constraint_yU << " || "
+    //           << "z: " << constraint_zL << " --> " << constraint_zU << reset << std::endl;
     return true;  // constraint_xL<=constraint_xU (same with other axes)
   }
 
