@@ -897,6 +897,7 @@ bool SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
 
   double epsilon = 1.0001;
 
+  // TODO: remove this (it's not valid for Bezier/MINVO)
   if ((vcomputed_1.array() > epsilon * v_max_.array()).any() || (vcomputed_1.array() < -epsilon * v_max_.array()).any())
   {
     std::cout << bold << red << "vel constraint for v1 is not satisfied" << reset << std::endl;
@@ -2456,7 +2457,7 @@ bool SolverNlopt::optimize()
 
   ///////////////For debugging, remove later
 
-  double epsilon = 0.001;  // note that epsilon_tol_constraints_ applies to the control points
+  double epsilon = 0.1;  // note that epsilon_tol_constraints_ applies to the bspline control points
 
   for (auto xi : traj_solution_)
   {

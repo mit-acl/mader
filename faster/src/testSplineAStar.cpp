@@ -57,13 +57,13 @@ int main(int argc, char **argv)
   int num_pol = 7;
   int deg_pol = 3;
 
-  int samples_x = 3;  // odd number
-  int samples_y = 3;  // odd number
-  int samples_z = 3;  // odd number
+  int samples_x = 5;  // odd number
+  int samples_y = 5;  // odd number
+  int samples_z = 5;  // odd number
 
   double fraction_voxel_size = 0.5;  // grid used to prune nodes that are on the same cell
 
-  double runtime = 0.01;   //[seconds]
+  double runtime = 0.08;   //[seconds]
   double goal_size = 0.1;  //[meters]
 
   Eigen::Vector3d v_max(7.0, 7.0, 7.0);
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
   myAStarSolver.setRunTime(runtime);
   myAStarSolver.setGoalSize(goal_size);
 
-  myAStarSolver.setBias(10000.0);
+  myAStarSolver.setBias(1.0);
 
   myAStarSolver.setVisual(false);
 

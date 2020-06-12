@@ -138,7 +138,7 @@ public:
 
   int B_SPLINE = 1;  // B-Spline Basis
   int MINVO = 2;     // Minimum volume basis
-  int BEZIER = 3;    // Minimum volume basis
+  int BEZIER = 3;    // Bezier basis
 
   struct CompareCost
   {
@@ -155,6 +155,9 @@ public:
 
 protected:
 private:
+  bool computeAxisForNextInterval(const int i, const Eigen::Vector3d& viM1, int axis, double& constraint_L,
+                                  double& constraint_U);
+
   Eigen::Matrix<double, 3, 4> transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4>& Qbs, int interval);
   Eigen::Matrix<double, 3, 4> transformOtherBasis2BSpline(const Eigen::Matrix<double, 3, 4>& Qmv, int interval);
 

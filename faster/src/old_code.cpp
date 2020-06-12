@@ -1,3 +1,296 @@
+return Qmv * M_pos_bs2basis_inverse_[interval];
+
+// std::vector<Eigen::Vector3d> last4Cps;
+
+// /////////////////////
+// Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+// Eigen::Matrix<double, 3, 4> Qmv;  // new basis
+// Qmv.col(0) = last4Cps[0];
+// Qmv.col(1) = last4Cps[1];
+// Qmv.col(2) = last4Cps[2];
+// Qmv.col(3) = last4Cps[3];
+
+// Qbs = Qmv * M_pos_bs2basis_inverse_[interval];
+
+// // last4Cps[0] = Qbs.col(0);
+// // last4Cps[1] = Qbs.col(1);
+// // last4Cps[2] = Qbs.col(2);
+// // last4Cps[3] = Qbs.col(3);
+
+// last4Cps.push_back(Qbs.col(0));
+// last4Cps.push_back(Qbs.col(1));
+// last4Cps.push_back(Qbs.col(2));
+// last4Cps.push_back(Qbs.col(3));
+
+// return last4Cps;
+/////////////////////
+////////////////////////////////
+////////////////////////////////
+////////////////////////////////
+////////////////////////////////
+////////////////////////////////
+// std::vector<Eigen::Vector3d> last4Cps_new_basis;
+/////////////////////
+// Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
+// Eigen::Matrix<double, 3, 4> Qmv;  // new basis
+// Qbs.col(0) = last4Cps[0];
+// Qbs.col(1) = last4Cps[1];
+// Qbs.col(2) = last4Cps[2];
+// Qbs.col(3) = last4Cps[3];
+
+/*  Eigen::Matrix<double, 4, 4> tmp;
+  tmp.block(0, 0, 4, 3) = Qbs;
+  tmp.block(0, 3, 4, 1) = Eigen::Matrix<double, 4, 1>::Ones();
+  std::cout << "tmp BS= " << tmp << std::endl;
+  std::cout << "Determinant BS=" << tmp.determinant() << std::endl;*/
+
+return Qbs * M_pos_bs2basis_[interval];
+
+/*  tmp.block(0, 0, 4, 3) = Qmv;
+  std::cout << "tmp OV= " << tmp << std::endl;
+  std::cout << "Determinant OV=" << tmp.determinant() << std::endl;*/
+
+// last4Cps_new_basis.push_back(Qmv.col(0));
+// last4Cps_new_basis.push_back(Qmv.col(1));
+// last4Cps_new_basis.push_back(Qmv.col(2));
+// last4Cps_new_basis.push_back(Qmv.col(3));
+
+//     last4Cps[0] = Qmv.col(0);
+// last4Cps[1] = Qmv.col(1);
+// last4Cps[2] = Qmv.col(2);
+// last4Cps[3] = Qmv.col(3);
+
+// return last4Cps_new_basis;
+/////////////////////
+/////////////////////////////////////////////
+/////////////////////////////////////////////
+// Eigen::Matrix<double, 3, 3> M_interv_next = M_vel_bs2basis_[i - 1];
+// // for x
+// double lower_bound_x_new = -std::numeric_limits<double>::max();
+// double upper_bound_x_new = std::numeric_limits<double>::max();
+
+// for (int i = 0; i < 3; i++)
+// {
+//   for (int j = 0; j < 3; j++)
+//   {
+//     double g1 = viM1(0);
+//     double tmp = -(M_interv_next(1, j) / M_interv_next(2, j)) + (M_interv_next(1, i) / M_interv_next(2, i));
+//     double qli = (-sgn(M_interv_next(2, i)) * v_max_.x() - g1 * M_interv_next(0, i)) / M_interv_next(2, i);
+//     double quj = (sgn(M_interv_next(2, j)) * v_max_.x() - g1 * M_interv_next(0, j)) / M_interv_next(2, j);
+//     double bound = (qli - quj) / tmp;
+//     if (tmp >= 0)
+//     {
+//       lower_bound_x_new = std::max(lower_bound_x_new, bound);
+//     }
+//     else
+//     {
+//       upper_bound_x_new = std::min(upper_bound_x_new, bound);
+//     }
+//   }
+// }
+//  std::cout << red << "x will be transformed to " << constraint_xL2 << " --> " << constraint_xU2 << reset <<
+//  std::endl;
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
+// constraint_xL = std::max(-v_max_.x(), min_vel.x());  // lower bound
+// constraint_xU = std::min(v_max_.x(), max_vel.x());   // upper bound
+
+// constraint_yL = std::max(-v_max_.y(), min_vel.y());  // lower bound
+// constraint_yU = std::min(v_max_.y(), max_vel.y());   // upper bound
+
+// constraint_zL = std::max(-v_max_.z(), min_vel.z());  // lower bound
+// constraint_zU = std::min(v_max_.z(), max_vel.z());   // upper bound
+
+// std::cout << "x: " << constraint_xL << " --> " << constraint_xU << " || "
+//           << "y: " << constraint_yL << " --> " << constraint_yU << " || "
+//           << "z: " << constraint_zL << " --> " << constraint_zU << std::endl;
+// std::cout << "y: " << constraint_yL << " --> " << constraint_yU << std::endl;
+// std::cout << "z: " << constraint_zL << " --> " << constraint_zU << std::endl;
+
+// std::cout << "i " << i << std::endl;
+// std::cout << "Checking for acceleration " << i - 1 << std::endl;
+
+// Now, if i==(N_-3), I need to impose also the constraint aNm3 \in [-amax,amax]
+
+// if (constraint_xL > constraint_xU)
+// {
+//   std::cout << red << "there is sth wrong, constraint_xL > constraint_xU" << reset << std::endl;
+//   std::cout << "constraint_xL= " << constraint_xL << std::endl;
+//   std::cout << "constraint_xU= " << constraint_xU << std::endl;
+
+//   abort();
+// }
+
+// std::cout << "poping" << std::endl;
+
+//
+
+bool es_este = current.index == 5 && fabs(current.qi.x() - 0.115541) < 0.01 && fabs(current.qi.y() - 0.691433) < 0.01 &&
+               fabs(current.qi.z() - 0.0) < 0.01;
+
+if (es_este)
+{
+  std::cout << "going to expand this node, values before the call" << std::endl;
+
+  std::cout << blue << "qiM2= " << (*current_ptr).previous->previous->qi.transpose() << reset << std::endl;
+  std::cout << blue << "qiM1= " << (*current_ptr).previous->qi.transpose() << reset << std::endl;
+  std::cout << blue << "qi= " << (*current_ptr).qi.transpose() << reset << std::endl;
+}
+
+if (es_este)
+{
+  std::cout << "already_exist=" << already_exist << std::endl;
+  std::cout << "collides=" << collides << std::endl;
+}
+
+bool es_este = (*current_ptr).index == 5 && fabs((*current_ptr).qi.x() - 0.115541) < 0.01 &&
+               fabs((*current_ptr).qi.y() - 0.691433) < 0.01 && fabs((*current_ptr).qi.z() - 0.0) < 0.01;
+
+//
+
+if (es_este)
+{
+  std::cout << red << "qiM2= " << (*current_ptr).previous->previous->qi.transpose() << reset << std::endl;
+  std::cout << red << "qiM1= " << (*current_ptr).previous->qi.transpose() << reset << std::endl;
+  std::cout << red << "qi= " << (*current_ptr).qi.transpose() << reset << std::endl;
+}
+
+// Eigen::Matrix<double, 3, 3> Vbs;
+// Vbs.col(0) = viM2;
+// Vbs.col(1) = viM1;
+// Vbs.col(2) = Eigen::Vector3d::Zero();
+// Eigen::Matrix<double, 3, 3> V_newbasis = Vbs * M_vel_bs2basis_[i - 2 + 1];
+
+// // Assumming here that all the elements of v_max_ are the same
+// if (V_newbasis.maxCoeff() > v_max_.x() || V_newbasis.minCoeff() < -v_max_.x())
+// {
+//   continue;
+// }
+// //
+// Vbs.col(0) = viM1;
+// Vbs.col(1) = Eigen::Vector3d::Zero();
+// Vbs.col(2) = Eigen::Vector3d::Zero();
+// V_newbasis = Vbs * M_vel_bs2basis_[i - 2 + 2];
+
+// // Assumming here that all the elements of v_max_ are the same
+// if (V_newbasis.maxCoeff() > v_max_.x() || V_newbasis.minCoeff() < -v_max_.x())
+// {
+//   continue;
+// }
+
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+
+// double constraint_xL2, constraint_xU2, constraint_yL2, constraint_yU2, constraint_zL2, constraint_zU2;
+
+// int num_samples_x_tmp = 100;
+// int num_samples_y_tmp = 100;
+// int num_samples_z_tmp = 100;
+
+// double delta_x2 = ((constraint_xU - constraint_xL) / (num_samples_x_tmp - 1));
+// double delta_y2 = ((constraint_yU - constraint_yL) / (num_samples_y_tmp - 1));
+// double delta_z2 = ((constraint_zU - constraint_zL) / (num_samples_z_tmp - 1));
+
+// std::vector<double> all_x;
+// std::vector<double> all_y;
+// std::vector<double> all_z;
+
+// for (double vx = constraint_xL; vx < constraint_xU; vx = vx + delta_x2)
+// {
+//   for (double vy = constraint_yL; vy < constraint_yU; vy = vy + delta_y2)
+//   {
+//     for (double vz = constraint_zL; vz < constraint_zU; vz = vz + delta_z2)
+//     {
+//       vi << vx, vy, vz;
+//       Eigen::Vector3d qiP1 = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
+//       bool intervalIsNotZero2 =
+//           computeUpperAndLowerConstraints(i + 1, qiM1, current.qi, qiP1, constraint_xL2, constraint_xU2,
+//                                           constraint_yL2, constraint_yU2, constraint_zL2, constraint_zU2);
+
+//       if (intervalIsNotZero2 == false)
+//       {
+//         // std::cout << red << "vi= " << vi.transpose() << " won't work" << reset << std::endl;
+//       }
+//       else
+//       {
+//         // constraint_xL3 = std::max(constraint_xL3, vi.x());
+//         // constraint_xU3 = std::min(constraint_xU3, vi.x());
+
+//         all_x.push_back(vi.x());
+//         all_y.push_back(vi.y());
+//         all_z.push_back(vi.z());
+
+//         // std::cout << green << "vi= " << vi.transpose() << " will work" << reset << std::endl;
+//       }
+//     }
+//   }
+// }
+
+// if (all_x.size() == 0 || all_y.size() == 0 || all_z.size() == 0)
+// {
+//   // std::cout << bold << red << " returning because all sizes=0 " << reset << std::endl;
+//   return;
+// }
+
+// // std::cout << "here7" << std::endl;
+// // std::cout << "all_x.size()" << all_x.size() << std::endl;
+// // std::cout << "all_y.size()" << all_y.size() << std::endl;
+// // std::cout << "all_z.size()" << all_z.size() << std::endl;
+
+// // std::cout << blue << "x: " << *min_element(all_x.begin(), all_x.end()) << " --> "
+// //           << *max_element(all_x.begin(), all_x.end()) << " || "
+// //           << "y: " << *min_element(all_y.begin(), all_y.end()) << " --> " << *max_element(all_y.begin(),
+// //           all_y.end())
+// //           << " || "
+// //           << "z: " << *min_element(all_z.begin(), all_z.end()) << " --> " << *max_element(all_z.begin(),
+// //           all_z.end())
+// //           << reset << std::endl;
+
+// constraint_xL2 = *min_element(all_x.begin(), all_x.end());
+// constraint_xU2 = *max_element(all_x.begin(), all_x.end());
+
+// constraint_yL2 = *min_element(all_y.begin(), all_y.end());
+// constraint_yU2 = *max_element(all_y.begin(), all_y.end());
+
+// constraint_zL2 = *min_element(all_z.begin(), all_z.end());
+// constraint_zU2 = *max_element(all_z.begin(), all_z.end());
+
+// constraint_xL = std::max(constraint_xL, constraint_xL2);
+// constraint_xU = std::min(constraint_xU, constraint_xU2);
+
+// constraint_yL = std::max(constraint_yL, constraint_yL2);
+// constraint_yU = std::min(constraint_yU, constraint_yU2);
+
+// constraint_zL = std::max(constraint_zL, constraint_zL2);
+// constraint_zU = std::min(constraint_zU, constraint_zU2);
+
+// std::cout << green << "x: " << constraint_xL << " --> " << constraint_xU << " || "
+//           << "y: " << constraint_yL << " --> " << constraint_yU << " || "
+//           << "z: " << constraint_zL << " --> " << constraint_zU << reset << std::endl;
+
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+////////////////// REMOVE LATER
+////////////////////////////////////
+// if ((i - 2) == 3)  //&& fabs(viM2.x() - 5.34563) < 0.1
+// {                  // interval ==2
+//   std::cout << bold << blue << "here" << reset << std::endl;
+
+//   std::cout << green << "qa= " << qiM2.transpose() << reset << std::endl;
+//   std::cout << green << "qb= " << qiM1.transpose() << reset << std::endl;
+//   std::cout << green << "qc= " << qi.transpose() << reset << std::endl;
+//   // std::cout << "qc= " << q[i + 3].transpose() << std::endl;
+
+//   std::cout << "Vbs_firstblock=\n" << Vbs_firstblock << std::endl;
+//   // std::cout << "Using matrix\n" << M_interv << std::endl;
+// }
+////////////////////////////////////
+////////////////////////////////////
+
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
 /*      Eigen::Vector3d centroid_hull;
