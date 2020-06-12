@@ -40,11 +40,11 @@ histogram(time_bspline,n_bins,'FaceColor','#0072BD');
 %%Plot velocity x
 n_bins=100;
 subplot(3,3,3); xlabel('Vel ($m/s$)')
-histogram(vel_minvo(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); 
+histogram(vel_minvo(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); xlim([1,5]);xlabel("$v_x$ ($m/s$)");ylim([0,1]); title('Minvo')
 subplot(3,3,6); xlabel('Vel ($m/s$)')
-histogram(vel_bezier(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); 
+histogram(vel_bezier(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); xlim([1,5]);xlabel("$v_x$ ($m/s$)");ylim([0,1]);title('Bezier')
 subplot(3,3,9); xlabel('Vel ($m/s$)')
-histogram(vel_bspline(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); 
+histogram(vel_bspline(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); xlim([1,5]);xlabel("$v_x$ ($m/s$)");ylim([0,1]);title('BSpline')
 
 disp("velocities")
 [mean(abs(vel_minvo),2) mean(abs(vel_bezier),2) mean(abs(vel_bspline),2)]
@@ -67,11 +67,11 @@ disp("n_times_stopped")
 %%
 figure
 subplot(3,1,1)
- scatter3(vel_minvo(1,:),vel_minvo(2,:),vel_minvo(3,:)); title('MINVO')
+ scatter3(vel_minvo(1,:),vel_minvo(2,:),vel_minvo(3,:)); title('MINVO'); xlabel("$v_x$ ($m/s$)"); ylabel("$v_y$ ($m/s$)"); zlabel("$v_z$ ($m/s$)");xlim([-4,6]);
 subplot(3,1,2)
- scatter3(vel_bezier(1,:),vel_bezier(2,:),vel_bezier(3,:)); title('Bezier')
+ scatter3(vel_bezier(1,:),vel_bezier(2,:),vel_bezier(3,:)); title('Bezier');xlabel("$v_x$ ($m/s$)"); ylabel("$v_y$ ($m/s$)"); zlabel("$v_z$ ($m/s$)");xlim([-4,6]);
 subplot(3,1,3)
- scatter3(vel_bspline(1,:),vel_bspline(2,:),vel_bspline(3,:)); title('BSpline')
+ scatter3(vel_bspline(1,:),vel_bspline(2,:),vel_bspline(3,:)); title('BSpline'); xlabel("$v_x$ ($m/s$)"); ylabel("$v_y$ ($m/s$)"); zlabel("$v_z$ ($m/s$)");xlim([-4,6]);
 %%
 
 %B-SPLINE costs
@@ -110,7 +110,7 @@ subplot(3,1,3)
 % 
 % legend({legend1,legend2,legend3},'FontSize',12)
 
-xlabel("Control Effort ($m/s^3$)")
+
 % 
 % title('\textbf{Histogram (200 runs)}')
 
@@ -122,14 +122,15 @@ function [vel dist time n_times_stopped]=readBagsThatStartWith(name)
     time=[]; %one element per bag
     n_times_stopped=[];
     
-    files = dir(['./',name,'*.bag']);
+    folder='june9/';
+    files = dir(['./',folder,name,'*.bag']);
     filenames = {files.name};
     
     stopped=1; %Starts the sim stopped; 
     
     for i=1:size(filenames,2)
         disp(['reading bag ', filenames{i}])
-        bag = rosbag(filenames{i});
+        bag = rosbag([folder,filenames{i}]);
         topics = readMessages(select(bag, 'Topic', '/SQ01s/goal'));
         total_distance=0.0;
         n_times_stopped_per_bag=0;
