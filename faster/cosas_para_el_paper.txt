@@ -123,4 +123,6 @@ te mueves para y<0 (por ejempo), la constraint en velocidad [yL yU] tambi'en se 
 	  best_cost_so_far_ = std::numeric_limits<double>::max();
 	  best_feasible_sol_so_far_.clear();
 
+---> Si se para muy cerca del obstaculo y no encuentra solucion, aumentar upper_bound_runtime_snlopt, y reducir las samples del a_star
+
 =========================
