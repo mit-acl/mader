@@ -48,6 +48,11 @@ include(${CGAL_USE_FILE})
 set(CMAKE_BUILD_TYPE Release) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo) or Debug
 
 
+#First of all, compile the CVXGEN files
+# add_custom_command(OUTPUT libcvx.so COMMAND make -C /home/jtorde/Desktop/ws/src/faster/faster/src/solvers/cvxgen/cvxgen)
+# add_custom_target(cvxgen_is_compiled ALL DEPENDS libcvx.so)
+
+
 find_package(catkin REQUIRED COMPONENTS 
 	roscpp
 	rospy
@@ -89,9 +94,10 @@ target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 #target_precompile_headers(utils PUBLIC src/utils.hpp)
 target_link_libraries(utils PUBLIC ${catkin_LIBRARIES})
 
-add_library(spline_AStar STATIC src/spline_AStar.cpp)
+add_library(spline_AStar STATIC src/spline_AStar.cpp src/solvers/cvxgen/solver_cvxgen.cpp)
 target_include_directories (spline_AStar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(spline_AStar PUBLIC ${catkin_LIBRARIES})
+# add_dependencies(spline_AStar cvxgen_is_compiled)
+target_link_libraries(spline_AStar PUBLIC ${catkin_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so)
 
 
 add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp src/bspline_utils.cpp src/solvers/nlopt/nlopt_utils.cpp )
@@ -121,9 +127,9 @@ add_executable(${PROJECT_NAME}_node src/main.cpp)
 target_link_libraries(${PROJECT_NAME}_node PUBLIC faster_ros)
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
-add_executable(astar_example src/testSplineAStar.cpp src/spline_AStar.cpp src/bspline_utils.cpp)
+add_executable(astar_example src/testSplineAStar.cpp src/spline_AStar.cpp src/bspline_utils.cpp src/solvers/cvxgen/solver_cvxgen.cpp)
 add_dependencies(astar_example ${catkin_EXPORTED_TARGETS} )
-target_link_libraries(astar_example ${catkin_LIBRARIES} utils cgal_utils)
+target_link_libraries(astar_example ${catkin_LIBRARIES} utils cgal_utils ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so)
 
 add_executable(test_utils src/test_utils.cpp)
 add_dependencies(test_utils ${catkin_EXPORTED_TARGETS})
@@ -144,3 +150,6 @@ add_dependencies(test_predictor_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_predictor_node ${catkin_LIBRARIES} utils)
 
 
+add_executable(test_cvxgen src/solvers/cvxgen/test_cvxgen.cpp src/solvers/cvxgen/solver_cvxgen.cpp)
+add_dependencies(test_cvxgen ${catkin_EXPORTED_TARGETS})
+target_link_libraries(test_cvxgen ${catkin_LIBRARIES} ${catkin_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so)
