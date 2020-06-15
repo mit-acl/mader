@@ -478,6 +478,7 @@ struct parameters
 
   double beta = 1.0;
   double gamma = 0.0;
+  double alpha_shrink = 1.0;
 };
 
 struct state

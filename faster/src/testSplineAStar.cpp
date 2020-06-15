@@ -61,9 +61,11 @@ int main(int argc, char **argv)
   int samples_y = 5;  // odd number
   int samples_z = 5;  // odd number
 
+  double alpha_shrink = 0.9;
+
   double fraction_voxel_size = 0.5;  // grid used to prune nodes that are on the same cell
 
-  double runtime = 0.08;   //[seconds]
+  double runtime = 0.05;   //[seconds]
   double goal_size = 0.1;  //[meters]
 
   Eigen::Vector3d v_max(7.0, 7.0, 7.0);
@@ -79,9 +81,9 @@ int main(int argc, char **argv)
 
   ConvexHullsOfCurves hulls_curves;
 
-  double bbox_x = 1.0;
-  double bbox_y = 1.0;
-  double bbox_z = 6.0;
+  double bbox_x = 1000.0;
+  double bbox_y = 1000.0;
+  double bbox_z = 6000.0;
 
   int num_of_obs = 1;  // odd number
   double separation = 0.4;
@@ -89,7 +91,7 @@ int main(int argc, char **argv)
   int num_of_obs_up = (num_of_obs - 1) / 2.0;
 
   ConvexHullsOfCurve hulls_curve = createStaticObstacle(0.0, 0.0, 0.0, num_pol, bbox_x, bbox_y, bbox_z);
-  hulls_curves.push_back(hulls_curve);  // only one obstacle
+  // hulls_curves.push_back(hulls_curve);  // only one obstacle
 
   for (int i = 1; i <= num_of_obs_up; i++)
   {
@@ -122,7 +124,7 @@ int main(int argc, char **argv)
 
     hulls_curves.push_back(hulls_curve);*/
 
-  SplineAStar myAStarSolver(basis, num_pol, deg_pol);
+  SplineAStar myAStarSolver(basis, num_pol, deg_pol, alpha_shrink);
   myAStarSolver.setUp(t_min, t_max, hulls_std);
 
   myAStarSolver.setq0q1q2(q0, q1, q2);
@@ -153,7 +155,8 @@ int main(int argc, char **argv)
 
   // Convert to marker arrays
   //---> all the trajectories found
-  int increm = 1;
+  int increm = 6;
+  int increm_best = 1;
   int type = 6;
   double scale = 0.01;
   int j = 0;
@@ -175,8 +178,8 @@ int main(int argc, char **argv)
   //---> the best trajectory found
   scale = 0.1;
   visualization_msgs::MarkerArray marker_array_best_traj;
-  marker_array_best_traj =
-      trajectory2ColoredMarkerArray(best_traj_found, type, v_max.maxCoeff(), increm, "traj" + std::to_string(j), scale);
+  marker_array_best_traj = trajectory2ColoredMarkerArray(best_traj_found, type, v_max.maxCoeff(), increm_best,
+                                                         "traj" + std::to_string(j), scale);
 
   // Get the edges of the convex hulls and publish them
   faster_types::Edges edges_convex_hulls;

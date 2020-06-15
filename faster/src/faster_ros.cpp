@@ -94,6 +94,8 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "beta", par_.beta);
   safeGetParam(nh_, "gamma", par_.gamma);
 
+  safeGetParam(nh_, "alpha_shrink", par_.alpha_shrink);
+
   std::cout << "Parameters obtained" << std::endl;
 
   if (par_.beta < 1)

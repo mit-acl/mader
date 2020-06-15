@@ -85,6 +85,7 @@ Faster::Faster(parameters par) : par_(par)
   par_for_solver.basis = par_.basis;
   par_for_solver.a_star_bias = par_.a_star_bias;
   par_for_solver.allow_infeasible_guess = par_.allow_infeasible_guess;
+  par_for_solver.alpha_shrink = par_.alpha_shrink;
 
   snlopt_ = new SolverNlopt(par_for_solver);
 }

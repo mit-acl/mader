@@ -12,6 +12,8 @@
 
 #include <tuple>
 
+#include "solvers/cvxgen/solver_cvxgen.hpp"
+
 typedef struct Node Node;  // needed to be able to have a pointer inside the struct
 
 struct Node
@@ -100,7 +102,7 @@ struct matrix_hash : std::unary_function<T, size_t>
 class SplineAStar
 {
 public:
-  SplineAStar(std::string basis, int num_pol, int deg_pol);
+  SplineAStar(std::string basis, int num_pol, int deg_pol, double alpha_shrink);
   void setUp(double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls);
   ~SplineAStar();
 
@@ -145,7 +147,16 @@ public:
     double bias;
     bool operator()(const Node& left, const Node& right)
     {
-      return (left.g + bias * left.h) > (right.g + bias * right.h);
+      double cost_left = left.g + bias * left.h;
+      double cost_right = right.g + bias * right.h;
+      if (fabs(cost_left - cost_right) < 1e-5)
+      {
+        return left.h > right.h;  // If two costs are ~the same, decide only upon heuristic
+      }
+      else
+      {
+        return cost_left > cost_right;
+      }
     }
   };
 
@@ -168,7 +179,8 @@ private:
                                        double& constraint_zU);
 
   void plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, Node* result_ptr);
-  void expandAndAddToQueue(Node& current);
+  void expandAndAddToQueue(Node& current, double constraint_xL, double constraint_xU, double constraint_yL,
+                           double constraint_yU, double constraint_zL, double constraint_zU);
   void printPath(Node& node1);
   double h(Node& node);
   double g(Node& node);
@@ -285,4 +297,8 @@ private:
   // bool matrixExpandedNodes_[40][40][40];
 
   double Ra_ = 1e10;
+
+  SolverCvxgen cvxgen_solver_;
+
+  double alpha_shrink_;
 };

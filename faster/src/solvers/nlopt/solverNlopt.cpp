@@ -108,7 +108,7 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
 
   separator_solver_ = new separator::Separator();
 
-  myAStarSolver_ = new SplineAStar(par.basis, num_pol_, deg_pol_);
+  myAStarSolver_ = new SplineAStar(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
 }
 
 SolverNlopt::~SolverNlopt()
@@ -2135,17 +2135,15 @@ bool SolverNlopt::optimize()
     return false;
   }
 
-  // generateRandomGuess();
-  // generateStraightLineGuess();
-  if ((initial_state_.pos - final_state_.pos).norm() < dist_to_use_straight_guess_ || num_of_obst_ == 0)
-  {
-    generateStraightLineGuess();
-    std::cout << "[NL] Using StraightLineGuess" << std::endl;
-  }
-  else
-  {
-    generateAStarGuess();
-  }
+  // if ((initial_state_.pos - final_state_.pos).norm() < dist_to_use_straight_guess_ || num_of_obst_ == 0)
+  // {
+  //   generateStraightLineGuess();
+  //   std::cout << "[NL] Using StraightLineGuess" << std::endl;
+  // }
+  // else
+  // {
+  generateAStarGuess();
+  //}
 
   // std::cout << "knots= " << knots_ << std::endl;
 
@@ -2286,6 +2284,7 @@ bool SolverNlopt::optimize()
   try
   {
     result = opt.optimize(x_, obj_obtained);
+    // result = 6;
     ////////////////////////////////////////////////
     ////////////////////////////////////////////////
     // pthread_t ptid;
@@ -2477,7 +2476,7 @@ bool SolverNlopt::optimize()
       std::cout << "is Feasible= " << is_feasible << std::endl;
 
       std::cout << red << "====================================" << reset << std::endl;
-      abort();
+      // abort();
     }
 
     if ((xi.pos - q0_).norm() > (Ra_ + epsilon))

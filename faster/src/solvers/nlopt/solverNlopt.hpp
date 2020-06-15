@@ -49,6 +49,7 @@ struct par_snlopt
   bool allow_infeasible_guess;
   double Ra;
 
+  double alpha_shrink;
   // //  Will change between iterations
   // double kappa;
   // double mu;

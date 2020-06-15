@@ -26,7 +26,7 @@ int sgn(T val)
   return (T(0) < val) - (val < T(0));
 }
 
-SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol)
+SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol, double alpha_shrink)
 {
   // see matlab.
   // This is for the interval [0 1];
@@ -86,6 +86,8 @@ SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol)
   }
 
   separator_solver_ = new separator::Separator();  // 0.0, 0.0, 0.0
+
+  alpha_shrink_ = alpha_shrink;
 
   // Mbs2basis_inverse_ = Mbs2basis_.inverse();
 }
@@ -157,7 +159,7 @@ void SplineAStar::getBestTrajFound(trajectory& best_traj_found)
   std::cout << "******************BEST_TRAJ_FOUND**************" << std::endl;
   trajectory traj;
   PieceWisePol pwp;
-  CPs2TrajAndPwp(result_, best_traj_found, pwp, N_, p_, num_pol_, knots_, 0.1);  // Last number is the resolution
+  CPs2TrajAndPwp(result_, best_traj_found, pwp, N_, p_, num_pol_, knots_, 0.01);  // Last number is the resolution
 }
 
 void SplineAStar::getEdgesConvexHulls(faster_types::Edges& edges_convex_hulls)
@@ -451,12 +453,15 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   // std::cout << "qiM1= " << qiM1.transpose() << std::endl;
   // std::cout << "qi= " << qi.transpose() << std::endl;
 
-  std::cout << "in computeUpperAndLowerConstraints, i=" << i << std::endl;
-  std::cout << "qi=" << qi.transpose() << std::endl;
+  // std::cout << "in computeUpperAndLowerConstraints, i=" << i << std::endl;
 
   int interv = i - 2;  // index of the interval (i is the index of the control point)
+  // std::cout << red << "[computing] qi=" << qi.transpose() << ", interv=" << interv << reset << std::endl;
 
-  // std::cout << "interv= " << interv << std::endl;
+  // std::cout << green << bold << "i= " << i << reset << std::endl;
+  // std::cout << green << bold << "interv= " << interv << reset << std::endl;
+  // std::cout << green << bold << "num_of_segments_= " << num_of_segments_ << reset << std::endl;
+  // std::cout << green << bold << "N_= " << N_ << reset << std::endl;
 
   Eigen::Vector3d viM2 =
       p_ * (qiM1 - qiM2) / (knots_(i - 2 + p_ + 1) - knots_(i - 2 + 1));  // velocity_{current.index -2}
@@ -481,84 +486,194 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
 
   Eigen::Matrix<double, 3, 3> M_interv = M_vel_bs2basis_[interv];
 
+  // std::cout << "M_interv= \n" << M_interv << std::endl;
+
   double eps = 1e-5;
   auto isNotZero = [&](double a) { return (fabs(a) > eps); };
 
-  if (true)  // basis_ != B_SPLINE
+  if (basis_ != B_SPLINE)  // basis_ != B_SPLINE
   {
-    // std::cout << "M_interv= " << M_interv << std::endl;
+    ///////////////////////////
+    ///////////////////////////
+    ///////////////////////////
+    ///////////////////////////Approach "manually"
 
-    Eigen::Matrix<double, 3, 2> Vbs_firstblock;
-    Vbs_firstblock.col(0) = viM2;
-    Vbs_firstblock.col(1) = viM1;
-    Eigen::Matrix<double, 3, 3> tmp = Vbs_firstblock * M_interv.block(0, 0, 2, 3);
+    // // std::cout << "M_interv= " << M_interv << std::endl;
+    // Eigen::Matrix<double, 3, 2> Vbs_firstblock;
+    // Vbs_firstblock.col(0) = viM2;
+    // Vbs_firstblock.col(1) = viM1;
+    // // std::cout << std::setprecision(10) << "Vbs_firstblock.transpose()= \n"
+    // //           << Vbs_firstblock.transpose() << reset << std::endl;
+    // Eigen::Matrix<double, 3, 3> tmp = Vbs_firstblock * M_interv.block(0, 0, 2, 3);
 
-    // For x
-    for (int j = 0; j < 3; j++)  // For the three velocity control points
+    // // For x
+    // for (int j = 0; j < 3; j++)  // For the three velocity control points
+    // {
+    //   if (isNotZero(M_interv(2, j)))  // If it's zero, no need to impose this constraint
+    //   {
+    //     double vi_bound1 = (v_max_.x() - tmp(0, j)) / M_interv(2, j);
+    //     double vi_bound2 = (-v_max_.x() - tmp(0, j)) / M_interv(2, j);
+    //     constraint_xL = std::max(constraint_xL, std::min(vi_bound1, vi_bound2));
+    //     constraint_xU = std::min(constraint_xU, std::max(vi_bound1, vi_bound2));
+    //   }
+    // }
+
+    // // std::cout << green << "GApproach So far1: x: " << constraint_xL << " --> " << constraint_xU << reset <<
+    // // std::endl;
+
+    // // For y
+    // for (int j = 0; j < 3; j++)  // For the three velocity control points
+    // {
+    //   if (isNotZero(M_interv(2, j)))  // If it's zero, no need to impose this constraint
+    //   {
+    //     double vi_bound1 = (v_max_.y() - tmp(1, j)) / M_interv(2, j);
+    //     double vi_bound2 = (-v_max_.y() - tmp(1, j)) / M_interv(2, j);
+    //     constraint_yL = std::max(constraint_yL, std::min(vi_bound1, vi_bound2));
+    //     constraint_yU = std::min(constraint_yU, std::max(vi_bound1, vi_bound2));
+    //   }
+    // }
+
+    // // For z
+    // for (int j = 0; j < 3; j++)  // For the three velocity control points
+    // {
+    //   if (isNotZero(M_interv(2, j)))  // If it's zero, no need to impose this constraint
+    //   {
+    //     double vi_bound1 = (v_max_.z() - tmp(2, j)) / M_interv(2, j);
+    //     double vi_bound2 = (-v_max_.z() - tmp(2, j)) / M_interv(2, j);
+    //     constraint_zL = std::max(constraint_zL, std::min(vi_bound1, vi_bound2));
+    //     constraint_zU = std::min(constraint_zU, std::max(vi_bound1, vi_bound2));
+    //   }
+    // }
+
+    // /////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////
+    // //// Now let's make sure it's feasible for the next interval
+    // // std::cout << green << "GApproach (before next interv): : " << constraint_xL << " --> " << constraint_xU <<
+    // reset
+    // //           << std::endl;
+
+    // double constraint_xL2, constraint_xU2;
+    // double constraint_yL2, constraint_yU2;
+    // double constraint_zL2, constraint_zU2;
+
+    // computeAxisForNextInterval(i, viM1, 0, constraint_xL2, constraint_xU2);  // x
+    // computeAxisForNextInterval(i, viM1, 1, constraint_yL2, constraint_yU2);  // y
+    // computeAxisForNextInterval(i, viM1, 2, constraint_zL2, constraint_zU2);  // z
+
+    // constraint_xL = std::max(constraint_xL, constraint_xL2);  // lower bound
+    // constraint_xU = std::min(constraint_xU, constraint_xU2);  // upper bound
+
+    // constraint_yL = std::max(constraint_yL, constraint_yL2);  // lower bound
+    // constraint_yU = std::min(constraint_yU, constraint_yU2);  // upper bound
+
+    // constraint_zL = std::max(constraint_zL, constraint_zL2);  // lower bound
+    // constraint_zU = std::min(constraint_zU, constraint_zU2);  // upper bound
+
+    // // std::cout << green << "GApproach (after next interv): : " << constraint_xL << " --> " << constraint_xU << " ||
+    // "
+    // //           << constraint_yL << " --> " << constraint_yU << " || " << constraint_zL << " --> " << constraint_zU
+    // //           << reset << std::endl;
+
+    // // std::cout << "Using1=\n" << M_vel_bs2basis_[interv] << std::endl;
+    // // std::cout << "Using2=\n" << M_vel_bs2basis_[interv + 1] << std::endl;
+
+    ///////////////////////////Approach "manually"
+    ///////////////////////////
+    ///////////////////////////
+    ///////////////////////////
+    bool converged = false;
+    if (interv <= (num_of_segments_ - 3))
     {
-      if (isNotZero(M_interv(2, j)))  // If it's zero, no need to impose this constraint
-      {
-        // std::cout << "_________" << std::endl;
-        std::cout << "M_interv(2, j)= " << M_interv(2, j) << std::endl;
-        double vi_bound1 = (v_max_.x() - tmp(0, j)) / M_interv(2, j);
-        double vi_bound2 = (-v_max_.x() - tmp(0, j)) / M_interv(2, j);
-        constraint_xL = std::max(constraint_xL, std::min(vi_bound1, vi_bound2));
-        constraint_xU = std::min(constraint_xU, std::max(vi_bound1, vi_bound2));
-      }
-    }
-    std::cout << green << "GApproach 1: x: " << constraint_xL << " --> " << constraint_xU << reset << std::endl;
+      Eigen::Matrix<double, 3, 3> tmp = Eigen::Matrix<double, 3, 3>::Zero();
+      // Assumming here that all the elements of v_max are the same
+      converged = cvxgen_solver_.solveOptimization(M_vel_bs2basis_[interv], M_vel_bs2basis_[interv + 1],
+                                                   M_vel_bs2basis_[interv + 2], viM2, viM1, v_max_.x());
 
-    // For y
-    for (int j = 0; j < 3; j++)  // For the three velocity control points
+      cvxgen_solver_.applySolutionTo(constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL,
+                                     constraint_zU);
+    }
+    // else if (interv == (num_of_segments_ - 2))
+    // {
+    //   converged = cvxgen_solver_.solveOptimization(M_vel_bs2basis_[interv], M_vel_bs2basis_[interv + 1],
+    //                                                Eigen::Matrix<double, 3, 3>::Zero(), viM2, viM1, v_max_.x());
+    //   abort();
+    // }
+    // else if (interv == (num_of_segments_ - 1))
+    // {  // This is the last segment (i.e. i==Nm3) (The last segment is defined by Nm3, Nm2, Nm1)
+    //   std::cout << green << bold << "i= " << i << reset << std::endl;
+    //   std::cout << green << bold << "interv= " << interv << reset << std::endl;
+    //   std::cout << green << bold << "num_of_segments_= " << num_of_segments_ << reset << std::endl;
+    //   std::cout << green << bold << "N_= " << N_ << reset << std::endl;
+    //   converged = cvxgen_solver_.solveOptimization(M_vel_bs2basis_[interv], Eigen::Matrix<double, 3, 3>::Zero(),
+    //                                                Eigen::Matrix<double, 3, 3>::Zero(), viM2, viM1, v_max_.x());
+    //   abort();
+    // }
+    else
     {
-      if (isNotZero(M_interv(2, j)))  // If it's zero, no need to impose this constraint
-      {
-        double vi_bound1 = (v_max_.y() - tmp(1, j)) / M_interv(2, j);
-        double vi_bound2 = (-v_max_.y() - tmp(1, j)) / M_interv(2, j);
-        constraint_yL = std::max(constraint_yL, std::min(vi_bound1, vi_bound2));
-        constraint_yU = std::min(constraint_yU, std::max(vi_bound1, vi_bound2));
-      }
+      std::cout << bold << red << "This case should never happen" << reset << std::endl;
+      abort();
     }
 
-    // For z
-    for (int j = 0; j < 3; j++)  // For the three velocity control points
+    // if (i == (N_ - 3))
+    // {
+    //   converged = converged && cvxgen_solver_.solveOptimization(
+    //                                M_vel_bs2basis_[interv + 1], M_vel_bs2basis_[interv + 2],
+    //                                Eigen::Matrix<double, 3, 3>::Zero(), viM1, Eigen::Vector3d::Zero(), v_max_.x());
+
+    //   cvxgen_solver_.applySolutionTo(constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL,
+    //                                  constraint_zU);
+    //   converged = converged &&
+    //               cvxgen_solver_.solveOptimization(M_vel_bs2basis_[interv + 2], Eigen::Matrix<double, 3, 3>::Zero(),
+    //                                                Eigen::Matrix<double, 3, 3>::Zero(), Eigen::Vector3d::Zero(),
+    //                                                Eigen::Vector3d::Zero(), v_max_.x());
+
+    //   cvxgen_solver_.applySolutionTo(constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL,
+    //                                  constraint_zU);
+    // }
+
+    if (converged == false)
     {
-      if (isNotZero(M_interv(2, j)))  // If it's zero, no need to impose this constraint
-      {
-        double vi_bound1 = (v_max_.z() - tmp(2, j)) / M_interv(2, j);
-        double vi_bound2 = (-v_max_.z() - tmp(2, j)) / M_interv(2, j);
-        constraint_zL = std::max(constraint_zL, std::min(vi_bound1, vi_bound2));
-        constraint_zU = std::min(constraint_zU, std::max(vi_bound1, vi_bound2));
-      }
+      // std::cout << bold << red << "cvxgen didn't converge" << reset << std::endl;
+      return false;
     }
+    else
+    {
+      Eigen::Vector3d vinovale(constraint_xU, constraint_xU, constraint_xU);
+      Eigen::Matrix<double, 3, 3> Vbs_novale;
+      Vbs_novale << viM2, viM1, vinovale;
+      // std::cout << "Resultado= " << converged << "\n" << Vbs_novale * M_vel_bs2basis_[interv] << std::endl;
 
-    /////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////
-    //// Now let's make sure it's feasible for the next interval
+      // std::cout << green << "CvxgenApproach before: " << constraint_xL << " --> " << constraint_xU << " || "
+      //           << constraint_yL << " --> " << constraint_yU << " || " << constraint_zL << " --> " << constraint_zU
+      //           << reset << std::endl;
 
-    double constraint_xL2, constraint_xU2;
-    double constraint_yL2, constraint_yU2;
-    double constraint_zL2, constraint_zU2;
+      double mean_x = (constraint_xL + constraint_xU) / 2.0;
+      double dist_x = fabs(mean_x - constraint_xL);
+      constraint_xL = mean_x - alpha_shrink_ * dist_x;
+      constraint_xU = mean_x + alpha_shrink_ * dist_x;
 
-    computeAxisForNextInterval(i, viM1, 0, constraint_xL2, constraint_xU2);  // x
-    computeAxisForNextInterval(i, viM1, 1, constraint_yL2, constraint_yU2);  // y
-    computeAxisForNextInterval(i, viM1, 2, constraint_zL2, constraint_zU2);  // z
+      double mean_y = (constraint_yL + constraint_yU) / 2.0;
+      double dist_y = fabs(mean_y - constraint_yL);
+      constraint_yL = mean_y - alpha_shrink_ * dist_y;
+      constraint_yU = mean_y + alpha_shrink_ * dist_y;
 
-    constraint_xL = std::max(constraint_xL, constraint_xL2);  // lower bound
-    constraint_xU = std::min(constraint_xU, constraint_xU2);  // upper bound
+      double mean_z = (constraint_zL + constraint_zU) / 2.0;
+      double dist_z = fabs(mean_z - constraint_zL);
+      constraint_zL = mean_z - alpha_shrink_ * dist_z;
+      constraint_zU = mean_z + alpha_shrink_ * dist_z;
 
-    constraint_yL = std::max(constraint_yL, constraint_yL2);  // lower bound
-    constraint_yU = std::min(constraint_yU, constraint_yU2);  // upper bound
-
-    constraint_zL = std::max(constraint_zL, constraint_zL2);  // lower bound
-    constraint_zU = std::min(constraint_zU, constraint_zU2);  // upper bound
+      // std::cout << green << "CvxgenApproach after: " << constraint_xL << " --> " << constraint_xU << " || "
+      //           << constraint_yL << " --> " << constraint_yU << " || " << constraint_zL << " --> " << constraint_zU
+      //           << reset << std::endl;
+    }
 
     /////////////////////////////////////////////
-    /////////////////////////////////////////////
+    ///////////////////////////////////////////// Approach "manually"
 
-    // Now, if were are sampling vNm3, check that velocities are satisfied
+    // // Now, if were are sampling vNm3, check that velocities are satisfied
     if (i == (N_ - 3))
     {
+      // std::cout << "doing this check!!!!, N=" << N_ << std::endl;
       ////////////////  [viM1 vi 0]
       Eigen::Matrix<double, 3, 3> tmp2 = viM1 * M_interv.row(0);
 
@@ -639,6 +754,9 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
         }
       }
     }
+
+    //////////////////////////////////// Approach "manually"
+    ////////////////////////////////////
   }
   else  /////////////////////////// BSpline basis
   {
@@ -652,30 +770,29 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
     constraint_zU = std::min(constraint_zU, v_max_.z());   // upper bound
   }
 
-  //////////////////////////////////////REMOVE LATER, JUST TO CHECK
-  //////////////////////////////////////
-  std::cout << green << "GApproach: x: " << constraint_xL << " --> " << constraint_xU << reset << std::endl;
+  //////////////////////////
+  ////////////////////////// Remove later
 
-  double constraint_xL2 = -std::numeric_limits<double>::max();
-  double constraint_xU2 = std::numeric_limits<double>::max();
-  double constraint_yL2 = -std::numeric_limits<double>::max();
-  double constraint_yU2 = std::numeric_limits<double>::max();
-  double constraint_zL2 = -std::numeric_limits<double>::max();
-  double constraint_zU2 = std::numeric_limits<double>::max();
+  // constraint_xL = std::max(constraint_xL, -v_max_.x());  // lower bound
+  // constraint_xU = std::min(constraint_xU, v_max_.x());   // upper bound
 
-  constraint_xL2 = std::max(constraint_xL2, -v_max_.x());  // lower bound
-  constraint_xU2 = std::min(constraint_xU2, v_max_.x());   // upper bound
+  // constraint_yL = std::max(constraint_yL, -v_max_.y());  // lower bound
+  // constraint_yU = std::min(constraint_yU, v_max_.y());   // upper bound
 
-  constraint_yL2 = std::max(constraint_yL2, -v_max_.y());  // lower bound
-  constraint_yU2 = std::min(constraint_yU2, v_max_.y());   // upper bound
+  // constraint_zL = std::max(constraint_zL, -v_max_.z());  // lower bound
+  // constraint_zU = std::min(constraint_zU, v_max_.z());   // upper bound
 
-  constraint_zL2 = std::max(constraint_zL2, -v_max_.z());  // lower bound
-  constraint_zU2 = std::min(constraint_zU2, v_max_.z());   // upper bound
+  // constraint_xL = -7.0;
+  // constraint_xU = 7.0;
 
-  std::cout << blue << "BSApproach: x: " << constraint_xL2 << " --> " << constraint_xU2 << reset << std::endl;
+  // constraint_yL = -7.0;
+  // constraint_yU = 7.0;
 
-  //////////////////////////////////////
-  //////////////////////////////////////
+  // constraint_zL = -7.0;
+  // constraint_zU = 7.0;
+
+  ////////////////////////// Remove later
+  //////////////////////////
 
   ////////////////////////IMPOSE ACCELERATION CONSTRAINTS
   ////////////////////////
@@ -718,15 +835,21 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
     constraint_zL = std::max(constraint_zL, vNm3_min.z());  // lower bound
     constraint_zU = std::min(constraint_zU, vNm3_max.z());  // upper bound
   }
-  ////////////////////////
-  ////////////////////////
 
-  if (constraint_xL > constraint_xU || constraint_yL > constraint_yU || constraint_zL > constraint_zU)
+  double eps_delta = 1e-4;
+  auto areVeryClose = [&](double a, double b) { return (fabs(a - b) < eps_delta); };
+
+  if (constraint_xL > constraint_xU || constraint_yL > constraint_yU || constraint_zL > constraint_zU ||
+      areVeryClose(constraint_xL, constraint_xU) ||  /////////////////
+      areVeryClose(constraint_yL, constraint_yU) ||  /////////////////
+      areVeryClose(constraint_zL, constraint_zU)     /////////////////
+  )
   {  // can happen when i==(N_-3), but never happens when i<(N_-3)
 
     // std::cout << red << "x: " << constraint_xL << " --> " << constraint_xU << " || "
     //           << "y: " << constraint_yL << " --> " << constraint_yU << " || "
     //           << "z: " << constraint_zL << " --> " << constraint_zU << reset << std::endl;
+    std::cout << bold << red << "Interval is zero" << reset << std::endl;
     return false;
   }
   else
@@ -1160,7 +1283,8 @@ bool SplineAStar::collidesWithObstacles(Node& current)
   }
 }
 
-void SplineAStar::expandAndAddToQueue(Node& current)
+void SplineAStar::expandAndAddToQueue(Node& current, double constraint_xL, double constraint_xU, double constraint_yL,
+                                      double constraint_yU, double constraint_zL, double constraint_zU)
 {
   // std::cout << bold << "openList_ size " << openList_.size() << reset << std::endl;
 
@@ -1174,45 +1298,9 @@ void SplineAStar::expandAndAddToQueue(Node& current)
     return;  // neighbors = empty vector
   }
 
-  int i = current.index;
-
-  Eigen::Vector3d qiM2, qiM1;
-
-  if (current.index == 2)
-  {
-    qiM2 = q0_;
-    qiM1 = q1_;
-  }
-  else if (current.index == 3)
-  {
-    qiM2 = q1_;
-    qiM1 = current.previous->qi;
-  }
-  else
-  {
-    qiM2 = current.previous->previous->qi;
-    qiM1 = current.previous->qi;
-  }
-
-  double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
-
-  bool intervalIsNotZero = computeUpperAndLowerConstraints(i, qiM2, qiM1, current.qi, constraint_xL, constraint_xU,
-                                                           constraint_yL, constraint_yU, constraint_zL, constraint_zU);
-
-  // std::cout << blue << "original for x:           " << constraint_xL << " --> " << constraint_xU << reset <<
-  // std::endl;
-
-  // std::cout << "here5" << std::endl;
-
-  // std::cout << bold << blue << "intervalIsNotZero= " << intervalIsNotZero << reset << std::endl;
-
-  if (intervalIsNotZero == false)  // constraintxL>constraint_xU (or with other axes)
-  {
-    // std::cout << "Interval is Zero" << std::endl;
-    return;
-  }
-
   // std::cout << "here6" << std::endl;
+
+  int i = current.index;
 
   Eigen::Vector3d vi;
 
@@ -1240,14 +1328,12 @@ void SplineAStar::expandAndAddToQueue(Node& current)
 
     vi << constraint_xL + jx * delta_x, constraint_yL + jy * delta_y, constraint_zL + jz * delta_z;
 
+    // std::cout << "jx= " << jx << ", jy=" << jy << ", jz=" << jz << std::endl;
     // std::cout << "vi= " << vi.transpose() << std::endl;
 
     neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
 
-    // bool already_exists_with_lower_cost = false;
-    // already_exist
-    if (false ||  // Element already exists in the search box
-        (fabs(vi.x() < 1e-5) && fabs(vi.y() < 1e-5) && fabs(vi.z() < 1e-5)) ||  // Not wanna use v=[0,0,0]
+    if ((fabs(vi.x() < 1e-5) && fabs(vi.y() < 1e-5) && fabs(vi.z() < 1e-5)) ||  // Not wanna use v=[0,0,0]
         neighbor.qi.x() > x_max_ || neighbor.qi.x() < x_min_ ||                 /// Outside the limits
         neighbor.qi.y() > y_max_ || neighbor.qi.y() < y_min_ ||                 /// Outside the limits
         neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_ ||                 /// Outside the limits
@@ -1264,9 +1350,12 @@ void SplineAStar::expandAndAddToQueue(Node& current)
     neighbor.g = current.g + weightEdge(current, neighbor);
     neighbor.h = h(neighbor);
 
-    // std::cout << "pushing" << std::endl;
+    // std::cout << green << neighbor.qi.transpose() << " cost=" << neighbor.g + bias_ * neighbor.h << reset <<
+    // std::endl;
     openList_.push(neighbor);
   }
+  std::cout << green << "pushing" << reset << std::endl;
+
   // std::cout << "here3, openList_.size()=" << openList_.size() << std::endl;
 
   // std::cout << "pushing to openList  took " << time_openList << std::endl;
@@ -1402,9 +1491,22 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     // Option 1
     //*current_ptr = *openList_.begin();
 
+    // std::priority_queue<Node, std::vector<Node>, CompareCost> openList_novale;
+    // openList_novale = openList_;
+    // std::cout << "=====================================" << reset << std::endl;
+    // std::cout << "Current openList is:" << reset << std::endl;
+    // int novale = 0;
+    // while (!openList_novale.empty() && novale < 5)
+    // {
+    //   std::cout << openList_novale.top().qi.transpose()
+    //             << ", cost=" << openList_novale.top().g + bias_ * openList_novale.top().h << "\n";
+    //   openList_novale.pop();
+    //   novale = novale + 1;
+    // }
+
     // Option 2 and 3
     *current_ptr = openList_.top();  // copy the first element onto (*current_ptr)
-    openList_.pop();
+    openList_.pop();                 // remove it from the list
 
     double dist = ((*current_ptr).qi - goal_).norm();
 
@@ -1424,23 +1526,64 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     // {
     //   already_exist = (already_exist) && (map_open_list_[Eigen::Vector3i(ix, iy, iz)] == true);
     // }
+    // already_exist = false;
+    if (already_exist || (*current_ptr).qi.x() > x_max_ || (*current_ptr).qi.x() < x_min_ ||  /// Outside the limits
+        (*current_ptr).qi.y() > y_max_ || (*current_ptr).qi.y() < y_min_ ||                   /// Outside the limits
+        (*current_ptr).qi.z() > z_max_ || (*current_ptr).qi.z() < z_min_ ||                   /// Outside the limits
+        ((*current_ptr).qi - q0_).norm() >= Ra_)
+    {
+      continue;
+    }
+
+    /////////////////////
+    /////////////////////
+    int i = (*current_ptr).index;
+
+    Eigen::Vector3d qiM2, qiM1;
+
+    if ((*current_ptr).index == 2)
+    {
+      qiM2 = q0_;
+      qiM1 = q1_;
+    }
+    else if ((*current_ptr).index == 3)
+    {
+      qiM2 = q1_;
+      qiM1 = (*current_ptr).previous->qi;
+    }
+    else
+    {
+      qiM2 = (*current_ptr).previous->previous->qi;
+      qiM1 = (*current_ptr).previous->qi;
+    }
+
+    double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
+
+    bool intervalIsNotZero = true;
+
+    if (i < (N_ - 2))
+    {  // for qNm2 I'm not going to sample velocities (not going to call expandAndAddToQueue) --> don't do this
+      intervalIsNotZero =
+          computeUpperAndLowerConstraints(i, qiM2, qiM1, (*current_ptr).qi, constraint_xL, constraint_xU, constraint_yL,
+                                          constraint_yU, constraint_zL, constraint_zU);
+    }
+    if (intervalIsNotZero == false)  // constraintxL>constraint_xU (or with other axes)
+    {
+      continue;
+    }
+
+    /////////////////////
+    /////////////////////
 
     MyTimer timer_collision_check(true);
     bool collides = collidesWithObstacles(*current_ptr);
     // std::cout << "collision check took " << timer_collision_check << std::endl;
 
-    if (collides && (*current_ptr).index == 4)
-    {
-      std::cout << "collides i=" << (*current_ptr).index << std::endl;
-    }
-
     // already_exist = false;
-    if (already_exist || collides ||                                         ////////////////////
-        (*current_ptr).qi.x() > x_max_ || (*current_ptr).qi.x() < x_min_ ||  /// Outside the limits
-        (*current_ptr).qi.y() > y_max_ || (*current_ptr).qi.y() < y_min_ ||  /// Outside the limits
-        (*current_ptr).qi.z() > z_max_ || (*current_ptr).qi.z() < z_min_ ||  /// Outside the limits
-        ((*current_ptr).qi - q0_).norm() >= Ra_)                             /// Outside the limits
+    if (collides)
     {
+      std::cout << red << bold << "collides: " << (*current_ptr).qi.transpose() << "(i= " << i << ")" << reset
+                << std::endl;
       // std::cout << "already_exist= " << already_exist << std::endl;
 
       // Node* tmp = current_ptr;
@@ -1466,15 +1609,25 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     }
     else
     {
+      std::cout << green << bold << "does not collide: " << (*current_ptr).qi.transpose() << "(i= " << i << ")" << reset
+                << std::endl;
+
       // std::cout << "pushing, index= " << (*current_ptr).index << std::endl;
       map_open_list_[Eigen::Vector3i(ix, iy, iz)] = true;
       expanded_valid_nodes_.push_back(*current_ptr);
     }
 
-    if ((*current_ptr).index == (N_ - 2) && dist < complete_closest_dist_so_far_)
+    if ((*current_ptr).index == (N_ - 2) &&
+        dist < std::max(0.0, complete_closest_dist_so_far_ - 1e-4))  // the 1e-4 is to avoid numerical issues of paths
+                                                                     // essentially with the same dist to the goal. In
+                                                                     // those cases, this gives priority to the
+                                                                     // trajectories found first
     {
       complete_closest_dist_so_far_ = dist;
       complete_closest_result_so_far_ptr_ = current_ptr;
+
+      std::cout << bold << blue << "complete_closest_dist_so_far_= " << std::setprecision(10)
+                << complete_closest_dist_so_far_ << reset << std::endl;
     }
 
     if (dist < closest_dist_so_far_)
@@ -1490,8 +1643,12 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
       status = GOAL_REACHED;
       goto exitloop;
     }
-
-    expandAndAddToQueue(*current_ptr);
+    if ((*current_ptr).index == (N_ - 2))
+    {
+      continue;
+    }
+    expandAndAddToQueue(*current_ptr, constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL,
+                        constraint_zU);
   }
 
   std::cout << "[A*] openList_ is empty" << std::endl;
@@ -1525,6 +1682,8 @@ exitloop:
     {
       std::cout << "[A*] choosing closest complete path as solution" << std::endl;
       best_node_ptr = complete_closest_result_so_far_ptr_;
+      std::cout << bold << blue << "complete_closest_dist_so_far_= " << complete_closest_dist_so_far_ << reset
+                << std::endl;
     }
     else
     {

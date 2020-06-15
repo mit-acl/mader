@@ -76,1265 +76,131 @@ Visualization Manager:
         traj1: true
         traj10: true
         traj100: true
-        traj1000: true
-        traj1001: true
-        traj1002: true
-        traj1003: true
-        traj1004: true
-        traj1005: true
-        traj1006: true
-        traj1007: true
-        traj1008: true
-        traj1009: true
         traj101: true
-        traj1010: true
-        traj1011: true
-        traj1012: true
-        traj1013: true
-        traj1014: true
-        traj1015: true
-        traj1016: true
-        traj1017: true
-        traj1018: true
-        traj1019: true
         traj102: true
-        traj1020: true
-        traj1021: true
-        traj1022: true
-        traj1023: true
-        traj1024: true
-        traj1025: true
-        traj1026: true
-        traj1027: true
-        traj1028: true
-        traj1029: true
         traj103: true
-        traj1030: true
-        traj1031: true
-        traj1032: true
-        traj1033: true
-        traj1034: true
-        traj1035: true
-        traj1036: true
-        traj1037: true
-        traj1038: true
-        traj1039: true
         traj104: true
-        traj1040: true
-        traj1041: true
-        traj1042: true
-        traj1043: true
-        traj1044: true
-        traj1045: true
-        traj1046: true
-        traj1047: true
-        traj1048: true
-        traj1049: true
         traj105: true
-        traj1050: true
-        traj1051: true
-        traj1052: true
-        traj1053: true
-        traj1054: true
-        traj1055: true
-        traj1056: true
-        traj1057: true
-        traj1058: true
-        traj1059: true
         traj106: true
-        traj1060: true
-        traj1061: true
-        traj1062: true
-        traj1063: true
-        traj1064: true
-        traj1065: true
-        traj1066: true
-        traj1067: true
-        traj1068: true
-        traj1069: true
         traj107: true
-        traj1070: true
-        traj1071: true
-        traj1072: true
-        traj1073: true
-        traj1074: true
-        traj1075: true
-        traj1076: true
-        traj1077: true
-        traj1078: true
-        traj1079: true
         traj108: true
-        traj1080: true
-        traj1081: true
-        traj1082: true
-        traj1083: true
-        traj1084: true
-        traj1085: true
-        traj1086: true
-        traj1087: true
-        traj1088: true
-        traj1089: true
         traj109: true
-        traj1090: true
-        traj1091: true
-        traj1092: true
-        traj1093: true
-        traj1094: true
-        traj1095: true
-        traj1096: true
-        traj1097: true
-        traj1098: true
-        traj1099: true
         traj11: true
         traj110: true
-        traj1100: true
-        traj1101: true
-        traj1102: true
-        traj1103: true
-        traj1104: true
-        traj1105: true
-        traj1106: true
-        traj1107: true
-        traj1108: true
-        traj1109: true
         traj111: true
-        traj1110: true
-        traj1111: true
-        traj1112: true
-        traj1113: true
-        traj1114: true
-        traj1115: true
-        traj1116: true
-        traj1117: true
-        traj1118: true
-        traj1119: true
         traj112: true
-        traj1120: true
-        traj1121: true
-        traj1122: true
-        traj1123: true
-        traj1124: true
-        traj1125: true
-        traj1126: true
-        traj1127: true
-        traj1128: true
-        traj1129: true
         traj113: true
-        traj1130: true
-        traj1131: true
-        traj1132: true
-        traj1133: true
-        traj1134: true
-        traj1135: true
-        traj1136: true
-        traj1137: true
-        traj1138: true
-        traj1139: true
         traj114: true
-        traj1140: true
-        traj1141: true
-        traj1142: true
-        traj1143: true
-        traj1144: true
-        traj1145: true
-        traj1146: true
-        traj1147: true
-        traj1148: true
-        traj1149: true
         traj115: true
-        traj1150: true
-        traj1151: true
-        traj1152: true
-        traj1153: true
-        traj1154: true
-        traj1155: true
-        traj1156: true
-        traj1157: true
-        traj1158: true
-        traj1159: true
         traj116: true
-        traj1160: true
-        traj1161: true
-        traj1162: true
-        traj1163: true
-        traj1164: true
-        traj1165: true
-        traj1166: true
-        traj1167: true
-        traj1168: true
-        traj1169: true
         traj117: true
-        traj1170: true
-        traj1171: true
-        traj1172: true
-        traj1173: true
-        traj1174: true
-        traj1175: true
-        traj1176: true
-        traj1177: true
-        traj1178: true
-        traj1179: true
         traj118: true
-        traj1180: true
-        traj1181: true
-        traj1182: true
-        traj1183: true
-        traj1184: true
-        traj1185: true
-        traj1186: true
-        traj1187: true
-        traj1188: true
-        traj1189: true
         traj119: true
-        traj1190: true
-        traj1191: true
-        traj1192: true
-        traj1193: true
-        traj1194: true
-        traj1195: true
-        traj1196: true
-        traj1197: true
-        traj1198: true
-        traj1199: true
         traj12: true
         traj120: true
-        traj1200: true
-        traj1201: true
-        traj1202: true
-        traj1203: true
-        traj1204: true
-        traj1205: true
-        traj1206: true
-        traj1207: true
-        traj1208: true
-        traj1209: true
         traj121: true
-        traj1210: true
-        traj1211: true
-        traj1212: true
-        traj1213: true
-        traj1214: true
-        traj1215: true
-        traj1216: true
-        traj1217: true
-        traj1218: true
-        traj1219: true
         traj122: true
-        traj1220: true
-        traj1221: true
-        traj1222: true
-        traj1223: true
-        traj1224: true
-        traj1225: true
-        traj1226: true
-        traj1227: true
-        traj1228: true
-        traj1229: true
         traj123: true
-        traj1230: true
-        traj1231: true
-        traj1232: true
-        traj1233: true
-        traj1234: true
-        traj1235: true
-        traj1236: true
-        traj1237: true
-        traj1238: true
-        traj1239: true
         traj124: true
-        traj1240: true
-        traj1241: true
-        traj1242: true
-        traj1243: true
-        traj1244: true
-        traj1245: true
-        traj1246: true
-        traj1247: true
-        traj1248: true
-        traj1249: true
         traj125: true
-        traj1250: true
-        traj1251: true
-        traj1252: true
-        traj1253: true
-        traj1254: true
-        traj1255: true
-        traj1256: true
-        traj1257: true
-        traj1258: true
-        traj1259: true
         traj126: true
-        traj1260: true
-        traj1261: true
-        traj1262: true
-        traj1263: true
-        traj1264: true
-        traj1265: true
-        traj1266: true
-        traj1267: true
-        traj1268: true
-        traj1269: true
         traj127: true
-        traj1270: true
-        traj1271: true
-        traj1272: true
-        traj1273: true
-        traj1274: true
-        traj1275: true
-        traj1276: true
-        traj1277: true
-        traj1278: true
-        traj1279: true
         traj128: true
-        traj1280: true
-        traj1281: true
-        traj1282: true
-        traj1283: true
-        traj1284: true
-        traj1285: true
-        traj1286: true
-        traj1287: true
-        traj1288: true
-        traj1289: true
         traj129: true
-        traj1290: true
-        traj1291: true
-        traj1292: true
-        traj1293: true
-        traj1294: true
-        traj1295: true
-        traj1296: true
-        traj1297: true
-        traj1298: true
-        traj1299: true
         traj13: true
         traj130: true
-        traj1300: true
-        traj1301: true
-        traj1302: true
-        traj1303: true
-        traj1304: true
-        traj1305: true
-        traj1306: true
-        traj1307: true
-        traj1308: true
-        traj1309: true
         traj131: true
-        traj1310: true
-        traj1311: true
-        traj1312: true
-        traj1313: true
-        traj1314: true
-        traj1315: true
-        traj1316: true
-        traj1317: true
-        traj1318: true
-        traj1319: true
         traj132: true
-        traj1320: true
-        traj1321: true
-        traj1322: true
-        traj1323: true
-        traj1324: true
-        traj1325: true
-        traj1326: true
-        traj1327: true
-        traj1328: true
-        traj1329: true
         traj133: true
-        traj1330: true
-        traj1331: true
-        traj1332: true
-        traj1333: true
-        traj1334: true
-        traj1335: true
-        traj1336: true
-        traj1337: true
-        traj1338: true
-        traj1339: true
         traj134: true
-        traj1340: true
-        traj1341: true
-        traj1342: true
-        traj1343: true
-        traj1344: true
-        traj1345: true
-        traj1346: true
-        traj1347: true
-        traj1348: true
-        traj1349: true
         traj135: true
-        traj1350: true
-        traj1351: true
-        traj1352: true
-        traj1353: true
-        traj1354: true
-        traj1355: true
-        traj1356: true
-        traj1357: true
-        traj1358: true
-        traj1359: true
         traj136: true
-        traj1360: true
-        traj1361: true
-        traj1362: true
-        traj1363: true
-        traj1364: true
-        traj1365: true
-        traj1366: true
-        traj1367: true
-        traj1368: true
-        traj1369: true
         traj137: true
-        traj1370: true
-        traj1371: true
-        traj1372: true
-        traj1373: true
-        traj1374: true
-        traj1375: true
-        traj1376: true
-        traj1377: true
-        traj1378: true
-        traj1379: true
         traj138: true
-        traj1380: true
-        traj1381: true
-        traj1382: true
-        traj1383: true
-        traj1384: true
-        traj1385: true
-        traj1386: true
-        traj1387: true
-        traj1388: true
-        traj1389: true
         traj139: true
-        traj1390: true
-        traj1391: true
-        traj1392: true
-        traj1393: true
-        traj1394: true
-        traj1395: true
-        traj1396: true
-        traj1397: true
-        traj1398: true
-        traj1399: true
         traj14: true
         traj140: true
-        traj1400: true
-        traj1401: true
-        traj1402: true
-        traj1403: true
-        traj1404: true
-        traj1405: true
-        traj1406: true
-        traj1407: true
-        traj1408: true
-        traj1409: true
         traj141: true
-        traj1410: true
-        traj1411: true
-        traj1412: true
-        traj1413: true
-        traj1414: true
-        traj1415: true
-        traj1416: true
-        traj1417: true
-        traj1418: true
-        traj1419: true
         traj142: true
-        traj1420: true
-        traj1421: true
-        traj1422: true
-        traj1423: true
-        traj1424: true
-        traj1425: true
-        traj1426: true
-        traj1427: true
-        traj1428: true
-        traj1429: true
         traj143: true
-        traj1430: true
-        traj1431: true
-        traj1432: true
-        traj1433: true
-        traj1434: true
-        traj1435: true
-        traj1436: true
-        traj1437: true
-        traj1438: true
-        traj1439: true
         traj144: true
-        traj1440: true
-        traj1441: true
-        traj1442: true
-        traj1443: true
-        traj1444: true
-        traj1445: true
-        traj1446: true
-        traj1447: true
-        traj1448: true
-        traj1449: true
         traj145: true
-        traj1450: true
-        traj1451: true
-        traj1452: true
-        traj1453: true
-        traj1454: true
-        traj1455: true
-        traj1456: true
-        traj1457: true
-        traj1458: true
-        traj1459: true
         traj146: true
-        traj1460: true
-        traj1461: true
-        traj1462: true
-        traj1463: true
-        traj1464: true
-        traj1465: true
-        traj1466: true
-        traj1467: true
-        traj1468: true
-        traj1469: true
         traj147: true
-        traj1470: true
-        traj1471: true
-        traj1472: true
-        traj1473: true
-        traj1474: true
-        traj1475: true
-        traj1476: true
-        traj1477: true
-        traj1478: true
-        traj1479: true
         traj148: true
-        traj1480: true
-        traj1481: true
-        traj1482: true
-        traj1483: true
-        traj1484: true
-        traj1485: true
-        traj1486: true
-        traj1487: true
-        traj1488: true
-        traj1489: true
         traj149: true
-        traj1490: true
-        traj1491: true
-        traj1492: true
-        traj1493: true
-        traj1494: true
-        traj1495: true
-        traj1496: true
-        traj1497: true
-        traj1498: true
-        traj1499: true
         traj15: true
         traj150: true
-        traj1500: true
-        traj1501: true
-        traj1502: true
-        traj1503: true
-        traj1504: true
-        traj1505: true
-        traj1506: true
-        traj1507: true
-        traj1508: true
-        traj1509: true
         traj151: true
-        traj1510: true
-        traj1511: true
-        traj1512: true
-        traj1513: true
-        traj1514: true
-        traj1515: true
-        traj1516: true
-        traj1517: true
-        traj1518: true
-        traj1519: true
         traj152: true
-        traj1520: true
-        traj1521: true
-        traj1522: true
-        traj1523: true
-        traj1524: true
-        traj1525: true
-        traj1526: true
-        traj1527: true
-        traj1528: true
-        traj1529: true
         traj153: true
-        traj1530: true
-        traj1531: true
-        traj1532: true
-        traj1533: true
-        traj1534: true
-        traj1535: true
-        traj1536: true
-        traj1537: true
-        traj1538: true
-        traj1539: true
         traj154: true
-        traj1540: true
-        traj1541: true
-        traj1542: true
-        traj1543: true
-        traj1544: true
-        traj1545: true
-        traj1546: true
-        traj1547: true
-        traj1548: true
-        traj1549: true
         traj155: true
-        traj1550: true
-        traj1551: true
-        traj1552: true
-        traj1553: true
-        traj1554: true
-        traj1555: true
-        traj1556: true
-        traj1557: true
-        traj1558: true
-        traj1559: true
         traj156: true
-        traj1560: true
-        traj1561: true
-        traj1562: true
-        traj1563: true
-        traj1564: true
-        traj1565: true
-        traj1566: true
-        traj1567: true
-        traj1568: true
-        traj1569: true
         traj157: true
-        traj1570: true
-        traj1571: true
-        traj1572: true
-        traj1573: true
-        traj1574: true
-        traj1575: true
-        traj1576: true
-        traj1577: true
-        traj1578: true
-        traj1579: true
         traj158: true
-        traj1580: true
-        traj1581: true
-        traj1582: true
-        traj1583: true
-        traj1584: true
-        traj1585: true
-        traj1586: true
-        traj1587: true
-        traj1588: true
-        traj1589: true
         traj159: true
-        traj1590: true
-        traj1591: true
-        traj1592: true
-        traj1593: true
-        traj1594: true
-        traj1595: true
-        traj1596: true
-        traj1597: true
-        traj1598: true
-        traj1599: true
         traj16: true
         traj160: true
-        traj1600: true
-        traj1601: true
-        traj1602: true
-        traj1603: true
-        traj1604: true
-        traj1605: true
-        traj1606: true
-        traj1607: true
-        traj1608: true
-        traj1609: true
         traj161: true
-        traj1610: true
-        traj1611: true
-        traj1612: true
-        traj1613: true
-        traj1614: true
-        traj1615: true
-        traj1616: true
-        traj1617: true
-        traj1618: true
-        traj1619: true
         traj162: true
-        traj1620: true
-        traj1621: true
-        traj1622: true
-        traj1623: true
-        traj1624: true
-        traj1625: true
-        traj1626: true
-        traj1627: true
-        traj1628: true
-        traj1629: true
         traj163: true
-        traj1630: true
-        traj1631: true
-        traj1632: true
-        traj1633: true
-        traj1634: true
-        traj1635: true
-        traj1636: true
-        traj1637: true
-        traj1638: true
-        traj1639: true
         traj164: true
-        traj1640: true
-        traj1641: true
-        traj1642: true
-        traj1643: true
-        traj1644: true
-        traj1645: true
-        traj1646: true
-        traj1647: true
-        traj1648: true
-        traj1649: true
         traj165: true
-        traj1650: true
-        traj1651: true
-        traj1652: true
-        traj1653: true
-        traj1654: true
-        traj1655: true
-        traj1656: true
-        traj1657: true
-        traj1658: true
-        traj1659: true
         traj166: true
-        traj1660: true
-        traj1661: true
-        traj1662: true
-        traj1663: true
-        traj1664: true
-        traj1665: true
-        traj1666: true
-        traj1667: true
-        traj1668: true
-        traj1669: true
         traj167: true
-        traj1670: true
-        traj1671: true
-        traj1672: true
-        traj1673: true
-        traj1674: true
-        traj1675: true
-        traj1676: true
-        traj1677: true
-        traj1678: true
-        traj1679: true
         traj168: true
-        traj1680: true
-        traj1681: true
-        traj1682: true
-        traj1683: true
-        traj1684: true
-        traj1685: true
-        traj1686: true
-        traj1687: true
-        traj1688: true
-        traj1689: true
         traj169: true
-        traj1690: true
-        traj1691: true
-        traj1692: true
-        traj1693: true
-        traj1694: true
-        traj1695: true
-        traj1696: true
-        traj1697: true
-        traj1698: true
-        traj1699: true
         traj17: true
         traj170: true
-        traj1700: true
-        traj1701: true
-        traj1702: true
-        traj1703: true
-        traj1704: true
-        traj1705: true
-        traj1706: true
-        traj1707: true
-        traj1708: true
-        traj1709: true
         traj171: true
-        traj1710: true
-        traj1711: true
-        traj1712: true
-        traj1713: true
-        traj1714: true
-        traj1715: true
-        traj1716: true
-        traj1717: true
-        traj1718: true
-        traj1719: true
         traj172: true
-        traj1720: true
-        traj1721: true
-        traj1722: true
-        traj1723: true
-        traj1724: true
-        traj1725: true
-        traj1726: true
-        traj1727: true
-        traj1728: true
-        traj1729: true
         traj173: true
-        traj1730: true
-        traj1731: true
-        traj1732: true
-        traj1733: true
-        traj1734: true
-        traj1735: true
-        traj1736: true
-        traj1737: true
-        traj1738: true
-        traj1739: true
         traj174: true
-        traj1740: true
-        traj1741: true
-        traj1742: true
-        traj1743: true
-        traj1744: true
-        traj1745: true
-        traj1746: true
-        traj1747: true
-        traj1748: true
-        traj1749: true
         traj175: true
-        traj1750: true
-        traj1751: true
-        traj1752: true
-        traj1753: true
-        traj1754: true
-        traj1755: true
-        traj1756: true
-        traj1757: true
-        traj1758: true
-        traj1759: true
         traj176: true
-        traj1760: true
-        traj1761: true
-        traj1762: true
-        traj1763: true
-        traj1764: true
-        traj1765: true
-        traj1766: true
-        traj1767: true
-        traj1768: true
-        traj1769: true
         traj177: true
-        traj1770: true
-        traj1771: true
-        traj1772: true
-        traj1773: true
-        traj1774: true
-        traj1775: true
-        traj1776: true
-        traj1777: true
-        traj1778: true
-        traj1779: true
         traj178: true
-        traj1780: true
-        traj1781: true
-        traj1782: true
-        traj1783: true
-        traj1784: true
-        traj1785: true
-        traj1786: true
-        traj1787: true
-        traj1788: true
-        traj1789: true
         traj179: true
-        traj1790: true
-        traj1791: true
-        traj1792: true
-        traj1793: true
-        traj1794: true
-        traj1795: true
-        traj1796: true
-        traj1797: true
-        traj1798: true
-        traj1799: true
         traj18: true
         traj180: true
-        traj1800: true
-        traj1801: true
-        traj1802: true
-        traj1803: true
-        traj1804: true
-        traj1805: true
-        traj1806: true
-        traj1807: true
-        traj1808: true
-        traj1809: true
         traj181: true
-        traj1810: true
-        traj1811: true
-        traj1812: true
-        traj1813: true
-        traj1814: true
-        traj1815: true
-        traj1816: true
-        traj1817: true
-        traj1818: true
-        traj1819: true
         traj182: true
-        traj1820: true
-        traj1821: true
-        traj1822: true
-        traj1823: true
-        traj1824: true
-        traj1825: true
-        traj1826: true
-        traj1827: true
-        traj1828: true
-        traj1829: true
         traj183: true
-        traj1830: true
-        traj1831: true
-        traj1832: true
-        traj1833: true
-        traj1834: true
-        traj1835: true
-        traj1836: true
-        traj1837: true
-        traj1838: true
-        traj1839: true
         traj184: true
-        traj1840: true
-        traj1841: true
-        traj1842: true
-        traj1843: true
-        traj1844: true
-        traj1845: true
-        traj1846: true
-        traj1847: true
-        traj1848: true
-        traj1849: true
         traj185: true
-        traj1850: true
-        traj1851: true
-        traj1852: true
-        traj1853: true
-        traj1854: true
-        traj1855: true
-        traj1856: true
-        traj1857: true
-        traj1858: true
-        traj1859: true
         traj186: true
-        traj1860: true
-        traj1861: true
-        traj1862: true
-        traj1863: true
-        traj1864: true
-        traj1865: true
-        traj1866: true
-        traj1867: true
-        traj1868: true
-        traj1869: true
         traj187: true
-        traj1870: true
-        traj1871: true
-        traj1872: true
-        traj1873: true
-        traj1874: true
-        traj1875: true
-        traj1876: true
-        traj1877: true
-        traj1878: true
-        traj1879: true
         traj188: true
-        traj1880: true
-        traj1881: true
-        traj1882: true
-        traj1883: true
-        traj1884: true
-        traj1885: true
-        traj1886: true
-        traj1887: true
-        traj1888: true
-        traj1889: true
         traj189: true
-        traj1890: true
-        traj1891: true
-        traj1892: true
-        traj1893: true
-        traj1894: true
-        traj1895: true
-        traj1896: true
-        traj1897: true
-        traj1898: true
-        traj1899: true
         traj19: true
         traj190: true
-        traj1900: true
-        traj1901: true
-        traj1902: true
-        traj1903: true
-        traj1904: true
-        traj1905: true
-        traj1906: true
-        traj1907: true
-        traj1908: true
-        traj1909: true
         traj191: true
-        traj1910: true
-        traj1911: true
-        traj1912: true
-        traj1913: true
-        traj1914: true
-        traj1915: true
-        traj1916: true
-        traj1917: true
-        traj1918: true
-        traj1919: true
         traj192: true
-        traj1920: true
-        traj1921: true
-        traj1922: true
-        traj1923: true
-        traj1924: true
-        traj1925: true
-        traj1926: true
-        traj1927: true
-        traj1928: true
-        traj1929: true
         traj193: true
-        traj1930: true
-        traj1931: true
-        traj1932: true
-        traj1933: true
-        traj1934: true
-        traj1935: true
-        traj1936: true
-        traj1937: true
-        traj1938: true
-        traj1939: true
         traj194: true
-        traj1940: true
-        traj1941: true
-        traj1942: true
-        traj1943: true
-        traj1944: true
-        traj1945: true
-        traj1946: true
-        traj1947: true
-        traj1948: true
-        traj1949: true
         traj195: true
-        traj1950: true
-        traj1951: true
-        traj1952: true
-        traj1953: true
-        traj1954: true
-        traj1955: true
-        traj1956: true
-        traj1957: true
-        traj1958: true
-        traj1959: true
         traj196: true
-        traj1960: true
-        traj1961: true
-        traj1962: true
-        traj1963: true
-        traj1964: true
-        traj1965: true
-        traj1966: true
-        traj1967: true
-        traj1968: true
-        traj1969: true
         traj197: true
-        traj1970: true
-        traj1971: true
-        traj1972: true
-        traj1973: true
-        traj1974: true
-        traj1975: true
-        traj1976: true
-        traj1977: true
-        traj1978: true
-        traj1979: true
         traj198: true
-        traj1980: true
-        traj1981: true
-        traj1982: true
-        traj1983: true
-        traj1984: true
-        traj1985: true
-        traj1986: true
-        traj1987: true
-        traj1988: true
-        traj1989: true
         traj199: true
-        traj1990: true
-        traj1991: true
-        traj1992: true
-        traj1993: true
-        traj1994: true
-        traj1995: true
-        traj1996: true
-        traj1997: true
-        traj1998: true
-        traj1999: true
         traj2: true
         traj20: true
         traj200: true
-        traj2000: true
-        traj2001: true
-        traj2002: true
-        traj2003: true
-        traj2004: true
-        traj2005: true
-        traj2006: true
-        traj2007: true
-        traj2008: true
-        traj2009: true
         traj201: true
-        traj2010: true
-        traj2011: true
-        traj2012: true
-        traj2013: true
-        traj2014: true
-        traj2015: true
-        traj2016: true
-        traj2017: true
-        traj2018: true
-        traj2019: true
         traj202: true
-        traj2020: true
-        traj2021: true
-        traj2022: true
-        traj2023: true
-        traj2024: true
-        traj2025: true
-        traj2026: true
-        traj2027: true
-        traj2028: true
-        traj2029: true
         traj203: true
-        traj2030: true
-        traj2031: true
-        traj2032: true
-        traj2033: true
-        traj2034: true
-        traj2035: true
-        traj2036: true
-        traj2037: true
-        traj2038: true
-        traj2039: true
         traj204: true
-        traj2040: true
-        traj2041: true
-        traj2042: true
-        traj2043: true
-        traj2044: true
-        traj2045: true
-        traj2046: true
-        traj2047: true
-        traj2048: true
-        traj2049: true
         traj205: true
-        traj2050: true
-        traj2051: true
-        traj2052: true
-        traj2053: true
-        traj2054: true
-        traj2055: true
-        traj2056: true
-        traj2057: true
-        traj2058: true
-        traj2059: true
         traj206: true
-        traj2060: true
-        traj2061: true
-        traj2062: true
-        traj2063: true
-        traj2064: true
-        traj2065: true
-        traj2066: true
-        traj2067: true
-        traj2068: true
-        traj2069: true
         traj207: true
-        traj2070: true
-        traj2071: true
-        traj2072: true
-        traj2073: true
-        traj2074: true
-        traj2075: true
-        traj2076: true
-        traj2077: true
-        traj2078: true
-        traj2079: true
         traj208: true
-        traj2080: true
-        traj2081: true
-        traj2082: true
-        traj2083: true
-        traj2084: true
-        traj2085: true
-        traj2086: true
-        traj2087: true
-        traj2088: true
-        traj2089: true
         traj209: true
-        traj2090: true
-        traj2091: true
-        traj2092: true
-        traj2093: true
-        traj2094: true
-        traj2095: true
-        traj2096: true
-        traj2097: true
-        traj2098: true
-        traj2099: true
         traj21: true
         traj210: true
-        traj2100: true
-        traj2101: true
-        traj2102: true
-        traj2103: true
-        traj2104: true
-        traj2105: true
-        traj2106: true
-        traj2107: true
-        traj2108: true
-        traj2109: true
         traj211: true
-        traj2110: true
-        traj2111: true
-        traj2112: true
-        traj2113: true
-        traj2114: true
-        traj2115: true
-        traj2116: true
-        traj2117: true
-        traj2118: true
-        traj2119: true
         traj212: true
-        traj2120: true
-        traj2121: true
-        traj2122: true
-        traj2123: true
-        traj2124: true
-        traj2125: true
-        traj2126: true
-        traj2127: true
-        traj2128: true
-        traj2129: true
         traj213: true
-        traj2130: true
-        traj2131: true
-        traj2132: true
-        traj2133: true
         traj214: true
         traj215: true
         traj216: true
@@ -1470,742 +336,78 @@ Visualization Manager:
         traj333: true
         traj334: true
         traj335: true
-        traj336: true
-        traj337: true
-        traj338: true
-        traj339: true
         traj34: true
-        traj340: true
-        traj341: true
-        traj342: true
-        traj343: true
-        traj344: true
-        traj345: true
-        traj346: true
-        traj347: true
-        traj348: true
-        traj349: true
         traj35: true
-        traj350: true
-        traj351: true
-        traj352: true
-        traj353: true
-        traj354: true
-        traj355: true
-        traj356: true
-        traj357: true
-        traj358: true
-        traj359: true
         traj36: true
-        traj360: true
-        traj361: true
-        traj362: true
-        traj363: true
-        traj364: true
-        traj365: true
-        traj366: true
-        traj367: true
-        traj368: true
-        traj369: true
         traj37: true
-        traj370: true
-        traj371: true
-        traj372: true
-        traj373: true
-        traj374: true
-        traj375: true
-        traj376: true
-        traj377: true
-        traj378: true
-        traj379: true
         traj38: true
-        traj380: true
-        traj381: true
-        traj382: true
-        traj383: true
-        traj384: true
-        traj385: true
-        traj386: true
-        traj387: true
-        traj388: true
-        traj389: true
         traj39: true
-        traj390: true
-        traj391: true
-        traj392: true
-        traj393: true
-        traj394: true
-        traj395: true
-        traj396: true
-        traj397: true
-        traj398: true
-        traj399: true
         traj4: true
         traj40: true
-        traj400: true
-        traj401: true
-        traj402: true
-        traj403: true
-        traj404: true
-        traj405: true
-        traj406: true
-        traj407: true
-        traj408: true
-        traj409: true
         traj41: true
-        traj410: true
-        traj411: true
-        traj412: true
-        traj413: true
-        traj414: true
-        traj415: true
-        traj416: true
-        traj417: true
-        traj418: true
-        traj419: true
         traj42: true
-        traj420: true
-        traj421: true
-        traj422: true
-        traj423: true
-        traj424: true
-        traj425: true
-        traj426: true
-        traj427: true
-        traj428: true
-        traj429: true
         traj43: true
-        traj430: true
-        traj431: true
-        traj432: true
-        traj433: true
-        traj434: true
-        traj435: true
-        traj436: true
-        traj437: true
-        traj438: true
-        traj439: true
         traj44: true
-        traj440: true
-        traj441: true
-        traj442: true
-        traj443: true
-        traj444: true
-        traj445: true
-        traj446: true
-        traj447: true
-        traj448: true
-        traj449: true
         traj45: true
-        traj450: true
-        traj451: true
-        traj452: true
-        traj453: true
-        traj454: true
-        traj455: true
-        traj456: true
-        traj457: true
-        traj458: true
-        traj459: true
         traj46: true
-        traj460: true
-        traj461: true
-        traj462: true
-        traj463: true
-        traj464: true
-        traj465: true
-        traj466: true
-        traj467: true
-        traj468: true
-        traj469: true
         traj47: true
-        traj470: true
-        traj471: true
-        traj472: true
-        traj473: true
-        traj474: true
-        traj475: true
-        traj476: true
-        traj477: true
-        traj478: true
-        traj479: true
         traj48: true
-        traj480: true
-        traj481: true
-        traj482: true
-        traj483: true
-        traj484: true
-        traj485: true
-        traj486: true
-        traj487: true
-        traj488: true
-        traj489: true
         traj49: true
-        traj490: true
-        traj491: true
-        traj492: true
-        traj493: true
-        traj494: true
-        traj495: true
-        traj496: true
-        traj497: true
-        traj498: true
-        traj499: true
         traj5: true
         traj50: true
-        traj500: true
-        traj501: true
-        traj502: true
-        traj503: true
-        traj504: true
-        traj505: true
-        traj506: true
-        traj507: true
-        traj508: true
-        traj509: true
         traj51: true
-        traj510: true
-        traj511: true
-        traj512: true
-        traj513: true
-        traj514: true
-        traj515: true
-        traj516: true
-        traj517: true
-        traj518: true
-        traj519: true
         traj52: true
-        traj520: true
-        traj521: true
-        traj522: true
-        traj523: true
-        traj524: true
-        traj525: true
-        traj526: true
-        traj527: true
-        traj528: true
-        traj529: true
         traj53: true
-        traj530: true
-        traj531: true
-        traj532: true
-        traj533: true
-        traj534: true
-        traj535: true
-        traj536: true
-        traj537: true
-        traj538: true
-        traj539: true
         traj54: true
-        traj540: true
-        traj541: true
-        traj542: true
-        traj543: true
-        traj544: true
-        traj545: true
-        traj546: true
-        traj547: true
-        traj548: true
-        traj549: true
         traj55: true
-        traj550: true
-        traj551: true
-        traj552: true
-        traj553: true
-        traj554: true
-        traj555: true
-        traj556: true
-        traj557: true
-        traj558: true
-        traj559: true
         traj56: true
-        traj560: true
-        traj561: true
-        traj562: true
-        traj563: true
-        traj564: true
-        traj565: true
-        traj566: true
-        traj567: true
-        traj568: true
-        traj569: true
         traj57: true
-        traj570: true
-        traj571: true
-        traj572: true
-        traj573: true
-        traj574: true
-        traj575: true
-        traj576: true
-        traj577: true
-        traj578: true
-        traj579: true
         traj58: true
-        traj580: true
-        traj581: true
-        traj582: true
-        traj583: true
-        traj584: true
-        traj585: true
-        traj586: true
-        traj587: true
-        traj588: true
-        traj589: true
         traj59: true
-        traj590: true
-        traj591: true
-        traj592: true
-        traj593: true
-        traj594: true
-        traj595: true
-        traj596: true
-        traj597: true
-        traj598: true
-        traj599: true
         traj6: true
         traj60: true
-        traj600: true
-        traj601: true
-        traj602: true
-        traj603: true
-        traj604: true
-        traj605: true
-        traj606: true
-        traj607: true
-        traj608: true
-        traj609: true
         traj61: true
-        traj610: true
-        traj611: true
-        traj612: true
-        traj613: true
-        traj614: true
-        traj615: true
-        traj616: true
-        traj617: true
-        traj618: true
-        traj619: true
         traj62: true
-        traj620: true
-        traj621: true
-        traj622: true
-        traj623: true
-        traj624: true
-        traj625: true
-        traj626: true
-        traj627: true
-        traj628: true
-        traj629: true
         traj63: true
-        traj630: true
-        traj631: true
-        traj632: true
-        traj633: true
-        traj634: true
-        traj635: true
-        traj636: true
-        traj637: true
-        traj638: true
-        traj639: true
         traj64: true
-        traj640: true
-        traj641: true
-        traj642: true
-        traj643: true
-        traj644: true
-        traj645: true
-        traj646: true
-        traj647: true
-        traj648: true
-        traj649: true
         traj65: true
-        traj650: true
-        traj651: true
-        traj652: true
-        traj653: true
-        traj654: true
-        traj655: true
-        traj656: true
-        traj657: true
-        traj658: true
-        traj659: true
         traj66: true
-        traj660: true
-        traj661: true
-        traj662: true
-        traj663: true
-        traj664: true
-        traj665: true
-        traj666: true
-        traj667: true
-        traj668: true
-        traj669: true
         traj67: true
-        traj670: true
-        traj671: true
-        traj672: true
-        traj673: true
-        traj674: true
-        traj675: true
-        traj676: true
-        traj677: true
-        traj678: true
-        traj679: true
         traj68: true
-        traj680: true
-        traj681: true
-        traj682: true
-        traj683: true
-        traj684: true
-        traj685: true
-        traj686: true
-        traj687: true
-        traj688: true
-        traj689: true
         traj69: true
-        traj690: true
-        traj691: true
-        traj692: true
-        traj693: true
-        traj694: true
-        traj695: true
-        traj696: true
-        traj697: true
-        traj698: true
-        traj699: true
         traj7: true
         traj70: true
-        traj700: true
-        traj701: true
-        traj702: true
-        traj703: true
-        traj704: true
-        traj705: true
-        traj706: true
-        traj707: true
-        traj708: true
-        traj709: true
         traj71: true
-        traj710: true
-        traj711: true
-        traj712: true
-        traj713: true
-        traj714: true
-        traj715: true
-        traj716: true
-        traj717: true
-        traj718: true
-        traj719: true
         traj72: true
-        traj720: true
-        traj721: true
-        traj722: true
-        traj723: true
-        traj724: true
-        traj725: true
-        traj726: true
-        traj727: true
-        traj728: true
-        traj729: true
         traj73: true
-        traj730: true
-        traj731: true
-        traj732: true
-        traj733: true
-        traj734: true
-        traj735: true
-        traj736: true
-        traj737: true
-        traj738: true
-        traj739: true
         traj74: true
-        traj740: true
-        traj741: true
-        traj742: true
-        traj743: true
-        traj744: true
-        traj745: true
-        traj746: true
-        traj747: true
-        traj748: true
-        traj749: true
         traj75: true
-        traj750: true
-        traj751: true
-        traj752: true
-        traj753: true
-        traj754: true
-        traj755: true
-        traj756: true
-        traj757: true
-        traj758: true
-        traj759: true
         traj76: true
-        traj760: true
-        traj761: true
-        traj762: true
-        traj763: true
-        traj764: true
-        traj765: true
-        traj766: true
-        traj767: true
-        traj768: true
-        traj769: true
         traj77: true
-        traj770: true
-        traj771: true
-        traj772: true
-        traj773: true
-        traj774: true
-        traj775: true
-        traj776: true
-        traj777: true
-        traj778: true
-        traj779: true
         traj78: true
-        traj780: true
-        traj781: true
-        traj782: true
-        traj783: true
-        traj784: true
-        traj785: true
-        traj786: true
-        traj787: true
-        traj788: true
-        traj789: true
         traj79: true
-        traj790: true
-        traj791: true
-        traj792: true
-        traj793: true
-        traj794: true
-        traj795: true
-        traj796: true
-        traj797: true
-        traj798: true
-        traj799: true
         traj8: true
         traj80: true
-        traj800: true
-        traj801: true
-        traj802: true
-        traj803: true
-        traj804: true
-        traj805: true
-        traj806: true
-        traj807: true
-        traj808: true
-        traj809: true
         traj81: true
-        traj810: true
-        traj811: true
-        traj812: true
-        traj813: true
-        traj814: true
-        traj815: true
-        traj816: true
-        traj817: true
-        traj818: true
-        traj819: true
         traj82: true
-        traj820: true
-        traj821: true
-        traj822: true
-        traj823: true
-        traj824: true
-        traj825: true
-        traj826: true
-        traj827: true
-        traj828: true
-        traj829: true
         traj83: true
-        traj830: true
-        traj831: true
-        traj832: true
-        traj833: true
-        traj834: true
-        traj835: true
-        traj836: true
-        traj837: true
-        traj838: true
-        traj839: true
         traj84: true
-        traj840: true
-        traj841: true
-        traj842: true
-        traj843: true
-        traj844: true
-        traj845: true
-        traj846: true
-        traj847: true
-        traj848: true
-        traj849: true
         traj85: true
-        traj850: true
-        traj851: true
-        traj852: true
-        traj853: true
-        traj854: true
-        traj855: true
-        traj856: true
-        traj857: true
-        traj858: true
-        traj859: true
         traj86: true
-        traj860: true
-        traj861: true
-        traj862: true
-        traj863: true
-        traj864: true
-        traj865: true
-        traj866: true
-        traj867: true
-        traj868: true
-        traj869: true
         traj87: true
-        traj870: true
-        traj871: true
-        traj872: true
-        traj873: true
-        traj874: true
-        traj875: true
-        traj876: true
-        traj877: true
-        traj878: true
-        traj879: true
         traj88: true
-        traj880: true
-        traj881: true
-        traj882: true
-        traj883: true
-        traj884: true
-        traj885: true
-        traj886: true
-        traj887: true
-        traj888: true
-        traj889: true
         traj89: true
-        traj890: true
-        traj891: true
-        traj892: true
-        traj893: true
-        traj894: true
-        traj895: true
-        traj896: true
-        traj897: true
-        traj898: true
-        traj899: true
         traj9: true
         traj90: true
-        traj900: true
-        traj901: true
-        traj902: true
-        traj903: true
-        traj904: true
-        traj905: true
-        traj906: true
-        traj907: true
-        traj908: true
-        traj909: true
         traj91: true
-        traj910: true
-        traj911: true
-        traj912: true
-        traj913: true
-        traj914: true
-        traj915: true
-        traj916: true
-        traj917: true
-        traj918: true
-        traj919: true
         traj92: true
-        traj920: true
-        traj921: true
-        traj922: true
-        traj923: true
-        traj924: true
-        traj925: true
-        traj926: true
-        traj927: true
-        traj928: true
-        traj929: true
         traj93: true
-        traj930: true
-        traj931: true
-        traj932: true
-        traj933: true
-        traj934: true
-        traj935: true
-        traj936: true
-        traj937: true
-        traj938: true
-        traj939: true
         traj94: true
-        traj940: true
-        traj941: true
-        traj942: true
-        traj943: true
-        traj944: true
-        traj945: true
-        traj946: true
-        traj947: true
-        traj948: true
-        traj949: true
         traj95: true
-        traj950: true
-        traj951: true
-        traj952: true
-        traj953: true
-        traj954: true
-        traj955: true
-        traj956: true
-        traj957: true
-        traj958: true
-        traj959: true
         traj96: true
-        traj960: true
-        traj961: true
-        traj962: true
-        traj963: true
-        traj964: true
-        traj965: true
-        traj966: true
-        traj967: true
-        traj968: true
-        traj969: true
         traj97: true
-        traj970: true
-        traj971: true
-        traj972: true
-        traj973: true
-        traj974: true
-        traj975: true
-        traj976: true
-        traj977: true
-        traj978: true
-        traj979: true
         traj98: true
-        traj980: true
-        traj981: true
-        traj982: true
-        traj983: true
-        traj984: true
-        traj985: true
-        traj986: true
-        traj987: true
-        traj988: true
-        traj989: true
         traj99: true
-        traj990: true
-        traj991: true
-        traj992: true
-        traj993: true
-        traj994: true
-        traj995: true
-        traj996: true
-        traj997: true
-        traj998: true
-        traj999: true
       Queue Size: 100
       Value: true
     - Alpha: 0.05000000074505806
@@ -2226,7 +428,7 @@ Visualization Manager:
       Marker Topic: /astar_example/A_star_best_trajectory_found
       Name: BestTraj
       Namespaces:
-        traj2134: true
+        traj336: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -2280,10 +482,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 0.10979624837636948
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.019991260021924973
+      Yaw: 0.019990578293800354
     Saved: ~
 Window Geometry:
   Displays:
