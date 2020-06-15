@@ -4,7 +4,8 @@ set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegend
 
 
 min_x=1;
-max_x=50;
+max_x=47;
+global min_x max_x
 
 
 
@@ -115,14 +116,15 @@ subplot(3,1,3)
 % title('\textbf{Histogram (200 runs)}')
 
 function [vel dist time n_times_stopped]=readBagsThatStartWith(name)
-
+    
+    global min_x max_x
     
     vel=[]; %each column has the velocity
     dist=[]; %one element per bag
     time=[]; %one element per bag
     n_times_stopped=[];
     
-    folder='june9/';
+    folder='';% june9/
     files = dir(['./',folder,name,'*.bag']);
     filenames = {files.name};
     
@@ -139,8 +141,6 @@ function [vel dist time n_times_stopped]=readBagsThatStartWith(name)
         
         for j=1:size(topics,1)
              %%%%%%%%%%%%%%%%%%%%%%%%%
-             min_x=1;
-             max_x=47;
              if(topics{j}.Pos.X>min_x && topics{j}.Pos.X<max_x)
               vel_j=[topics{j}.Vel.X; topics{j}.Vel.Y; topics{j}.Vel.Z];
               times_filtered=[times_filtered topics{j}.Header.Stamp.Sec + topics{j}.Header.Stamp.Nsec*(1e-9)];

@@ -48,10 +48,10 @@ a_max: [20.0, 20.0, 9.6]   #[m/s2] Note that if a_max.z() > 9.81, the drone may 
 j_max: [50.0, 50.0, 50.0]  #[m/s3] 10.0
 
 
-alpha: 2.0 #[-] DeltaT = alpha*States_took_previous_replan
+alpha: 1.5 #[-] DeltaT = alpha*States_took_previous_replan
 
 #Parameters for NLOPT
-num_pol: 5
+num_pol: 4
 deg_pol: 3
 samples_per_interval: 1
 weight: 1000.0 #The .0 is needed #10000  #1000000
@@ -76,7 +76,7 @@ solver: "LD_MMA"
 # //MMA and SLSQP
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
 upper_bound_runtime_snlopt: 1.0 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
-kappa: 0.3 #% of time spent to find initial guess
+kappa: 0.5 #% of time spent to find initial guess
 mu: 0.15    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
@@ -86,9 +86,9 @@ a_star_samp_z: 5
 a_star_fraction_voxel_size: 0.5 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
 allow_infeasible_guess: true  #whether allow infeasible guesses to be used for the optimization. If false, straight line guess will be used in the case of an infeasible guess
 
-a_star_bias: 100.0 #Bias (cost=g+bias*h) in the A* search 
+a_star_bias: 1.0 #Bias (cost=g+bias*h) in the A* search 
 
-basis: "B_SPLINE"  #MINVO OR B_SPLINE or BEZIER This is the basis used only for collision checking
+basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER This is the basis used only for collision checking
 
 res_plot_traj: 6.0  #Higher --> More resolution when plotting the trajectory 
 

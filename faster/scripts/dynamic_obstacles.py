@@ -63,7 +63,9 @@ class MovingCorridor:
         self.slower_min=1.1
         self.slower_max= 1.1
         self.bbox_dynamic=[0.6, 0.6, 0.6]
-        self.bbox_static=[0.4, 0.4, 4]
+        self.bbox_static_vert=[0.4, 0.8, 4]
+        self.bbox_static_horiz=[0.4, 8, 0.6]
+        self.percentage_vert=0.35;
 
 
 
@@ -96,6 +98,7 @@ class FakeSim:
         self.slower=[];
         self.meshes=[];
         self.type=[];#"dynamic" or "static"
+        self.bboxes=[]; 
         for i in range(self.world.num_of_dyn_objects):          
             self.x_all.append(random.uniform(self.world.x_min, self.world.x_max));
             self.y_all.append(random.uniform(self.world.y_min, self.world.y_max));
@@ -104,15 +107,27 @@ class FakeSim:
             self.slower.append(random.uniform(self.world.slower_min, self.world.slower_max));
             self.type.append("dynamic")
             self.meshes.append(random.choice(available_meshes_dynamic));
+            self.bboxes.append(self.world.bbox_dynamic);
 
-        for i in range(self.world.num_of_stat_objects):          
+        for i in range(self.world.num_of_stat_objects):
+            bbox_i=[]; 
+            if(i<self.world.percentage_vert*self.world.num_of_stat_objects):
+                bbox_i=self.world.bbox_static_vert;
+                self.z_all.append(bbox_i[2]/2.0);
+            else:
+                bbox_i=self.world.bbox_static_horiz;
+                self.z_all.append(random.uniform(0.0, 3.0));
+
+
             self.x_all.append(random.uniform(self.world.x_min-self.world.scale, self.world.x_max+self.world.scale));
             self.y_all.append(random.uniform(self.world.y_min-self.world.scale, self.world.y_max+self.world.scale));
-            self.z_all.append(self.world.bbox_static[2]/2.0);
+            
             self.offset_all.append(random.uniform(-2*math.pi, 2*math.pi));
             self.slower.append(random.uniform(self.world.slower_min, self.world.slower_max));
             self.type.append("static")
             self.meshes.append(random.choice(available_meshes_static));
+            self.bboxes.append(bbox_i)
+
 
         self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=1, latch=True)
         self.pubShapes_static = rospy.Publisher('/shapes_static', Marker, queue_size=1, latch=True)
@@ -139,14 +154,12 @@ class FakeSim:
         marker_dynamic=copy.deepcopy(marker_tmp);
 
         marker_dynamic.color=color_dynamic;
-        marker_dynamic.scale.x=self.world.bbox_dynamic[0]
-        marker_dynamic.scale.y=self.world.bbox_dynamic[1]
-        marker_dynamic.scale.z=self.world.bbox_dynamic[2]
+        # marker_dynamic.scale.x=self.world.bbox_dynamic[0]
+        # marker_dynamic.scale.y=self.world.bbox_dynamic[1]
+        # marker_dynamic.scale.z=self.world.bbox_dynamic[2]
 
         marker_static.color=color_static;
-        marker_static.scale.x=self.world.bbox_static[0]
-        marker_static.scale.y=self.world.bbox_static[1]
-        marker_static.scale.z=self.world.bbox_static[2]
+
 
         ###################3
         marker_array_static_mesh=MarkerArray();
@@ -158,13 +171,22 @@ class FakeSim:
 
             dynamic_trajectory_msg=DynTraj(); 
 
+            bbox_i=self.bboxes[i];
+
             if(self.type[i]=="dynamic"):
               s=self.world.scale;
               [x_string, y_string, z_string] = self.trefoil(self.x_all[i], self.y_all[i], self.z_all[i], s,s,s, self.offset_all[i], self.slower[i]) 
-              dynamic_trajectory_msg.bbox = self.world.bbox_dynamic;
+              # print("self.bboxes[i]= ", self.bboxes[i])
+              dynamic_trajectory_msg.bbox = bbox_i;
+              marker_dynamic.scale.x=bbox_i[0]
+              marker_dynamic.scale.y=bbox_i[1]
+              marker_dynamic.scale.z=bbox_i[2]
             else:
               [x_string, y_string, z_string] = self.static(self.x_all[i], self.y_all[i], self.z_all[i]);
-              dynamic_trajectory_msg.bbox = self.world.bbox_static;
+              dynamic_trajectory_msg.bbox = bbox_i;
+              marker_static.scale.x=bbox_i[0]
+              marker_static.scale.y=bbox_i[1]
+              marker_static.scale.z=bbox_i[2]
 
             x = eval(x_string)
             y = eval(y_string)
@@ -220,18 +242,18 @@ class FakeSim:
             if(self.type[i]=="dynamic"):
                 marker_dynamic.points.append(point);
 
-                marker.scale.x=self.world.bbox_dynamic[0];
-                marker.scale.y=self.world.bbox_dynamic[1];
-                marker.scale.z=self.world.bbox_dynamic[2];
+                marker.scale.x=bbox_i[0];
+                marker.scale.y=bbox_i[1];
+                marker.scale.z=bbox_i[2];
 
                 marker_array_dynamic_mesh.markers.append(marker);
 
 
             if(self.type[i]=="static"):
 
-                marker.scale.x=self.world.bbox_static[0];
-                marker.scale.y=self.world.bbox_static[1];
-                marker.scale.z=self.world.bbox_static[2];
+                marker.scale.x=bbox_i[0];
+                marker.scale.y=bbox_i[1];
+                marker.scale.z=bbox_i[2];
                 
                 marker_array_static_mesh.markers.append(marker);
 
