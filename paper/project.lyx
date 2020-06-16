@@ -200,7 +200,7 @@ End
 \begin_body
 
 \begin_layout Title
-[Name]: 3D 
+FLAMADE: 3D 
 \begin_inset Note Note
 status open
 
@@ -221,6 +221,10 @@ status open
 \end_inset
 
  Multi-Agent and Dynamic Environments
+\end_layout
+
+\begin_layout Standard
+Fladma
 \end_layout
 
 \begin_layout Author

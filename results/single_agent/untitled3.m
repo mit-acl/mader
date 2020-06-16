@@ -1,10 +1,10 @@
 close all; clear; clc;
 set(0,'defaulttextInterpreter','latex');
 set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex');
-
+addpath(genpath('./utils'));
 
 min_x=1;
-max_x=47;
+max_x=72;
 global min_x max_x
 
 
@@ -41,11 +41,11 @@ histogram(time_bspline,n_bins,'FaceColor','#0072BD');
 %%Plot velocity x
 n_bins=100;
 subplot(3,3,3); xlabel('Vel ($m/s$)')
-histogram(vel_minvo(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); xlim([1,5]);xlabel("$v_x$ ($m/s$)");ylim([0,1]); title('Minvo')
+histogram(vel_minvo(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); xlabel("$v_x$ ($m/s$)"); title('Minvo'); ylim([0,10]); %xlim([1,5]);
 subplot(3,3,6); xlabel('Vel ($m/s$)')
-histogram(vel_bezier(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); xlim([1,5]);xlabel("$v_x$ ($m/s$)");ylim([0,1]);title('Bezier')
+histogram(vel_bezier(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf');xlabel("$v_x$ ($m/s$)"); title('Bezier'); ylim([0,10]);%xlim([1,5]);
 subplot(3,3,9); xlabel('Vel ($m/s$)')
-histogram(vel_bspline(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); xlim([1,5]);xlabel("$v_x$ ($m/s$)");ylim([0,1]);title('BSpline')
+histogram(vel_bspline(1,:),n_bins,'FaceColor','#0072BD', 'Normalization','pdf'); xlabel("$v_x$ ($m/s$)"); title('BSpline'); ylim([0,10]);%xlim([1,5]);
 
 disp("velocities")
 [mean(abs(vel_minvo),2) mean(abs(vel_bezier),2) mean(abs(vel_bspline),2)]
@@ -68,11 +68,20 @@ disp("n_times_stopped")
 %%
 figure
 subplot(3,1,1)
- scatter3(vel_minvo(1,:),vel_minvo(2,:),vel_minvo(3,:)); title('MINVO'); xlabel("$v_x$ ($m/s$)"); ylabel("$v_y$ ($m/s$)"); zlabel("$v_z$ ($m/s$)");xlim([-4,6]);
+ scatter3(vel_minvo(1,:),vel_minvo(2,:),vel_minvo(3,:)); title('MINVO'); xlabel("$v_x$ ($m/s$)"); ylabel("$v_y$ ($m/s$)"); zlabel("$v_z$ ($m/s$)");%xlim([-4,6]);
 subplot(3,1,2)
- scatter3(vel_bezier(1,:),vel_bezier(2,:),vel_bezier(3,:)); title('Bezier');xlabel("$v_x$ ($m/s$)"); ylabel("$v_y$ ($m/s$)"); zlabel("$v_z$ ($m/s$)");xlim([-4,6]);
+ scatter3(vel_bezier(1,:),vel_bezier(2,:),vel_bezier(3,:)); title('Bezier');xlabel("$v_x$ ($m/s$)"); ylabel("$v_y$ ($m/s$)"); zlabel("$v_z$ ($m/s$)");%xlim([-4,6]);
 subplot(3,1,3)
- scatter3(vel_bspline(1,:),vel_bspline(2,:),vel_bspline(3,:)); title('BSpline'); xlabel("$v_x$ ($m/s$)"); ylabel("$v_y$ ($m/s$)"); zlabel("$v_z$ ($m/s$)");xlim([-4,6]);
+ scatter3(vel_bspline(1,:),vel_bspline(2,:),vel_bspline(3,:)); title('BSpline'); xlabel("$v_x$ ($m/s$)"); ylabel("$v_y$ ($m/s$)"); zlabel("$v_z$ ($m/s$)");%xlim([-4,6]);
+%%
+
+
+% dscatter(data(:,1),10.^(data(:,2)/256),'log',true); hold on
+% % xlabel(params(1).LongName); ylabel(params(2).LongName);
+% dscatter(data(:,1),10.^(data(:,2)/256),'log',true,'plottype','contour') %adds contours.
+% hold off
+
+
 %%
 
 %B-SPLINE costs
