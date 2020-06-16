@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 # Jesus Tordesillas, jtorde@mit.edu
-# date: 2020-June
+# date: June 2020
 
 import math
 import os
@@ -48,7 +48,7 @@ if __name__ == '__main__':
             commands.append("sleep 4.0 && roslaunch faster faster.launch");
             commands.append("sleep 4.0 && cd "+folder_bags+" && rosbag record -o "+basis+"_"+str(i)+" /SQ01s/goal __name:="+name_node_record);
             #publishing the goal should be the last command
-            commands.append("sleep 4.0 && rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped \'{header: {stamp: now, frame_id: \"world\"}, pose: {position: {x: 50, y: 0, z: 1}, orientation: {w: 1.0}}}\'");
+            commands.append("sleep 4.0 && rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped \'{header: {stamp: now, frame_id: \"world\"}, pose: {position: {x: 75, y: 0, z: 1}, orientation: {w: 1.0}}}\'");
 
             print("len(commands)= " , len(commands))
             session_name="run_many_sims_single_agent_session"
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
             time.sleep(3.0)
             pos_string=""
-            while (pos_string.find('49.')==-1 and pos_string.find('50.')==-1): #note the point after the 49, to make sure they are the first two numbers, and not the decimals
+            while (pos_string.find('74.')==-1 and pos_string.find('75.')==-1): #note the point after the 49, to make sure they are the first two numbers, and not the decimals
                 try:
                     pos_string =str(subprocess.check_output(['rostopic', 'echo', '/SQ01s/state/pos/x', '-n', '1']))
                     print("Currently at ",pos_string)

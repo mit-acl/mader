@@ -47,10 +47,10 @@ class MovingCircle:
 
 class MovingCorridor:
     def __init__(self):
-        self.num_of_dyn_objects=50;
+        self.num_of_dyn_objects=90;
         self.num_of_stat_objects=50;
         self.x_min= 2.0
-        self.x_max= 50.0
+        self.x_max= 75.0
         self.y_min= -3.0 
         self.y_max= 3.0
         # self.x_min= 0.0
@@ -63,8 +63,8 @@ class MovingCorridor:
         self.slower_min=1.1
         self.slower_max= 1.1
         self.bbox_dynamic=[0.6, 0.6, 0.6]
-        self.bbox_static_vert=[0.4, 0.8, 4]
-        self.bbox_static_horiz=[0.4, 8, 0.6]
+        self.bbox_static_vert=[0.4, 0.4, 4]
+        self.bbox_static_horiz=[0.4, 8, 0.4]
         self.percentage_vert=0.35;
 
 
@@ -114,9 +114,11 @@ class FakeSim:
             if(i<self.world.percentage_vert*self.world.num_of_stat_objects):
                 bbox_i=self.world.bbox_static_vert;
                 self.z_all.append(bbox_i[2]/2.0);
+                self.type.append("static_vert")
             else:
                 bbox_i=self.world.bbox_static_horiz;
                 self.z_all.append(random.uniform(0.0, 3.0));
+                self.type.append("static_horiz")
 
 
             self.x_all.append(random.uniform(self.world.x_min-self.world.scale, self.world.x_max+self.world.scale));
@@ -124,7 +126,7 @@ class FakeSim:
             
             self.offset_all.append(random.uniform(-2*math.pi, 2*math.pi));
             self.slower.append(random.uniform(self.world.slower_min, self.world.slower_max));
-            self.type.append("static")
+            # self.type.append("static")
             self.meshes.append(random.choice(available_meshes_static));
             self.bboxes.append(bbox_i)
 
@@ -172,9 +174,9 @@ class FakeSim:
             dynamic_trajectory_msg=DynTraj(); 
 
             bbox_i=self.bboxes[i];
-
+            s=self.world.scale;
             if(self.type[i]=="dynamic"):
-              s=self.world.scale;
+
               [x_string, y_string, z_string] = self.trefoil(self.x_all[i], self.y_all[i], self.z_all[i], s,s,s, self.offset_all[i], self.slower[i]) 
               # print("self.bboxes[i]= ", self.bboxes[i])
               dynamic_trajectory_msg.bbox = bbox_i;
@@ -182,11 +184,18 @@ class FakeSim:
               marker_dynamic.scale.y=bbox_i[1]
               marker_dynamic.scale.z=bbox_i[2]
             else:
-              [x_string, y_string, z_string] = self.static(self.x_all[i], self.y_all[i], self.z_all[i]);
+              # [x_string, y_string, z_string] = self.static(self.x_all[i], self.y_all[i], self.z_all[i]);
               dynamic_trajectory_msg.bbox = bbox_i;
               marker_static.scale.x=bbox_i[0]
               marker_static.scale.y=bbox_i[1]
               marker_static.scale.z=bbox_i[2]
+              if(self.type[i]=="static_vert"):
+                [x_string, y_string, z_string] = self.wave_in_z(self.x_all[i], self.y_all[i], self.z_all[i], s, self.offset_all[i], 1.0)
+              else:
+                [x_string, y_string, z_string] = self.wave_in_z(self.x_all[i], self.y_all[i], self.z_all[i], s, self.offset_all[i], 1.0)
+
+
+
 
             x = eval(x_string)
             y = eval(y_string)
@@ -249,7 +258,7 @@ class FakeSim:
                 marker_array_dynamic_mesh.markers.append(marker);
 
 
-            if(self.type[i]=="static"):
+            if(self.type[i]=="static_vert" or self.type[i]=="static_horiz"):
 
                 marker.scale.x=bbox_i[0];
                 marker.scale.y=bbox_i[1];
@@ -265,12 +274,12 @@ class FakeSim:
         self.pubShapes_dynamic.publish(marker_dynamic)
 
 
-        if(self.already_published_static_shapes==False):
+        # if(self.already_published_static_shapes==False):
 
-            self.pubShapes_static_mesh.publish(marker_array_static_mesh)
-            self.pubShapes_static.publish(marker_static)
+        self.pubShapes_static_mesh.publish(marker_array_static_mesh)
+        self.pubShapes_static.publish(marker_static)
 
-            self.already_published_static_shapes=True;
+        # self.already_published_static_shapes=True;
 
 
 
@@ -290,6 +299,16 @@ class FakeSim:
         # x_string='sin('+tt +str(offset)+')';
         # y_string='cos('+tt +str(offset)+')';
         # z_string='1'
+
+        return [x_string, y_string, z_string]
+
+    def wave_in_z(self,x,y,z,scale, offset, slower):
+
+        tt='t/' + str(slower)+'+';
+
+        x_string=str(x);
+        y_string=str(y)
+        z_string=str(scale)+'*(-sin( '+tt +str(offset)+'))' + '+' + str(z);                     
 
         return [x_string, y_string, z_string]
 

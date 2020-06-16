@@ -647,20 +647,23 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
       //           << constraint_yL << " --> " << constraint_yU << " || " << constraint_zL << " --> " << constraint_zU
       //           << reset << std::endl;
 
-      double mean_x = (constraint_xL + constraint_xU) / 2.0;
-      double dist_x = fabs(mean_x - constraint_xL);
-      constraint_xL = mean_x - alpha_shrink_ * dist_x;
-      constraint_xU = mean_x + alpha_shrink_ * dist_x;
+      if (basis_ == MINVO)
+      {
+        double mean_x = (constraint_xL + constraint_xU) / 2.0;
+        double dist_x = fabs(mean_x - constraint_xL);
+        constraint_xL = mean_x - alpha_shrink_ * dist_x;
+        constraint_xU = mean_x + alpha_shrink_ * dist_x;
 
-      double mean_y = (constraint_yL + constraint_yU) / 2.0;
-      double dist_y = fabs(mean_y - constraint_yL);
-      constraint_yL = mean_y - alpha_shrink_ * dist_y;
-      constraint_yU = mean_y + alpha_shrink_ * dist_y;
+        double mean_y = (constraint_yL + constraint_yU) / 2.0;
+        double dist_y = fabs(mean_y - constraint_yL);
+        constraint_yL = mean_y - alpha_shrink_ * dist_y;
+        constraint_yU = mean_y + alpha_shrink_ * dist_y;
 
-      double mean_z = (constraint_zL + constraint_zU) / 2.0;
-      double dist_z = fabs(mean_z - constraint_zL);
-      constraint_zL = mean_z - alpha_shrink_ * dist_z;
-      constraint_zU = mean_z + alpha_shrink_ * dist_z;
+        double mean_z = (constraint_zL + constraint_zU) / 2.0;
+        double dist_z = fabs(mean_z - constraint_zL);
+        constraint_zL = mean_z - alpha_shrink_ * dist_z;
+        constraint_zU = mean_z + alpha_shrink_ * dist_z;
+      }
 
       // std::cout << green << "CvxgenApproach after: " << constraint_xL << " --> " << constraint_xU << " || "
       //           << constraint_yL << " --> " << constraint_yU << " || " << constraint_zL << " --> " << constraint_zU

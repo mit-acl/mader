@@ -94,7 +94,7 @@ res_plot_traj: 6.0  #Higher --> More resolution when plotting the trajectory
 
 factor_v_max: 1.0 #\in [0,1]. Used to find the total duration of a given trajectory.
 
-alpha_shrink: 0.9 #\in [0,1] Only used for MINVO/Bezier
+alpha_shrink: 0.95 #\in [0,1] Only used for MINVO/Bezier
 
 beta: 1.0 #[-] >=1 Parameter modelling the uncertainty of the current position of the obstacles
 gamma: 0.0 #[-] >=0 Parameter modelling the uncertainty of the future trajectory of the obstacles
