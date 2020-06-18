@@ -54,14 +54,14 @@ SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol, double alp
   {
     // std::cout << green << bold << "A* is using MINVO" << reset << std::endl;
     M_pos_bs2basis_ = basis_converter.getMinvoPosConverters(num_pol);
-    M_vel_bs2basis_ = basis_converter.getMinvoVelConverters(num_pol);
+    M_vel_bs2basis_ = basis_converter.getBSplineVelConverters(num_pol);  // getMinvoVelConverters TODO!!
     basis_ = MINVO;
   }
   else if (basis == "BEZIER")
   {
     // std::cout << green << bold << "A* is using BEZIER" << reset << std::endl;
     M_pos_bs2basis_ = basis_converter.getBezierPosConverters(num_pol);
-    M_vel_bs2basis_ = basis_converter.getBezierVelConverters(num_pol);
+    M_vel_bs2basis_ = basis_converter.getBSplineVelConverters(num_pol);  // getBezierVelConverters TODO!!
     basis_ = BEZIER;
   }
   else if (basis == "B_SPLINE")
@@ -1357,7 +1357,7 @@ void SplineAStar::expandAndAddToQueue(Node& current, double constraint_xL, doubl
     // std::endl;
     openList_.push(neighbor);
   }
-  std::cout << green << "pushing" << reset << std::endl;
+  // std::cout << green << "pushing" << reset << std::endl;
 
   // std::cout << "here3, openList_.size()=" << openList_.size() << std::endl;
 
@@ -1585,8 +1585,8 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     // already_exist = false;
     if (collides)
     {
-      std::cout << red << bold << "collides: " << (*current_ptr).qi.transpose() << "(i= " << i << ")" << reset
-                << std::endl;
+      // std::cout << red << bold << "collides: " << (*current_ptr).qi.transpose() << "(i= " << i << ")" << reset
+      //           << std::endl;
       // std::cout << "already_exist= " << already_exist << std::endl;
 
       // Node* tmp = current_ptr;
@@ -1612,8 +1612,9 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     }
     else
     {
-      std::cout << green << bold << "does not collide: " << (*current_ptr).qi.transpose() << "(i= " << i << ")" << reset
-                << std::endl;
+      // std::cout << green << bold << "does not collide: " << (*current_ptr).qi.transpose() << "(i= " << i << ")" <<
+      // reset
+      //           << std::endl;
 
       // std::cout << "pushing, index= " << (*current_ptr).index << std::endl;
       map_open_list_[Eigen::Vector3i(ix, iy, iz)] = true;
