@@ -2,7 +2,7 @@
 	<arg name="quad" default="SQ01s"/>
 	<arg name="gui" default="true"/>
 	<arg name="rviz" default="true"/>
-	
+	<arg name="environment" default="true"/>
 	<!-- Start faster commands 
 	<node ns="$(arg quad)" name="faster_commands" pkg="faster" type="faster_commands.py" output="screen"/>
 	 -->
@@ -25,8 +25,9 @@
 
 </group>
 
+<group if="$(arg environment)">
     <!-- Start dynamic obstacles -->
 	<node name="dynamic_obstacles" pkg="faster" type="dynamic_obstacles.py" output="screen"/>
-	
+</group>s	
 
 </launch>

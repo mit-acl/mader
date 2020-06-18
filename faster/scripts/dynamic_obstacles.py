@@ -32,7 +32,7 @@ from math import sin, cos, tan
 
 
 import copy 
-
+import sys
 
 color_static=ColorRGBA(r=0,g=0,b=1,a=1);
 color_dynamic=ColorRGBA(r=1,g=0,b=0,a=1);
@@ -46,9 +46,10 @@ class MovingCircle:
         self.slower_max= 1.5
 
 class MovingCorridor:
-    def __init__(self):
-        self.num_of_dyn_objects=90;
-        self.num_of_stat_objects=50;
+    def __init__(self, total_num_obs):
+        print(total_num_obs)
+        self.num_of_dyn_objects=total_num_obs #int(0.65*total_num_obs);
+        self.num_of_stat_objects=total_num_obs-self.num_of_dyn_objects; #They are actually dynamic obstacles
         self.x_min= 2.0
         self.x_max= 75.0
         self.y_min= -3.0 
@@ -62,7 +63,7 @@ class MovingCorridor:
         self.scale=1.0;
         self.slower_min=1.1
         self.slower_max= 1.1
-        self.bbox_dynamic=[0.6, 0.6, 0.6]
+        self.bbox_dynamic=[0.8, 0.8, 0.8] #[0.6, 0.6, 0.6]
         self.bbox_static_vert=[0.4, 0.4, 4]
         self.bbox_static_horiz=[0.4, 8, 0.4]
         self.percentage_vert=0.35;
@@ -71,7 +72,7 @@ class MovingCorridor:
 
 class FakeSim:
 
-    def __init__(self):
+    def __init__(self, total_num_obs):
         self.state=State()
 
         self.timer = rospy.Timer(rospy.Duration(0.01), self.pubTF)
@@ -83,7 +84,7 @@ class FakeSim:
         world_type="MovingCorridor"
 
         if(world_type=="MovingCorridor"):
-            self.world=MovingCorridor()
+            self.world=MovingCorridor(total_num_obs)
         if(world_type=="MovingCircle"):
             self.world=MovingCircle()
    
@@ -315,17 +316,28 @@ class FakeSim:
 
              
 
-def startNode():
-    c = FakeSim()
+def startNode(total_num_obs):
+    c = FakeSim(total_num_obs)
 
     rospy.spin()
 
 if __name__ == '__main__':
 
+    # I think I should use https://docs.python.org/3.3/library/argparse.html
+    # print("********************************")
+    # print(sys.argv)
+    # if(len(sys.argv)==1):
+    #     # print("Usage: python dynamic_obstacles.py [Num_of_obstacles]")
+    #     total_num_obs=140; 
+    # else:
+    #     total_num_obs=int(sys.argv[1])
+
+    # print("sys.argv[1]= ", sys.argv[1])
+    total_num_obs=140
     ns = rospy.get_namespace()
     try:
         rospy.init_node('dynamic_obstacles')
-        startNode()
+        startNode(total_num_obs)
     except rospy.ROSInterruptException:
         pass
 
