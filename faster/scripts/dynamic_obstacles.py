@@ -324,16 +324,16 @@ def startNode(total_num_obs):
 if __name__ == '__main__':
 
     # I think I should use https://docs.python.org/3.3/library/argparse.html
-    # print("********************************")
-    # print(sys.argv)
-    # if(len(sys.argv)==1):
-    #     # print("Usage: python dynamic_obstacles.py [Num_of_obstacles]")
-    #     total_num_obs=140; 
-    # else:
-    #     total_num_obs=int(sys.argv[1])
+    print("********************************")
+    print(sys.argv)
+    if(len(sys.argv)<=1):
+        # print("Usage: python dynamic_obstacles.py [Num_of_obstacles]")
+        total_num_obs=140; 
+    else:
+        total_num_obs=int(sys.argv[1])
 
     # print("sys.argv[1]= ", sys.argv[1])
-    total_num_obs=140
+    # total_num_obs=140
     ns = rospy.get_namespace()
     try:
         rospy.init_node('dynamic_obstacles')

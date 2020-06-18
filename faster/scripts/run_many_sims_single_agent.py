@@ -21,7 +21,7 @@ if __name__ == '__main__':
     os.system("sed -i '/basis/s/^/#/g' $(rospack find faster)/param/faster.yaml") #comment basis param
 
     num_of_sims=5;
-    total_num_of_obs=[150, 200, 250, 300, 350] #[340,380,420,460,500]; #140,180,220,260,300
+    total_num_of_obs=[50,100, 150, 200, 250, 300, 350]#[1000]#[50,400,500,600,700]#[150, 200, 250, 300, 350] #[340,380,420,460,500]; #140,180,220,260,300
     commands = []
 
     folder_bags="/home/jtorde/Desktop/ws/src/paper_data/single_agent";
