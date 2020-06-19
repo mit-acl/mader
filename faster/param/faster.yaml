@@ -75,7 +75,7 @@ solver: "LD_MMA"
 # //COBYLA
 # //MMA and SLSQP
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
-upper_bound_runtime_snlopt: 1.0 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
+upper_bound_runtime_snlopt: 0.35 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
 kappa: 0.5 #% of time spent to find initial guess
 mu: 0.15    #% of time spent to solve the optimization
 
