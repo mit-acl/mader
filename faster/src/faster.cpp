@@ -711,6 +711,12 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   mtx_plan_.lock();
 
   k_index_end = std::max((int)(plan_.size() - deltaT_), 0);
+
+  if (plan_.size() < 5)
+  {
+    k_index_end = 0;
+  }
+
   k_index = plan_.size() - 1 - k_index_end;
   A = plan_.get(k_index);
 
@@ -720,6 +726,21 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   // std::cout << blue << "k_index:" << k_index << reset << std::endl;
   // std::cout << blue << "k_index_end:" << k_index_end << reset << std::endl;
   // std::cout << blue << "plan_.size():" << plan_.size() << reset << std::endl;
+
+  double runtime_snlopt;
+
+  if (k_index_end != 0)
+  {
+    runtime_snlopt = k_index * par_.dc;  // std::min(, par_.upper_bound_runtime_snlopt);
+  }
+  else
+  {
+    runtime_snlopt = par_.upper_bound_runtime_snlopt;  // I'm stopped at the end of the trajectory --> take my
+                                                       // time to replan
+  }
+  saturate(runtime_snlopt, par_.lower_bound_runtime_snlopt, par_.upper_bound_runtime_snlopt);
+
+  std::cout << green << "Runtime snlopt= " << runtime_snlopt << reset << std::endl;
 
   /*  if (k_index_end == 0)
     {
@@ -737,8 +758,8 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Get point E ////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
-
-  double ra = std::min((dist_to_goal - 0.001), par_.Ra);  // radius of the sphere S
+  double distA2TermGoal = (A.pos - G_term.pos).norm();
+  double ra = std::min((distA2TermGoal - 0.001), par_.Ra);  // radius of the sphere S
   bool noPointsOutsideS;
   int li1;  // last index inside the sphere of global_plan
   state E;
@@ -767,27 +788,22 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
 
   ////////////////////////////////
 
-  double runtime_snlopt;
-
-  if (k_index != 0)
-  {
-    runtime_snlopt = std::min(k_index * par_.dc, par_.upper_bound_runtime_snlopt);
-  }
-  else
-  {
-    runtime_snlopt = std::min(1.0,
-                              par_.upper_bound_runtime_snlopt);  // I'm stopped at the end of the trajectory --> take my
-                                                                 // time to replan
-  }
-  std::cout << green << "Runtime snlopt= " << runtime_snlopt << reset << std::endl;
   snlopt_->setMaxRuntimeKappaAndMu(runtime_snlopt, par_.kappa, par_.mu);
 
   //////////////////////
   double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
 
   double t_init = k_index * par_.dc + time_now;
+
+  double factor_v_max_tmp = par_.factor_v_max;
+
+  if (distA2TermGoal < 1.5)
+  {
+    factor_v_max_tmp = 0.4;
+  }
+
   double t_final = t_init + (initial.pos - final.pos).array().abs().maxCoeff() /
-                                (par_.factor_v_max * par_.v_max.x());  // time to execute the optimized path
+                                (factor_v_max_tmp * par_.v_max.x());  // time to execute the optimized path
 
   bool correctInitialCond =
       snlopt_->setInitStateFinalStateInitTFinalT(initial, final, t_init,

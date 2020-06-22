@@ -460,6 +460,7 @@ struct parameters
   std::string solver;
 
   double upper_bound_runtime_snlopt;
+  double lower_bound_runtime_snlopt;
   double kappa;
   double mu;
 

@@ -76,6 +76,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "solver", par_.solver);
 
   safeGetParam(nh_, "upper_bound_runtime_snlopt", par_.upper_bound_runtime_snlopt);
+  safeGetParam(nh_, "lower_bound_runtime_snlopt", par_.lower_bound_runtime_snlopt);
   safeGetParam(nh_, "kappa", par_.kappa);
   safeGetParam(nh_, "mu", par_.mu);
 
