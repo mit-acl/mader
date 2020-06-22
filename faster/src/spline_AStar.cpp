@@ -491,7 +491,7 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   double eps = 1e-5;
   auto isNotZero = [&](double a) { return (fabs(a) > eps); };
 
-  if (basis_ != B_SPLINE)  // basis_ != B_SPLINE
+  if (false)  // basis_ != B_SPLINE
   {
     ///////////////////////////
     ///////////////////////////
@@ -771,6 +771,24 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
 
     constraint_zL = std::max(constraint_zL, -v_max_.z());  // lower bound
     constraint_zU = std::min(constraint_zU, v_max_.z());   // upper bound
+
+    if (basis_ == MINVO)
+    {
+      double mean_x = (constraint_xL + constraint_xU) / 2.0;
+      double dist_x = fabs(mean_x - constraint_xL);
+      constraint_xL = mean_x - alpha_shrink_ * dist_x;
+      constraint_xU = mean_x + alpha_shrink_ * dist_x;
+
+      double mean_y = (constraint_yL + constraint_yU) / 2.0;
+      double dist_y = fabs(mean_y - constraint_yL);
+      constraint_yL = mean_y - alpha_shrink_ * dist_y;
+      constraint_yU = mean_y + alpha_shrink_ * dist_y;
+
+      double mean_z = (constraint_zL + constraint_zU) / 2.0;
+      double dist_z = fabs(mean_z - constraint_zL);
+      constraint_zL = mean_z - alpha_shrink_ * dist_z;
+      constraint_zU = mean_z + alpha_shrink_ * dist_z;
+    }
   }
 
   //////////////////////////
