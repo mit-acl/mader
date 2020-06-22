@@ -64,7 +64,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "factor_v_max", par_.factor_v_max);
 
-  safeGetParam(nh_, "alpha", par_.alpha);
+  safeGetParam(nh_, "factor_alpha", par_.factor_alpha);
 
   safeGetParam(nh_, "num_pol", par_.num_pol);
   safeGetParam(nh_, "deg_pol", par_.deg_pol);
@@ -92,6 +92,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "res_plot_traj", par_.res_plot_traj);
 
+  safeGetParam(nh_, "alpha", par_.alpha);
   safeGetParam(nh_, "beta", par_.beta);
   safeGetParam(nh_, "gamma", par_.gamma);
 
@@ -99,15 +100,15 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   std::cout << "Parameters obtained" << std::endl;
 
-  if (par_.beta < 1)
+  if (par_.gamma <= 0)
   {
-    std::cout << bold << red << "beta should be >=1" << std::endl;
+    std::cout << bold << red << "gamma should be >0" << std::endl;
     abort();
   }
 
-  if (par_.gamma < 0)
+  if (par_.beta < 0 || par_.alpha < 0)
   {
-    std::cout << bold << red << "gamma should be >=0" << std::endl;
+    std::cout << bold << red << "par_.beta < 0 || par_.alpha < 0 don't make sense" << std::endl;
     abort();
   }
 

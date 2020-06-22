@@ -448,7 +448,7 @@ struct parameters
   Eigen::Vector3d a_max;
   Eigen::Vector3d j_max;
 
-  double alpha;
+  double factor_alpha;
 
   int num_pol;
   int deg_pol;
@@ -478,9 +478,11 @@ struct parameters
 
   double factor_v_max = 0.6;
 
-  double beta = 1.0;
-  double gamma = 0.0;
   double alpha_shrink = 1.0;
+
+  double alpha = 0.0;
+  double beta = 0.0;
+  double gamma = 0.5;
 };
 
 struct state

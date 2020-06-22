@@ -236,19 +236,27 @@ void Faster::updateTrajObstacles(dynTraj traj)
 // See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
 CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_start, double t_end)
 {
-  int samples_per_interval = std::max(par_.samples_per_interval, 4);  // at least 4 samples per interval
-  double inc = (t_end - t_start) / (1.0 * (samples_per_interval - 1));
+  // int samples_per_interval = std::max(par_.samples_per_interval, 4);  // at least 4 samples per interval
+  // double inc = (t_end - t_start) / (1.0 * (samples_per_interval - 1));
 
   std::vector<Point_3> points;
 
   double side_box_drone = (2 * par_.drone_radius);
 
+  // std::cout << std::setprecision(18) << "t_start= " << t_start << reset << std::endl;
+  // std::cout << std::setprecision(18) << "t_end= " << t_end << reset << std::endl;
   // Will always have a sample at the beginning of the interval, and another at the end.
-  for (int i = 0; i < samples_per_interval; i++)
+  for (double t = t_start;                           /////////////
+       (t < t_end) ||                                /////////////
+       ((t > t_end) && ((t - t_end) < par_.gamma));  /////// This is to ensure we have a sample a the end
+       t = t + par_.gamma)
   {
-    // Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
-    t_ = t_start + i * inc;
+    // t_ = t_start + i * inc;
     // std::cout << "calling value(), traj_compiled.function.size()= " << traj.function.size() << std::endl;
+
+    t_ = std::min(t, t_end);  // this min only has effect on the last sample
+
+    // std::cout << std::setprecision(18) << "taking sample t_= " << t_ << reset << std::endl;
 
     double x = traj.function[0].value();
     double y = traj.function[1].value();
@@ -262,34 +270,23 @@ CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_s
     }
     else
     {
-      if (traj.is_static)
-      {  // static obstacle
-        traj_bbox_with_uncertainty = par_.beta * traj.bbox;
-      }
-      else
-      {  // dynamic obstacle
-        traj_bbox_with_uncertainty =
-            par_.beta * traj.bbox + par_.gamma * (t_end - time_init_opt_) *
-                                        Eigen::Vector3d::Ones();  // note that by using t_end, we are taking the
-                                                                  // highest uncertainty within that interval
-      }
+      traj_bbox_with_uncertainty =
+          traj.bbox + (side_box_drone + 2 * par_.beta + 2 * par_.alpha) * Eigen::Vector3d::Ones();
     }
 
-    double delta_x = (traj_bbox_with_uncertainty(0) / 2.0) + (side_box_drone / 2.0);
-    double delta_y = (traj_bbox_with_uncertainty(1) / 2.0) + (side_box_drone / 2.0);
-    double delta_z = (traj_bbox_with_uncertainty(2) / 2.0) + (side_box_drone / 2.0);
+    Eigen::Vector3d delta = traj_bbox_with_uncertainty / 2.0;
 
     //"Minkowski sum along the trajectory: box centered on the trajectory"
 
-    Point_3 p0(x + delta_x, y + delta_y, z + delta_z);
-    Point_3 p1(x + delta_x, y - delta_y, z - delta_z);
-    Point_3 p2(x + delta_x, y + delta_y, z - delta_z);
-    Point_3 p3(x + delta_x, y - delta_y, z + delta_z);
+    Point_3 p0(x + delta.x(), y + delta.y(), z + delta.z());
+    Point_3 p1(x + delta.x(), y - delta.y(), z - delta.z());
+    Point_3 p2(x + delta.x(), y + delta.y(), z - delta.z());
+    Point_3 p3(x + delta.x(), y - delta.y(), z + delta.z());
 
-    Point_3 p4(x - delta_x, y - delta_y, z - delta_z);
-    Point_3 p5(x - delta_x, y + delta_y, z + delta_z);
-    Point_3 p6(x - delta_x, y + delta_y, z - delta_z);
-    Point_3 p7(x - delta_x, y - delta_y, z + delta_z);
+    Point_3 p4(x - delta.x(), y - delta.y(), z - delta.z());
+    Point_3 p5(x - delta.x(), y + delta.y(), z + delta.z());
+    Point_3 p6(x - delta.x(), y + delta.y(), z - delta.z());
+    Point_3 p7(x - delta.x(), y - delta.y(), z + delta.z());
 
     points.push_back(p0);
     points.push_back(p1);
@@ -747,6 +744,9 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
       exists_previous_pwp_ = false;
     }*/
 
+  std::cout << "Selected state A= " << A.pos.transpose() << std::endl;
+  std::cout << "Selected state G_term= " << G_term.pos.transpose() << std::endl;
+
   /////////////////////////////////////////////////////////////////////////
   ///////////////////////// Get global plan /////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
@@ -773,7 +773,7 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
     E.pos = G.pos;
   }
 
-  int samples_per_interval = par_.samples_per_interval;
+  // int samples_per_interval = par_.samples_per_interval;
 
   state initial = A;
   state final = E;
@@ -848,7 +848,7 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
     int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000));  // Number of states that
                                                                                // would have been needed for
                                                                                // the last replan
-    deltaT_ = std::max(par_.alpha * states_last_replan, 1.0);
+    deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
     deltaT_ = std::min(1.0 * deltaT_, 2.0 / par_.dc);
     return false;
   }
@@ -967,7 +967,7 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000));  // Number of states that
                                                                              // would have been needed for
                                                                              // the last replan
-  deltaT_ = std::max(par_.alpha * states_last_replan, 1.0);
+  deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
   // std::max(par_.alpha * states_last_replan,(double)par_.min_states_deltaT);  // Delta_t
   mtx_offsets.unlock();
 

@@ -48,12 +48,12 @@ j_max: [50.0, 50.0, 50.0]  #[m/s3]
 # j_max: [50.0, 50.0, 50.0]  #[m/s3] 10.0
 
 
-alpha: 1.5 #[-] DeltaT = alpha*States_took_previous_replan
+factor_alpha: 1.5 #[-] DeltaT = factor_alpha*States_took_previous_replan
 
 #Parameters for NLOPT
 num_pol: 4
 deg_pol: 3
-samples_per_interval: 1
+samples_per_interval: 1 #NOT USED!
 weight: 1000.0 #The .0 is needed #10000  #1000000
 epsilon_tol_constraints: 0.000001
 xtol_rel: 0.0000000000001 #negative value --> stopping criterion not used
@@ -73,10 +73,10 @@ solver: "LD_MMA"
 #  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1  //LD_LBFGS_NOCEDAL //
 
 # //COBYLA
-# //MMA and SLSQP
+
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
 upper_bound_runtime_snlopt: 0.35 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
-lower_bound_runtime_snlopt: 0.00 #[seconds] snlopt (init guess + solver) will never take less than this amount of seconds
+lower_bound_runtime_snlopt: 0.01 #[seconds] snlopt (init guess + solver) will never take less than this amount of seconds
 kappa: 0.5 #% of time spent to find initial guess
 mu: 0.15    #% of time spent to solve the optimization
 
@@ -97,7 +97,10 @@ factor_v_max: 1.0 #\in [0,1]. Used to find the total duration of a given traject
 
 alpha_shrink: 0.95 #\in [0,1] Only used for MINVO/Bezier
 
-beta: 1.0 #[-] >=1 Parameter modelling the uncertainty of the current position of the obstacles
-gamma: 0.0 #[-] >=0 Parameter modelling the uncertainty of the future trajectory of the obstacles
+
+alpha: 0.0 #[m] Error in position
+beta: 0.0 #[m] Deviation between the trajectory and the segment between two discretization points
+gamma: 0.1 #[seconds] >0 Time step between discretization points
+
 
 
