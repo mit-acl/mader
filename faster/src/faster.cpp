@@ -797,9 +797,10 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
 
   double factor_v_max_tmp = par_.factor_v_max;
 
-  if (distA2TermGoal < 1.5)
+  // when it's near the terminal goal --> use a small factor_v_max (if not it will oscillate)
+  if (distA2TermGoal < 1.5)  // TODO: Put this as a param
   {
-    factor_v_max_tmp = 0.4;
+    factor_v_max_tmp = 0.4;  // TODO: Put this as a param
   }
 
   double t_final = t_init + (initial.pos - final.pos).array().abs().maxCoeff() /
