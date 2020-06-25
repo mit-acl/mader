@@ -157,7 +157,6 @@ int main(int argc, char **argv)
   //---> all the trajectories found
   int increm = 6;
   int increm_best = 1;
-  int type = 6;
   double scale = 0.01;
   int j = 0;
 
@@ -165,21 +164,20 @@ int main(int argc, char **argv)
   for (auto traj : all_trajs_found)
   {
     visualization_msgs::MarkerArray marker_array_traj =
-        trajectory2ColoredMarkerArray(traj, type, v_max.maxCoeff(), increm, "traj" + std::to_string(j), scale);
+        trajectory2ColoredMarkerArray(traj, v_max.maxCoeff(), increm, "traj" + std::to_string(j), scale);
     // std::cout << "size of marker_array_traj= " << marker_array_traj.markers.size() << std::endl;
     for (auto marker : marker_array_traj.markers)
     {
       marker_array_all_trajs.markers.push_back(marker);
     }
     j++;
-    type++;
   }
 
   //---> the best trajectory found
   scale = 0.1;
   visualization_msgs::MarkerArray marker_array_best_traj;
-  marker_array_best_traj = trajectory2ColoredMarkerArray(best_traj_found, type, v_max.maxCoeff(), increm_best,
-                                                         "traj" + std::to_string(j), scale);
+  marker_array_best_traj =
+      trajectory2ColoredMarkerArray(best_traj_found, v_max.maxCoeff(), increm_best, "traj" + std::to_string(j), scale);
 
   // Get the edges of the convex hulls and publish them
   faster_types::Edges edges_convex_hulls;

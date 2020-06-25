@@ -23,9 +23,6 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   safeGetParam(nh_, "goal_radius", par_.goal_radius);
   safeGetParam(nh_, "drone_radius", par_.drone_radius);
 
-  safeGetParam(nh_, "N_safe", par_.N_safe);
-  safeGetParam(nh_, "N_whole", par_.N_whole);
-
   safeGetParam(nh_, "Ra", par_.Ra);
 
   safeGetParam(nh_, "w_max", par_.w_max);
@@ -68,7 +65,6 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   safeGetParam(nh_, "num_pol", par_.num_pol);
   safeGetParam(nh_, "deg_pol", par_.deg_pol);
-  safeGetParam(nh_, "samples_per_interval", par_.samples_per_interval);
   safeGetParam(nh_, "weight", par_.weight);
   safeGetParam(nh_, "epsilon_tol_constraints", par_.epsilon_tol_constraints);
   safeGetParam(nh_, "xtol_rel", par_.xtol_rel);
@@ -175,31 +171,22 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
     abort();
   }
 
+  faster_ptr_ = std::unique_ptr<Faster>(new Faster(par_));
+  ROS_INFO("Planner initialized");
+
   // Publishers
   // pub_goal_jackal_ = nh_.advertise<geometry_msgs::Twist>("goal_jackal", 1);
   pub_goal_ = nh_.advertise<snapstack_msgs::QuadGoal>("goal", 1);
-  pub_traj_whole_ = nh_.advertise<nav_msgs::Path>("traj_whole", 1);
-  pub_traj_safe_ = nh_.advertise<nav_msgs::Path>("traj_safe", 1);
   pub_setpoint_ = nh_.advertise<visualization_msgs::Marker>("setpoint", 1);
-
   pub_point_G_ = nh_.advertise<geometry_msgs::PointStamped>("point_G", 1);
   pub_point_G_term_ = nh_.advertise<geometry_msgs::PointStamped>("point_G_term", 1);
-
   pub_point_A_ = nh_.advertise<visualization_msgs::Marker>("point_A", 1);
   pub_actual_traj_ = nh_.advertise<visualization_msgs::Marker>("actual_traj", 1);
-
-  poly_whole_pub_ = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_whole", 1, true);
   poly_safe_pub_ = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_safe", 1, true);
-
   pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
-
-  pub_traj_committed_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_committed_colored", 1);
-  pub_traj_whole_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_whole_colored", 1);
   pub_traj_safe_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
-
-  pub_traj_ = nh_.advertise<faster_msgs::DynTraj>("/trajs", 1, true);  // The last parameter is latched or not
+  pub_traj_ = nh_.advertise<faster_msgs::DynTraj>("/trajs", 1, true);  // The last boolean is latched or not
   pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
-
   pub_fov_ = nh_.advertise<visualization_msgs::Marker>("fov", 1);
   pub_obstacles_ = nh_.advertise<visualization_msgs::Marker>("obstacles", 1);
 
@@ -208,15 +195,12 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   sub_mode_ = nh_.subscribe("mode", 1, &FasterRos::modeCB, this);
   sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);
   sub_traj_ = nh_.subscribe("/trajs", 20, &FasterRos::trajCB, this);  // The number is the queue size
-  // sub_odom_ = nh_.subscribe("odom", 1, &FasterRos::odomCB, this);
 
   // Timers
   pubCBTimer_ = nh_pub_CB_.createTimer(ros::Duration(par_.dc), &FasterRos::pubCB, this);
   replanCBTimer_ = nh_replan_CB_.createTimer(ros::Duration(par_.dc), &FasterRos::replanCB, this);
 
   // For now stop all these subscribers/timers until we receive GO
-  occup_grid_sub_.unsubscribe();
-  unknown_grid_sub_.unsubscribe();
   // sub_state_.shutdown();
   pubCBTimer_.stop();
   replanCBTimer_.stop();
@@ -230,11 +214,7 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   // Markers
   setpoint_ = getMarkerSphere(0.35, ORANGE_TRANS);
-  R_ = getMarkerSphere(0.35, ORANGE_TRANS);
-  I_ = getMarkerSphere(0.35, YELLOW_NORMAL);
   E_ = getMarkerSphere(0.35, RED_NORMAL);
-  M_ = getMarkerSphere(0.35, BLUE_NORMAL);
-  H_ = getMarkerSphere(0.35, GREEN_NORMAL);
   A_ = getMarkerSphere(0.35, RED_NORMAL);
 
   // If you want another thread for the replanCB: replanCBTimer_ = nh_.createTimer(ros::Duration(par_.dc),
@@ -244,41 +224,15 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
 
   name_drone_.erase(std::remove(name_drone_.begin(), name_drone_.end(), '/'), name_drone_.end());  // Remove the slashes
 
-  // name_drone_.erase(0, 2);  // Erase slashes
-
   std::string id = name_drone_;
   id.erase(0, 2);  // Erase SQ or HX i.e. SQ12 --> 12  HX8621 --> 8621
   id_ = std::stoi(id);
 
-  tfListener = new tf2_ros::TransformListener(tf_buffer_);
-  // wait for body transform to be published before initializing
-
-  // COMMENTED TO BE ABLE TO LAUNCH SIMULATIONS WITHOUT GAZEBO
-  /*  ROS_INFO("Waiting for world to camera transform...");
-    while (true)
-    {
-      try
-      {
-        tf_buffer_.lookupTransform(world_name_, name_drone_ + "/camera", ros::Time::now(), ros::Duration(3.0));  //
-        break;
-      }
-      catch (tf2::TransformException& ex)
-      {
-        ROS_WARN("%s", ex.what());
-      }
-    }*/
-  // END OF COMMENTED
   clearMarkerActualTraj();
-
-  faster_ptr_ = std::unique_ptr<Faster>(new Faster(par_));
-
-  ROS_INFO("Planner initialized");
 }
 
 FasterRos::~FasterRos()
 {
-  occup_grid_sub_.unsubscribe();
-  unknown_grid_sub_.unsubscribe();
   sub_state_.shutdown();
   pubCBTimer_.stop();
   replanCBTimer_.stop();
@@ -418,7 +372,19 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 
   tmp.is_agent = msg.is_agent;
 
+  if (msg.is_agent)
+  {
+    tmp.pwp = pwpMsg2Pwp(msg.pwp);
+  }
+
   tmp.time_received = ros::Time::now().toSec();
+
+  // std::cout << bold << on_green << "[F_ROS]tmp.pwp.times.size()=" << tmp.pwp.times.size() << reset << std::endl;
+
+  // for (auto coeff : tmp.pwp.coeff_z)
+  // {
+  //   std::cout << on_blue << "[F_ROS] tmp.pwp.coeff_z.transpose()= " << coeff.transpose() << reset << std::endl;
+  // }
 
   faster_ptr_->updateTrajObstacles(tmp);
 }
@@ -426,19 +392,29 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 // This trajectory is published when the agent arrives at A
 void FasterRos::publishOwnTraj(const PieceWisePol& pwp)
 {
-  std::vector<std::string> s = pieceWisePol2String(pwp);
+  std::vector<std::string> s;  // pieceWisePol2String(pwp); The rest of the agents will use the pwp field, not the
+                               // string
+  s.push_back("");
+  s.push_back("");
+  s.push_back("");
 
   faster_msgs::DynTraj msg;
   msg.function = s;
-  msg.bbox.push_back(2 * sqrt(2) * par_.drone_radius);
-  msg.bbox.push_back(2 * sqrt(2) * par_.drone_radius);
-  msg.bbox.push_back(2 * sqrt(2) * par_.drone_radius);
+  msg.bbox.push_back(2 * par_.drone_radius);
+  msg.bbox.push_back(2 * par_.drone_radius);
+  msg.bbox.push_back(2 * par_.drone_radius);
   msg.pos.x = state_.pos.x();
   msg.pos.y = state_.pos.y();
   msg.pos.z = state_.pos.z();
   msg.id = id_;
 
   msg.is_agent = true;
+
+  std::cout << "calling pwp2PwpMsg" << std::endl;
+  msg.pwp = pwp2PwpMsg(pwp);
+  std::cout << "called pwp2PwpMsg!" << std::endl;
+
+  // std::cout<<"msg.pwp.times[0]= "<<msg.pwp.times[0]
 
   pub_traj_.publish(msg);
 }
@@ -447,12 +423,8 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
 {
   if (ros::ok())
   {
-    vec_Vecf<3> JPS_safe;
-    vec_Vecf<3> JPS_whole;
-
     faster_types::Edges edges_obstacles;
     std::vector<state> X_safe;
-    std::vector<state> X_whole;
 
     std::vector<Hyperplane3D> planes_guesses;
     PieceWisePol pwp;
@@ -467,8 +439,7 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
       visual_tools_->enableBatchPublishing();
 
       pubObstacles(edges_obstacles);
-      pubTraj(X_safe, SAFE_COLORED);
-      pubTraj(X_whole, WHOLE_COLORED);
+      pubTraj(X_safe);
       publishPlanes(planes_guesses);
       publishText();
     }
@@ -533,21 +504,13 @@ void FasterRos::publishPlanes(std::vector<Hyperplane3D>& planes)
   visual_tools_->trigger();
 }
 
-void FasterRos::publishPoly(const vec_E<Polyhedron<3>>& poly, int type)
+void FasterRos::publishPoly(const vec_E<Polyhedron<3>>& poly)
 {
   // std::cout << "Going to publish= " << (poly[0].hyperplanes())[0].n_ << std::endl;
   decomp_ros_msgs::PolyhedronArray poly_msg = DecompROS::polyhedron_array_to_ros(poly);
   poly_msg.header.frame_id = world_name_;
 
-  switch (type)
-  {
-    case SAFE:
-      poly_safe_pub_.publish(poly_msg);
-      break;
-    case WHOLE:
-      poly_whole_pub_.publish(poly_msg);
-      break;
-  }
+  poly_safe_pub_.publish(poly_msg);
 }
 
 void FasterRos::stateCB(const snapstack_msgs::State& msg)
@@ -601,8 +564,6 @@ void FasterRos::modeCB(const faster_msgs::Mode& msg)
 
   if (msg.mode != msg.GO)
   {  // FASTER DOES NOTHING
-    occup_grid_sub_.unsubscribe();
-    unknown_grid_sub_.unsubscribe();
     // sub_state_.shutdown();
     pubCBTimer_.stop();
     replanCBTimer_.stop();
@@ -611,9 +572,6 @@ void FasterRos::modeCB(const faster_msgs::Mode& msg)
   }
   else
   {  // The mode changed to GO (the mode changes to go when takeoff is finished)
-    occup_grid_sub_.subscribe();
-    unknown_grid_sub_.subscribe();
-
     // sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);  // TODO duplicated from above
 
     pubCBTimer_.start();
@@ -680,7 +638,7 @@ void FasterRos::clearMarkerArray(visualization_msgs::MarkerArray* tmp, ros::Publ
   (*tmp).markers.clear();
 }
 
-void FasterRos::pubTraj(const std::vector<state>& data, int type)
+void FasterRos::pubTraj(const std::vector<state>& data)
 {
   // Trajectory
   nav_msgs::Path traj;
@@ -704,45 +662,13 @@ void FasterRos::pubTraj(const std::vector<state>& data, int type)
     traj.poses.push_back(temp_path);
   }
 
-  // std::cout << "here4" << std::endl;
-
-  if (type == WHOLE)
-  {
-    pub_traj_whole_.publish(traj);
-  }
-
-  if (type == SAFE)
-  {
-    pub_traj_safe_.publish(traj);
-  }
-
-  // clearMarkerColoredTraj();
-  clearMarkerArray(&traj_committed_colored_, &pub_traj_committed_colored_);
-  clearMarkerArray(&traj_whole_colored_, &pub_traj_whole_colored_);
+  pub_traj_safe_.publish(traj);
   clearMarkerArray(&traj_safe_colored_, &pub_traj_safe_colored_);
-
-  // std::cout << "here5" << std::endl;
 
   double scale = 0.15;
 
-  if (type == COMMITTED_COLORED)
-  {
-    traj_committed_colored_ =
-        trajectory2ColoredMarkerArray(data, type, par_.v_max.maxCoeff(), increm, name_drone_, scale);
-    pub_traj_committed_colored_.publish(traj_committed_colored_);
-  }
-
-  if (type == WHOLE_COLORED)
-  {
-    traj_whole_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max.maxCoeff(), increm, name_drone_, scale);
-    pub_traj_whole_colored_.publish(traj_whole_colored_);
-  }
-
-  if (type == SAFE_COLORED)
-  {
-    traj_safe_colored_ = trajectory2ColoredMarkerArray(data, type, par_.v_max.maxCoeff(), increm, name_drone_, scale);
-    pub_traj_safe_colored_.publish(traj_safe_colored_);
-  }
+  traj_safe_colored_ = trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale);
+  pub_traj_safe_colored_.publish(traj_safe_colored_);
 }
 
 void FasterRos::pubActualTraj()

@@ -126,15 +126,21 @@ CGAL_Polyhedron_3 convexHullOfPoints(const std::vector<Point_3>& points)
   CGAL::Object ch_object;
 
   // compute convex hull
+  // std::cout << "Computing the convex hull CGAL for these points:" << std::endl;
+  // for (auto points_i : points)
+  // {
+  //   std::cout << points_i.x() << ", " << points_i.y() << ", " << points_i.z() << std::endl;
+  // }
   CGAL::convex_hull_3(points.begin(), points.end(), ch_object);
+  // std::cout << "convexHullCgal Computed!" << std::endl;
 
   // determine what kind of object it is
-  /*  if (CGAL::object_cast<Segment_3>(&ch_object))
-      std::cout << "convex hull is a segment " << std::endl;
-    else if (CGAL::object_cast<CGAL_Polyhedron_3>(&ch_object))
-      std::cout << "convex hull is a polyhedron " << std::endl;
-    else
-      std::cout << "convex hull error!" << std::endl;*/
+  // if (CGAL::object_cast<Segment_3>(&ch_object))
+  //   std::cout << "convex hull is a segment " << std::endl;
+  // else if (CGAL::object_cast<CGAL_Polyhedron_3>(&ch_object))
+  //   std::cout << "convex hull is a polyhedron " << std::endl;
+  // else
+  //   std::cout << "convex hull error!" << std::endl;
 
   CGAL_Polyhedron_3 poly = *CGAL::object_cast<CGAL_Polyhedron_3>(&ch_object);
 

@@ -104,61 +104,100 @@ void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix
   coeff_new(3) = d + c * t0 + b * t0_2 + a * t0_3;
 }
 
-faster_msgs::PieceWisePolTraj pwp2PwpMsg(PieceWisePol pwp, const Eigen::Vector3d& bbox, const int& id,
-                                         const bool& is_agent)
+// faster_msgs::PieceWisePolTraj pwp2PwpMsg(PieceWisePol pwp, const Eigen::Vector3d& bbox, const int& id,
+//                                          const bool& is_agent)
+// {
+//   faster_msgs::PieceWisePolTraj pwp_msg;
+
+//   for (int i = 0; i < pwp.times.size(); i++)
+//   {
+//     pwp_msg.times.push_back(pwp.times[i]);
+//   }
+
+//   if (pwp.coeff_x.size() != pwp.coeff_y.size() || pwp.coeff_x.size() != pwp.coeff_z.size())
+//   {
+//     std::cout << " coeff_x,coeff_y,coeff_z should have the same elements" << std::endl;
+//     std::cout << " ================================" << std::endl;
+//     abort();
+//   }
+
+//   for (int i = 0; i < pwp.coeff_x.size(); i++)
+//   {
+//     faster_msgs::CoeffPoly3 coeff_msg_x;
+//     coeff_msg_x.a = pwp.coeff_x[i](0);
+//     coeff_msg_x.b = pwp.coeff_x[i](1);
+//     coeff_msg_x.c = pwp.coeff_x[i](2);
+//     coeff_msg_x.d = pwp.coeff_x[i](3);
+//     pwp_msg.coeff_x.push_back(coeff_msg_x);
+
+//     faster_msgs::CoeffPoly3 coeff_msg_y;
+//     coeff_msg_y.a = pwp.coeff_y[i](0);
+//     coeff_msg_y.b = pwp.coeff_y[i](1);
+//     coeff_msg_y.c = pwp.coeff_y[i](2);
+//     coeff_msg_y.d = pwp.coeff_y[i](3);
+//     pwp_msg.coeff_y.push_back(coeff_msg_y);
+
+//     faster_msgs::CoeffPoly3 coeff_msg_z;
+//     coeff_msg_z.a = pwp.coeff_z[i](0);
+//     coeff_msg_z.b = pwp.coeff_z[i](1);
+//     coeff_msg_z.c = pwp.coeff_z[i](2);
+//     coeff_msg_z.d = pwp.coeff_z[i](3);
+//     pwp_msg.coeff_z.push_back(coeff_msg_z);
+//   }
+
+//   return pwp_msg;
+// }
+
+faster_msgs::PieceWisePolTraj pwp2PwpMsg(const PieceWisePol& pwp)
 {
   faster_msgs::PieceWisePolTraj pwp_msg;
 
   for (int i = 0; i < pwp.times.size(); i++)
   {
+    std::cout << termcolor::red << "in pwp2PwpMsg, pushing back" << std::setprecision(20) << pwp.times[i]
+              << termcolor::reset << std::endl;
     pwp_msg.times.push_back(pwp.times[i]);
   }
 
-  if (pwp.coeff_x.size() != pwp.coeff_y.size() || pwp.coeff_x.size() != pwp.coeff_z.size())
+  // push x
+  for (auto coeff_x_i : pwp.coeff_x)
   {
-    std::cout << " coeff_x,coeff_y,coeff_z should have the same elements" << std::endl;
-    std::cout << " ================================" << std::endl;
-    abort();
+    faster_msgs::CoeffPoly3 coeff_poly3;
+    coeff_poly3.a = coeff_x_i(0);
+    coeff_poly3.b = coeff_x_i(1);
+    coeff_poly3.c = coeff_x_i(2);
+    coeff_poly3.d = coeff_x_i(3);
+    pwp_msg.coeff_x.push_back(coeff_poly3);
   }
 
-  for (int i = 0; i < pwp.coeff_x.size(); i++)
+  // push y
+  for (auto coeff_y_i : pwp.coeff_y)
   {
-    faster_msgs::CoeffPoly3 coeff_msg_x;
-    coeff_msg_x.a = pwp.coeff_x[i](0);
-    coeff_msg_x.b = pwp.coeff_x[i](1);
-    coeff_msg_x.c = pwp.coeff_x[i](2);
-    coeff_msg_x.d = pwp.coeff_x[i](3);
-    pwp_msg.coeff_x.push_back(coeff_msg_x);
-
-    faster_msgs::CoeffPoly3 coeff_msg_y;
-    coeff_msg_y.a = pwp.coeff_y[i](0);
-    coeff_msg_y.b = pwp.coeff_y[i](1);
-    coeff_msg_y.c = pwp.coeff_y[i](2);
-    coeff_msg_y.d = pwp.coeff_y[i](3);
-    pwp_msg.coeff_y.push_back(coeff_msg_y);
-
-    faster_msgs::CoeffPoly3 coeff_msg_z;
-    coeff_msg_z.a = pwp.coeff_z[i](0);
-    coeff_msg_z.b = pwp.coeff_z[i](1);
-    coeff_msg_z.c = pwp.coeff_z[i](2);
-    coeff_msg_z.d = pwp.coeff_z[i](3);
-    pwp_msg.coeff_z.push_back(coeff_msg_z);
+    faster_msgs::CoeffPoly3 coeff_poly3;
+    coeff_poly3.a = coeff_y_i(0);
+    coeff_poly3.b = coeff_y_i(1);
+    coeff_poly3.c = coeff_y_i(2);
+    coeff_poly3.d = coeff_y_i(3);
+    pwp_msg.coeff_y.push_back(coeff_poly3);
   }
 
-  for (int i = 0; i < bbox.rows(); i++)
+  // push z
+  for (auto coeff_z_i : pwp.coeff_z)
   {
-    pwp_msg.bbox.push_back(bbox(i));
+    faster_msgs::CoeffPoly3 coeff_poly3;
+    coeff_poly3.a = coeff_z_i(0);
+    coeff_poly3.b = coeff_z_i(1);
+    coeff_poly3.c = coeff_z_i(2);
+    coeff_poly3.d = coeff_z_i(3);
+    pwp_msg.coeff_z.push_back(coeff_poly3);
   }
-
-  pwp_msg.id = id;
-  pwp_msg.is_agent = is_agent;
 
   return pwp_msg;
 }
 
-PieceWisePolWithInfo pwpMsg2PwpWithInfo(const faster_msgs::PieceWisePolTraj& pwp_msg)
+PieceWisePol pwpMsg2Pwp(const faster_msgs::PieceWisePolTraj& pwp_msg)
 {
-  PieceWisePolWithInfo pwp_with_info;
+  PieceWisePol pwp;
 
   if (pwp_msg.coeff_x.size() != pwp_msg.coeff_y.size() || pwp_msg.coeff_x.size() != pwp_msg.coeff_z.size())
   {
@@ -169,29 +208,65 @@ PieceWisePolWithInfo pwpMsg2PwpWithInfo(const faster_msgs::PieceWisePolTraj& pwp
 
   for (int i = 0; i < pwp_msg.times.size(); i++)
   {
-    pwp_with_info.pwp.times.push_back(pwp_msg.times[i]);
+    pwp.times.push_back(pwp_msg.times[i]);
   }
 
   for (int i = 0; i < pwp_msg.coeff_x.size(); i++)
   {
     Eigen::Matrix<double, 4, 1> tmp_x, tmp_y, tmp_z;
+
+    // std::cout << termcolor::on_blue << "pwpMsg2Pwp: " << pwp_msg.coeff_z[i].a << ", " << pwp_msg.coeff_z[i].b << ", "
+    //           << pwp_msg.coeff_z[i].c << ", " << pwp_msg.coeff_z[i].d << termcolor::reset << std::endl;
+
     tmp_x << pwp_msg.coeff_x[i].a, pwp_msg.coeff_x[i].b, pwp_msg.coeff_x[i].c, pwp_msg.coeff_x[i].d;
-    pwp_with_info.pwp.coeff_x.push_back(tmp_x);
+    pwp.coeff_x.push_back(tmp_x);
 
     tmp_y << pwp_msg.coeff_y[i].a, pwp_msg.coeff_y[i].b, pwp_msg.coeff_y[i].c, pwp_msg.coeff_y[i].d;
-    pwp_with_info.pwp.coeff_y.push_back(tmp_y);
+    pwp.coeff_y.push_back(tmp_y);
 
     tmp_z << pwp_msg.coeff_z[i].a, pwp_msg.coeff_z[i].b, pwp_msg.coeff_z[i].c, pwp_msg.coeff_z[i].d;
-    pwp_with_info.pwp.coeff_z.push_back(tmp_z);
+    pwp.coeff_z.push_back(tmp_z);
   }
 
-  pwp_with_info.bbox = Eigen::Vector3d(pwp_msg.bbox[0], pwp_msg.bbox[1], pwp_msg.bbox[2]);
-  pwp_with_info.time_received = ros::Time::now().toSec();
-  pwp_with_info.id = pwp_msg.id;
-  pwp_with_info.is_agent = pwp_msg.is_agent;
-
-  return pwp_with_info;
+  return pwp;
 }
+
+// PieceWisePolWithInfo pwpMsg2PwpWithInfo(const faster_msgs::PieceWisePolTraj& pwp_msg)
+// {
+//   PieceWisePolWithInfo pwp_with_info;
+
+//   if (pwp_msg.coeff_x.size() != pwp_msg.coeff_y.size() || pwp_msg.coeff_x.size() != pwp_msg.coeff_z.size())
+//   {
+//     std::cout << " coeff_x,coeff_y,coeff_z of pwp_msg should have the same elements" << std::endl;
+//     std::cout << " ================================" << std::endl;
+//     abort();
+//   }
+
+//   for (int i = 0; i < pwp_msg.times.size(); i++)
+//   {
+//     pwp_with_info.pwp.times.push_back(pwp_msg.times[i]);
+//   }
+
+//   for (int i = 0; i < pwp_msg.coeff_x.size(); i++)
+//   {
+//     Eigen::Matrix<double, 4, 1> tmp_x, tmp_y, tmp_z;
+//     tmp_x << pwp_msg.coeff_x[i].a, pwp_msg.coeff_x[i].b, pwp_msg.coeff_x[i].c, pwp_msg.coeff_x[i].d;
+//     pwp_with_info.pwp.coeff_x.push_back(tmp_x);
+
+//     tmp_y << pwp_msg.coeff_y[i].a, pwp_msg.coeff_y[i].b, pwp_msg.coeff_y[i].c, pwp_msg.coeff_y[i].d;
+//     pwp_with_info.pwp.coeff_y.push_back(tmp_y);
+
+//     tmp_z << pwp_msg.coeff_z[i].a, pwp_msg.coeff_z[i].b, pwp_msg.coeff_z[i].c, pwp_msg.coeff_z[i].d;
+//     pwp_with_info.pwp.coeff_z.push_back(tmp_z);
+//   }
+
+//   pwp_with_info.bbox = Eigen::Vector3d(pwp_msg.bbox[0], pwp_msg.bbox[1], pwp_msg.bbox[2]);
+//   pwp_with_info.time_received = ros::Time::now().toSec();
+//   pwp_with_info.id = pwp_msg.id;
+//   pwp_with_info.is_agent = pwp_msg.is_agent;
+
+//   return pwp_with_info;
+// }
 
 visualization_msgs::Marker edges2Marker(const faster_types::Edges& edges, std_msgs::ColorRGBA color_marker)
 {
@@ -641,6 +716,22 @@ void saturate(Eigen::Vector3d& tmp, const Eigen::Vector3d& min, const Eigen::Vec
   saturate(tmp(2), min(2), max(2));
 }
 
+void saturate(int& var, const int min, const int max)
+{
+  // std::cout << "min=" << min << " max=" << max << std::endl;
+  if (var < min)
+  {
+    // std::cout << "Saturating to min" << var << std::endl;
+    var = min;
+  }
+  else if (var > max)
+  {
+    // std::cout << "Saturating to max" << var << std::endl;
+    var = max;
+  }
+  // std::cout << "Value saturated" << var << std::endl;
+}
+
 void saturate(double& var, const double min, const double max)
 {
   // std::cout << "min=" << min << " max=" << max << std::endl;
@@ -912,8 +1003,8 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
   return intersection;
 }
 
-visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& data, int type, double max_value,
-                                                              int increm, std::string ns, double scale)
+visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& data, double max_value, int increm,
+                                                              std::string ns, double scale)
 {
   visualization_msgs::MarkerArray marker_array;
 
@@ -928,7 +1019,7 @@ visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& 
 
   increm = (increm < 1.0) ? 1 : increm;
 
-  int j = type * 9000;
+  int j = 9000;
   for (int i = 0; i < data.size(); i = i + increm)
   {
     double vel = data[i].vel.norm();

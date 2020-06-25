@@ -1,50 +1,28 @@
 #pragma once
 
-//#include "geometry_msgs/PointStamped.h"
+#include <Eigen/Dense>
+
 #include <geometry_msgs/PoseStamped.h>
-//#include "geometry_msgs/Twist.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/buffer.h>
-#include <sensor_msgs/PointCloud2.h>
-// TimeSynchronizer includes
-#include <message_filters/subscriber.h>
-#include <message_filters/synchronizer.h>
-#include <message_filters/sync_policies/exact_time.h>
-#include <message_filters/sync_policies/approximate_time.h>
 #include <rviz_visual_tools/rviz_visual_tools.h>
-
-#include <Eigen/Dense>
-
-//#include <snapstack_msgs/Cvx.h>
 #include <snapstack_msgs/State.h>
 #include <snapstack_msgs/QuadGoal.h>
-//#include <nav_msgs/Odometry.h>
+
 #include <faster_msgs/Mode.h>
 #include <faster_msgs/DynTraj.h>
 
 #include "utils.hpp"
-
 #include "faster.hpp"
 #include "faster_types.hpp"
 
-#define WHOLE 1  // Whole trajectory (part of which is planned on unkonwn space)
-#define SAFE 2   // Safe path
-#define COMMITTED_COLORED 3
-#define WHOLE_COLORED 4
-#define SAFE_COLORED 5
-
-#define JPSk_NORMAL 1
-#define JPS2_NORMAL 2
-#define JPS_WHOLE 3
-#define JPS_SAFE 4
+// #define WHOLE 1  // Whole trajectory (part of which is planned on unkonwn space)
+// #define SAFE 2   // Safe path
 
 namespace rvt = rviz_visual_tools;
 
-//####Class CVX
 class FasterRos
 {
 public:
@@ -55,21 +33,18 @@ private:
   std::unique_ptr<Faster> faster_ptr_;
 
   void publishOwnTraj(const PieceWisePol& pwp);
-
   void publishPlanes(std::vector<Hyperplane3D>& planes);
 
   // class methods
-  void pubTraj(const std::vector<state>& data, int type);
+  void pubTraj(const std::vector<state>& data);
   void terminalGoalCB(const geometry_msgs::PoseStamped& msg);
   void pubState(const state& msg, const ros::Publisher pub);
   void stateCB(const snapstack_msgs::State& msg);
-  // void odomCB(const nav_msgs::Odometry& odom_ptr);
   void modeCB(const faster_msgs::Mode& msg);
   void pubCB(const ros::TimerEvent& e);
   void replanCB(const ros::TimerEvent& e);
   void trajCB(const faster_msgs::DynTraj& msg);
 
-  visualization_msgs::Marker createMarkerLineStrip(Eigen::MatrixXd X);
   // void clearMarkerSetOfArrows();
   void clearMarkerActualTraj();
   void clearMarkerColoredTraj();
@@ -78,34 +53,9 @@ private:
   visualization_msgs::MarkerArray clearArrows();
   // geometry_msgs::Vector3 vectorNull();
 
-  // double solveVelAndGetCost(vec_Vecf<3> path);
-  void updateInitialCond(int i);
-  // void pubPlanningVisual(Eigen::Vector3d center, double ra, double rb, Eigen::Vector3d B1, Eigen::Vector3d C1);
-  // void pubintersecPoint(Eigen::Vector3d p, bool add);
-  void yaw(double diff, snapstack_msgs::QuadGoal& quad_goal);
-
   void clearMarkerArray(visualization_msgs::MarkerArray* tmp, ros::Publisher* publisher);
-  void publishJPSPath(vec_Vecf<3>& path, int i);
-  void clearJPSPathVisualization(int i);
 
-  // void pubG(state G);
-
-  void pubJPSIntersection(Eigen::Vector3d& inters);
-  Eigen::Vector3d getFirstCollisionJPS(vec_Vecf<3>& path, bool* thereIsIntersection, int map = MAP,
-                                       int type_return = RETURN_LAST_VERTEX);
-  Eigen::Vector3d projectClickedGoal(Eigen::Vector3d& P1);
-
-  void publishJPS2handIntersection(vec_Vecf<3> JPS2_fix, Eigen::Vector3d& inter1, Eigen::Vector3d& inter2,
-                                   bool solvedFix);
-
-  void createMoreVertexes(vec_Vecf<3>& path, double d);
-
-  bool ARisInFreeSpace(int index);
-
-  int findIndexR(int indexH);
-  int findIndexH(bool& needToComputeSafePath);
-
-  void publishPoly(const vec_E<Polyhedron<3>>& poly, int type);
+  void publishPoly(const vec_E<Polyhedron<3>>& poly);
   // visualization_msgs::MarkerArray Matrix2ColoredMarkerArray(Eigen::MatrixXd& X, int type);
 
   void publishText();
@@ -114,18 +64,13 @@ private:
 
   void pubObstacles(faster_types::Edges edges_obstacles);
 
-  // std::vector<dynTraj> trajs_;
   state state_;
 
   std::string world_name_ = "world";
 
   rvt::RvizVisualToolsPtr visual_tools_;
 
-  visualization_msgs::Marker R_;
-  visualization_msgs::Marker I_;
   visualization_msgs::Marker E_;
-  visualization_msgs::Marker M_;
-  visualization_msgs::Marker H_;
   visualization_msgs::Marker A_;
   visualization_msgs::Marker setpoint_;
 
@@ -133,78 +78,42 @@ private:
   ros::NodeHandle nh_replan_CB_;
   ros::NodeHandle nh_pub_CB_;
 
-  ros::Publisher pub_goal_jackal_;
   ros::Publisher pub_point_G_;
   ros::Publisher pub_point_G_term_;
   ros::Publisher pub_goal_;
-  ros::Publisher pub_traj_whole_;
   ros::Publisher pub_traj_safe_;
   ros::Publisher pub_setpoint_;
   ros::Publisher pub_actual_traj_;
 
   ros::Publisher pub_point_A_;
-  ros::Publisher pub_traj_committed_colored_;
-  ros::Publisher pub_traj_whole_colored_;
+
   ros::Publisher pub_traj_safe_colored_;
 
   ros::Publisher pub_text_;
   ros::Publisher pub_traj_;
 
-  ros::Publisher pub_planning_vis_;
-  ros::Publisher pub_intersec_points_;
-
-  ros::Publisher pub_samples_safe_path_;
-  ros::Publisher pub_log_;
-  ros::Publisher poly_whole_pub_;
   ros::Publisher poly_safe_pub_;
 
   ros::Publisher pub_fov_;
   ros::Publisher pub_obstacles_;
 
-  // ros::Publisher cvx_decomp_poly_uo_pub_;
   ros::Subscriber sub_goal_;
-  ros::Subscriber sub_state_;
-  ros::Subscriber sub_odom_;
   ros::Subscriber sub_mode_;
-  ros::Subscriber sub_vicon_;
+  ros::Subscriber sub_state_;
   ros::Subscriber sub_traj_;
 
-  // Eigen::Vector3d accel_vicon_;
-
-  ros::Subscriber sub_frontier_;
   ros::Timer pubCBTimer_;
   ros::Timer replanCBTimer_;
 
   parameters par_;  // where all the parameters are
-  // snapstack_msgs::Cvx log_;  // to log all the data
-  tf2_ros::Buffer tf_buffer_;
-  tf2_ros::TransformListener* tfListener;
+
   std::string name_drone_;
 
   std::vector<std::string> traj_;  // trajectory of the dynamic obstacle
 
-  visualization_msgs::MarkerArray trajs_sphere_;  // all the trajectories generated in the sphere
-  visualization_msgs::MarkerArray path_jps1_;
-  visualization_msgs::MarkerArray path_jps2_;
-  visualization_msgs::MarkerArray path_jps2_fix_;
-  visualization_msgs::MarkerArray path_jps_safe_;
-  visualization_msgs::MarkerArray path_jps_whole_;
-  visualization_msgs::MarkerArray traj_committed_colored_;
-  visualization_msgs::MarkerArray traj_whole_colored_;
   visualization_msgs::MarkerArray traj_safe_colored_;
 
-  visualization_msgs::MarkerArray intersec_points_;
-  visualization_msgs::MarkerArray samples_safe_path_;
-
-  message_filters::Subscriber<sensor_msgs::PointCloud2> occup_grid_sub_;
-  message_filters::Subscriber<sensor_msgs::PointCloud2> unknown_grid_sub_;
-  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, sensor_msgs::PointCloud2>
-      MySyncPolicy;
-  typedef message_filters::Synchronizer<MySyncPolicy> Sync;
-  boost::shared_ptr<Sync> sync_;
-
   int actual_trajID_ = 0;
-  // faster_msgs::Mode mode_;
 
   int num_of_LPs_run_ = 0;
   int num_of_QCQPs_run_ = 0;

@@ -62,10 +62,13 @@ visualization_msgs::MarkerArray pwp2ColoredMarkerArray(PieceWisePol& pwp, double
 void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix<double, 4, 1>& coeff_new, double t0,
                      double tf);
 
-faster_msgs::PieceWisePolTraj pwp2PwpMsg(PieceWisePol pwp, const Eigen::Vector3d& bbox, const int& id,
-                                         const bool& is_agent);
+// faster_msgs::PieceWisePolTraj pwp2PwpMsg(PieceWisePol pwp, const Eigen::Vector3d& bbox, const int& id,
+//                                          const bool& is_agent);
 
-PieceWisePolWithInfo pwpMsg2PwpWithInfo(const faster_msgs::PieceWisePolTraj& pwp_msg);
+// PieceWisePolWithInfo pwpMsg2PwpWithInfo(const faster_msgs::PieceWisePolTraj& pwp_msg);
+
+PieceWisePol pwpMsg2Pwp(const faster_msgs::PieceWisePolTraj& pwp_msg);
+faster_msgs::PieceWisePolTraj pwp2PwpMsg(const PieceWisePol& pwp);
 
 visualization_msgs::Marker edges2Marker(const faster_types::Edges& edges, std_msgs::ColorRGBA color_marker);
 
@@ -91,6 +94,8 @@ void quaternion2Euler(tf2::Quaternion q, double& roll, double& pitch, double& ya
 void quaternion2Euler(Eigen::Quaterniond q, double& roll, double& pitch, double& yaw);
 
 void quaternion2Euler(geometry_msgs::Quaternion q, double& roll, double& pitch, double& yaw);
+
+void saturate(int& var, const int min, const int max);
 
 void saturate(double& var, const double min, const double max);
 
@@ -158,7 +163,7 @@ std::ostream& operator<<(std::ostream& out, const std::vector<T>& v)
   return out;
 }
 
-visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& data, int type, double max_value,
-                                                              int increm, std::string ns, double scale);
+visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& data, double max_value, int increm,
+                                                              std::string ns, double scale);
 
 #endif

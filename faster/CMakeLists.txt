@@ -89,42 +89,34 @@ target_include_directories (cgal_utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(cgal_utils PUBLIC ${DECOMP_UTIL_LIBRARIES} ${catkin_LIBRARIES})
 
 add_library(utils STATIC src/utils.cpp src/utils.hpp)
-#set_property(TARGET utils PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-#target_precompile_headers(utils PUBLIC src/utils.hpp)
 target_link_libraries(utils PUBLIC ${catkin_LIBRARIES})
 
 add_library(spline_AStar STATIC src/spline_AStar.cpp src/solvers/cvxgen/solver_cvxgen.cpp)
 target_include_directories (spline_AStar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-# add_dependencies(spline_AStar cvxgen_is_compiled)
 target_link_libraries(spline_AStar PUBLIC ${catkin_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so)
 
 
 add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp src/bspline_utils.cpp src/solvers/nlopt/nlopt_utils.cpp )
-#set_property(TARGET solverNlopt PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
-#target_precompile_headers(utils PUBLIC src/solvers/nlopt/solverNlopt.hpp)
 target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
 target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils spline_AStar ${catkin_LIBRARIES} cgal_utils)
 
 
-
-add_library(faster STATIC src/faster.cpp src/faster.hpp)
-#set_property(TARGET faster PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
-target_include_directories (faster PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(faster PUBLIC utils ${CGAL_LIBS} solverNlopt)
-
-
-add_library(faster_ros STATIC src/faster_ros.cpp src/faster_ros.hpp)
-#set_property(TARGET faster_ros PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
-target_include_directories (faster_ros PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(faster_ros PUBLIC ${catkin_LIBRARIES} faster)
+# add_library(faster STATIC src/faster.cpp src/faster.hpp)
+# #set_property(TARGET faster PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+# target_include_directories (faster PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# target_link_libraries(faster PUBLIC utils ${CGAL_LIBS} solverNlopt)
 
 
-enable_unity_build(UNITY_BUILD_NAME src/main.cpp)
+# add_library(faster_ros STATIC src/faster_ros.cpp src/faster_ros.hpp src/faster.cpp src/faster.hpp)
+# target_include_directories (faster_ros PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# target_link_libraries(faster_ros PUBLIC ${catkin_LIBRARIES}  solverNlopt utils)
 
-add_executable(${PROJECT_NAME}_node src/main.cpp)
 
-target_link_libraries(${PROJECT_NAME}_node PUBLIC faster_ros)
+# enable_unity_build(UNITY_BUILD_NAME src/main.cpp)
+
+add_executable(${PROJECT_NAME}_node src/main.cpp src/faster_ros.cpp src/faster_ros.hpp src/faster.cpp src/faster.hpp)
+target_link_libraries(${PROJECT_NAME}_node PUBLIC ${catkin_LIBRARIES}  solverNlopt utils)  #${CGAL_LIBS}
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
 add_executable(astar_example src/testSplineAStar.cpp src/spline_AStar.cpp src/bspline_utils.cpp src/solvers/cvxgen/solver_cvxgen.cpp)
@@ -140,16 +132,16 @@ add_executable(test_bspline_utils src/test_bspline_utils.cpp src/bspline_utils.c
 add_dependencies(test_bspline_utils ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_bspline_utils ${catkin_LIBRARIES})
 
-add_executable(predictor_node src/predictor_node.cpp src/predictor.cpp src/bspline_utils.cpp)
-add_dependencies(predictor_node ${catkin_EXPORTED_TARGETS})
-target_link_libraries(predictor_node ${catkin_LIBRARIES} utils)
+# add_executable(predictor_node src/predictor_node.cpp src/predictor.cpp src/bspline_utils.cpp)
+# add_dependencies(predictor_node ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(predictor_node ${catkin_LIBRARIES} utils)
 
 
-add_executable(test_predictor_node src/test_predictor.cpp src/predictor.cpp src/bspline_utils.cpp)
-add_dependencies(test_predictor_node ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_predictor_node ${catkin_LIBRARIES} utils)
+# add_executable(test_predictor_node src/test_predictor.cpp src/predictor.cpp src/bspline_utils.cpp)
+# add_dependencies(test_predictor_node ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(test_predictor_node ${catkin_LIBRARIES} utils)
 
 
-add_executable(test_cvxgen src/solvers/cvxgen/test_cvxgen.cpp src/solvers/cvxgen/solver_cvxgen.cpp)
-add_dependencies(test_cvxgen ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_cvxgen ${catkin_LIBRARIES} ${catkin_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so)
+# add_executable(test_cvxgen src/solvers/cvxgen/test_cvxgen.cpp src/solvers/cvxgen/solver_cvxgen.cpp)
+# add_dependencies(test_cvxgen ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(test_cvxgen ${catkin_LIBRARIES} ${catkin_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so)

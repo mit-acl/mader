@@ -1,3 +1,97 @@
+
+// int samples_per_traj = 100;
+// double inc = (t_end - t_init) / samples_per_traj;
+// for (int i = 0; i < samples_per_traj; i++)
+// {
+//   t_ = t_init + i * inc;
+
+//   Eigen::Vector3d pos_1;
+//   pos_1 << traj.function[0].value(),  ////////////////////
+//       traj.function[1].value(),       ////////////////
+//       traj.function[2].value();       /////////////////
+
+//   Eigen::Vector3d pos_2 = pwp_optimized.eval(t_);
+
+//   double side_box_drone = (2 * par_.drone_radius);
+
+//   Eigen::Vector3d positive_half_diagonal1;
+//   positive_half_diagonal1 << traj.bbox[0] / 2.0, traj.bbox[1] / 2.0, traj.bbox[2] / 2.0;
+//   Eigen::Vector3d min1 = pos_1 - positive_half_diagonal1;
+//   Eigen::Vector3d max1 = pos_1 + positive_half_diagonal1;
+
+//   Eigen::Vector3d positive_half_diagonal2;
+//   positive_half_diagonal2 << side_box_drone / 2.0, side_box_drone / 2.0, side_box_drone / 2.0;
+//   Eigen::Vector3d min2 = pos_2 - positive_half_diagonal2;
+//   Eigen::Vector3d max2 = pos_2 + positive_half_diagonal2;
+
+//   // Now check if the two bounding boxes overlap
+//   // https://stackoverflow.com/questions/20925818/algorithm-to-check-if-two-boxes-overlap
+//   if (min1.x() <= max2.x() && min2.x() <= max1.x() &&  /////////////////////
+//       min1.y() <= max2.y() && min2.y() <= max1.y() &&  /////////////////////
+//       min1.z() <= max2.z() && min2.z() <= max1.z())
+//   {
+//     // std::cout << bold << blue << "These two bounding boxes overlap" << reset << std::endl;
+//     // std::cout << "1 pos and diagonal:" << std::endl;
+//     // std::cout << bold << blue << pos_1.transpose() << reset << std::endl;
+//     // std::cout << bold << blue << positive_half_diagonal1.transpose() << reset << std::endl;
+//     // std::cout << "2 pos and diagonal:" << std::endl;
+//     // std::cout << bold << blue << pos_2.transpose() << reset << std::endl;
+//     // std::cout << bold << blue << positive_half_diagonal2.transpose() << reset << std::endl;
+//     return true;  // the two bounding boxes overlap
+//   }
+// }
+// std::cout << "times= " << std::endl;
+
+// for (double times_i : traj.pwp.times)
+// {
+//   std::cout << std::setprecision(25) << times_i << reset << std::endl;
+// }
+
+// std::cout << "t_start= " << std::setprecision(25) << t_start << reset << std::endl;
+// std::cout << "t_end= " << std::setprecision(25) << t_end << reset << std::endl;
+
+// std::cout << "index_first_interval= " << std::setprecision(25) << index_first_interval << reset << std::endl;
+// std::cout << "index_last_interval= " << std::setprecision(25) << index_last_interval << reset << std::endl;
+
+// std::cout << "points.size()= " << points.size() << std::endl;
+
+// abort();
+
+// for (point_i : points)
+// {
+//   std::cout <<
+// }
+
+// push the interval [5.5,6]
+// TODO
+// int samples_per_traj = 100;
+// double inc = (t_end - t_start) / (1.0 * samples_per_traj);
+
+// for (int i = 0; i < samples_per_traj; i++)
+// {
+//   t_ = t_start + i * inc;
+
+//   Eigen::Vector3d center_obs;
+//   center_obs << trajs_[index_traj].function[0].value(),  ////////////////////
+//       trajs_[index_traj].function[1].value(),            ////////////////
+//       trajs_[index_traj].function[2].value();            /////////////////
+
+//   Eigen::Vector3d positive_half_diagonal;
+//   positive_half_diagonal << trajs_[index_traj].bbox[0] / 2.0,  //////////////////
+//       trajs_[index_traj].bbox[1] / 2.0,                        ////////////////
+//       trajs_[index_traj].bbox[2] / 2.0;
+
+//   Eigen::Vector3d c1 = center_obs - positive_half_diagonal;
+//   Eigen::Vector3d c2 = center_obs + positive_half_diagonal;
+
+//   //  std::cout << "Traj " << trajs_[index_traj].id << " is in " << center_obs.transpose() << std::endl;
+
+//   if (boxIntersectsSphere(A.pos, par_.Ra, c1, c2) == true)
+//   {
+//     traj_affects_me = true;
+//     break;  // go out from the inner-most loop
+//   }
+// }
 return Qmv * M_pos_bs2basis_inverse_[interval];
 
 // std::vector<Eigen::Vector3d> last4Cps;

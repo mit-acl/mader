@@ -68,7 +68,7 @@ private:
 
   bool safetyCheckAfterOpt(PieceWisePol pwp_optimized);
 
-  bool trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_init, double t_end);
+  bool trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_start, double t_end);
 
   void removeTrajsThatWillNotAffectMe(const state& A, double t_start, double t_end);
 
@@ -76,9 +76,11 @@ private:
     ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls);*/
   ConvexHullsOfCurves convexHullsOfCurves(double t_start, double t_end);
   ConvexHullsOfCurve convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end);
-
   CGAL_Polyhedron_3 convexHullOfInterval(dynTrajCompiled& traj, double t_start, double t_end);
 
+  std::vector<Eigen::Vector3d> vertexesOfInterval(PieceWisePol& pwp, double t_start, double t_end,
+                                                  const Eigen::Vector3d& delta_inflation);
+  std::vector<Eigen::Vector3d> vertexesOfInterval(dynTrajCompiled& traj, double t_start, double t_end);
   void yaw(double diff, state& next_goal);
 
   void getDesiredYaw(state& next_goal);
@@ -86,12 +88,6 @@ private:
   void updateInitialCond(int i);
 
   void changeDroneStatus(int new_status);
-
-  Eigen::Vector3d getPos(int i);
-  Eigen::Vector3d getVel(int i);
-
-  Eigen::Vector3d getAccel(int i);
-  Eigen::Vector3d getJerk(int i);
 
   bool appendToPlan(int k_end_whole, const std::vector<state>& whole, int k_safe, const std::vector<state>& safe);
 
@@ -155,6 +151,11 @@ private:
   double av_improvement_nlopt_ = 0.0;
 
   SolverNlopt* snlopt_;  // pointer to the nonconvex solver
+
+  Eigen::Matrix<double, 4, 4> A_rest_pos_basis_;
+  Eigen::Matrix<double, 4, 4> A_rest_pos_basis_inverse_;
+
+  separator::Separator* separator_solver_;
 };
 
 #endif

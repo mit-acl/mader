@@ -21,6 +21,8 @@ typedef std::vector<Edge> Edges;
 // TODO: move this to a class (so that no one can modify these matrices)
 struct basisConverter
 {
+  Eigen::Matrix<double, 4, 4> A_pos_mv_rest;
+  Eigen::Matrix<double, 4, 4> A_pos_be_rest;
   Eigen::Matrix<double, 4, 4> A_pos_bs_seg0, A_pos_bs_seg1, A_pos_bs_rest, A_pos_bs_seg_last2, A_pos_bs_seg_last;
 
   Eigen::Matrix<double, 4, 4> M_pos_bs2mv_seg0, M_pos_bs2mv_seg1, M_pos_bs2mv_rest, M_pos_bs2mv_seg_last2,
@@ -38,6 +40,22 @@ struct basisConverter
     // This is for t \in [0 1];
 
     // clang-format off
+
+        //////MATRICES A FOR MINVO POSITION///////// (there is only one)
+        A_pos_mv_rest << 
+
+     -3.4416308968564117698463178385282,  6.9895481477801393310755884158425, -4.4622887507045296828778191411402,                   0.91437149978080234369315348885721,
+      6.6792587327074839365081970754545, -11.845989901556746914934592496138,  5.2523596690684613008670567069203,                                                    0,
+     -6.6792587327074839365081970754545,  8.1917862965657040064115790301003, -1.5981560640774179482548333908198,                  0.085628500219197656306846511142794,
+      3.4416308968564117698463178385282, -3.3353445427890959784633650997421, 0.80808514571348655231020075007109, -0.0000000000000000084567769453869345852581318467855;
+
+        //////MATRICES A FOR Bezier POSITION///////// (there is only one)
+        A_pos_be_rest << 
+
+           -1.0,  3.0, -3.0, 1.0,
+            3.0, -6.0,  3.0,   0,
+           -3.0,  3.0,    0,   0,
+            1.0,    0,    0,   0;
 
         //////MATRICES A FOR BSPLINE POSITION/////////
         A_pos_bs_seg0 <<
@@ -192,6 +210,44 @@ struct basisConverter
     // clang-format on
   }
 
+  //////MATRIX A FOR MINVO POSITION/////////
+  Eigen::Matrix<double, 4, 4> getArestMinvo()
+  {
+    return A_pos_mv_rest;
+  }
+  //////MATRIX A FOR Bezier POSITION/////////
+  Eigen::Matrix<double, 4, 4> getArestBezier()
+  {
+    return A_pos_be_rest;
+  }
+
+  //////MATRIX A FOR BSPLINE POSITION/////////
+  Eigen::Matrix<double, 4, 4> getArestBSpline()
+  {
+    return A_pos_bs_rest;
+  }
+  //////MATRICES A FOR MINVO POSITION/////////
+  std::vector<Eigen::Matrix<double, 4, 4>> getAMinvo(int num_pol)
+  {
+    std::vector<Eigen::Matrix<double, 4, 4>> A_pos_mv;  // will have as many elements as num_pol
+    for (int i = 0; i < num_pol; i++)
+    {
+      A_pos_mv.push_back(A_pos_mv_rest);
+    }
+    return A_pos_mv;
+  }
+
+  //////MATRICES A FOR Bezier POSITION/////////
+  std::vector<Eigen::Matrix<double, 4, 4>> getABezier(int num_pol)
+  {
+    std::vector<Eigen::Matrix<double, 4, 4>> A_pos_be;  // will have as many elements as num_pol
+    for (int i = 0; i < num_pol; i++)
+    {
+      A_pos_be.push_back(A_pos_be_rest);
+    }
+    return A_pos_be;
+  }
+
   //////MATRICES A FOR BSPLINE POSITION/////////
   std::vector<Eigen::Matrix<double, 4, 4>> getABSpline(int num_pol)
   {
@@ -284,25 +340,6 @@ struct basisConverter
     }
     return M_vel_bs2bs;
   }
-};
-
-struct dynTraj
-{
-  std::vector<std::string> function;
-  Eigen::Vector3d bbox;
-  int id;
-  double time_received;  // time at which this trajectory was received from an agent
-  bool is_agent;         // true for a trajectory of an agent, false for an obstacle
-};
-
-struct dynTrajCompiled
-{
-  std::vector<exprtk::expression<double>> function;
-  Eigen::Vector3d bbox;
-  int id;
-  double time_received;  // time at which this trajectory was received from an agent
-  bool is_agent;         // true for a trajectory of an agent, false for an obstacle
-  bool is_static;
 };
 
 struct polytope
@@ -399,16 +436,37 @@ struct PieceWisePol
   }
 };
 
-struct PieceWisePolWithInfo
+struct dynTraj
 {
+  std::vector<std::string> function;
+  Eigen::Vector3d bbox;
+  int id;
+  double time_received;  // time at which this trajectory was received from an agent
+  bool is_agent;         // true for a trajectory of an agent, false for an obstacle
   PieceWisePol pwp;
+};
 
+struct dynTrajCompiled
+{
+  std::vector<exprtk::expression<double>> function;
   Eigen::Vector3d bbox;
   int id;
   double time_received;  // time at which this trajectory was received from an agent
   bool is_agent;         // true for a trajectory of an agent, false for an obstacle
   bool is_static;
+  PieceWisePol pwp;
 };
+
+// struct PieceWisePolWithInfo
+// {
+//   PieceWisePol pwp;
+
+//   Eigen::Vector3d bbox;
+//   int id;
+//   double time_received;  // time at which this trajectory was received from an agent
+//   bool is_agent;         // true for a trajectory of an agent, false for an obstacle
+//   bool is_static;
+// };
 
 struct parameters
 {
@@ -418,9 +476,6 @@ struct parameters
   double dc;
   double goal_radius;
   double drone_radius;
-
-  int N_whole;
-  int N_safe;
 
   double Ra;
 
@@ -452,7 +507,6 @@ struct parameters
 
   int num_pol;
   int deg_pol;
-  int samples_per_interval;
   double weight;
   double epsilon_tol_constraints;
   double xtol_rel;

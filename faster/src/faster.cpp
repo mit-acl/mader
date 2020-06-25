@@ -87,7 +87,31 @@ Faster::Faster(parameters par) : par_(par)
   par_for_solver.allow_infeasible_guess = par_.allow_infeasible_guess;
   par_for_solver.alpha_shrink = par_.alpha_shrink;
 
+  basisConverter basis_converter;
+
+  if (par.basis == "MINVO")
+  {
+    A_rest_pos_basis_ = basis_converter.getArestMinvo();
+  }
+  else if (par.basis == "BEZIER")
+  {
+    A_rest_pos_basis_ = basis_converter.getArestBezier();
+  }
+  else if (par.basis == "B_SPLINE")
+  {
+    A_rest_pos_basis_ = basis_converter.getArestBSpline();
+  }
+  else
+  {
+    std::cout << red << "Basis " << par.basis << " not implemented yet" << reset << std::endl;
+    std::cout << red << "============================================" << reset << std::endl;
+    abort();
+  }
+
+  A_rest_pos_basis_inverse_ = A_rest_pos_basis_.inverse();
+
   snlopt_ = new SolverNlopt(par_for_solver);
+  separator_solver_ = new separator::Separator();
 }
 
 void Faster::dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compiled)
@@ -115,13 +139,23 @@ void Faster::dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compil
   traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
 
   traj_compiled.is_static =
-      (traj.function[0].find("t") == std::string::npos) &&  // there is no dependence on t in the coordinate x
-      (traj.function[1].find("t") == std::string::npos) &&  // there is no dependence on t in the coordinate y
-      (traj.function[2].find("t") == std::string::npos);    // there is no dependence on t in the coordinate z
+      ((traj.is_agent == false) &&                           // is an obstacle and
+       (traj.function[0].find("t") == std::string::npos) &&  // there is no dependence on t in the coordinate x
+       (traj.function[1].find("t") == std::string::npos) &&  // there is no dependence on t in the coordinate y
+       (traj.function[2].find("t") == std::string::npos))    // there is no dependence on t in the coordinate z
+      ||                                                     // OR
+      (traj.is_agent == true && fabs(traj.pwp.times.back() - traj.pwp.times.front()) < 1e-7);
+
+  traj_compiled.pwp = traj.pwp;
 }
 // Note that we need to compile the trajectories inside faster.cpp because t_ is in faster.hpp
 void Faster::updateTrajObstacles(dynTraj traj)
 {
+  // for (auto coeff : traj.pwp.coeff_z)
+  // {
+  //   std::cout << on_magenta << "coeff.transpose()= " << coeff.transpose() << reset << std::endl;
+  // }
+
   MyTimer tmp_t(true);
 
   if (started_check_ == true && traj.is_agent == true)
@@ -138,6 +172,9 @@ void Faster::updateTrajObstacles(dynTraj traj)
 
   dynTrajCompiled traj_compiled;
   dynTraj2dynTrajCompiled(traj, traj_compiled);
+
+  // std::cout << bold << on_green << "[F]traj_compiled.pwp.times.size()=" << traj_compiled.pwp.times.size() << reset
+  //           << std::endl;
 
   if (exists_in_local_map)
   {  // if that object already exists, substitute its trajectory
@@ -233,118 +270,184 @@ void Faster::updateTrajObstacles(dynTraj traj)
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
 
+std::vector<Eigen::Vector3d> Faster::vertexesOfInterval(PieceWisePol& pwp, double t_start, double t_end,
+                                                        const Eigen::Vector3d& delta_inflation)
+{
+  std::vector<Eigen::Vector3d> points;
+
+  Eigen::Vector3d delta = delta_inflation;
+
+  // std::cout << "This is an agent!" << std::endl;
+  std::vector<double>::iterator low = std::lower_bound(pwp.times.begin(), pwp.times.end(), t_start);
+  std::vector<double>::iterator up = std::upper_bound(pwp.times.begin(), pwp.times.end(), t_end);
+
+  // Example: times=[1 2 3 4 5 6 7]
+  // t_start=1.5;
+  // t_end=5.5
+  // then low points to "2" (low - pwp.times.begin() is 1)
+  // and up points to "6" (up - pwp.times.begin() is 5)
+
+  int index_first_interval = low - pwp.times.begin() - 1;  // index of the interval [1,2]
+  int index_last_interval = up - pwp.times.begin() - 1;    // index of the interval [5,6]
+
+  saturate(index_first_interval, 0, (int)(pwp.coeff_x.size() - 1));
+  saturate(index_last_interval, 0, (int)(pwp.coeff_x.size() - 1));
+
+  Eigen::Matrix<double, 3, 4> P;
+  Eigen::Matrix<double, 3, 4> V;
+
+  // push all the complete intervals
+  for (int i = index_first_interval; i <= index_last_interval; i++)
+  {
+    P.row(0) = pwp.coeff_x[i];
+    P.row(1) = pwp.coeff_y[i];
+    P.row(2) = pwp.coeff_z[i];
+
+    V = P * A_rest_pos_basis_inverse_;
+
+    for (int j = 0; j < V.cols(); j++)
+    {
+      double x = V(0, j);
+      double y = V(1, j);
+      double z = V(2, j);  //[x,y,z] is the point
+
+      if (delta_inflation.norm() < 1e-6)
+      {  // no inflation
+        points.push_back(Eigen::Vector3d(x, y, z));
+      }
+      else
+      {
+        // points.push_back(Eigen::Vector3d(V(1, j), V(2, j), V(3, j)));  // x,y,z
+        points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z + delta.z()));
+        points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z - delta.z()));
+        points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z - delta.z()));
+        points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z + delta.z()));
+        points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z - delta.z()));
+        points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z + delta.z()));
+        points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z - delta.z()));
+        points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z + delta.z()));
+      }
+    }
+  }
+
+  return points;
+}
+
+// return a vector that contains all the vertexes of the polyhedral approx of an interval.
+std::vector<Eigen::Vector3d> Faster::vertexesOfInterval(dynTrajCompiled& traj, double t_start, double t_end)
+{
+  Eigen::Vector3d delta = Eigen::Vector3d::Zero();
+  if (traj.is_agent == false)
+  {
+    std::vector<Eigen::Vector3d> points;
+    delta = traj.bbox / 2.0;
+    // Will always have a sample at the beginning of the interval, and another at the end.
+    for (double t = t_start;                           /////////////
+         (t < t_end) ||                                /////////////
+         ((t > t_end) && ((t - t_end) < par_.gamma));  /////// This is to ensure we have a sample a the end
+         t = t + par_.gamma)
+    {
+      t_ = std::min(t, t_end);  // this min only has effect on the last sample
+
+      double x = traj.function[0].value();
+      double y = traj.function[1].value();
+      double z = traj.function[2].value();
+
+      //"Minkowski sum along the trajectory: box centered on the trajectory"
+      points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z + delta.z()));
+      points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z - delta.z()));
+      points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z - delta.z()));
+      points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z + delta.z()));
+      points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z - delta.z()));
+      points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z + delta.z()));
+      points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z - delta.z()));
+      points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z + delta.z()));
+    }
+
+    return points;
+  }
+  else
+  {  // is an agent --> use the pwp field
+
+    delta = traj.bbox / 2.0 + (par_.drone_radius + par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
+    // std::cout << "****traj.bbox = " << traj.bbox << std::endl;
+    // std::cout << "****par_.drone_radius = " << par_.drone_radius << std::endl;
+    // std::cout << "****Inflation by delta= " << delta.transpose() << std::endl;
+
+    return vertexesOfInterval(traj.pwp, t_start, t_end, delta);
+  }
+}
+
 // See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
 CGAL_Polyhedron_3 Faster::convexHullOfInterval(dynTrajCompiled& traj, double t_start, double t_end)
 {
-  // int samples_per_interval = std::max(par_.samples_per_interval, 4);  // at least 4 samples per interval
-  // double inc = (t_end - t_start) / (1.0 * (samples_per_interval - 1));
+  std::vector<Eigen::Vector3d> points = vertexesOfInterval(traj, t_start, t_end);
 
-  std::vector<Point_3> points;
-
-  double side_box_drone = (2 * par_.drone_radius);
-
-  // std::cout << std::setprecision(18) << "t_start= " << t_start << reset << std::endl;
-  // std::cout << std::setprecision(18) << "t_end= " << t_end << reset << std::endl;
-  // Will always have a sample at the beginning of the interval, and another at the end.
-  for (double t = t_start;                           /////////////
-       (t < t_end) ||                                /////////////
-       ((t > t_end) && ((t - t_end) < par_.gamma));  /////// This is to ensure we have a sample a the end
-       t = t + par_.gamma)
+  std::vector<Point_3> points_cgal;
+  for (auto point_i : points)
   {
-    // t_ = t_start + i * inc;
-    // std::cout << "calling value(), traj_compiled.function.size()= " << traj.function.size() << std::endl;
-
-    t_ = std::min(t, t_end);  // this min only has effect on the last sample
-
-    // std::cout << std::setprecision(18) << "taking sample t_= " << t_ << reset << std::endl;
-
-    double x = traj.function[0].value();
-    double y = traj.function[1].value();
-    double z = traj.function[2].value();
-
-    Eigen::Vector3d traj_bbox_with_uncertainty;
-
-    if (traj.is_agent)
-    {
-      traj_bbox_with_uncertainty = traj.bbox;
-    }
-    else
-    {
-      traj_bbox_with_uncertainty =
-          traj.bbox + (side_box_drone + 2 * par_.beta + 2 * par_.alpha) * Eigen::Vector3d::Ones();
-    }
-
-    Eigen::Vector3d delta = traj_bbox_with_uncertainty / 2.0;
-
-    //"Minkowski sum along the trajectory: box centered on the trajectory"
-
-    Point_3 p0(x + delta.x(), y + delta.y(), z + delta.z());
-    Point_3 p1(x + delta.x(), y - delta.y(), z - delta.z());
-    Point_3 p2(x + delta.x(), y + delta.y(), z - delta.z());
-    Point_3 p3(x + delta.x(), y - delta.y(), z + delta.z());
-
-    Point_3 p4(x - delta.x(), y - delta.y(), z - delta.z());
-    Point_3 p5(x - delta.x(), y + delta.y(), z + delta.z());
-    Point_3 p6(x - delta.x(), y + delta.y(), z - delta.z());
-    Point_3 p7(x - delta.x(), y - delta.y(), z + delta.z());
-
-    points.push_back(p0);
-    points.push_back(p1);
-    points.push_back(p2);
-    points.push_back(p3);
-    points.push_back(p4);
-    points.push_back(p5);
-    points.push_back(p6);
-    points.push_back(p7);
+    points_cgal.push_back(Point_3(point_i.x(), point_i.y(), point_i.z()));
   }
-
-  CGAL_Polyhedron_3 poly = convexHullOfPoints(points);
-
-  return poly;
+  // CGAL_Polyhedron_3 poly = ;
+  return convexHullOfPoints(points_cgal);
 }
 
 // trajs_ is already locked when calling this function
 void Faster::removeTrajsThatWillNotAffectMe(const state& A, double t_start, double t_end)
 {
-  int samples_per_traj = 10;
-  double inc = (t_end - t_start) / (1.0 * samples_per_traj);
-
   std::vector<int> ids_to_remove;
 
-  for (int index_traj = 0; index_traj < trajs_.size(); index_traj++)
+  for (auto traj : trajs_)
   {
     bool traj_affects_me = false;
-    for (int i = 0; i < samples_per_traj; i++)
+
+    // STATIC OBSTACLES/AGENTS
+    if (traj.is_static == true)
     {
-      t_ = t_start + i * inc;
+      t_ = t_start;  // which is constant along the trajectory
 
       Eigen::Vector3d center_obs;
-      center_obs << trajs_[index_traj].function[0].value(),  ////////////////////
-          trajs_[index_traj].function[1].value(),            ////////////////
-          trajs_[index_traj].function[2].value();            /////////////////
+      if (traj.is_agent == false)
+      {
+        center_obs << traj.function[0].value(), traj.function[1].value(), traj.function[2].value();
+      }
+      else
+      {
+        center_obs = traj.pwp.eval(t_);
+      }
 
       Eigen::Vector3d positive_half_diagonal;
-      positive_half_diagonal << trajs_[index_traj].bbox[0] / 2.0,  //////////////////
-          trajs_[index_traj].bbox[1] / 2.0,                        ////////////////
-          trajs_[index_traj].bbox[2] / 2.0;
+      positive_half_diagonal << traj.bbox[0] / 2.0, traj.bbox[1] / 2.0, traj.bbox[2] / 2.0;
 
       Eigen::Vector3d c1 = center_obs - positive_half_diagonal;
       Eigen::Vector3d c2 = center_obs + positive_half_diagonal;
 
-      //  std::cout << "Traj " << trajs_[index_traj].id << " is in " << center_obs.transpose() << std::endl;
-
-      if (boxIntersectsSphere(A.pos, par_.Ra, c1, c2) == true)
+      traj_affects_me = boxIntersectsSphere(A.pos, par_.Ra, c1, c2);
+    }
+    else
+    {                                                            // DYNAMIC OBSTACLES/AGENTS
+      double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
+      for (int i = 0; i < par_.num_pol; i++)                     // for each interval
       {
-        traj_affects_me = true;
-        break;  // go out from the inner-most loop
+        std::vector<Eigen::Vector3d> points =
+            vertexesOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT);
+
+        for (auto point_i : points)  // for every vertex of each interval
+        {
+          if ((point_i - A.pos).norm() <= par_.Ra)
+          {
+            traj_affects_me = true;
+            goto exit;
+          }
+        }
       }
     }
 
+  exit:
     if (traj_affects_me == false)
     {
       // std::cout << red << bold << "Going to  delete t raj " << trajs_[index_traj].id << reset << std::endl;
-
-      ids_to_remove.push_back(trajs_[index_traj].id);
+      ids_to_remove.push_back(traj.id);
     }
     /*    else
         {
@@ -354,7 +457,7 @@ void Faster::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doub
 
   for (auto id : ids_to_remove)
   {
-    // ROS_INFO_STREAM("traj " << id << " doesn't affect me");
+    ROS_INFO_STREAM("traj " << id << " doesn't affect me");
     trajs_.erase(
         std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
         trajs_.end());
@@ -398,7 +501,11 @@ ConvexHullsOfCurves Faster::convexHullsOfCurves(double t_start, double t_end)
   {
     // std::cout << "Computing convex hull of curve " << traj.id << std::endl;
     // std::cout << "above, traj.function.size()= " << traj.function.size() << std::endl;
-    // std::cout << "going to call convexHullsOfCurve" << std::endl;
+    // std::cout << on_blue << "going to call convexHullsOfCurve" << reset << std::endl;
+    // for (auto coeff : traj.pwp.coeff_z)
+    // {
+    //   std::cout << on_blue << "traj.pwp.coeff_z.transpose()= " << coeff.transpose() << reset << std::endl;
+    // }
     result.push_back(convexHullsOfCurve(traj, t_start, t_end));
     // std::cout << "called convexHullsOfCurve" << std::endl;
   }
@@ -497,51 +604,41 @@ bool Faster::initialized()
   return true;
 }
 
-// check wheter a dynTrajCompiled and a pwp_optimized are in collision in the interval [t_init, t_end]
-bool Faster::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_init, double t_end)
+// check wheter a dynTrajCompiled and a pwp_optimized are in collision in the interval [t_start, t_end]
+bool Faster::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_start, double t_end)
 {
-  int samples_per_traj = 10;
-  double inc = (t_end - t_init) / samples_per_traj;
-  for (int i = 0; i < samples_per_traj; i++)
+  Eigen::Vector3d n_i;  // won't be used
+  double d_i;           // won't be used
+
+  double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
+  for (int i = 0; i < par_.num_pol; i++)                     // for each interval
   {
-    t_ = t_init + i * inc;
+    // This is my trajectory (no inflation)
+    std::vector<Eigen::Vector3d> pointsA =
+        vertexesOfInterval(pwp_optimized, t_start + i * deltaT, t_start + (i + 1) * deltaT, Eigen::Vector3d::Zero());
 
-    Eigen::Vector3d pos_1;
-    pos_1 << traj.function[0].value(),  ////////////////////
-        traj.function[1].value(),       ////////////////
-        traj.function[2].value();       /////////////////
+    // This is the trajectory of the other agent/obstacle
+    std::vector<Eigen::Vector3d> pointsB = vertexesOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT);
 
-    Eigen::Vector3d pos_2 = pwp_optimized.eval(t_);
+    // std::cout << "Going to solve model with pointsA.size()= " << pointsA.size() << std::endl;
+    // for (auto point_i : pointsA)
+    // {
+    //   std::cout << point_i.transpose() << std::endl;
+    // }
 
-    double side_box_drone = (2 * par_.drone_radius);
+    // std::cout << "Going to solve model with pointsB.size()= " << pointsB.size() << std::endl;
+    // for (auto point_i : pointsB)
+    // {
+    //   std::cout << point_i.transpose() << std::endl;
+    // }
 
-    Eigen::Vector3d positive_half_diagonal1;
-    positive_half_diagonal1 << traj.bbox[0] / 2.0, traj.bbox[1] / 2.0, traj.bbox[2] / 2.0;
-    Eigen::Vector3d min1 = pos_1 - positive_half_diagonal1;
-    Eigen::Vector3d max1 = pos_1 + positive_half_diagonal1;
-
-    Eigen::Vector3d positive_half_diagonal2;
-    positive_half_diagonal2 << side_box_drone / 2.0, side_box_drone / 2.0, side_box_drone / 2.0;
-    Eigen::Vector3d min2 = pos_2 - positive_half_diagonal2;
-    Eigen::Vector3d max2 = pos_2 + positive_half_diagonal2;
-
-    // Now check if the two bounding boxes overlap
-    // https://stackoverflow.com/questions/20925818/algorithm-to-check-if-two-boxes-overlap
-    if (min1.x() <= max2.x() && min2.x() <= max1.x() &&  /////////////////////
-        min1.y() <= max2.y() && min2.y() <= max1.y() &&  /////////////////////
-        min1.z() <= max2.z() && min2.z() <= max1.z())
+    if (separator_solver_->solveModel(n_i, d_i, pointsA, pointsB) == false)
     {
-      // std::cout << bold << blue << "These two bounding boxes overlap" << reset << std::endl;
-      // std::cout << "1 pos and diagonal:" << std::endl;
-      // std::cout << bold << blue << pos_1.transpose() << reset << std::endl;
-      // std::cout << bold << blue << positive_half_diagonal1.transpose() << reset << std::endl;
-      // std::cout << "2 pos and diagonal:" << std::endl;
-      // std::cout << bold << blue << pos_2.transpose() << reset << std::endl;
-      // std::cout << bold << blue << positive_half_diagonal2.transpose() << reset << std::endl;
-      return true;  // the two bounding boxes overlap
+      return true;  // There is not a solution --> they collide
     }
   }
 
+  // if reached this point, they don't colide
   return false;
 }
 // Checks that I have not received new trajectories that affect me while doing the optimization
@@ -578,6 +675,7 @@ bool Faster::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
   started_check_ = false;
 
   mtx_trajs_.unlock();
+  ROS_INFO_STREAM("Returning " << result);
   return result;
   // traj_compiled.time_received = ros::Time::now().toSec();
 }
@@ -773,8 +871,6 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
     E.pos = G.pos;
   }
 
-  // int samples_per_interval = par_.samples_per_interval;
-
   state initial = A;
   state final = E;
 
@@ -793,7 +889,7 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   //////////////////////
   double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
 
-  double t_init = k_index * par_.dc + time_now;
+  double t_start = k_index * par_.dc + time_now;
 
   double factor_v_max_tmp = par_.factor_v_max;
 
@@ -803,11 +899,11 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
     factor_v_max_tmp = 0.4;  // TODO: Put this as a param
   }
 
-  double t_final = t_init + (initial.pos - final.pos).array().abs().maxCoeff() /
-                                (factor_v_max_tmp * par_.v_max.x());  // time to execute the optimized path
+  double t_final = t_start + (initial.pos - final.pos).array().abs().maxCoeff() /
+                                 (factor_v_max_tmp * par_.v_max.x());  // time to execute the optimized path
 
   bool correctInitialCond =
-      snlopt_->setInitStateFinalStateInitTFinalT(initial, final, t_init,
+      snlopt_->setInitStateFinalStateInitTFinalT(initial, final, t_start,
                                                  t_final);  // note that here t_final may have been updated
 
   if (correctInitialCond == false)
@@ -822,8 +918,8 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
 
   time_init_opt_ = ros::Time::now().toSec();
 
-  removeTrajsThatWillNotAffectMe(A, t_init, t_final);
-  ConvexHullsOfCurves hulls = convexHullsOfCurves(t_init, t_final);
+  removeTrajsThatWillNotAffectMe(A, t_start, t_final);
+  ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
   edges_obstacles_out = vectorGCALPol2edges(hulls);
@@ -872,6 +968,7 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   if (is_safe_after_opt == false)
   {
     std::cout << bold << red << "safetyCheckAfterOpt is not satisfied!" << reset << std::endl;
+    ROS_ERROR_STREAM("safetyCheckAfterOpt is not satisfied, returning");
     return false;
   }
 

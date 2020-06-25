@@ -1734,8 +1734,8 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
       complete_closest_dist_so_far_ = dist;
       complete_closest_result_so_far_ptr_ = current_ptr;
 
-      std::cout << bold << blue << "complete_closest_dist_so_far_= " << std::setprecision(10)
-                << complete_closest_dist_so_far_ << reset << std::endl;
+      // std::cout << bold << blue << "complete_closest_dist_so_far_= " << std::setprecision(10)
+      //           << complete_closest_dist_so_far_ << reset << std::endl;
     }
 
     if (dist < closest_dist_so_far_)

@@ -1,4 +1,5 @@
 #include "faster_ros.hpp"
+#include <ros/callback_queue.h>
 
 int main(int argc, char **argv)
 {

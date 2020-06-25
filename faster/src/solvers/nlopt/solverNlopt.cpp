@@ -70,8 +70,7 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
   }
   else
   {
-    std::cout << red << "Basis " << par.basis << " not implemented yet, using the one for B-Spline" << reset
-              << std::endl;
+    std::cout << red << "Basis " << par.basis << " not implemented yet" << reset << std::endl;
     std::cout << red << "============================================" << reset << std::endl;
     abort();
   }
