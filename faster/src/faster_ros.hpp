@@ -26,7 +26,7 @@ namespace rvt = rviz_visual_tools;
 class FasterRos
 {
 public:
-  FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::NodeHandle nh_pub_CB);
+  FasterRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3);
   ~FasterRos();
 
 private:
@@ -74,9 +74,9 @@ private:
   visualization_msgs::Marker A_;
   visualization_msgs::Marker setpoint_;
 
-  ros::NodeHandle nh_;
-  ros::NodeHandle nh_replan_CB_;
-  ros::NodeHandle nh_pub_CB_;
+  ros::NodeHandle nh1_;
+  ros::NodeHandle nh2_;
+  ros::NodeHandle nh3_;
 
   ros::Publisher pub_point_G_;
   ros::Publisher pub_point_G_term_;

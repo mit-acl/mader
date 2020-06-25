@@ -3,42 +3,35 @@
 
 int main(int argc, char **argv)
 {
-  std::cout << "Going to initialize Faster node" << std::endl;
-  // Initializes ROS, and sets up a node
   ros::init(argc, argv, "faster");
-  ros::NodeHandle nh("~");
-  ros::NodeHandle nh_replan_CB("~");
-  ros::NodeHandle nh_pub_CB("~");
+
+  ros::NodeHandle nh1("~");
+  ros::NodeHandle nh2("~");
+  ros::NodeHandle nh3("~");
+
+  // Concurrency and parallelism in ROS:
+  // https://nicolovaligi.com/concurrency-and-parallelism-in-ros1-and-ros2-application-apis.html
+
   ros::CallbackQueue custom_queue1;
   ros::CallbackQueue custom_queue2;
-  nh_replan_CB.setCallbackQueue(&custom_queue1);
-  nh_pub_CB.setCallbackQueue(&custom_queue2);
+  ros::CallbackQueue custom_queue3;
 
-  std::cout << "Creating faster_ros object" << std::endl;
-  FasterRos FasterRos(nh, nh_replan_CB, nh_pub_CB);
+  nh1.setCallbackQueue(&custom_queue1);
+  nh2.setCallbackQueue(&custom_queue2);
+  nh3.setCallbackQueue(&custom_queue3);
 
-  std::cout << "faster_ros object created" << std::endl;
+  FasterRos FasterRos(nh1, nh2, nh3);
 
-  // NOW THE CALLBACK replanCB is IN A DIFFERENT thread than the other callbacks.
+  ros::AsyncSpinner spinner1(1, &custom_queue1);  // 1 thread for the custom_queue1
+  ros::AsyncSpinner spinner2(1, &custom_queue2);  // 1 thread for the custom_queue2
+  ros::AsyncSpinner spinner3(1, &custom_queue3);  // 1 thread for the custom_queue3
 
-  // TODO: I think one thread in the line below will be enough (and will have the same effect, becacuse there is only
-  // one callback)
-  ros::AsyncSpinner spinner1(0, &custom_queue1);
-  ros::AsyncSpinner spinner2(0, &custom_queue2);
   spinner1.start();  // start spinner of the custom queue 1
   spinner2.start();  // start spinner of the custom queue 2
+  spinner3.start();  // start spinner of the custom queue 2
 
-  // ros::spin();  // spin the normal queue
-
-  while (ros::ok())
-  {
-    ros::spinOnce();  // spin the normal queue
-  }
-
-  // with this the callbacks can be executed in parallel. If not, the replanning and pub callbacks will be executed in
-  // series, and if the replanning callback takes a lot of time, the pub callback will not be executed
   // ros::AsyncSpinner spinner(0);  // 0 means # of threads= # of CPU cores
-  // spinner.start();
+
   ros::waitForShutdown();
   return 0;
 }

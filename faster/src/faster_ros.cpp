@@ -13,86 +13,85 @@
 typedef Timer MyTimer;
 
 // this object is created in the faster_ros_node
-FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::NodeHandle nh_pub_CB)
-  : nh_(nh), nh_replan_CB_(nh_replan_CB), nh_pub_CB_(nh_pub_CB)
+FasterRos::FasterRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3) : nh1_(nh1), nh2_(nh2), nh3_(nh3)
 {
-  safeGetParam(nh_, "use_ff", par_.use_ff);
-  safeGetParam(nh_, "visual", par_.visual);
+  safeGetParam(nh1_, "use_ff", par_.use_ff);
+  safeGetParam(nh1_, "visual", par_.visual);
 
-  safeGetParam(nh_, "dc", par_.dc);
-  safeGetParam(nh_, "goal_radius", par_.goal_radius);
-  safeGetParam(nh_, "drone_radius", par_.drone_radius);
+  safeGetParam(nh1_, "dc", par_.dc);
+  safeGetParam(nh1_, "goal_radius", par_.goal_radius);
+  safeGetParam(nh1_, "drone_radius", par_.drone_radius);
 
-  safeGetParam(nh_, "Ra", par_.Ra);
+  safeGetParam(nh1_, "Ra", par_.Ra);
 
-  safeGetParam(nh_, "w_max", par_.w_max);
-  safeGetParam(nh_, "alpha_filter_dyaw", par_.alpha_filter_dyaw);
+  safeGetParam(nh1_, "w_max", par_.w_max);
+  safeGetParam(nh1_, "alpha_filter_dyaw", par_.alpha_filter_dyaw);
 
-  safeGetParam(nh_, "impose_fov", par_.impose_fov);
+  safeGetParam(nh1_, "impose_fov", par_.impose_fov);
 
-  safeGetParam(nh_, "fov_horiz_deg", par_.fov_horiz_deg);
-  safeGetParam(nh_, "fov_vert_deg", par_.fov_vert_deg);
-  safeGetParam(nh_, "fov_depth", par_.fov_depth);
+  safeGetParam(nh1_, "fov_horiz_deg", par_.fov_horiz_deg);
+  safeGetParam(nh1_, "fov_vert_deg", par_.fov_vert_deg);
+  safeGetParam(nh1_, "fov_depth", par_.fov_depth);
 
-  safeGetParam(nh_, "R_local_map", par_.R_local_map);
-  // safeGetParam(nh_, "R_consider_agents", par_.R_consider_agents);
-  // safeGetParam(nh_, "R_consider_obstacles", par_.R_consider_obstacles);
+  safeGetParam(nh1_, "R_local_map", par_.R_local_map);
+  // safeGetParam(nh1_, "R_consider_agents", par_.R_consider_agents);
+  // safeGetParam(nh1_, "R_consider_obstacles", par_.R_consider_obstacles);
 
-  safeGetParam(nh_, "x_min", par_.x_min);
-  safeGetParam(nh_, "x_max", par_.x_max);
+  safeGetParam(nh1_, "x_min", par_.x_min);
+  safeGetParam(nh1_, "x_max", par_.x_max);
 
-  safeGetParam(nh_, "y_min", par_.y_min);
-  safeGetParam(nh_, "y_max", par_.y_max);
+  safeGetParam(nh1_, "y_min", par_.y_min);
+  safeGetParam(nh1_, "y_max", par_.y_max);
 
-  safeGetParam(nh_, "z_ground", par_.z_ground);
-  safeGetParam(nh_, "z_max", par_.z_max);
+  safeGetParam(nh1_, "z_ground", par_.z_ground);
+  safeGetParam(nh1_, "z_max", par_.z_max);
 
   std::vector<double> v_max_tmp;
   std::vector<double> a_max_tmp;
   std::vector<double> j_max_tmp;
 
-  safeGetParam(nh_, "v_max", v_max_tmp);
-  safeGetParam(nh_, "a_max", a_max_tmp);
-  safeGetParam(nh_, "j_max", j_max_tmp);
+  safeGetParam(nh1_, "v_max", v_max_tmp);
+  safeGetParam(nh1_, "a_max", a_max_tmp);
+  safeGetParam(nh1_, "j_max", j_max_tmp);
 
   par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
   par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
   par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
 
-  safeGetParam(nh_, "factor_v_max", par_.factor_v_max);
+  safeGetParam(nh1_, "factor_v_max", par_.factor_v_max);
 
-  safeGetParam(nh_, "factor_alpha", par_.factor_alpha);
+  safeGetParam(nh1_, "factor_alpha", par_.factor_alpha);
 
-  safeGetParam(nh_, "num_pol", par_.num_pol);
-  safeGetParam(nh_, "deg_pol", par_.deg_pol);
-  safeGetParam(nh_, "weight", par_.weight);
-  safeGetParam(nh_, "epsilon_tol_constraints", par_.epsilon_tol_constraints);
-  safeGetParam(nh_, "xtol_rel", par_.xtol_rel);
-  safeGetParam(nh_, "ftol_rel", par_.ftol_rel);
-  safeGetParam(nh_, "solver", par_.solver);
+  safeGetParam(nh1_, "num_pol", par_.num_pol);
+  safeGetParam(nh1_, "deg_pol", par_.deg_pol);
+  safeGetParam(nh1_, "weight", par_.weight);
+  safeGetParam(nh1_, "epsilon_tol_constraints", par_.epsilon_tol_constraints);
+  safeGetParam(nh1_, "xtol_rel", par_.xtol_rel);
+  safeGetParam(nh1_, "ftol_rel", par_.ftol_rel);
+  safeGetParam(nh1_, "solver", par_.solver);
 
-  safeGetParam(nh_, "upper_bound_runtime_snlopt", par_.upper_bound_runtime_snlopt);
-  safeGetParam(nh_, "lower_bound_runtime_snlopt", par_.lower_bound_runtime_snlopt);
-  safeGetParam(nh_, "kappa", par_.kappa);
-  safeGetParam(nh_, "mu", par_.mu);
+  safeGetParam(nh1_, "upper_bound_runtime_snlopt", par_.upper_bound_runtime_snlopt);
+  safeGetParam(nh1_, "lower_bound_runtime_snlopt", par_.lower_bound_runtime_snlopt);
+  safeGetParam(nh1_, "kappa", par_.kappa);
+  safeGetParam(nh1_, "mu", par_.mu);
 
-  safeGetParam(nh_, "a_star_samp_x", par_.a_star_samp_x);
-  safeGetParam(nh_, "a_star_samp_y", par_.a_star_samp_y);
-  safeGetParam(nh_, "a_star_samp_z", par_.a_star_samp_z);
-  safeGetParam(nh_, "a_star_fraction_voxel_size", par_.a_star_fraction_voxel_size);
-  safeGetParam(nh_, "allow_infeasible_guess", par_.allow_infeasible_guess);
+  safeGetParam(nh1_, "a_star_samp_x", par_.a_star_samp_x);
+  safeGetParam(nh1_, "a_star_samp_y", par_.a_star_samp_y);
+  safeGetParam(nh1_, "a_star_samp_z", par_.a_star_samp_z);
+  safeGetParam(nh1_, "a_star_fraction_voxel_size", par_.a_star_fraction_voxel_size);
+  safeGetParam(nh1_, "allow_infeasible_guess", par_.allow_infeasible_guess);
 
-  safeGetParam(nh_, "a_star_bias", par_.a_star_bias);
+  safeGetParam(nh1_, "a_star_bias", par_.a_star_bias);
 
-  safeGetParam(nh_, "basis", par_.basis);
+  safeGetParam(nh1_, "basis", par_.basis);
 
-  safeGetParam(nh_, "res_plot_traj", par_.res_plot_traj);
+  safeGetParam(nh1_, "res_plot_traj", par_.res_plot_traj);
 
-  safeGetParam(nh_, "alpha", par_.alpha);
-  safeGetParam(nh_, "beta", par_.beta);
-  safeGetParam(nh_, "gamma", par_.gamma);
+  safeGetParam(nh1_, "alpha", par_.alpha);
+  safeGetParam(nh1_, "beta", par_.beta);
+  safeGetParam(nh1_, "gamma", par_.gamma);
 
-  safeGetParam(nh_, "alpha_shrink", par_.alpha_shrink);
+  safeGetParam(nh1_, "alpha_shrink", par_.alpha_shrink);
 
   std::cout << "Parameters obtained" << std::endl;
 
@@ -175,30 +174,29 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   ROS_INFO("Planner initialized");
 
   // Publishers
-  // pub_goal_jackal_ = nh_.advertise<geometry_msgs::Twist>("goal_jackal", 1);
-  pub_goal_ = nh_.advertise<snapstack_msgs::QuadGoal>("goal", 1);
-  pub_setpoint_ = nh_.advertise<visualization_msgs::Marker>("setpoint", 1);
-  pub_point_G_ = nh_.advertise<geometry_msgs::PointStamped>("point_G", 1);
-  pub_point_G_term_ = nh_.advertise<geometry_msgs::PointStamped>("point_G_term", 1);
-  pub_point_A_ = nh_.advertise<visualization_msgs::Marker>("point_A", 1);
-  pub_actual_traj_ = nh_.advertise<visualization_msgs::Marker>("actual_traj", 1);
-  poly_safe_pub_ = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_safe", 1, true);
-  pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
-  pub_traj_safe_colored_ = nh_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
-  pub_traj_ = nh_.advertise<faster_msgs::DynTraj>("/trajs", 1, true);  // The last boolean is latched or not
-  pub_text_ = nh_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
-  pub_fov_ = nh_.advertise<visualization_msgs::Marker>("fov", 1);
-  pub_obstacles_ = nh_.advertise<visualization_msgs::Marker>("obstacles", 1);
+  pub_goal_ = nh1_.advertise<snapstack_msgs::QuadGoal>("goal", 1);
+  pub_setpoint_ = nh1_.advertise<visualization_msgs::Marker>("setpoint", 1);
+  pub_point_G_ = nh1_.advertise<geometry_msgs::PointStamped>("point_G", 1);
+  pub_point_G_term_ = nh1_.advertise<geometry_msgs::PointStamped>("point_G_term", 1);
+  pub_point_A_ = nh1_.advertise<visualization_msgs::Marker>("point_A", 1);
+  pub_actual_traj_ = nh1_.advertise<visualization_msgs::Marker>("actual_traj", 1);
+  poly_safe_pub_ = nh1_.advertise<decomp_ros_msgs::PolyhedronArray>("poly_safe", 1, true);
+  pub_text_ = nh1_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
+  pub_traj_safe_colored_ = nh1_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
+  pub_traj_ = nh1_.advertise<faster_msgs::DynTraj>("/trajs", 1, true);  // The last boolean is latched or not
+  pub_text_ = nh1_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
+  pub_fov_ = nh1_.advertise<visualization_msgs::Marker>("fov", 1);
+  pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
 
   // Subscribers
-  sub_goal_ = nh_.subscribe("term_goal", 1, &FasterRos::terminalGoalCB, this);
-  sub_mode_ = nh_.subscribe("mode", 1, &FasterRos::modeCB, this);
-  sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);
-  sub_traj_ = nh_.subscribe("/trajs", 20, &FasterRos::trajCB, this);  // The number is the queue size
+  sub_goal_ = nh1_.subscribe("term_goal", 1, &FasterRos::terminalGoalCB, this);
+  sub_mode_ = nh1_.subscribe("mode", 1, &FasterRos::modeCB, this);
+  sub_state_ = nh1_.subscribe("state", 1, &FasterRos::stateCB, this);
+  sub_traj_ = nh1_.subscribe("/trajs", 20, &FasterRos::trajCB, this);  // The number is the queue size
 
   // Timers
-  pubCBTimer_ = nh_pub_CB_.createTimer(ros::Duration(par_.dc), &FasterRos::pubCB, this);
-  replanCBTimer_ = nh_replan_CB_.createTimer(ros::Duration(par_.dc), &FasterRos::replanCB, this);
+  pubCBTimer_ = nh2_.createTimer(ros::Duration(par_.dc), &FasterRos::pubCB, this);
+  replanCBTimer_ = nh3_.createTimer(ros::Duration(par_.dc), &FasterRos::replanCB, this);
 
   // For now stop all these subscribers/timers until we receive GO
   // sub_state_.shutdown();
@@ -229,6 +227,10 @@ FasterRos::FasterRos(ros::NodeHandle nh, ros::NodeHandle nh_replan_CB, ros::Node
   id_ = std::stoi(id);
 
   clearMarkerActualTraj();
+
+  ////
+  bool success_service_call = system("rosservice call /change_mode 'mode: 1'");  // to avoid having to click on the GUI
+  ////
 }
 
 FasterRos::~FasterRos()
@@ -316,8 +318,11 @@ void FasterRos::publishFOV()
 
 void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 {
+  std::cout << "[Callback] Entering trajCB" << std::endl;
+
   if (msg.id == id_)
   {  // This is my own trajectory
+    std::cout << "[Callback] Leaving trajCB (own traj)" << std::endl;
     return;
   }
 
@@ -387,6 +392,8 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   // }
 
   faster_ptr_->updateTrajObstacles(tmp);
+
+  std::cout << "[Callback] Leaving trajCB" << std::endl;
 }
 
 // This trajectory is published when the agent arrives at A
@@ -421,8 +428,11 @@ void FasterRos::publishOwnTraj(const PieceWisePol& pwp)
 
 void FasterRos::replanCB(const ros::TimerEvent& e)
 {
+  std::cout << "********************[Callback] replanCB!!" << std::endl;
+
   if (ros::ok())
   {
+    std::cout << "********************[Callback] Entering replanCB" << std::endl;
     faster_types::Edges edges_obstacles;
     std::vector<state> X_safe;
 
@@ -448,6 +458,8 @@ void FasterRos::replanCB(const ros::TimerEvent& e)
     {
       publishOwnTraj(pwp);
     }
+
+    std::cout << "[Callback] Leaving replanCB" << std::endl;
   }
 }
 
@@ -567,12 +579,14 @@ void FasterRos::modeCB(const faster_msgs::Mode& msg)
     // sub_state_.shutdown();
     pubCBTimer_.stop();
     replanCBTimer_.stop();
-    std::cout << "stopping replanCBTimer" << std::endl;
+    std::cout << on_blue << "**************stopping replanCBTimer" << reset << std::endl;
     faster_ptr_->resetInitialization();
   }
   else
   {  // The mode changed to GO (the mode changes to go when takeoff is finished)
     // sub_state_ = nh_.subscribe("state", 1, &FasterRos::stateCB, this);  // TODO duplicated from above
+
+    std::cout << on_blue << "**************starting replanCBTimer" << reset << std::endl;
 
     pubCBTimer_.start();
     replanCBTimer_.start();

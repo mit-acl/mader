@@ -51,10 +51,6 @@ Faster::Faster(parameters par) : par_(par)
   changeDroneStatus(DroneStatus::GOAL_REACHED);
   resetInitialization();
 
-  ////
-  bool success_service_call = system("rosservice call /change_mode 'mode: 1'");  // to avoid having to click on the GUI
-  ////
-
   par_snlopt par_for_solver;
 
   par_for_solver.x_min = par_.x_min;
@@ -156,6 +152,8 @@ void Faster::updateTrajObstacles(dynTraj traj)
   //   std::cout << on_magenta << "coeff.transpose()= " << coeff.transpose() << reset << std::endl;
   // }
 
+  std::cout << "In updateTrajObstacles" << std::endl;
+
   MyTimer tmp_t(true);
 
   if (started_check_ == true && traj.is_agent == true)
@@ -163,7 +161,9 @@ void Faster::updateTrajObstacles(dynTraj traj)
     have_received_trajectories_while_checking_ = true;
   }
 
+  std::cout << "In updateTrajObstacles 0.5" << std::endl;
   mtx_trajs_.lock();
+  std::cout << "In updateTrajObstacles 0.6" << std::endl;
 
   std::vector<dynTrajCompiled>::iterator obs_ptr = std::find_if(
       trajs_.begin(), trajs_.end(), [=](const dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
@@ -194,8 +194,12 @@ void Faster::updateTrajObstacles(dynTraj traj)
   // Note that these positions are obtained with the trajectory stored in the past in the local map
   std::vector<int> ids_to_remove;
 
+  std::cout << "In updateTrajObstacles 2" << std::endl;
+
   for (int index_traj = 0; index_traj < trajs_.size(); index_traj++)
   {
+    std::cout << "In updateTrajObstacles 3" << std::endl;
+
     bool traj_affects_me = false;
 
     t_ = ros::Time::now().toSec();
@@ -219,6 +223,8 @@ void Faster::updateTrajObstacles(dynTraj traj)
     }
   }
 
+  std::cout << "In updateTrajObstacles 4" << std::endl;
+
   for (auto id : ids_to_remove)
   {
     // std::cout << red << "Removing " << id << " at t=" << std::setprecision(12) << traj.time_received;
@@ -229,43 +235,10 @@ void Faster::updateTrajObstacles(dynTraj traj)
         trajs_.end());
   }
 
-  // First let's check if the object is near me:
-  // if (near_me)
-  // {
-  // }
-  // else  // not near me
-  // {
-  //   int distance =
-
-  //       if (exists_in_local_map && ((par_.impose_fov == true && in_local_map == false) || (par_.impose_fov ==
-  //       false)))
-  //   {  // remove
-  //     trajs_.erase(obs_ptr);
-  //     std::cout << red << "Erasing " << (*obs_ptr).id << " at t=" << std::setprecision(12) << traj.time_received
-  //               << reset << std::endl;
-  //   }
-  //   else
-  //   {
-  //     // if it doesn't exist, don't do anything
-  //     // don't erase from trajs (but it hasn't been updated \implies it is local map)
-  //   }
-
-  //   // if (exists)  // remove if from the list if it exists
-  //   // {
-  //   //   trajs_.erase(obs_ptr);
-  //   //   std::cout << red << "Erasing " << (*obs_ptr).id << " at t=" << std::setprecision(12) << traj.time_received
-  //   //             << reset << std::endl;
-  //   // }
-
-  /// Debugging
-  /*  std::cout << "[FA] Ids que tengo:" << std::endl;
-    for (auto traj : trajs_)
-    {
-      std::cout << traj.id << ", ";
-    }
-    std::cout << std::endl;*/
-
+  std::cout << "In updateTrajObstacles 5" << std::endl;
   mtx_trajs_.unlock();
+  std::cout << "In updateTrajObstacles 6" << std::endl;
+
   have_received_trajectories_while_checking_ = false;
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
@@ -742,57 +715,57 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
 
   /////////////////////////////////// DEBUGGING ///////////////////////////////////
-  mtx_trajs_.lock();
-  std::cout << bold << blue << "Trajectories in the local map: " << reset << std::endl;
+  // mtx_trajs_.lock();
+  // std::cout << bold << blue << "Trajectories in the local map: " << reset << std::endl;
 
-  std::vector<double> all_ids;
-  /*  traj_compiled.id = traj.id;
-    trajs_.push_back(traj_compiled);*/
-  int tmp_index_traj = 0;
-  for (auto traj : trajs_)
-  {
-    std::cout << traj.id << ", ";
-    // double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+  // std::vector<double> all_ids;
+  // /*  traj_compiled.id = traj.id;
+  //   trajs_.push_back(traj_compiled);*/
+  // int tmp_index_traj = 0;
+  // for (auto traj : trajs_)
+  // {
+  //   std::cout << traj.id << ", ";
+  //   // double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
 
-    all_ids.push_back(traj.id);
-    // all_ids = all_ids + " " + std::to_string(traj.id);
+  //   all_ids.push_back(traj.id);
+  //   // all_ids = all_ids + " " + std::to_string(traj.id);
 
-    // t_ = time_now;
+  //   // t_ = time_now;
 
-    // Eigen::Vector3d center_obs;
-    // center_obs << trajs_[tmp_index_traj].function[0].value(),  ////////////////////
-    //     trajs_[tmp_index_traj].function[1].value(),            ////////////////
-    //     trajs_[tmp_index_traj].function[2].value();            /////////////////
+  //   // Eigen::Vector3d center_obs;
+  //   // center_obs << trajs_[tmp_index_traj].function[0].value(),  ////////////////////
+  //   //     trajs_[tmp_index_traj].function[1].value(),            ////////////////
+  //   //     trajs_[tmp_index_traj].function[2].value();            /////////////////
 
-    // std::cout << traj.id << ", which is in " << center_obs.transpose() << std::endl;
+  //   // std::cout << traj.id << ", which is in " << center_obs.transpose() << std::endl;
 
-    // tmp_index_traj = tmp_index_traj + 1;
-  }
+  //   // tmp_index_traj = tmp_index_traj + 1;
+  // }
 
-  sort(all_ids.begin(), all_ids.end());
+  // sort(all_ids.begin(), all_ids.end());
 
-  if (all_ids.size() >= 1)
-  {
-    std::ostringstream oss;
+  // if (all_ids.size() >= 1)
+  // {
+  //   std::ostringstream oss;
 
-    if (!all_ids.empty())
-    {
-      // Convert all but the last element to avoid a trailing ","
-      std::copy(all_ids.begin(), all_ids.end() - 1, std::ostream_iterator<double>(oss, ","));
+  //   if (!all_ids.empty())
+  //   {
+  //     // Convert all but the last element to avoid a trailing ","
+  //     std::copy(all_ids.begin(), all_ids.end() - 1, std::ostream_iterator<double>(oss, ","));
 
-      // Now add the last element with no delimiter
-      oss << all_ids.back();
-    }
+  //     // Now add the last element with no delimiter
+  //     oss << all_ids.back();
+  //   }
 
-    ROS_INFO_STREAM("Trajs used: " << oss.str());
-  }
-  else
-  {
-    ROS_INFO_STREAM("Trajs used: - ");
-  }
+  //   ROS_INFO_STREAM("Trajs used: " << oss.str());
+  // }
+  // else
+  // {
+  //   ROS_INFO_STREAM("Trajs used: - ");
+  // }
 
-  std::cout << std::endl;
-  mtx_trajs_.unlock();
+  // std::cout << std::endl;
+  // mtx_trajs_.unlock();
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Select state A /////////////////////////////////
@@ -917,13 +890,13 @@ bool Faster::replan(faster_types::Edges& edges_obstacles_out, std::vector<state>
   mtx_trajs_.lock();
 
   time_init_opt_ = ros::Time::now().toSec();
-
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
+  mtx_trajs_.unlock();
+
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
   edges_obstacles_out = vectorGCALPol2edges(hulls);
-  mtx_trajs_.unlock();
 
   snlopt_->setHulls(hulls_std);
 

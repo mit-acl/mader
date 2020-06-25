@@ -75,7 +75,6 @@ class FakeSim:
     def __init__(self, total_num_obs):
         self.state=State()
 
-        self.timer = rospy.Timer(rospy.Duration(0.01), self.pubTF)
         name = rospy.get_namespace()
         self.name = name[1:-1]
 
@@ -137,7 +136,6 @@ class FakeSim:
         self.pubShapes_static_mesh = rospy.Publisher('/shapes_static_mesh', MarkerArray, queue_size=1, latch=True)
         self.pubShapes_dynamic_mesh = rospy.Publisher('/shapes_dynamic_mesh', MarkerArray, queue_size=1, latch=True)
         self.pubShapes_dynamic = rospy.Publisher('/shapes_dynamic', Marker, queue_size=1, latch=True)
-        self.timer = rospy.Timer(rospy.Duration(0.001), self.pubTF)
         self.pubGazeboState = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
 
         self.already_published_static_shapes=False;
@@ -318,7 +316,7 @@ class FakeSim:
 
 def startNode(total_num_obs):
     c = FakeSim(total_num_obs)
-
+    rospy.Timer(rospy.Duration(0.01), c.pubTF)
     rospy.spin()
 
 if __name__ == '__main__':
