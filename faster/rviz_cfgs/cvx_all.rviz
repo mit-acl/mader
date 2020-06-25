@@ -64,38 +64,108 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 1000
       Frames:
+        4000:
+          Value: true
+        4001:
+          Value: true
+        4002:
+          Value: true
+        4003:
+          Value: true
+        4004:
+          Value: true
+        4005:
+          Value: true
+        4006:
+          Value: true
+        4007:
+          Value: true
+        4008:
+          Value: true
+        4009:
+          Value: true
+        4010:
+          Value: true
+        4011:
+          Value: true
+        4012:
+          Value: true
+        4013:
+          Value: true
+        4014:
+          Value: true
+        4015:
+          Value: true
+        4016:
+          Value: true
+        4017:
+          Value: true
+        4018:
+          Value: true
+        4019:
+          Value: true
+        4020:
+          Value: true
+        4021:
+          Value: true
+        4022:
+          Value: true
+        4023:
+          Value: true
+        4024:
+          Value: true
+        4025:
+          Value: true
+        4026:
+          Value: true
+        4027:
+          Value: true
+        4028:
+          Value: true
+        4029:
+          Value: true
+        4030:
+          Value: true
+        4031:
+          Value: true
+        4032:
+          Value: true
+        4033:
+          Value: true
+        4034:
+          Value: true
+        4035:
+          Value: true
+        4036:
+          Value: true
+        4037:
+          Value: true
+        4038:
+          Value: true
+        4039:
+          Value: true
+        4040:
+          Value: true
+        4041:
+          Value: true
+        4042:
+          Value: true
+        4043:
+          Value: true
+        4044:
+          Value: true
+        4045:
+          Value: true
+        4046:
+          Value: true
+        4047:
+          Value: true
+        4048:
+          Value: true
+        4049:
+          Value: true
         All Enabled: false
-        SQ010s:
-          Value: true
-        SQ011s:
-          Value: true
-        SQ012s:
-          Value: true
-        SQ013s:
-          Value: true
-        SQ014s:
-          Value: true
-        SQ015s:
-          Value: true
-        SQ016s:
-          Value: true
         SQ01s:
-          Value: true
-        SQ02s:
-          Value: true
-        SQ03s:
-          Value: true
-        SQ04s:
-          Value: true
-        SQ05s:
-          Value: true
-        SQ06s:
-          Value: true
-        SQ07s:
-          Value: true
-        SQ08s:
-          Value: true
-        SQ09s:
           Value: true
         vicon:
           Value: true
@@ -108,38 +178,108 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
+          4000:
+            {}
+          4001:
+            {}
+          4002:
+            {}
+          4003:
+            {}
+          4004:
+            {}
+          4005:
+            {}
+          4006:
+            {}
+          4007:
+            {}
+          4008:
+            {}
+          4009:
+            {}
+          4010:
+            {}
+          4011:
+            {}
+          4012:
+            {}
+          4013:
+            {}
+          4014:
+            {}
+          4015:
+            {}
+          4016:
+            {}
+          4017:
+            {}
+          4018:
+            {}
+          4019:
+            {}
+          4020:
+            {}
+          4021:
+            {}
+          4022:
+            {}
+          4023:
+            {}
+          4024:
+            {}
+          4025:
+            {}
+          4026:
+            {}
+          4027:
+            {}
+          4028:
+            {}
+          4029:
+            {}
+          4030:
+            {}
+          4031:
+            {}
+          4032:
+            {}
+          4033:
+            {}
+          4034:
+            {}
+          4035:
+            {}
+          4036:
+            {}
+          4037:
+            {}
+          4038:
+            {}
+          4039:
+            {}
+          4040:
+            {}
+          4041:
+            {}
+          4042:
+            {}
+          4043:
+            {}
+          4044:
+            {}
+          4045:
+            {}
+          4046:
+            {}
+          4047:
+            {}
+          4048:
+            {}
+          4049:
+            {}
           vicon:
-            SQ010s:
-              {}
-            SQ011s:
-              {}
-            SQ012s:
-              {}
-            SQ013s:
-              {}
-            SQ014s:
-              {}
-            SQ015s:
-              {}
-            SQ016s:
-              {}
             SQ01s:
-              {}
-            SQ02s:
-              {}
-            SQ03s:
-              {}
-            SQ04s:
-              {}
-            SQ05s:
-              {}
-            SQ06s:
-              {}
-            SQ07s:
-              {}
-            SQ08s:
-              {}
-            SQ09s:
               {}
       Update Interval: 0
       Value: true
@@ -223,13 +363,13 @@ Visualization Manager:
       VsColor: 0; 255; 0
       VsScale: 1
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ01s/faster/obstacles
       Name: Obstacles
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /SQ01s/faster/fov
@@ -259,7 +399,7 @@ Visualization Manager:
       Marker Topic: /shapes_static_mesh
       Name: Static_Obstacles_Mesh
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -267,7 +407,7 @@ Visualization Manager:
       Marker Topic: /shapes_dynamic_mesh
       Name: Dynamic_Obstacles_Mesh
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -529,7 +669,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/faster/actual_traj
       Name: ActTraj
       Namespaces:
-        {}
+        ActualTraj_SQ01s: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -720,25 +860,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 14.119935035705566
+      Distance: 20.33331298828125
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.8654686212539673
-        Y: -2.566330909729004
+        X: -4.606320858001709
+        Y: -0.9767686128616333
         Z: -2.122510522895027e-7
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.4547967910766602
+      Pitch: 0.999797523021698
       Target Frame: LQ01s
       Value: ThirdPersonFollower (rviz)
-      Yaw: 4.7003984451293945
+      Yaw: 3.185396432876587
     Saved: ~
 Window Geometry:
   Displays:
