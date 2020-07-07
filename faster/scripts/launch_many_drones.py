@@ -27,7 +27,7 @@ def create_session(session_name, commands):
     print("Commands sent")
 
 
-def convertToStringCommand(action,quad,x,y,z,goal_x,goal_y,goal_z):
+def convertToStringCommand(action,quad,x,y,z,goal_x,goal_y,goal_z, yaw):
     if(action=="start"):
         return "roslaunch faster faster_specific.launch gazebo:=false quad:="+quad+" x:="+str(x)+" y:="+str(y)+" z:="+str(z)+" yaw:="+str(yaw);
     if(action=="send_goal"):
@@ -38,10 +38,10 @@ def convertToStringCommand(action,quad,x,y,z,goal_x,goal_y,goal_z):
         
 
 if __name__ == '__main__':
-    # formation="sphere"
-    formation="circle"
+    # formation="sphere", "square" "circle"
+    formation="square"
     commands = []
-    num_of_agents=16; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
+    num_of_agents=8; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
     radius=3.5;
 
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
         num_mer=int(math.sqrt(num_of_agents)); #Num of meridians
         num_of_agents_per_mer=int(math.sqrt(num_of_agents));    #Num of agents per meridian
 
-    if(formation=="circle"):
+    if(formation=="circle" or formation=="square"):
         num_mer=num_of_agents
         num_of_agents_per_mer=1
 
@@ -59,6 +59,29 @@ if __name__ == '__main__':
     id_number=1;
     shift_z=radius;
     shift_z=1.0
+
+    #TODO: Implement the square as well
+    square_starts=[[4.0, 0.0, 1.0], 
+                    [4.0, 4.0, 1.0], 
+                    [0.0, 4.0, 1.0], 
+                    [-4.0, 4.0, 1.0],
+                    [-4.0, 0.0, 1.0],
+                    [-4.0, -4.0, 1.0],
+                    [0.0, -4.0, 1.0],
+                    [4.0, -4.0, 1.0] ]
+
+    square_goals=  [[-4.0, 0.0, 1.0],
+                    [-4.0, -4.0, 1.0],
+                    [0.0, -4.0, 1.0],
+                    [4.0, -4.0, 1.0],
+                    [4.0, 0.0, 1.0],
+                    [4.0, 4.0, 1.0],
+                    [0.0, 4.0, 1.0],
+                    [-4.0, 4.0, 1.0]];
+
+    square_yaws_deg=  [-180.0, -135.0, -90.0, -45.0, 0.0, 45.0, 90.0, 135.0];
+
+
 
     for i in range(1, num_mer+1):
         theta=0.0+i*(2*math.pi/num_mer);
@@ -80,7 +103,20 @@ if __name__ == '__main__':
             quad="SQ0" + str(id_number) + "s";
             id_number=id_number+1;
 
-            commands.append(convertToStringCommand(sys.argv[1],quad,x,y,z,goal_x,goal_y,goal_z));
+            if(formation=="square"):
+                x=square_starts[i-1][0];
+                y=square_starts[i-1][1];
+                z=square_starts[i-1][2];
+
+                goal_x=square_goals[i-1][0];
+                goal_y=square_goals[i-1][1];
+                goal_z=square_goals[i-1][2];
+
+                yaw=square_yaws_deg[i-1]*math.pi/180;
+                print("yaw= ", square_yaws_deg[i-1])
+
+
+            commands.append(convertToStringCommand(sys.argv[1],quad,x,y,z,goal_x,goal_y,goal_z, yaw));
 
             # print ("quad= ",quad)
             # print ("theta= ",theta)

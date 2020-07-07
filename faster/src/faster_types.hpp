@@ -501,7 +501,6 @@ struct parameters
 
   Eigen::Vector3d v_max;
   Eigen::Vector3d a_max;
-  Eigen::Vector3d j_max;
 
   double factor_alpha;
 

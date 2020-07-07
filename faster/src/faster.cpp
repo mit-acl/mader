@@ -1112,7 +1112,7 @@ bool Faster::getNextGoal(state& next_goal)
       std::cout << "Not publishing new goal!!" << std::endl;
       return false;
     }*/
-  if (initializedStateAndTermGoal() == false)
+  if (initializedStateAndTermGoal() == false || (drone_status_ == DroneStatus::GOAL_REACHED && plan_.size() == 1))
   {
     // std::cout << "Not publishing new goal!!" << std::endl;
     return false;

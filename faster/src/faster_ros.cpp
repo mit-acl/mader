@@ -48,15 +48,12 @@ FasterRos::FasterRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle n
 
   std::vector<double> v_max_tmp;
   std::vector<double> a_max_tmp;
-  std::vector<double> j_max_tmp;
 
   safeGetParam(nh1_, "v_max", v_max_tmp);
   safeGetParam(nh1_, "a_max", a_max_tmp);
-  safeGetParam(nh1_, "j_max", j_max_tmp);
 
   par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
   par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
-  par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
 
   safeGetParam(nh1_, "factor_v_max", par_.factor_v_max);
 
@@ -171,7 +168,6 @@ FasterRos::FasterRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle n
   }
 
   faster_ptr_ = std::unique_ptr<Faster>(new Faster(par_));
-  ROS_INFO("Planner initialized");
 
   // Publishers
   pub_goal_ = nh1_.advertise<snapstack_msgs::QuadGoal>("goal", 1);
@@ -231,6 +227,8 @@ FasterRos::FasterRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle n
   ////
   bool success_service_call = system("rosservice call /change_mode 'mode: 1'");  // to avoid having to click on the GUI
   ////
+
+  ROS_INFO("Planner initialized");
 }
 
 FasterRos::~FasterRos()
@@ -318,11 +316,9 @@ void FasterRos::publishFOV()
 
 void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
 {
-  std::cout << "[Callback] Entering trajCB" << std::endl;
-
   if (msg.id == id_)
   {  // This is my own trajectory
-    std::cout << "[Callback] Leaving trajCB (own traj)" << std::endl;
+
     return;
   }
 
@@ -392,8 +388,6 @@ void FasterRos::trajCB(const faster_msgs::DynTraj& msg)
   // }
 
   faster_ptr_->updateTrajObstacles(tmp);
-
-  std::cout << "[Callback] Leaving trajCB" << std::endl;
 }
 
 // This trajectory is published when the agent arrives at A

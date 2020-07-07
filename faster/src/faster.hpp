@@ -12,12 +12,6 @@
 
 #include "solvers/nlopt/solverNlopt.hpp"
 
-#define MAP 1          // MAP refers to the occupancy grid
-#define UNKNOWN_MAP 2  // UNKNOWN_MAP refers to the unkown grid
-
-#define RETURN_LAST_VERTEX 0
-#define RETURN_INTERSECTION 1
-
 // status_ : YAWING-->TRAVELING-->GOAL_SEEN-->GOAL_REACHED-->YAWING-->TRAVELING-->...
 
 enum DroneStatus
