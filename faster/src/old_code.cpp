@@ -1,4 +1,141 @@
 
+
+//     #myMarker.type = myMarker.SPHERE # sphere
+
+//     # color=cm.jet(int(vrelative*256));
+//     # myMarker.color=ColorRGBA(color[0], color[1], color[2], color[3])
+
+//     # myMarker.scale.x=0.4
+//     # myMarker.scale.y=0
+
+//     # if(i!=1):
+//     #     markerArray.markers.append(myMarker)
+
+// # markerPub_iros= rospy.Publisher('/iros', MarkerArray, queue_size=10)
+// # markerPub_icra = rospy.Publisher('/icra', MarkerArray, queue_size=10)
+
+// # print("Waiting for a rosmaster...")
+// # rospy.init_node('myNode', anonymous=True)
+// # rospy.sleep(0.3)
+// # print("Rosmaster found")
+
+// # vmax=5.9
+// # vmin=0;
+
+// # def generate_coloured_traj(name_bag, vmin, vmax):
+
+// #   markerArray = MarkerArray()
+// #   i=0;
+// #   x_old=0
+// #   y_old=0
+// #   z_old=0
+// #   bag = rosbag.Bag(name_bag)
+// #   dist=0
+// #   time_vector=[0]
+// #   dist_vector=[0]
+// #   time_0=0
+// #   for topic, msg, t in bag.read_messages(topics=['/SQ01s/vicon']):
+// #       i=i+1
+
+// #       vx=msg.twist.linear.x
+// #       vy=msg.twist.linear.y
+// #       vz=msg.twist.linear.z
+
+// #       x=msg.pose.position.x
+// #       y=msg.pose.position.y
+// #       z=msg.pose.position.z
+// #       if(name_bag=="iros.bag"):
+// #           x=msg.pose.position.x-0.2
+// #           y=msg.pose.position.y+0.05
+// #       if(name_bag=="icra.bag"):
+// #           y=msg.pose.position.y
+
+// #       vnorm=math.sqrt(vx**2 + vy**2 + vz**2)
+
+// #       #Saturate values
+// #       vnorm=max(vnorm,vmin)
+// #       vnorm=min(vnorm,vmax)
+
+// #       vrelative=(vnorm-vmin)/(vmax-vmin) #Value between 0 and 1
+// #       myMarker = Marker()
+// #       myMarker.header.frame_id = "map"
+// #       myMarker.header.seq = i
+// #       myMarker.header.stamp    = rospy.get_rostime()
+// #       #myMarker.ns = "robot"
+// #       myMarker.id = i
+
+// #       myMarker.type = myMarker.ARROW # sphere
+
+// #       myMarker.points=[0,0] #Declare the list
+// #       myMarker.points[0]=Point(x_old,y_old,z_old)
+// #       myMarker.points[1]=Point(x,y,z)
+
+// #       #myMarker.type = myMarker.SPHERE # sphere
+// #       myMarker.action = myMarker.ADD
+
+// #       color=cm.jet(int(vrelative*256));
+// #       myMarker.color=ColorRGBA(color[0], color[1], color[2], color[3])
+
+// #       myMarker.scale.x=0.4
+// #       myMarker.scale.y=0
+
+// #       if(i!=1):
+// #           markerArray.markers.append(myMarker)
+// #           dist=dist+math.sqrt((x-x_old)**2 + (y-y_old)**2 + (z-z_old)**2)
+
+// #           dist_vector.append(dist)
+// #           time=msg.header.stamp.secs+msg.header.stamp.nsecs*1e-9 - time_0
+// #           time_vector.append(time)
+// #       else:
+// #           time_0=msg.header.stamp.secs+msg.header.stamp.nsecs*1e-9
+// #       x_old=x
+// #       y_old=y
+// #       z_old=z
+
+// #   plt.plot(time_vector,dist_vector)
+// #   #plt.show()
+// #   bag.close()
+
+// #   return markerArray
+
+// # markerPub_iros.publish(generate_coloured_traj("iros.bag",vmin, vmax))
+// # markerPub_icra.publish(generate_coloured_traj("icra.bag",vmin, vmax))
+
+// # #Uncomment to show the colorbar:
+// # import matplotlib
+// # matplotlib.rcParams['mathtext.fontset'] = 'stix'
+// # matplotlib.rcParams['font.family'] = 'STIXGeneral'
+// # matplotlib.pyplot.title(r'ABC123 vs $\mathrm{ABC123}^{123}$')
+
+// # import random
+// # x,y = np.mgrid[-4:4:0.4,-4:4:0.4]
+// # z = np.sqrt(x**2+y**2)
+
+// # for i in range(30):
+
+// #     a = random.choice(range(len(z)))
+// #     b = random.choice(range(len(z)))
+
+// #     z[a,b] = np.nan
+
+// # plt.close(1)
+// # fig = plt.figure(1, figsize=(12,12))
+
+// # # The plot itself
+// # plt1 = plt.imshow(z, cmap = 'jet', vmin =vmin , vmax = vmax, interpolation='nearest')
+
+// # # Define the limits, labels, ticks as required
+// # plt.grid(True)
+// # plt.ylabel('My y label')
+// # plt.xlabel('My x label')
+
+// # plt.colorbar(plt1, label=' ',aspect=10)
+
+// # plt.show()
+
+// # print("Published everything, waiting until killed")
+// # rospy.spin()
+
 // int samples_per_traj = 100;
 // double inc = (t_end - t_init) / samples_per_traj;
 // for (int i = 0; i < samples_per_traj; i++)
