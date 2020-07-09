@@ -56,7 +56,7 @@ private:
 
   double previous_yaw_ = 0.0;
 
-  void dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compiled);
+  void dynTraj2dynTrajCompiled(const dynTraj& traj, dynTrajCompiled& traj_compiled);
 
   bool initializedStateAndTermGoal();
 
@@ -151,8 +151,6 @@ private:
   Eigen::Matrix<double, 4, 4> A_rest_pos_basis_inverse_;
 
   separator::Separator* separator_solver_;
-
-
 };
 
 #endif

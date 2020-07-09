@@ -110,8 +110,9 @@ Mader::Mader(parameters par) : par_(par)
   separator_solver_ = new separator::Separator();
 }
 
-void Mader::dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compiled)
+void Mader::dynTraj2dynTrajCompiled(const dynTraj& traj, dynTrajCompiled& traj_compiled)
 {
+  mtx_t_.lock();
   for (auto function_i : traj.function)
   {
     typedef exprtk::symbol_table<double> symbol_table_t;
@@ -130,6 +131,9 @@ void Mader::dynTraj2dynTrajCompiled(dynTraj& traj, dynTrajCompiled& traj_compile
 
     traj_compiled.function.push_back(expression);
   }
+
+  mtx_t_.unlock();
+
   traj_compiled.bbox = traj.bbox;
   traj_compiled.id = traj.id;
   traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
@@ -161,23 +165,24 @@ void Mader::updateTrajObstacles(dynTraj traj)
     have_received_trajectories_while_checking_ = true;
   }
 
-  std::cout << "In updateTrajObstacles 0.5" << std::endl;
+  std::cout << "In updateTrajObstacles, waiting before mtx" << std::endl;
   mtx_trajs_.lock();
-  std::cout << "In updateTrajObstacles 0.6" << std::endl;
+  std::cout << on_magenta << "[UTO] mtx_trajs_ is locked" << reset << std::endl;
+  // std::cout << "In updateTrajObstacles 0.6" << std::endl;
 
   std::vector<dynTrajCompiled>::iterator obs_ptr = std::find_if(
       trajs_.begin(), trajs_.end(), [=](const dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
 
-  std::cout << "In updateTrajObstacles 0.7" << std::endl;
+  // std::cout << "In updateTrajObstacles 0.7" << std::endl;
 
   bool exists_in_local_map = (obs_ptr != std::end(trajs_));
 
   dynTrajCompiled traj_compiled;
-  std::cout << "In updateTrajObstacles 0.8" << std::endl;
+  // std::cout << "In updateTrajObstacles 0.8" << std::endl;
 
   dynTraj2dynTrajCompiled(traj, traj_compiled);
 
-  std::cout << "In updateTrajObstacles 0.9" << std::endl;
+  // std::cout << "In updateTrajObstacles 0.9" << std::endl;
 
   // std::cout << bold << on_green << "[F]traj_compiled.pwp.times.size()=" << traj_compiled.pwp.times.size() << reset
   //           << std::endl;
@@ -200,11 +205,11 @@ void Mader::updateTrajObstacles(dynTraj traj)
   // Note that these positions are obtained with the trajectory stored in the past in the local map
   std::vector<int> ids_to_remove;
 
-  std::cout << "In updateTrajObstacles 2" << std::endl;
+  // std::cout << "In updateTrajObstacles 2" << std::endl;
 
   for (int index_traj = 0; index_traj < trajs_.size(); index_traj++)
   {
-    std::cout << "In updateTrajObstacles 3" << std::endl;
+    // std::cout << "In updateTrajObstacles 3" << std::endl;
 
     bool traj_affects_me = false;
 
@@ -217,6 +222,8 @@ void Mader::updateTrajObstacles(dynTraj traj)
         trajs_[index_traj].function[2].value();            /////////////////
 
     mtx_t_.unlock();
+
+    // mtx_t_.unlock();
     if ((center_obs - state_.pos).norm() > 2 * par_.R_local_map)  // 2*Ra because: traj_{k-1} is inside a sphere of Ra.
                                                                   // Then, in iteration k the point A (which I don't
                                                                   // know yet)  is taken along that trajectory, and
@@ -231,7 +238,7 @@ void Mader::updateTrajObstacles(dynTraj traj)
     }
   }
 
-  std::cout << "In updateTrajObstacles 4" << std::endl;
+  // std::cout << "In updateTrajObstacles 4" << std::endl;
 
   for (auto id : ids_to_remove)
   {
@@ -245,6 +252,7 @@ void Mader::updateTrajObstacles(dynTraj traj)
 
   std::cout << "In updateTrajObstacles 5" << std::endl;
   mtx_trajs_.unlock();
+  std::cout << on_magenta << "[UTO] mtx_trajs_ is unlocked" << reset << std::endl;
   std::cout << "In updateTrajObstacles 6" << std::endl;
 
   have_received_trajectories_while_checking_ = false;
@@ -328,11 +336,18 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(dynTrajCompiled& traj, do
          ((t > t_end) && ((t - t_end) < par_.gamma));  /////// This is to ensure we have a sample a the end
          t = t + par_.gamma)
     {
+      mtx_t_.lock();
       t_ = std::min(t, t_end);  // this min only has effect on the last sample
 
+      std::cout << "traj.function.size()=" << traj.function.size() << std::endl;
+      // std::cout << "traj.function[0]" << traj.function[0] << std::endl;
+      std::cout << "Computing x" << std::endl;
       double x = traj.function[0].value();
+      std::cout << "Computing y" << std::endl;
       double y = traj.function[1].value();
+      std::cout << "Computing z" << std::endl;
       double z = traj.function[2].value();
+      mtx_t_.unlock();
 
       //"Minkowski sum along the trajectory: box centered on the trajectory"
       points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z + delta.z()));
@@ -385,6 +400,7 @@ void Mader::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doubl
     // STATIC OBSTACLES/AGENTS
     if (traj.is_static == true)
     {
+      // mtx_t_.lock();
       mtx_t_.lock();
       t_ = t_start;  // which is constant along the trajectory
 
@@ -397,7 +413,9 @@ void Mader::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doubl
       {
         center_obs = traj.pwp.eval(t_);
       }
+
       mtx_t_.unlock();
+      // mtx_t_.unlock();
       Eigen::Vector3d positive_half_diagonal;
       positive_half_diagonal << traj.bbox[0] / 2.0, traj.bbox[1] / 2.0, traj.bbox[2] / 2.0;
 
@@ -628,7 +646,6 @@ bool Mader::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
 {
   started_check_ = true;
 
-  mtx_trajs_.lock();
   bool result = true;
   for (auto traj : trajs_)
   {
@@ -656,7 +673,6 @@ bool Mader::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
   }
   started_check_ = false;
 
-  mtx_trajs_.unlock();
   ROS_INFO_STREAM("Returning " << result);
   return result;
   // traj_compiled.time_received = ros::Time::now().toSec();
@@ -897,11 +913,13 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   ////////////////
 
   mtx_trajs_.lock();
+  std::cout << on_magenta << "[RC] mtx_trajs_ is locked" << reset << std::endl;
 
   time_init_opt_ = ros::Time::now().toSec();
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
   mtx_trajs_.unlock();
+  std::cout << on_magenta << "[RC] mtx_trajs_ is unlocked" << reset << std::endl;
 
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
@@ -944,7 +962,11 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   snlopt_->getSolution(pwp_now);
 
   MyTimer check_t(true);
+  mtx_trajs_.lock();
+  std::cout << on_magenta << "[RC2] mtx_trajs_ is locked" << reset << std::endl;
   bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now);
+  mtx_trajs_.unlock();
+  std::cout << on_magenta << "[RC2] mtx_trajs_ is unlocked" << reset << std::endl;
   std::cout << bold << "Check Timer=" << check_t << std::endl;
 
   if (is_safe_after_opt == false)
