@@ -1,6 +1,6 @@
 [submodule "acl-gazebo"]
 	path = acl-gazebo
-	url = git@gitlab.com:mit-acl/lab/acl-gazebo.git
+	url = https://gitlab.com/mit-acl/lab/acl-gazebo
 	branch = master
 [submodule "catkin_simple"]
 	path = catkin_simple
@@ -12,9 +12,9 @@
 	branch = master
 [submodule "behavior_selector"]
 	path = behavior_selector
-	url = git@gitlab.com:mit-acl/fsw/behavior_selector.git
+	url = https://gitlab.com/mit-acl/fsw/behavior_selector.git
 	branch = master
 [submodule "snapstack_msgs"]
 	path = snapstack_msgs
-	url = git@gitlab.com:mit-acl/fsw/snap-stack/snapstack_msgs.git
+	url = https://gitlab.com/mit-acl/fsw/snap-stack/snapstack_msgs
 	branch = master
