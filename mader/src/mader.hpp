@@ -122,6 +122,7 @@ private:
 
   std::mutex mtx_G;
   std::mutex mtx_G_term;
+  std::mutex mtx_t_;
 
   state stateA_;  // It's the initial condition for the solver
 
@@ -150,6 +151,8 @@ private:
   Eigen::Matrix<double, 4, 4> A_rest_pos_basis_inverse_;
 
   separator::Separator* separator_solver_;
+
+
 };
 
 #endif

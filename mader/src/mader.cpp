@@ -168,10 +168,16 @@ void Mader::updateTrajObstacles(dynTraj traj)
   std::vector<dynTrajCompiled>::iterator obs_ptr = std::find_if(
       trajs_.begin(), trajs_.end(), [=](const dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
 
+  std::cout << "In updateTrajObstacles 0.7" << std::endl;
+
   bool exists_in_local_map = (obs_ptr != std::end(trajs_));
 
   dynTrajCompiled traj_compiled;
+  std::cout << "In updateTrajObstacles 0.8" << std::endl;
+
   dynTraj2dynTrajCompiled(traj, traj_compiled);
+
+  std::cout << "In updateTrajObstacles 0.9" << std::endl;
 
   // std::cout << bold << on_green << "[F]traj_compiled.pwp.times.size()=" << traj_compiled.pwp.times.size() << reset
   //           << std::endl;
@@ -202,6 +208,7 @@ void Mader::updateTrajObstacles(dynTraj traj)
 
     bool traj_affects_me = false;
 
+    mtx_t_.lock();
     t_ = ros::Time::now().toSec();
 
     Eigen::Vector3d center_obs;
@@ -209,6 +216,7 @@ void Mader::updateTrajObstacles(dynTraj traj)
         trajs_[index_traj].function[1].value(),            ////////////////
         trajs_[index_traj].function[2].value();            /////////////////
 
+    mtx_t_.unlock();
     if ((center_obs - state_.pos).norm() > 2 * par_.R_local_map)  // 2*Ra because: traj_{k-1} is inside a sphere of Ra.
                                                                   // Then, in iteration k the point A (which I don't
                                                                   // know yet)  is taken along that trajectory, and
@@ -244,7 +252,7 @@ void Mader::updateTrajObstacles(dynTraj traj)
 }
 
 std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(PieceWisePol& pwp, double t_start, double t_end,
-                                                        const Eigen::Vector3d& delta_inflation)
+                                                       const Eigen::Vector3d& delta_inflation)
 {
   std::vector<Eigen::Vector3d> points;
 
@@ -377,6 +385,7 @@ void Mader::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doubl
     // STATIC OBSTACLES/AGENTS
     if (traj.is_static == true)
     {
+      mtx_t_.lock();
       t_ = t_start;  // which is constant along the trajectory
 
       Eigen::Vector3d center_obs;
@@ -388,7 +397,7 @@ void Mader::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doubl
       {
         center_obs = traj.pwp.eval(t_);
       }
-
+      mtx_t_.unlock();
       Eigen::Vector3d positive_half_diagonal;
       positive_half_diagonal << traj.bbox[0] / 2.0, traj.bbox[1] / 2.0, traj.bbox[2] / 2.0;
 
@@ -654,8 +663,8 @@ bool Mader::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
 }
 
 bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
-                    std::vector<Hyperplane3D>& planes_guesses, int& num_of_LPs_run, int& num_of_QCQPs_run,
-                    PieceWisePol& pwp_out)
+                   std::vector<Hyperplane3D>& planes_guesses, int& num_of_LPs_run, int& num_of_QCQPs_run,
+                   PieceWisePol& pwp_out)
 {
   MyTimer replanCB_t(true);
 
