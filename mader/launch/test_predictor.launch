@@ -1,0 +1,12 @@
+<launch>
+
+	<arg name="quad" default="SQ01s"/>
+
+	<node ns="$(arg quad)" name="predictor" pkg="mader" type="test_predictor_node" output="screen" clear_params="true" > 
+		<rosparam file="$(find mader)/param/mader.yaml" command="load" ns="mader"/>
+
+		<remap from="~state" to="state"/>
+	</node>
+
+
+</launch>

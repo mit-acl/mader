@@ -1,0 +1,10 @@
+<launch>
+
+	<node pkg="mader" type="astar_example" name="astar_example" output="screen" >
+		<param name="basis" value="MINVO"/> <!-- MINVO   or   B_SPLINE or BEZIER-->
+	</node>
+
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mader)/rviz_cfgs/astar.rviz"/>
+
+
+</launch>

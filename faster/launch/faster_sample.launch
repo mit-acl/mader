@@ -1,8 +1,0 @@
-<launch>
-
-	<node name="faster" pkg="faster" type="faster_sample" output="screen" clear_params="true"> 
-	</node>
-
-</launch>
-
-<!-- launch-prefix="xterm -e gdb -ex run args -->

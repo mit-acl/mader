@@ -1,0 +1,10 @@
+<launch>
+
+	<arg name="action" default=""/>
+
+	<node name="launch_many_drones" pkg="mader" type="launch_many_drones.py" output="screen" clear_params="true" args="$(arg action)" /> 
+
+</launch>
+
+
+<!-- launch-prefix="xterm -e gdb -ex run args" -->
