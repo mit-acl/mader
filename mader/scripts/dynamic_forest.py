@@ -49,9 +49,9 @@ class MovingForest:
         self.z_min= 1.0 
         self.z_max= 1.0
         self.scale=1.0;
-        self.slower_min=1.1
-        self.slower_max= 1.1
-        self.bbox_dynamic=[0.8, 0.8, 0.8] #[0.6, 0.6, 0.6]
+        self.slower_min=1.6
+        self.slower_max= 1.6
+        self.bbox_dynamic=[0.6, 0.6, 0.6] #[0.6, 0.6, 0.6]
         self.bbox_static_vert=[0.4, 0.4, 4]
         self.bbox_static_horiz=[0.4, 8, 0.4]
         self.percentage_vert=100;
