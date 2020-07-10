@@ -21,10 +21,10 @@ if __name__ == '__main__':
     os.system("sed -i '/basis/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment basis param
 
     num_of_sims=5;
-    total_num_of_obs=[50,100, 150, 200, 250, 300, 350]#[1000]#[50,400,500,600,700]#[150, 200, 250, 300, 350] #[340,380,420,460,500]; #140,180,220,260,300
+    total_num_of_obs=[50,100,150,200, 250]#[1000]#[50,400,500,600,700]#[150, 200, 250, 300, 350] #[340,380,420,460,500]; #140,180,220,260,300
     commands = []
 
-    folder_bags="/home/jtorde/Desktop/ws/src/paper_data/single_agent";
+    folder_bags="/home/jtordemit/Desktop/bags";
     all_basis=["MINVO", "BEZIER", "B_SPLINE"] #or"MINVO", "BEZIER", "B_SPLINE"
     name_node_record="bag_recorder"
     kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
@@ -43,13 +43,13 @@ if __name__ == '__main__':
 
                 commands.append("roslaunch mader all.launch gui:=false rviz:=false environment:=false");
                 commands.append("sleep 1.0 &&rosrun mader dynamic_obstacles.py "+str(total_num_of_obs[k]));
-                commands.append("sleep 1.5 && rosparam set /SQ01s/mader/basis "+basis); #Remember to comment the parameter "basis" in mader.yaml before running this file
-                commands.append("sleep 1.5 && rosparam set /SQ01s/mader/visual false"); #Remember to comment the parameter "visual" in mader.yaml before running this file
+                commands.append("sleep 3.0 && rosparam set /SQ01s/mader/basis "+basis); #Remember to comment the parameter "basis" in mader.yaml before running this file
+                commands.append("sleep 3.0 && rosparam set /SQ01s/mader/visual false"); #Remember to comment the parameter "visual" in mader.yaml before running this file
 
-                commands.append("sleep 4.0 && roslaunch mader mader.launch");
-                commands.append("sleep 4.0 && cd "+folder_bags+" && rosbag record -o "+basis+"_obs_"+str(total_num_of_obs[k])+"_sim_"+str(s)+" /SQ01s/goal __name:="+name_node_record);
+                commands.append("sleep 5.0 && roslaunch mader mader.launch");
+                commands.append("sleep 5.0 && cd "+folder_bags+" && rosbag record -o "+basis+"_obs_"+str(total_num_of_obs[k])+"_sim_"+str(s)+" /SQ01s/goal __name:="+name_node_record);
                 #publishing the goal should be the last command
-                commands.append("sleep 4.0 && rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped \'{header: {stamp: now, frame_id: \"world\"}, pose: {position: {x: 75, y: 0, z: 1}, orientation: {w: 1.0}}}\'");
+                commands.append("sleep 5.0 && rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped \'{header: {stamp: now, frame_id: \"world\"}, pose: {position: {x: 75, y: 0, z: 1}, orientation: {w: 1.0}}}\'");
 
                 print("len(commands)= " , len(commands))
                 session_name="run_many_sims_single_agent_session"
