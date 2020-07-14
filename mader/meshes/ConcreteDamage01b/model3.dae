@@ -4212,7 +4212,7 @@
     </library_effects>
     <library_images>
         <image id="ID8">
-            <init_from>model/ConcAggr.jpg</init_from>
+            <init_from>model/wood1.jpg</init_from>
         </image>
         <image id="ID57">
             <init_from>model/wood1.jpg</init_from>

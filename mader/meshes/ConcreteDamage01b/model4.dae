@@ -4212,10 +4212,10 @@
     </library_effects>
     <library_images>
         <image id="ID8">
-            <init_from>model/ConcAggr.jpg</init_from>
+            <init_from>model/wood4.jpg</init_from>
         </image>
         <image id="ID57">
-            <init_from>model/ConcAggr.jpg</init_from>
+            <init_from>model/wood4.jpg</init_from>
         </image>
         <image id="ID148">
             <init_from>model/RustBase.jpg</init_from>
