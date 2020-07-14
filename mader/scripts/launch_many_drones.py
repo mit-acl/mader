@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # formation="sphere", "square" "circle"
     formation="sphere"
     commands = []
-    num_of_agents=8; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
+    num_of_agents=16; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
     radius=10;
 
 
