@@ -97,8 +97,8 @@ factor_v_max: 1.0 #\in [0,1]. Used to find the total duration of a given traject
 alpha_shrink: 0.9 #\in [0,1] Only used for MINVO/Bezier
 
 
-alpha: 0.0 #[m] Error in position
-beta: 0.0 #[m] Deviation between the trajectory and the segment between two discretization points
+alpha: 0.05 #[m] Error in position
+beta: 0.03 #[m] Deviation between the trajectory and the segment between two discretization points
 gamma: 0.1 #[seconds] >0 Time step between discretization points
 
 
