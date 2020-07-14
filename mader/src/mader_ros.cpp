@@ -17,6 +17,8 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 {
   safeGetParam(nh1_, "use_ff", par_.use_ff);
   safeGetParam(nh1_, "visual", par_.visual);
+  safeGetParam(nh1_, "color_type", par_.color_type);
+  safeGetParam(nh1_, "n_agents", par_.n_agents);
 
   safeGetParam(nh1_, "dc", par_.dc);
   safeGetParam(nh1_, "goal_radius", par_.goal_radius);
@@ -675,7 +677,8 @@ void MaderRos::pubTraj(const std::vector<state>& data)
 
   double scale = 0.15;
 
-  traj_safe_colored_ = trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale);
+  traj_safe_colored_ = trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale,
+                                                     par_.color_type, id_, par_.n_agents);
   pub_traj_safe_colored_.publish(traj_safe_colored_);
 }
 
@@ -693,7 +696,17 @@ void MaderRos::pubActualTraj()
   m.id = actual_trajID_;  // % 3000;  // Start the id again after ___ points published (if not RVIZ goes very slow)
   m.ns = "ActualTraj_" + name_drone_;
   actual_trajID_++;
-  m.color = getColorJet(current_state.vel.norm(), 0, par_.v_max.maxCoeff());  // color(RED_NORMAL);
+  // m.color = getColorJet(current_state.vel.norm(), 0, par_.v_max.maxCoeff());  // color(RED_NORMAL);
+
+  if (par_.color_type == "vel")
+  {
+    m.color = getColorJet(current_state.vel.norm(), 0, par_.v_max.maxCoeff());  // note that par_.v_max is per axis!
+  }
+  else
+  {
+    m.color = getColorJet(id_, 0, par_.n_agents);  // note that par_.v_max is per axis!
+  }
+
   m.scale.x = 0.15;
   m.scale.y = 0.0001;
   m.scale.z = 0.0001;

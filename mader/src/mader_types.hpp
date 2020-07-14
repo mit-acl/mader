@@ -473,6 +473,9 @@ struct parameters
   bool use_ff;
   bool visual;
 
+  std::string color_type;
+  int n_agents;
+
   double dc;
   double goal_radius;
   double drone_radius;

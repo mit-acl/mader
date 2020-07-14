@@ -1,5 +1,8 @@
 use_ff: true # use feedforward
 visual: true #publish visualization stuff
+color_type: "vel" #"vel" or "plain"
+n_agents: 16 #only used for the color visualization
+
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.05    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
 drone_radius: 0.05  #(m) Used for collision checking

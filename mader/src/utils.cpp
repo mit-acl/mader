@@ -1004,7 +1004,8 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
 }
 
 visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& data, double max_value, int increm,
-                                                              std::string ns, double scale)
+                                                              std::string ns, double scale, std::string color_type,
+                                                              int id_agent, int n_agents)
 {
   visualization_msgs::MarkerArray marker_array;
 
@@ -1030,7 +1031,14 @@ visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& 
     m.ns = ns;
     m.action = visualization_msgs::Marker::ADD;
     m.id = j;
-    m.color = getColorJet(vel, 0, max_value);  // note that par_.v_max is per axis!
+    if (color_type == "vel")  // TODO: "vel" is hand-coded
+    {
+      m.color = getColorJet(vel, 0, max_value);  // note that par_.v_max is per axis!
+    }
+    else
+    {
+      m.color = getColorJet(id_agent, 0, n_agents);  // note that par_.v_max is per axis!
+    }
     m.scale.x = scale;
     m.scale.y = 0.0000001;  // rviz complains if not
     m.scale.z = 0.0000001;  // rviz complains if not
