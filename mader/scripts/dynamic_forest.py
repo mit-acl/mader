@@ -46,15 +46,15 @@ class MovingForest:
         self.x_max= 6.0
         self.y_min= -6.0 
         self.y_max= 6.0
-        self.z_min= 1.0 
-        self.z_max= 1.0
+        self.z_min= -6.0 
+        self.z_max= 6.0
         self.scale=1.0;
         self.slower_min=1.2
         self.slower_max= 1.2
         self.bbox_dynamic=[0.6, 0.6, 0.6] #[0.6, 0.6, 0.6]
-        self.bbox_static_vert=[0.4, 0.4, 4]
-        self.bbox_static_horiz=[0.4, 8, 0.4]
-        self.percentage_vert=100;
+        self.bbox_static_vert=[0.4, 0.4, 6]
+        self.bbox_static_horiz=[0.4, 4, 0.4]
+        self.percentage_vert=0.5;
 
 
 
@@ -97,12 +97,14 @@ class FakeSim:
             bbox_i=[]; 
             if(i<self.world.percentage_vert*self.world.num_of_stat_objects):
                 bbox_i=self.world.bbox_static_vert;
-                self.z_all.append(bbox_i[2]/2.0);
+                self.z_all.append(random.uniform(self.world.z_min, self.world.z_max));
                 self.type.append("static_vert")
+                self.meshes.append(random.choice(available_meshes_static));
             else:
                 bbox_i=self.world.bbox_static_horiz;
-                self.z_all.append(random.uniform(0.0, 3.0));
+                self.z_all.append(random.uniform(-3.0, 3.0));
                 self.type.append("static_horiz")
+                self.meshes.append(random.choice(available_meshes_dynamic));
 
 
             self.x_all.append(random.uniform(self.world.x_min-self.world.scale, self.world.x_max+self.world.scale));
@@ -111,7 +113,7 @@ class FakeSim:
             self.offset_all.append(random.uniform(-2*math.pi, 2*math.pi));
             self.slower.append(random.uniform(self.world.slower_min, self.world.slower_max));
             # self.type.append("static")
-            self.meshes.append(random.choice(available_meshes_static));
+            
             self.bboxes.append(bbox_i)
 
 
@@ -179,7 +181,7 @@ class FakeSim:
               if(self.type[i]=="static_vert"):
                 [x_string, y_string, z_string] = self.static(self.x_all[i], self.y_all[i], self.z_all[i])
               else:
-                [x_string, y_string, z_string] = self.wave_in_z(self.x_all[i], self.y_all[i], self.z_all[i], s, self.offset_all[i], 1.0)
+                [x_string, y_string, z_string] = self.wave_in_z(self.x_all[i], self.y_all[i], self.z_all[i], 2.0, self.offset_all[i], 1.0)
 
 
 
@@ -321,7 +323,7 @@ if __name__ == '__main__':
     #     total_num_obs=int(sys.argv[1])
 
     # print("sys.argv[1]= ", sys.argv[1])
-    total_num_obs=50
+    total_num_obs=70
     ns = rospy.get_namespace()
     try:
         rospy.init_node('dynamic_obstacles')

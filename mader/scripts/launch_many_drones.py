@@ -39,15 +39,17 @@ def convertToStringCommand(action,quad,x,y,z,goal_x,goal_y,goal_z, yaw):
 
 if __name__ == '__main__':
     # formation="sphere", "square" "circle"
-    formation="circle"
+    formation="sphere"
     commands = []
     num_of_agents=32; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
     radius=10;
 
 
     if(formation=="sphere"):
-        num_mer=int(math.sqrt(num_of_agents)); #Num of meridians
-        num_of_agents_per_mer=int(math.sqrt(num_of_agents));    #Num of agents per meridian
+        # num_mer=int(math.sqrt(num_of_agents)); #Num of meridians
+        # num_of_agents_per_mer=int(math.sqrt(num_of_agents));    #Num of agents per meridian
+        num_mer=int(num_of_agents/4.0); #Num of meridians
+        num_of_agents_per_mer=int(num_of_agents/num_mer);    #Num of agents per meridian
 
     if(formation=="circle" or formation=="square"):
         num_mer=num_of_agents
