@@ -67,6 +67,8 @@ void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix
 
 // PieceWisePolWithInfo pwpMsg2PwpWithInfo(const mader_msgs::PieceWisePolTraj& pwp_msg);
 
+PieceWisePol createPwpFromStaticPosition(const state& current_state);
+
 PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg);
 mader_msgs::PieceWisePolTraj pwp2PwpMsg(const PieceWisePol& pwp);
 

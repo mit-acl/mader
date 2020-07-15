@@ -60,7 +60,7 @@ private:
 
   void publishText();
 
-  void publishFOV();
+  // void publishFOV();
 
   void pubObstacles(mader_types::Edges edges_obstacles);
 
@@ -123,4 +123,6 @@ private:
   bool published_initial_position_ = false;
 
   Eigen::Affine3d W_T_B_;
+
+  PieceWisePol pwp_last_;
 };

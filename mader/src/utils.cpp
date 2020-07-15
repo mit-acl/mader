@@ -302,6 +302,26 @@ visualization_msgs::Marker edges2Marker(const mader_types::Edges& edges, std_msg
   return marker;
 }
 
+PieceWisePol createPwpFromStaticPosition(const state& current_state)
+{
+  PieceWisePol pwp;
+  pwp.times = { ros::Time::now().toSec(), ros::Time::now().toSec() + 1e10 };
+
+  Eigen::Matrix<double, 4, 1> coeff_x_interv0;  // [a b c d]' of the interval 0
+  Eigen::Matrix<double, 4, 1> coeff_y_interv0;  // [a b c d]' of the interval 0
+  Eigen::Matrix<double, 4, 1> coeff_z_interv0;  // [a b c d]' of the interval 0
+
+  coeff_x_interv0 << 0.0, 0.0, 0.0, current_state.pos.x();
+  coeff_y_interv0 << 0.0, 0.0, 0.0, current_state.pos.y();
+  coeff_z_interv0 << 0.0, 0.0, 0.0, current_state.pos.z();
+
+  pwp.coeff_x.push_back(coeff_x_interv0);
+  pwp.coeff_y.push_back(coeff_y_interv0);
+  pwp.coeff_z.push_back(coeff_z_interv0);
+
+  return pwp;
+}
+
 // returns a PieceWisePol, taking the polynomials of p1 and p2 that should satisfy p1>t, p2>t
 PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& p1, PieceWisePol& p2)
 {

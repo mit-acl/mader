@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # formation="sphere", "square" "circle"
     formation="sphere"
     commands = []
-    num_of_agents=8; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
+    num_of_agents=4; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
     radius=10;
 
 
@@ -50,7 +50,7 @@ if __name__ == '__main__':
         # num_of_agents_per_mer=int(math.sqrt(num_of_agents));    #Num of agents per meridian
         if(num_of_agents%3==0):
             num_mer=max(int(num_of_agents/4.0),3); #Num of meridians
-        else: #either divisible by 4 or will force by changing num of agents
+        else: #either divisible by 4 or will force it by changing num of agents
             num_mer=max(int(num_of_agents/4.0),4); #Num of meridians
         num_of_agents_per_mer=int(num_of_agents/num_mer);    #Num of agents per meridian
 

@@ -224,15 +224,23 @@ void Mader::updateTrajObstacles(dynTraj traj)
     mtx_t_.unlock();
 
     // mtx_t_.unlock();
-    if ((center_obs - state_.pos).norm() > 2 * par_.R_local_map)  // 2*Ra because: traj_{k-1} is inside a sphere of Ra.
-                                                                  // Then, in iteration k the point A (which I don't
-                                                                  // know yet)  is taken along that trajectory, and
-                                                                  // another trajectory of radius Ra will be obtained.
-                                                                  // Therefore, I need to take 2*Ra to make sure the
-                                                                  // extreme case (A taken at the end of traj_{k-1} is
-                                                                  // covered). removeTrajsThatWillNotAffectMe will later
-                                                                  // on take care of deleting the ones I don't need once
-                                                                  // I know A
+    if (((traj_compiled.is_static == true) && (center_obs - state_.pos).norm() > 2 * par_.Ra) ||  ////
+        ((traj_compiled.is_static == false) && (center_obs - state_.pos).norm() > 4 * par_.Ra))
+    // #### Static Obstacle: 2*Ra because: traj_{k-1} is inside a sphere of Ra.
+    // Then, in iteration k the point A (which I don't
+    // know yet)  is taken along that trajectory, and
+    // another trajectory of radius Ra will be obtained.
+    // Therefore, I need to take 2*Ra to make sure the
+    // extreme case (A taken at the end of traj_{k-1} is
+    // covered).
+
+    // #### Dynamic Agent: 4*Ra. Same reasoning as above, but with two agets
+    // #### Dynamic Obstacle: 4*Ra, it's a heuristics.
+
+    // ######IMPORTANT######
+    // Note that removeTrajsThatWillNotAffectMe will later
+    // on take care of deleting the ones I don't need once
+    // I know A
     {
       ids_to_remove.push_back(trajs_[index_traj].id);
     }
@@ -260,11 +268,9 @@ void Mader::updateTrajObstacles(dynTraj traj)
 }
 
 std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(PieceWisePol& pwp, double t_start, double t_end,
-                                                       const Eigen::Vector3d& delta_inflation)
+                                                       const Eigen::Vector3d& delta)
 {
   std::vector<Eigen::Vector3d> points;
-
-  Eigen::Vector3d delta = delta_inflation;
 
   // std::cout << "This is an agent!" << std::endl;
   std::vector<double>::iterator low = std::lower_bound(pwp.times.begin(), pwp.times.end(), t_start);
@@ -300,7 +306,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(PieceWisePol& pwp, double
       double y = V(1, j);
       double z = V(2, j);  //[x,y,z] is the point
 
-      if (delta_inflation.norm() < 1e-6)
+      if (delta.norm() < 1e-6)
       {  // no inflation
         points.push_back(Eigen::Vector3d(x, y, z));
       }
@@ -329,7 +335,9 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(dynTrajCompiled& traj, do
   if (traj.is_agent == false)
   {
     std::vector<Eigen::Vector3d> points;
-    delta = traj.bbox / 2.0;
+    delta = traj.bbox / 2.0 + (par_.drone_radius + par_.beta + par_.alpha) *
+                                  Eigen::Vector3d::Ones();  // every side of the box will be increased by 2*delta
+                                                            //(+delta on one end, -delta on the other)
     // Will always have a sample at the beginning of the interval, and another at the end.
     for (double t = t_start;                           /////////////
          (t < t_end) ||                                /////////////
@@ -365,7 +373,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(dynTrajCompiled& traj, do
   else
   {  // is an agent --> use the pwp field
 
-    delta = traj.bbox / 2.0 + (par_.drone_radius + par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
+    delta = traj.bbox / 2.0 + (par_.drone_radius) * Eigen::Vector3d::Ones();
     // std::cout << "****traj.bbox = " << traj.bbox << std::endl;
     // std::cout << "****par_.drone_radius = " << par_.drone_radius << std::endl;
     // std::cout << "****Inflation by delta= " << delta.transpose() << std::endl;

@@ -485,13 +485,13 @@ struct parameters
   double w_max;
   double alpha_filter_dyaw;
 
-  bool impose_fov = false;
+  // bool impose_fov = false;
 
-  double fov_horiz_deg = 60;  //[deg] angle between two faces of the tetrahedron
-  double fov_vert_deg = 60;   //[deg] angle between two faces of the tetrahedron
-  double fov_depth = 3.0;
+  // double fov_horiz_deg = 60;  //[deg] angle between two faces of the tetrahedron
+  // double fov_vert_deg = 60;   //[deg] angle between two faces of the tetrahedron
+  // double fov_depth = 3.0;
 
-  double R_local_map;
+  // double R_local_map;
 
   double x_min;
   double x_max;

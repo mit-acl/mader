@@ -29,13 +29,13 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   safeGetParam(nh1_, "w_max", par_.w_max);
   safeGetParam(nh1_, "alpha_filter_dyaw", par_.alpha_filter_dyaw);
 
-  safeGetParam(nh1_, "impose_fov", par_.impose_fov);
+  // safeGetParam(nh1_, "impose_fov", par_.impose_fov);
 
-  safeGetParam(nh1_, "fov_horiz_deg", par_.fov_horiz_deg);
-  safeGetParam(nh1_, "fov_vert_deg", par_.fov_vert_deg);
-  safeGetParam(nh1_, "fov_depth", par_.fov_depth);
+  // safeGetParam(nh1_, "fov_horiz_deg", par_.fov_horiz_deg);
+  // safeGetParam(nh1_, "fov_vert_deg", par_.fov_vert_deg);
+  // safeGetParam(nh1_, "fov_depth", par_.fov_depth);
 
-  safeGetParam(nh1_, "R_local_map", par_.R_local_map);
+  // safeGetParam(nh1_, "R_local_map", par_.R_local_map);
   // safeGetParam(nh1_, "R_consider_agents", par_.R_consider_agents);
   // safeGetParam(nh1_, "R_consider_obstacles", par_.R_consider_obstacles);
 
@@ -145,23 +145,23 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   //   abort();
   // }
 
-  if (par_.impose_fov == true && (par_.R_local_map < par_.fov_depth))
-  {
-    std::cout << bold << red << "Needed: par_.R_local_map >= par_.fov_depth" << reset << std::endl;
-    abort();
-  }
+  // if (par_.impose_fov == true && (par_.R_local_map < par_.fov_depth))
+  // {
+  //   std::cout << bold << red << "Needed: par_.R_local_map >= par_.fov_depth" << reset << std::endl;
+  //   abort();
+  // }
 
-  if (par_.fov_depth < par_.Ra)
-  {
-    std::cout << bold << red << "Needed: par_.fov_depth >= par_.Ra  " << reset << std::endl;
-    abort();
-  }
+  // if (par_.fov_depth < par_.Ra)
+  // {
+  //   std::cout << bold << red << "Needed: par_.fov_depth >= par_.Ra  " << reset << std::endl;
+  //   abort();
+  // }
 
-  if (par_.impose_fov && (par_.R_local_map < par_.fov_depth))
-  {
-    std::cout << bold << red << "Needed: par_.R_local_map >= par_.fov_depth" << reset << std::endl;
-    abort();
-  }
+  // if (par_.impose_fov && (par_.R_local_map < par_.fov_depth))
+  // {
+  //   std::cout << bold << red << "Needed: par_.R_local_map >= par_.fov_depth" << reset << std::endl;
+  //   abort();
+  // }
 
   if (par_.a_star_fraction_voxel_size < 0.0 || par_.a_star_fraction_voxel_size > 1.0)
   {
@@ -247,74 +247,75 @@ void MaderRos::pubObstacles(mader_types::Edges edges_obstacles)
   return;
 }
 
-void MaderRos::publishFOV()
-{
-  visualization_msgs::Marker marker_fov;
-  marker_fov.header.frame_id = name_drone_;
-  marker_fov.header.stamp = ros::Time::now();
-  marker_fov.ns = "marker_fov";
-  marker_fov.id = 0;
-  marker_fov.type = marker_fov.LINE_LIST;
-  marker_fov.action = marker_fov.ADD;
-  marker_fov.pose = identityGeometryMsgsPose();
+// void MaderRos::publishFOV()
+// {
+//   visualization_msgs::Marker marker_fov;
+//   marker_fov.header.frame_id = name_drone_;
+//   marker_fov.header.stamp = ros::Time::now();
+//   marker_fov.ns = "marker_fov";
+//   marker_fov.id = 0;
+//   marker_fov.type = marker_fov.LINE_LIST;
+//   marker_fov.action = marker_fov.ADD;
+//   marker_fov.pose = identityGeometryMsgsPose();
 
-  double delta_y = par_.fov_depth * fabs(tan((par_.fov_horiz_deg * M_PI / 180) / 2.0));
-  double delta_z = par_.fov_depth * fabs(tan((par_.fov_vert_deg * M_PI / 180) / 2.0));
+//   double delta_y = par_.fov_depth * fabs(tan((par_.fov_horiz_deg * M_PI / 180) / 2.0));
+//   double delta_z = par_.fov_depth * fabs(tan((par_.fov_vert_deg * M_PI / 180) / 2.0));
 
-  geometry_msgs::Point v0 = eigen2point(Eigen::Vector3d(0.0, 0.0, 0.0));
-  geometry_msgs::Point v1 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, -delta_z));
-  geometry_msgs::Point v2 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, -delta_z));
-  geometry_msgs::Point v3 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, delta_z));
-  geometry_msgs::Point v4 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, delta_z));
+//   geometry_msgs::Point v0 = eigen2point(Eigen::Vector3d(0.0, 0.0, 0.0));
+//   geometry_msgs::Point v1 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, -delta_z));
+//   geometry_msgs::Point v2 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, -delta_z));
+//   geometry_msgs::Point v3 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, delta_z));
+//   geometry_msgs::Point v4 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, delta_z));
 
-  marker_fov.points.clear();
+//   marker_fov.points.clear();
 
-  // Line
-  marker_fov.points.push_back(v0);
-  marker_fov.points.push_back(v1);
+//   // Line
+//   marker_fov.points.push_back(v0);
+//   marker_fov.points.push_back(v1);
 
-  // Line
-  marker_fov.points.push_back(v0);
-  marker_fov.points.push_back(v2);
+//   // Line
+//   marker_fov.points.push_back(v0);
+//   marker_fov.points.push_back(v2);
 
-  // Line
-  marker_fov.points.push_back(v0);
-  marker_fov.points.push_back(v3);
+//   // Line
+//   marker_fov.points.push_back(v0);
+//   marker_fov.points.push_back(v3);
 
-  // Line
-  marker_fov.points.push_back(v0);
-  marker_fov.points.push_back(v4);
+//   // Line
+//   marker_fov.points.push_back(v0);
+//   marker_fov.points.push_back(v4);
 
-  // Line
-  marker_fov.points.push_back(v1);
-  marker_fov.points.push_back(v2);
+//   // Line
+//   marker_fov.points.push_back(v1);
+//   marker_fov.points.push_back(v2);
 
-  // Line
-  marker_fov.points.push_back(v2);
-  marker_fov.points.push_back(v3);
+//   // Line
+//   marker_fov.points.push_back(v2);
+//   marker_fov.points.push_back(v3);
 
-  // Line
-  marker_fov.points.push_back(v3);
-  marker_fov.points.push_back(v4);
+//   // Line
+//   marker_fov.points.push_back(v3);
+//   marker_fov.points.push_back(v4);
 
-  // Line
-  marker_fov.points.push_back(v4);
-  marker_fov.points.push_back(v1);
+//   // Line
+//   marker_fov.points.push_back(v4);
+//   marker_fov.points.push_back(v1);
 
-  marker_fov.scale.x = 0.03;
-  marker_fov.scale.y = 0.00001;
-  marker_fov.scale.z = 0.00001;
-  marker_fov.color.a = 1.0;  // Don't forget to set the alpha!
-  marker_fov.color.r = 0.0;
-  marker_fov.color.g = 1.0;
-  marker_fov.color.b = 0.0;
+//   marker_fov.scale.x = 0.03;
+//   marker_fov.scale.y = 0.00001;
+//   marker_fov.scale.z = 0.00001;
+//   marker_fov.color.a = 1.0;  // Don't forget to set the alpha!
+//   marker_fov.color.r = 0.0;
+//   marker_fov.color.g = 1.0;
+//   marker_fov.color.b = 0.0;
 
-  pub_fov_.publish(marker_fov);
+//   pub_fov_.publish(marker_fov);
 
-  // https://github.com/PickNikRobotics/rviz_visual_tools/blob/80212659be877f221cf23528b4e4887eaf0c08a4/src/rviz_visual_tools.cpp#L957
+//   //
+//   https://github.com/PickNikRobotics/rviz_visual_tools/blob/80212659be877f221cf23528b4e4887eaf0c08a4/src/rviz_visual_tools.cpp#L957
 
-  return;
-}
+//   return;
+// }
 
 void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 {
@@ -329,22 +330,25 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   bool can_use_its_info;
 
-  if (par_.impose_fov == false)
-  {  // same as 360 deg of FOV
-    can_use_its_info = dist <= par_.R_local_map;
-  }
-  else
-  {  // impose_fov==true
+  // if (par_.impose_fov == false)
+  // {  // same as 360 deg of FOV
+  //   can_use_its_info = dist <= par_.R_local_map;
+  // }
+  // else
+  // {  // impose_fov==true
 
-    Eigen::Vector3d B_pos = W_T_B_.inverse() * W_pos;  // position of the obstacle in body frame
-    // check if it's inside the field of view.
-    can_use_its_info =
-        B_pos.x() < par_.fov_depth &&                                                       //////////////////////
-        fabs(atan2(B_pos.y(), B_pos.x())) < ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0) &&  //////////////////////
-        fabs(atan2(B_pos.z(), B_pos.x())) < ((par_.fov_vert_deg * M_PI / 180.0) / 2.0);     ///////////////////////
+  //   Eigen::Vector3d B_pos = W_T_B_.inverse() * W_pos;  // position of the obstacle in body frame
+  //   // check if it's inside the field of view.
+  //   can_use_its_info =
+  //       B_pos.x() < par_.fov_depth &&                                                       //////////////////////
+  //       fabs(atan2(B_pos.y(), B_pos.x())) < ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0) &&  //////////////////////
+  //       fabs(atan2(B_pos.z(), B_pos.x())) < ((par_.fov_vert_deg * M_PI / 180.0) / 2.0);     ///////////////////////
 
-    // std::cout << "inFOV= " << can_use_its_info << std::endl;
-  }
+  //   // std::cout << "inFOV= " << can_use_its_info << std::endl;
+  // }
+
+  can_use_its_info = (dist <= 4 * par_.Ra);  // See explanation of 4*Ra in Mader::updateTrajObstacles
+
   // std::cout << "B_pos.x() < par_.fov_depth= " << (B_pos.x() < par_.fov_depth) << std::endl;
   // std::cout << "Second= " << (fabs(atan2(B_pos.y(), B_pos.x())) < ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0))
   //           << std::endl;
@@ -392,7 +396,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
   mader_ptr_->updateTrajObstacles(tmp);
 }
 
-// This trajectory is published when the agent arrives at A
+// This trajectory contains all the future trajectory (current_pos --> A --> final_point_of_traj), because it's the
+// composition of pwp
 void MaderRos::publishOwnTraj(const PieceWisePol& pwp)
 {
   std::vector<std::string> s;  // pieceWisePol2String(pwp); The rest of the agents will use the pwp field, not the
@@ -426,7 +431,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 {
   std::cout << "********************[Callback] replanCB!!" << std::endl;
 
-  if (ros::ok())
+  if (ros::ok() && published_initial_position_ == true)
   {
     std::cout << "********************[Callback] Entering replanCB" << std::endl;
     mader_types::Edges edges_obstacles;
@@ -453,6 +458,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     if (replanned)
     {
       publishOwnTraj(pwp);
+      pwp_last_ = pwp;
+    }
+    else
+    {
+      publishOwnTraj(pwp_last_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his last
+                                  // planned trajectory, so that other drones can avoid it (even if DRONE1 was very far
+                                  // from the other drones with it last successfully planned a trajectory). Note that
+                                  // these trajectories are time-indexed, and the last position is taken if
+                                  // t>times.back(). See eval() function in the pwp struct
     }
 
     std::cout << "[Callback] Leaving replanCB" << std::endl;
@@ -540,22 +554,8 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
 
   if (published_initial_position_ == false)
   {
-    PieceWisePol pwp;
-    pwp.times = { ros::Time::now().toSec(), ros::Time::now().toSec() + 1e10 };
-
-    Eigen::Matrix<double, 4, 1> coeff_x_interv0;  // [a b c d]' of the interval 0
-    Eigen::Matrix<double, 4, 1> coeff_y_interv0;  // [a b c d]' of the interval 0
-    Eigen::Matrix<double, 4, 1> coeff_z_interv0;  // [a b c d]' of the interval 0
-
-    coeff_x_interv0 << 0.0, 0.0, 0.0, state_.pos.x();
-    coeff_y_interv0 << 0.0, 0.0, 0.0, state_.pos.y();
-    coeff_z_interv0 << 0.0, 0.0, 0.0, state_.pos.z();
-
-    pwp.coeff_x.push_back(coeff_x_interv0);
-    pwp.coeff_y.push_back(coeff_y_interv0);
-    pwp.coeff_z.push_back(coeff_z_interv0);
-
-    publishOwnTraj(pwp);
+    pwp_last_ = createPwpFromStaticPosition(state_);
+    publishOwnTraj(pwp_last_);
     published_initial_position_ = true;
   }
   if (mader_ptr_->IsTranslating() == true && par_.visual)
@@ -563,7 +563,7 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
     pubActualTraj();
   }
 
-  publishFOV();
+  // publishFOV();
 }
 
 void MaderRos::modeCB(const mader_msgs::Mode& msg)

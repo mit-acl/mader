@@ -13,13 +13,13 @@ alpha_filter_dyaw: 0 #was 0.92  #[] Filter parameter for dyaw, \in [0,1]. Higher
 ##########################################
 ##Needed: Ra <= fov_depth  <= R_local_map
 ##Agents/obstacles from which I am allowed to receive information:
-impose_fov: false
-R_local_map: 5.5 #[m] Trajectories from obstacles/agents whose center falls inside this local map are stored
+# impose_fov: false
+# R_local_map: 5.5 #[m] Trajectories from obstacles/agents whose center falls inside this local map are stored
 
 #####Only used if impose_fov==true
-fov_horiz_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 
-fov_vert_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 
-fov_depth: 4.5 #[m] Should be < Ra
+# fov_horiz_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 
+# fov_vert_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 
+# fov_depth: 4.5 #[m] Should be < Ra
 
 #####If impose_fov==false
 #R_consider_agents: 900       # [m] Other agents are considered if they are closer than Rothers. Should be >=2*Ra (because this ensures that the other agent hasn't planned a trajectory that enters my sphere of radius Ra)
@@ -100,6 +100,4 @@ alpha_shrink: 0.9 #\in [0,1] Only used for MINVO/Bezier
 alpha: 0.05 #[m] Error in position
 beta: 0.03 #[m] Deviation between the trajectory and the segment between two discretization points
 gamma: 0.1 #[seconds] >0 Time step between discretization points
-
-
 
