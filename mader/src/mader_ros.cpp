@@ -224,6 +224,8 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   id.erase(0, 2);  // Erase SQ or HX i.e. SQ12 --> 12  HX8621 --> 8621
   id_ = std::stoi(id);
 
+  timer_stop_.Reset();
+
   clearMarkerActualTraj();
 
   ////
@@ -455,6 +457,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       publishText();
     }
 
+    std::cout << "here" << std::endl;
     if (replanned)
     {
       publishOwnTraj(pwp);
@@ -462,11 +465,17 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     }
     else
     {
-      publishOwnTraj(pwp_last_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his last
-                                  // planned trajectory, so that other drones can avoid it (even if DRONE1 was very far
-                                  // from the other drones with it last successfully planned a trajectory). Note that
-                                  // these trajectories are time-indexed, and the last position is taken if
-                                  // t>times.back(). See eval() function in the pwp struct
+      int time_ms = int(ros::Time::now().toSec() * 1000);
+
+      if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
+      {
+        publishOwnTraj(pwp_last_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+                                    // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
+                                    // very far from the other drones with it last successfully planned a trajectory).
+                                    // Note that these trajectories are time-indexed, and the last position is taken if
+                                    // t>times.back(). See eval() function in the pwp struct
+        timer_stop_.Reset();
+      }
     }
 
     std::cout << "[Callback] Leaving replanCB" << std::endl;

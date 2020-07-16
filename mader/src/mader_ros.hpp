@@ -18,6 +18,8 @@
 #include "mader.hpp"
 #include "mader_types.hpp"
 
+#include "timer.hpp"
+
 // #define WHOLE 1  // Whole trajectory (part of which is planned on unkonwn space)
 // #define SAFE 2   // Safe path
 
@@ -125,4 +127,7 @@ private:
   Eigen::Affine3d W_T_B_;
 
   PieceWisePol pwp_last_;
+
+  typedef Timer MyTimer;
+  MyTimer timer_stop_;
 };
