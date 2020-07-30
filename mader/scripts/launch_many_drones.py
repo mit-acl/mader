@@ -39,9 +39,9 @@ def convertToStringCommand(action,quad,x,y,z,goal_x,goal_y,goal_z, yaw):
 
 if __name__ == '__main__':
     # formation="sphere", "square" "circle"
-    formation="circle"
+    formation="sphere"
     commands = []
-    num_of_agents=8; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
+    num_of_agents=32; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
     radius=10;
 
 
