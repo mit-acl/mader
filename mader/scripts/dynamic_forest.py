@@ -46,15 +46,15 @@ class MovingForest:
         self.x_max= 6.0
         self.y_min= -6.0 
         self.y_max= 6.0
-        self.z_min= -6.0 
-        self.z_max= 6.0
+        self.z_min= 1.0 #-6.0 for sphere sim
+        self.z_max= 1.0  #6.0 for sphere sim
         self.scale=1.0;
         self.slower_min=1.2
         self.slower_max= 1.2
-        self.bbox_dynamic=[0.6, 0.6, 0.6] #[0.6, 0.6, 0.6]
-        self.bbox_static_vert=[0.4, 0.4, 6]
+        self.bbox_dynamic=[0.6, 0.6, 0.6] 
+        self.bbox_static_vert=[0.4, 0.4, 4]  #[0.4, 0.4, 6] for sphere sim
         self.bbox_static_horiz=[0.4, 4, 0.4]
-        self.percentage_vert=0.5;
+        self.percentage_vert=1.0;  #0.5 for sphere sim
 
 
 
@@ -97,12 +97,12 @@ class FakeSim:
             bbox_i=[]; 
             if(i<self.world.percentage_vert*self.world.num_of_stat_objects):
                 bbox_i=self.world.bbox_static_vert;
-                self.z_all.append(random.uniform(self.world.z_min, self.world.z_max));
+                self.z_all.append(bbox_i[2]/2.0); #random.uniform(self.world.z_min, self.world.z_max)  for sphere sim
                 self.type.append("static_vert")
                 self.meshes.append(random.choice(available_meshes_static));
             else:
                 bbox_i=self.world.bbox_static_horiz;
-                self.z_all.append(random.uniform(-3.0, 3.0));
+                self.z_all.append(random.uniform(0.0, 3.0));  #-3.0, 3.0 for sphere sim
                 self.type.append("static_horiz")
                 self.meshes.append(random.choice(available_meshes_dynamic));
 
@@ -323,7 +323,7 @@ if __name__ == '__main__':
     #     total_num_obs=int(sys.argv[1])
 
     # print("sys.argv[1]= ", sys.argv[1])
-    total_num_obs=70
+    total_num_obs=50 #70 for sphere sim
     ns = rospy.get_namespace()
     try:
         rospy.init_node('dynamic_obstacles')
