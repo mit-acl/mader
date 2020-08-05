@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /TF1
         - /TF1/Frames1
         - /Console1
       Splitter Ratio: 0.5628571510314941
@@ -68,145 +69,105 @@ Visualization Manager:
       Frame Timeout: 1000
       Frames:
         4000:
-          Value: true
+          Value: false
         4001:
-          Value: true
+          Value: false
         4002:
-          Value: true
+          Value: false
         4003:
-          Value: true
+          Value: false
         4004:
-          Value: true
+          Value: false
         4005:
-          Value: true
+          Value: false
         4006:
-          Value: true
+          Value: false
         4007:
-          Value: true
+          Value: false
         4008:
-          Value: true
+          Value: false
         4009:
-          Value: true
+          Value: false
         4010:
-          Value: true
+          Value: false
         4011:
-          Value: true
+          Value: false
         4012:
-          Value: true
+          Value: false
         4013:
-          Value: true
+          Value: false
         4014:
-          Value: true
+          Value: false
         4015:
-          Value: true
+          Value: false
         4016:
-          Value: true
+          Value: false
         4017:
-          Value: true
+          Value: false
         4018:
-          Value: true
+          Value: false
         4019:
-          Value: true
+          Value: false
         4020:
-          Value: true
+          Value: false
         4021:
-          Value: true
+          Value: false
         4022:
-          Value: true
+          Value: false
         4023:
-          Value: true
+          Value: false
         4024:
-          Value: true
+          Value: false
         4025:
-          Value: true
+          Value: false
         4026:
-          Value: true
+          Value: false
         4027:
-          Value: true
+          Value: false
         4028:
-          Value: true
+          Value: false
         4029:
-          Value: true
+          Value: false
         4030:
-          Value: true
+          Value: false
         4031:
-          Value: true
+          Value: false
         4032:
-          Value: true
+          Value: false
         4033:
-          Value: true
+          Value: false
         4034:
-          Value: true
+          Value: false
         4035:
-          Value: true
+          Value: false
         4036:
-          Value: true
+          Value: false
         4037:
-          Value: true
+          Value: false
         4038:
-          Value: true
+          Value: false
         4039:
-          Value: true
+          Value: false
         4040:
-          Value: true
+          Value: false
         4041:
-          Value: true
+          Value: false
         4042:
-          Value: true
+          Value: false
         4043:
-          Value: true
+          Value: false
         4044:
-          Value: true
+          Value: false
         4045:
-          Value: true
+          Value: false
         4046:
-          Value: true
+          Value: false
         4047:
-          Value: true
+          Value: false
         4048:
-          Value: true
+          Value: false
         4049:
-          Value: true
-        4050:
-          Value: true
-        4051:
-          Value: true
-        4052:
-          Value: true
-        4053:
-          Value: true
-        4054:
-          Value: true
-        4055:
-          Value: true
-        4056:
-          Value: true
-        4057:
-          Value: true
-        4058:
-          Value: true
-        4059:
-          Value: true
-        4060:
-          Value: true
-        4061:
-          Value: true
-        4062:
-          Value: true
-        4063:
-          Value: true
-        4064:
-          Value: true
-        4065:
-          Value: true
-        4066:
-          Value: true
-        4067:
-          Value: true
-        4068:
-          Value: true
-        4069:
-          Value: true
+          Value: false
         All Enabled: false
         SQ01s:
           Value: true
@@ -224,7 +185,7 @@ Visualization Manager:
       Name: TF
       Show Arrows: false
       Show Axes: true
-      Show Names: true
+      Show Names: false
       Tree:
         world:
           4000:
@@ -326,46 +287,6 @@ Visualization Manager:
           4048:
             {}
           4049:
-            {}
-          4050:
-            {}
-          4051:
-            {}
-          4052:
-            {}
-          4053:
-            {}
-          4054:
-            {}
-          4055:
-            {}
-          4056:
-            {}
-          4057:
-            {}
-          4058:
-            {}
-          4059:
-            {}
-          4060:
-            {}
-          4061:
-            {}
-          4062:
-            {}
-          4063:
-            {}
-          4064:
-            {}
-          4065:
-            {}
-          4066:
-            {}
-          4067:
-            {}
-          4068:
-            {}
-          4069:
             {}
           vicon:
             SQ01s:
@@ -764,7 +685,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        {}
+        ActualTraj_SQ01s: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -772,7 +693,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        {}
+        ActualTraj_SQ02s: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -780,7 +701,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        {}
+        ActualTraj_SQ03s: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -788,7 +709,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        {}
+        ActualTraj_SQ04s: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1089,7 +1010,7 @@ Visualization Manager:
       Value: false
   Enabled: true
   Global Options:
-    Background Color: 48; 48; 48
+    Background Color: 238; 238; 236
     Default Light: true
     Fixed Frame: world
     Frame Rate: 30
@@ -1115,25 +1036,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 20.93550682067871
+      Distance: 13.927242279052734
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -3.6367480754852295
-        Y: -3.3359243869781494
-        Z: -4.096924840268912e-6
+        X: -3.520200252532959
+        Y: -3.400779962539673
+        Z: -3.3240839911741205e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.38979679346084595
+      Pitch: 0.3447970151901245
       Target Frame: LQ01s
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.728586435317993
+      Yaw: 3.758584499359131
     Saved: ~
 Window Geometry:
   Displays:
