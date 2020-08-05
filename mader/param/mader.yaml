@@ -35,7 +35,7 @@ y_min: -1000000000.0  # [m] don't forget the .0
 y_max: 1000000000.0 # [m] don't forget the .0
 
 z_ground: -100.0         #[m] points below this are considered ground
-z_max: 100.0         #[m] JPS is not allowed to give a solution that goes higher than this height
+z_max: 4.0         #[m] JPS is not allowed to give a solution that goes higher than this height
 
 #For multi-agent simulations
 v_max: [2.5, 2.5, 2.5]   #[m/s]  
