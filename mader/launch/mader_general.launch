@@ -27,7 +27,8 @@
 
 <group if="$(arg environment)">
     <!-- Start dynamic obstacles -->
-	<node name="dynamic_obstacles" pkg="mader" type="dynamic_forest.py" output="screen"/>
+	<node name="dynamic_obstacles" pkg="mader" type="dynamic_obstacles.py" output="screen" args="150"/>
+	<!--<node name="dynamic_obstacles" pkg="mader" type="dynamic_forest.py" output="screen"/>-->
 </group>s	
 
 </launch>

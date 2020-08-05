@@ -59,7 +59,7 @@ class MovingCorridor:
         # self.y_min= 0.0 
         # self.y_max= 0.0
         self.z_min= 1.0 
-        self.z_max= 1.0
+        self.z_max= 2.0
         self.scale=1.0;
         self.slower_min=1.1
         self.slower_max= 1.1
