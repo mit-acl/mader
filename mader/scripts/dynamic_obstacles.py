@@ -48,7 +48,7 @@ class MovingCircle:
 class MovingCorridor:
     def __init__(self, total_num_obs):
         print(total_num_obs)
-        self.num_of_dyn_objects=total_num_obs #int(0.65*total_num_obs);
+        self.num_of_dyn_objects=int(0.65*total_num_obs);
         self.num_of_stat_objects=total_num_obs-self.num_of_dyn_objects; #They are actually dynamic obstacles
         self.x_min= 2.0
         self.x_max= 75.0
