@@ -1055,6 +1055,10 @@ visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& 
     {
       m.color = getColorJet(vel, 0, max_value);  // note that par_.v_max is per axis!
     }
+    else if (color_type == "time")  // TODO: "time" is hand-coded
+    {
+      m.color = getColorJet(i, 0, data.size());  // note that par_.v_max is per axis!
+    }
     else
     {
       m.color = getColorJet(id_agent, 0, n_agents);  // note that par_.v_max is per axis!

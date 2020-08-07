@@ -182,7 +182,7 @@ int main(int argc, char **argv)
     // myAStarSolver.getAllTrajsFound(all_trajs_found);
 
     trajectory best_traj_found;
-    myAStarSolver.getBestTrajFound(best_traj_found);
+    myAStarSolver.getBestTrajFound(best_traj_found, 0.01);
 
     // // Convert to marker arrays
     // //---> all the trajectories found

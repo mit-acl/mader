@@ -154,12 +154,11 @@ void SplineAStar::setVisual(bool visual)
   visual_ = visual;
 }
 
-void SplineAStar::getBestTrajFound(trajectory& best_traj_found)
+void SplineAStar::getBestTrajFound(trajectory& best_traj_found, PieceWisePol& pwp, double dc)
 {
   std::cout << "******************BEST_TRAJ_FOUND**************" << std::endl;
   trajectory traj;
-  PieceWisePol pwp;
-  CPs2TrajAndPwp(result_, best_traj_found, pwp, N_, p_, num_pol_, knots_, 0.01);  // Last number is the resolution
+  CPs2TrajAndPwp(result_, best_traj_found, pwp, N_, p_, num_pol_, knots_, dc);
 }
 
 void SplineAStar::getEdgesConvexHulls(mader_types::Edges& edges_convex_hulls)

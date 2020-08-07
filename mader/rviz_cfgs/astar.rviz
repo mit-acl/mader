@@ -8,7 +8,7 @@ Panels:
         - /Status1
         - /ConvexHulls1
       Splitter Ratio: 0.4909090995788574
-    Tree Height: 1079
+    Tree Height: 918
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -68,380 +68,235 @@ Visualization Manager:
       Update Interval: 0
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /astar_example/A_star_trajectories_found
       Name: AllTrajs
       Namespaces:
-        traj0: true
-        traj1: true
-        traj10: true
-        traj100: true
-        traj101: true
-        traj102: true
-        traj103: true
-        traj104: true
-        traj105: true
-        traj106: true
-        traj107: true
-        traj108: true
-        traj109: true
-        traj11: true
-        traj110: true
-        traj111: true
-        traj112: true
-        traj113: true
-        traj114: true
-        traj115: true
-        traj116: true
-        traj117: true
-        traj118: true
-        traj119: true
-        traj12: true
-        traj120: true
-        traj121: true
-        traj122: true
-        traj123: true
-        traj124: true
-        traj125: true
-        traj126: true
-        traj127: true
-        traj128: true
-        traj129: true
-        traj13: true
-        traj130: true
-        traj131: true
-        traj132: true
-        traj133: true
-        traj134: true
-        traj135: true
-        traj136: true
-        traj137: true
-        traj138: true
-        traj139: true
-        traj14: true
-        traj140: true
-        traj141: true
-        traj142: true
-        traj143: true
-        traj144: true
-        traj145: true
-        traj146: true
-        traj147: true
-        traj148: true
-        traj149: true
-        traj15: true
-        traj150: true
-        traj151: true
-        traj152: true
-        traj153: true
-        traj154: true
-        traj155: true
-        traj156: true
-        traj157: true
-        traj158: true
-        traj159: true
-        traj16: true
-        traj160: true
-        traj161: true
-        traj162: true
-        traj163: true
-        traj164: true
-        traj165: true
-        traj166: true
-        traj167: true
-        traj168: true
-        traj169: true
-        traj17: true
-        traj170: true
-        traj171: true
-        traj172: true
-        traj173: true
-        traj174: true
-        traj175: true
-        traj176: true
-        traj177: true
-        traj178: true
-        traj179: true
-        traj18: true
-        traj180: true
-        traj181: true
-        traj182: true
-        traj183: true
-        traj184: true
-        traj185: true
-        traj186: true
-        traj187: true
-        traj188: true
-        traj189: true
-        traj19: true
-        traj190: true
-        traj191: true
-        traj192: true
-        traj193: true
-        traj194: true
-        traj195: true
-        traj196: true
-        traj197: true
-        traj198: true
-        traj199: true
-        traj2: true
-        traj20: true
-        traj200: true
-        traj201: true
-        traj202: true
-        traj203: true
-        traj204: true
-        traj205: true
-        traj206: true
-        traj207: true
-        traj208: true
-        traj209: true
-        traj21: true
-        traj210: true
-        traj211: true
-        traj212: true
-        traj213: true
-        traj214: true
-        traj215: true
-        traj216: true
-        traj217: true
-        traj218: true
-        traj219: true
-        traj22: true
-        traj220: true
-        traj221: true
-        traj222: true
-        traj223: true
-        traj224: true
-        traj225: true
-        traj226: true
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /astar_example/A_star_best_trajectory_found
+      Name: BestTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /astar_example/convex_hulls
+      Name: ConvexHulls
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/traj_obstacle_colored_int_0
+      Name: MarkerArray0
+      Namespaces:
+        marker_dyn_obs: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/traj_obstacle_colored_int_1
+      Name: MarkerArray1
+      Namespaces:
+        marker_dyn_obs: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/traj_obstacle_colored_int_2
+      Name: MarkerArray2
+      Namespaces:
+        marker_dyn_obs: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/traj_obstacle_colored_int_3
+      Name: MarkerArray3
+      Namespaces:
+        marker_dyn_obs: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/traj_obstacle_colored_int_4
+      Name: MarkerArray4
+      Namespaces:
+        marker_dyn_obs: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/traj_obstacle_colored_int_5
+      Name: MarkerArray5
+      Namespaces:
+        marker_dyn_obs: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/traj_obstacle_colored_int_6
+      Name: MarkerArray6
+      Namespaces:
+        marker_dyn_obs: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/A_star_best_trajectory_found_int_0
+      Name: BestTraj0
+      Namespaces:
         traj227: true
-        traj228: true
-        traj229: true
-        traj23: true
-        traj230: true
-        traj231: true
-        traj232: true
-        traj233: true
-        traj234: true
-        traj235: true
-        traj236: true
-        traj237: true
-        traj238: true
-        traj239: true
-        traj24: true
-        traj240: true
-        traj241: true
-        traj242: true
-        traj243: true
-        traj244: true
-        traj245: true
-        traj246: true
-        traj247: true
-        traj248: true
-        traj249: true
-        traj25: true
-        traj250: true
-        traj251: true
-        traj252: true
-        traj253: true
-        traj254: true
-        traj255: true
-        traj256: true
-        traj257: true
-        traj258: true
-        traj259: true
-        traj26: true
-        traj260: true
-        traj261: true
-        traj262: true
-        traj263: true
-        traj264: true
-        traj265: true
-        traj266: true
-        traj267: true
-        traj268: true
-        traj269: true
-        traj27: true
-        traj270: true
-        traj271: true
-        traj272: true
-        traj273: true
-        traj274: true
-        traj275: true
-        traj276: true
-        traj277: true
-        traj278: true
-        traj279: true
-        traj28: true
-        traj280: true
-        traj281: true
-        traj282: true
-        traj283: true
-        traj284: true
-        traj285: true
-        traj286: true
-        traj287: true
-        traj288: true
-        traj289: true
-        traj29: true
-        traj290: true
-        traj291: true
-        traj292: true
-        traj293: true
-        traj294: true
-        traj295: true
-        traj296: true
-        traj297: true
-        traj298: true
-        traj299: true
-        traj3: true
-        traj30: true
-        traj300: true
-        traj301: true
-        traj302: true
-        traj303: true
-        traj304: true
-        traj305: true
-        traj306: true
-        traj307: true
-        traj308: true
-        traj309: true
-        traj31: true
-        traj310: true
-        traj311: true
-        traj312: true
-        traj313: true
-        traj314: true
-        traj315: true
-        traj316: true
-        traj317: true
-        traj318: true
-        traj319: true
-        traj32: true
-        traj320: true
-        traj321: true
-        traj322: true
-        traj323: true
-        traj324: true
-        traj325: true
-        traj326: true
-        traj327: true
-        traj328: true
-        traj329: true
-        traj33: true
-        traj330: true
-        traj331: true
-        traj332: true
-        traj333: true
-        traj334: true
-        traj335: true
-        traj34: true
-        traj35: true
-        traj36: true
-        traj37: true
-        traj38: true
-        traj39: true
-        traj4: true
-        traj40: true
-        traj41: true
-        traj42: true
-        traj43: true
-        traj44: true
-        traj45: true
-        traj46: true
-        traj47: true
-        traj48: true
-        traj49: true
-        traj5: true
-        traj50: true
-        traj51: true
-        traj52: true
-        traj53: true
-        traj54: true
-        traj55: true
-        traj56: true
-        traj57: true
-        traj58: true
-        traj59: true
-        traj6: true
-        traj60: true
-        traj61: true
-        traj62: true
-        traj63: true
-        traj64: true
-        traj65: true
-        traj66: true
-        traj67: true
-        traj68: true
-        traj69: true
-        traj7: true
-        traj70: true
-        traj71: true
-        traj72: true
-        traj73: true
-        traj74: true
-        traj75: true
-        traj76: true
-        traj77: true
-        traj78: true
-        traj79: true
-        traj8: true
-        traj80: true
-        traj81: true
-        traj82: true
-        traj83: true
-        traj84: true
-        traj85: true
-        traj86: true
-        traj87: true
-        traj88: true
-        traj89: true
-        traj9: true
-        traj90: true
-        traj91: true
-        traj92: true
-        traj93: true
-        traj94: true
-        traj95: true
-        traj96: true
-        traj97: true
-        traj98: true
-        traj99: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/A_star_best_trajectory_found_int_1
+      Name: BestTraj1
+      Namespaces:
+        traj227: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/A_star_best_trajectory_found_int_2
+      Name: BestTraj2
+      Namespaces:
+        traj227: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/A_star_best_trajectory_found_int_3
+      Name: BestTraj3
+      Namespaces:
+        traj227: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/A_star_best_trajectory_found_int_4
+      Name: BestTraj4
+      Namespaces:
+        traj227: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/A_star_best_trajectory_found_int_5
+      Name: BestTraj5
+      Namespaces:
+        traj227: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /astar_example/A_star_best_trajectory_found_int_6
+      Name: BestTraj6
+      Namespaces:
+        traj227: true
       Queue Size: 100
       Value: true
     - Alpha: 0.05000000074505806
-      BoundColor: 115; 210; 22
+      BoundColor: 0; 0; 0
       Class: decomp_rviz_plugins/PolyhedronArray
       Enabled: true
-      MeshColor: 239; 41; 41
-      Name: Obstacles
+      MeshColor: 46; 52; 54
+      Name: Obstacles0
       Scale: 0.009999999776482582
       State: Both
-      Topic: /astar_example/poly_jps
+      Topic: /astar_example/poly_jps_int_0
       Unreliable: false
       Value: true
       VsColor: 239; 41; 41
       VsScale: 1
-    - Class: rviz/MarkerArray
+    - Alpha: 0.05000000074505806
+      BoundColor: 0; 0; 0
+      Class: decomp_rviz_plugins/PolyhedronArray
       Enabled: true
-      Marker Topic: /astar_example/A_star_best_trajectory_found
-      Name: BestTraj
-      Namespaces:
-        traj336: true
-      Queue Size: 100
+      MeshColor: 46; 52; 54
+      Name: Obstacles1
+      Scale: 0.009999999776482582
+      State: Both
+      Topic: /astar_example/poly_jps_int_1
+      Unreliable: false
       Value: true
-    - Class: rviz/Marker
+      VsColor: 239; 41; 41
+      VsScale: 1
+    - Alpha: 0.05000000074505806
+      BoundColor: 0; 0; 0
+      Class: decomp_rviz_plugins/PolyhedronArray
       Enabled: true
-      Marker Topic: /astar_example/convex_hulls
-      Name: ConvexHulls
-      Namespaces:
-        markertacles: true
-      Queue Size: 100
+      MeshColor: 46; 52; 54
+      Name: Obstacles2
+      Scale: 0.009999999776482582
+      State: Both
+      Topic: /astar_example/poly_jps_int_2
+      Unreliable: false
       Value: true
+      VsColor: 239; 41; 41
+      VsScale: 1
+    - Alpha: 0.05000000074505806
+      BoundColor: 0; 0; 0
+      Class: decomp_rviz_plugins/PolyhedronArray
+      Enabled: true
+      MeshColor: 46; 52; 54
+      Name: Obstacles3
+      Scale: 0.009999999776482582
+      State: Both
+      Topic: /astar_example/poly_jps_int_3
+      Unreliable: false
+      Value: true
+      VsColor: 239; 41; 41
+      VsScale: 1
+    - Alpha: 0.05000000074505806
+      BoundColor: 0; 0; 0
+      Class: decomp_rviz_plugins/PolyhedronArray
+      Enabled: true
+      MeshColor: 46; 52; 54
+      Name: Obstacles4
+      Scale: 0.009999999776482582
+      State: Both
+      Topic: /astar_example/poly_jps_int_4
+      Unreliable: false
+      Value: true
+      VsColor: 239; 41; 41
+      VsScale: 1
+    - Alpha: 0.05000000074505806
+      BoundColor: 0; 0; 0
+      Class: decomp_rviz_plugins/PolyhedronArray
+      Enabled: true
+      MeshColor: 46; 52; 54
+      Name: Obstacles5
+      Scale: 0.009999999776482582
+      State: Both
+      Topic: /astar_example/poly_jps_int_5
+      Unreliable: false
+      Value: true
+      VsColor: 239; 41; 41
+      VsScale: 1
+    - Alpha: 0.05000000074505806
+      BoundColor: 0; 0; 0
+      Class: decomp_rviz_plugins/PolyhedronArray
+      Enabled: true
+      MeshColor: 46; 52; 54
+      Name: Obstacles6
+      Scale: 0.009999999776482582
+      State: Both
+      Topic: /astar_example/poly_jps_int_6
+      Unreliable: false
+      Value: true
+      VsColor: 239; 41; 41
+      VsScale: 1
   Enabled: true
   Global Options:
-    Background Color: 48; 48; 48
+    Background Color: 238; 238; 236
     Default Light: true
     Fixed Frame: world
     Frame Rate: 30
@@ -467,25 +322,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 10.292017936706543
+      Distance: 6.555747985839844
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.17727141082286835
-        Y: -0.6460542678833008
-        Z: -0.7153459787368774
+        X: 0.05386956408619881
+        Y: 0.46241721510887146
+        Z: 0.8231351375579834
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.10979624837636948
+      Pitch: 0.48979806900024414
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.019990578293800354
+      Yaw: 3.8231430053710938
     Saved: ~
 Window Geometry:
   Displays:
@@ -493,7 +348,7 @@ Window Geometry:
   Height: 1376
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001fc000004c2fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000004c2000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000004c2fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000004c2000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009bd0000003efc0100000002fb0000000800540069006d00650100000000000009bd000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000006a6000004c200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001f3000004c2fc0200000008fb0000001200530065006c0065006300740069006f006e010000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c00610079007301000000de00000421000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000004c2fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000004c2000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009bd0000003efc0100000002fb0000000800540069006d00650100000000000009bd000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000006af000004c200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:

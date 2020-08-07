@@ -135,7 +135,7 @@ public:
 
   int getNumOfLPsRun();
 
-  void getBestTrajFound(trajectory& best_traj_found);
+  void getBestTrajFound(trajectory& best_traj_found, PieceWisePol& pwp, double dc);
   void getEdgesConvexHulls(mader_types::Edges& edges_convex_hulls);
 
   int B_SPLINE = 1;  // B-Spline Basis

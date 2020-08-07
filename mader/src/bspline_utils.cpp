@@ -115,6 +115,8 @@ void CPs2TrajAndPwp(std::vector<Eigen::Vector3d> &q, std::vector<state> &traj, P
     state_i.setAccel(derivatives.col(2));
     state_i.setJerk(derivatives.col(3));
     traj.push_back(state_i);
+
+    // std::cout << "Creating markers best traj, t= " << t << " pos=" << state_i.pos.transpose() << std::endl;
     // std::cout << "Aceleration= " << derivatives.col(2).transpose() << std::endl;
     // state_i.printHorizontal();
   }
