@@ -1,20 +1,20 @@
 [submodule "acl-gazebo"]
-	path = acl-gazebo
+	path = submodules/acl-gazebo
 	url = https://gitlab.com/mit-acl/lab/acl-gazebo
 	branch = master
 [submodule "catkin_simple"]
-	path = catkin_simple
+	path = submodules/catkin_simple
 	url = https://github.com/catkin/catkin_simple.git
 	branch = master
 [submodule "separator"]
-	path = separator
+	path = submodules/separator
 	url = git@github.com:jtorde/separator.git
 	branch = master
 [submodule "behavior_selector"]
-	path = behavior_selector
+	path = submodules/behavior_selector
 	url = https://gitlab.com/mit-acl/fsw/behavior_selector.git
 	branch = master
 [submodule "snapstack_msgs"]
-	path = snapstack_msgs
+	path = submodules/snapstack_msgs
 	url = https://gitlab.com/mit-acl/fsw/snap-stack/snapstack_msgs
 	branch = master
