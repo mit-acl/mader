@@ -2,8 +2,8 @@
 
 Single-Agent               |  Multi-Agent           | 
 :-------------------------:|:-------------------------:|
-[![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/uav_sim.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments")      |  [![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/gr_sim.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments") |  
-[![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/uav_hw.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments")       |  [![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/gr_hw.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments")    |  
+[![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/single_agent1.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments")      |  [![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/circle.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments") |  
+[![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/single_agent2.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments")       |  [![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/sphere.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments")    |  
 
 ## Citation
 
