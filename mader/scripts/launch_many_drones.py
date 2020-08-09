@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # formation="sphere", "square" "circle"
     formation="circle"
     commands = []
-    num_of_agents=32; #even number if "circle". If "sphere", it should be (if you want perfect symmetry) a number whose square root is multiple of 2  (like 16)
+    num_of_agents=32; 
     radius=10;
 
 
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     shift_z=radius;
     shift_z=1.0
 
-    #TODO: Implement the square as well
+    #TODO: Implement the square as well for other number_of_agents
     square_starts=[[4.0, 0.0, 1.0], 
                     [4.0, 4.0, 1.0], 
                     [0.0, 4.0, 1.0], 
@@ -123,10 +123,6 @@ if __name__ == '__main__':
 
             commands.append(convertToStringCommand(sys.argv[1],quad,x,y,z,goal_x,goal_y,goal_z, yaw));
 
-            # print ("quad= ",quad)
-            # print ("theta= ",theta)
-            # print ("phi= ",phi)
-            # print ("z= ",z)
             x_tmp="{:5.3f}".format(x);
             y_tmp="{:5.3f}".format(y);
             z_tmp="{:5.3f}".format(z);
@@ -136,8 +132,6 @@ if __name__ == '__main__':
             goal_z_tmp="{:5.3f}".format(goal_z);
  
             print ' "start": [',x_tmp,', ',y_tmp,', ',z_tmp,'], "goal": [',goal_x_tmp,', ',goal_y_tmp,', ',goal_z_tmp,']  '
-
-            # print ("z= ",z)
 
 
     print("len(commands)= " , len(commands))

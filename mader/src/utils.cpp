@@ -857,14 +857,14 @@ geometry_msgs::Vector3 vectorUniform(double a)
   return tmp;
 }
 
-template <typename T>
-using vec_E = std::vector<T, Eigen::aligned_allocator<T>>;
+// template <typename T>
+// using vec_E = std::vector<T, Eigen::aligned_allocator<T>>;
 
-template <int N>
-using Vecf = Eigen::Matrix<decimal_t, N, 1>;  // Be CAREFUL, because this is with doubles!
+// template <int N>
+// using Vecf = Eigen::Matrix<decimal_t, N, 1>;  // Be CAREFUL, because this is with doubles!
 
-template <int N>
-using vec_Vecf = vec_E<Vecf<N>>;
+// template <int N>
+// using vec_Vecf = vec_E<Vecf<N>>;
 
 // given 2 points (A inside and B outside the sphere) it computes the intersection of the lines between
 // that 2 points and the sphere

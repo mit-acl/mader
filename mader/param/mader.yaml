@@ -10,22 +10,6 @@ drone_radius: 0.0000001  #(m) Used for collision checking
 w_max: 1.0           # [rd/s] Maximum angular velocity. 0.4 for Hardware
 alpha_filter_dyaw: 0 #was 0.92  #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
 
-##########################################
-##Needed: Ra <= fov_depth  <= R_local_map
-##Agents/obstacles from which I am allowed to receive information:
-# impose_fov: false
-# R_local_map: 5.5 #[m] Trajectories from obstacles/agents whose center falls inside this local map are stored
-
-#####Only used if impose_fov==true
-# fov_horiz_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 
-# fov_vert_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 
-# fov_depth: 4.5 #[m] Should be < Ra
-
-#####If impose_fov==false
-#R_consider_agents: 900       # [m] Other agents are considered if they are closer than Rothers. Should be >=2*Ra (because this ensures that the other agent hasn't planned a trajectory that enters my sphere of radius Ra)
-#R_consider_obstacles: 7.0    # [m] Other obstacles are considered if they are closer than Rothers.
-##########################################
-
 Ra: 4.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
 x_min: -1000000000.0  # [m] don't forget the .0
@@ -59,18 +43,18 @@ xtol_rel: 0.0000000000001 #negative value --> stopping criterion not used
 ftol_rel: 0.0000000001 #negative value --> stopping criterion not used
 solver: "LD_MMA"
 
+# LD_MMA: really good
 # LD_CCSAQ: really good
-# LD_MMA: only improves over the initial guess if it runs for a lot of time NOT TRUE
-# LN_NELDERMEAD: good, but doesn't seem to improve over the initial guess
+# LN_NELDERMEAD: good
 # LD_LBFGS: good
 # LD_VAR2: good
 # LD_AUGLAG: good
 # LD_SLSQP: sometimes it calls the obj_function and the constraints functions very few times. This leads to MUCH higher comp times than max_runtime (\implies A is published by then)
 
+# Other ones:
 #  // work:  / LN_SBPLX //LN_PRAXIS  //LD_AUGLAG_EQ //
 #  // don't work: LN_BOBYQA //  //LN_NEWUOA //LN_NEWUOA_BOUND //LN_COBYLA //LD_CCSAQ
 #  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1  //LD_LBFGS_NOCEDAL //
-
 # //COBYLA
 
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
@@ -101,3 +85,19 @@ alpha: 0.0 #[m] Error in position
 beta: 0.0 #[m] Deviation between the trajectory and the segment between two discretization points
 gamma: 0.1 #[seconds] >0 Time step between discretization points
 
+
+##########################################
+##Needed: Ra <= fov_depth  <= R_local_map
+##Agents/obstacles from which I am allowed to receive information:
+# impose_fov: false
+# R_local_map: 5.5 #[m] Trajectories from obstacles/agents whose center falls inside this local map are stored
+
+#####Only used if impose_fov==true
+# fov_horiz_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 
+# fov_vert_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 
+# fov_depth: 4.5 #[m] Should be < Ra
+
+#####If impose_fov==false
+#R_consider_agents: 900       # [m] Other agents are considered if they are closer than Rothers. Should be >=2*Ra (because this ensures that the other agent hasn't planned a trajectory that enters my sphere of radius Ra)
+#R_consider_obstacles: 7.0    # [m] Other obstacles are considered if they are closer than Rothers.
+##########################################

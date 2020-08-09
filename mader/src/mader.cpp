@@ -10,7 +10,7 @@
 #include "timer.hpp"
 #include "termcolor.hpp"
 
-#include "solvers/nlopt/nlopt_utils.hpp"
+#include "nlopt_utils.hpp"
 
 using namespace JPS;
 using namespace termcolor;

@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mader)
 
-
-
 ## Add support for C++11, supported in ROS Kinetic and newer
 add_definitions(-std=c++11)
 #add_definitions(-std=c99)
@@ -27,11 +25,7 @@ function(enable_unity_build UB_SUFFIX SOURCE_VARIABLE_NAME)
 endfunction(enable_unity_build)
 
 
-#find_program(iwyu_path NAMES /home/jtorde/iwyu/build/include-what-you-use)
 
-#if(NOT iwyu_path)
-#  message(FATAL_ERROR "Could not find the program include-what-you-use")
-#endif()
 
 find_package( Eigen3 REQUIRED )
 include_directories(${EIGEN3_INCLUDE_DIR})
@@ -43,15 +37,7 @@ find_package(NLOPT REQUIRED)
 find_package(CGAL REQUIRED)
 include(${CGAL_USE_FILE})
 
-
-
 set(CMAKE_BUILD_TYPE Release) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo) or Debug
-
-
-#First of all, compile the CVXGEN files
-# add_custom_command(OUTPUT libcvx.so COMMAND make -C /home/jtorde/Desktop/ws/src/mader/mader/src/solvers/cvxgen/cvxgen)
-# add_custom_target(cvxgen_is_compiled ALL DEPENDS libcvx.so)
-
 
 find_package(catkin REQUIRED COMPONENTS 
 	roscpp
@@ -68,17 +54,9 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(decomp_util REQUIRED)
 include_directories(${DECOMP_UTIL_INCLUDE_DIRS})
 
-find_package(jps3d REQUIRED)
-include_directories(${JPS3D_INCLUDE_DIRS})
+catkin_package()
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES cvx
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
-)
-
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(${catkin_INCLUDE_DIRS} include)
 
 
 #For precompile headers see example here
@@ -88,40 +66,29 @@ add_library(cgal_utils STATIC src/cgal_utils)
 target_include_directories (cgal_utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(cgal_utils PUBLIC ${DECOMP_UTIL_LIBRARIES} ${catkin_LIBRARIES})
 
-add_library(utils STATIC src/utils.cpp src/utils.hpp)
+add_library(utils STATIC src/utils.cpp)
 target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(utils PUBLIC ${catkin_LIBRARIES})
 
-add_library(spline_AStar STATIC src/spline_AStar.cpp src/solvers/cvxgen/solver_cvxgen.cpp)
+add_library(spline_AStar STATIC src/spline_AStar.cpp ) #src/solvers/cvxgen/solver_cvxgen.cpp
 target_include_directories (spline_AStar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(spline_AStar PUBLIC ${catkin_LIBRARIES} ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so)
+target_link_libraries(spline_AStar PUBLIC ${catkin_LIBRARIES}) # ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so
 
 
-add_library(solverNlopt STATIC src/solvers/nlopt/solverNlopt.cpp src/solvers/nlopt/solverNlopt.hpp src/bspline_utils.cpp src/solvers/nlopt/nlopt_utils.cpp )
+add_library(solverNlopt STATIC src/solverNlopt.cpp src/bspline_utils.cpp src/nlopt_utils.cpp )
 target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
 target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils spline_AStar ${catkin_LIBRARIES} cgal_utils)
 
 
-# add_library(mader STATIC src/mader.cpp src/mader.hpp)
-# #set_property(TARGET mader PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
-# target_include_directories (mader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-# target_link_libraries(mader PUBLIC utils ${CGAL_LIBS} solverNlopt)
-
-
-# add_library(mader_ros STATIC src/mader_ros.cpp src/mader_ros.hpp src/mader.cpp src/mader.hpp)
-# target_include_directories (mader_ros PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-# target_link_libraries(mader_ros PUBLIC ${catkin_LIBRARIES}  solverNlopt utils)
-
-
 # enable_unity_build(UNITY_BUILD_NAME src/main.cpp)
 
-add_executable(${PROJECT_NAME}_node src/main.cpp src/mader_ros.cpp src/mader_ros.hpp src/mader.cpp src/mader.hpp)
+add_executable(${PROJECT_NAME}_node src/main.cpp src/mader_ros.cpp src/mader.cpp )
 target_link_libraries(${PROJECT_NAME}_node PUBLIC ${catkin_LIBRARIES}  solverNlopt utils)  #${CGAL_LIBS}
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
-add_executable(astar_example src/testSplineAStar.cpp src/spline_AStar.cpp src/bspline_utils.cpp src/solvers/cvxgen/solver_cvxgen.cpp)
+add_executable(astar_example src/testSplineAStar.cpp src/spline_AStar.cpp src/bspline_utils.cpp) # src/solvers/cvxgen/solver_cvxgen.cpp
 add_dependencies(astar_example ${catkin_EXPORTED_TARGETS} )
-target_link_libraries(astar_example ${catkin_LIBRARIES} utils cgal_utils ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so)
+target_link_libraries(astar_example ${catkin_LIBRARIES} utils cgal_utils) # ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so
 
 add_executable(test_utils src/test_utils.cpp)
 add_dependencies(test_utils ${catkin_EXPORTED_TARGETS})
@@ -131,6 +98,17 @@ target_link_libraries(test_utils ${catkin_LIBRARIES} utils)
 add_executable(test_bspline_utils src/test_bspline_utils.cpp src/bspline_utils.cpp)
 add_dependencies(test_bspline_utils ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_bspline_utils ${catkin_LIBRARIES})
+
+
+# add_library(mader STATIC src/mader.cpp src/mader.hpp)
+# target_include_directories (mader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# target_link_libraries(mader PUBLIC utils ${CGAL_LIBS} solverNlopt)
+
+
+# add_library(mader_ros STATIC src/mader_ros.cpp src/mader_ros.hpp src/mader.cpp src/mader.hpp)
+# target_include_directories (mader_ros PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# target_link_libraries(mader_ros PUBLIC ${catkin_LIBRARIES}  solverNlopt utils)
+
 
 # add_executable(predictor_node src/predictor_node.cpp src/predictor.cpp src/bspline_utils.cpp)
 # add_dependencies(predictor_node ${catkin_EXPORTED_TARGETS})
