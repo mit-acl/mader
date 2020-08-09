@@ -128,6 +128,5 @@ private:
 
   PieceWisePol pwp_last_;
 
-  typedef Timer MyTimer;
-  MyTimer timer_stop_;
+  MADER_timers::Timer timer_stop_;
 };

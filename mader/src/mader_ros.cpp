@@ -10,7 +10,7 @@
 
 #include <jsk_rviz_plugins/OverlayText.h>
 
-typedef Timer MyTimer;
+typedef MADER_timers::Timer MyTimer;
 
 // this object is created in the mader_ros_node
 MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3) : nh1_(nh1), nh2_(nh2), nh3_(nh3)

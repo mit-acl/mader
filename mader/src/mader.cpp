@@ -12,13 +12,12 @@
 
 #include "nlopt_utils.hpp"
 
-using namespace JPS;
 using namespace termcolor;
 
 // Uncomment the type of timer you want:
 // typedef ROSTimer MyTimer;
 // typedef ROSWallTimer MyTimer;
-typedef Timer MyTimer;
+typedef MADER_timers::Timer MyTimer;
 
 Mader::Mader(parameters par) : par_(par)
 {

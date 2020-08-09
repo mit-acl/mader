@@ -8,8 +8,6 @@
 #include <mutex>
 
 #include "mader_types.hpp"
-// Solvers includes
-
 #include "solverNlopt.hpp"
 
 // status_ : YAWING-->TRAVELING-->GOAL_SEEN-->GOAL_REACHED-->YAWING-->TRAVELING-->...
@@ -29,7 +27,6 @@ enum PlannerStatus
   REPLANNED = 2
 };
 
-using namespace JPS;
 using namespace termcolor;
 
 class Mader

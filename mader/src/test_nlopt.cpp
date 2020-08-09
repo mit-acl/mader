@@ -13,7 +13,7 @@
 
 #include <fstream>
 
-typedef JPS::Timer MyTimer;
+typedef MADER_timers::Timer MyTimer;
 
 int main()
 {

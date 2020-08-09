@@ -7,18 +7,13 @@
 #include "termcolor.hpp"
 using namespace termcolor;
 
-#define WITHOUT_NUMPY  // for matplotlibcpp   TODO(move from here!)
-#include "matplotlibcpp.h"
-
 #include <boost/bind.hpp>
 
 #include <random>
 
 #include "ros/ros.h"  //Just for debugging, to be able to use ROS_INFO...
 
-typedef JPS::Timer MyTimer;
-
-namespace plt = matplotlibcpp;
+typedef MADER_timers::Timer MyTimer;
 
 template <typename T>
 int sgn(T val)
@@ -1590,89 +1585,3 @@ exitloop:
 
   return isFeasible;
 }
-
-// void SplineAStar::plotExpandedNodesAndResult(std::vector<Node>& expanded_nodes, Node* result_ptr)
-// {
-//   for (auto node : expanded_nodes)
-//   {
-//     // std::cout << "using expanded_node= " << node.qi.transpose() << std::endl;
-
-//     Node* tmp = &node;
-
-//     std::vector<double> x, y, z;
-//     while (tmp != NULL)
-//     {
-//       x.push_back(tmp->qi.x());
-//       y.push_back(tmp->qi.y());
-//       z.push_back(tmp->qi.z());
-
-//       tmp = tmp->previous;
-//     }
-//     plt::plot(x, y, "ob-");
-//   }
-
-//   std::vector<std::string> colors = { "ok", "og", "oc", "om", "oy", "ok", "og", "or" };
-//   int counter_color = 0;
-//   if (result_ptr != NULL)
-//   {
-//     std::cout << "calling recoverPath1" << std::endl;
-//     recoverPath(result_ptr);  // saved in result_
-//     std::cout << "called recoverPath1" << std::endl;
-
-//     std::vector<double> x_result, y_result, z_result;
-
-//     for (auto q_i : result_)
-//     {
-//       x_result.push_back(q_i.x());
-//       y_result.push_back(q_i.y());
-//       z_result.push_back(q_i.z());
-//     }
-
-//     plt::plot(x_result, y_result, "or-");
-
-//     std::cout << "Path is:" << std::endl;
-//     for (auto q_i : result_)
-//     {
-//       std::cout << q_i.transpose() << std::endl;
-//     }
-
-//     if (basis_ == MINVO || basis_ == BEZIER)  // Plot the control points using the MINVO basis
-//     {
-//       for (int i = 3; i < result_.size(); i++)
-//       {
-//         std::vector<Eigen::Vector3d> last4Cps(4);
-//         last4Cps[0] = result_[i - 3];
-//         last4Cps[1] = result_[i - 2];
-//         last4Cps[2] = result_[i - 1];
-//         last4Cps[3] = result_[i];
-//         std::cout << "[BSpline] Plotting these last4Cps" << std::endl;
-//         std::cout << last4Cps[0].transpose() << std::endl;
-//         std::cout << last4Cps[1].transpose() << std::endl;
-//         std::cout << last4Cps[2].transpose() << std::endl;
-//         std::cout << last4Cps[3].transpose() << std::endl;
-
-//         std::vector<double> x_result_ov, y_result_ov, z_result_ov;
-
-//         std::vector<Eigen::Vector3d> last4Cps_new_basis;
-
-//         last4Cps_new_basis = transformBSpline2otherBasis(last4Cps);
-
-//         std::cout << "[NEW BASIS]  with color=" << colors[counter_color] << std::endl;
-//         std::cout << last4Cps_new_basis[0].transpose() << std::endl;
-//         std::cout << last4Cps_new_basis[1].transpose() << std::endl;
-//         std::cout << last4Cps_new_basis[2].transpose() << std::endl;
-//         std::cout << last4Cps_new_basis[3].transpose() << std::endl;
-//         for (int j = 0; j < 4; j++)
-//         {
-//           x_result_ov.push_back(last4Cps[j].x());
-//           y_result_ov.push_back(last4Cps[j].y());
-//           z_result_ov.push_back(last4Cps[j].z());
-//         }
-//         plt::plot(x_result_ov, y_result_ov, colors[counter_color]);
-//         counter_color = counter_color + 1;
-//       }
-//     }
-//   }
-
-//   plt::show();
-// }

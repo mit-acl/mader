@@ -2,15 +2,15 @@
 #define TIMER_HPP_
 
 #include <chrono>
+#include <ros/ros.h>
 
-namespace JPS
+namespace MADER_timers
 {
 class Timer
 {
   typedef std::chrono::high_resolution_clock high_resolution_clock;
   typedef std::chrono::milliseconds milliseconds;
   typedef std::chrono::microseconds microseconds;
-  // typedef std::chrono::microseconds microseconds;
 
 public:
   explicit Timer(bool run = false)
@@ -41,7 +41,7 @@ private:
   high_resolution_clock::time_point _start;
 };
 
-/*class ROSTimer
+class ROSTimer
 {
 public:
   ROSTimer(bool run = false)
@@ -78,13 +78,9 @@ public:
   void Reset()
   {
     _start = ros::WallTime::now().toSec();
-    std::cout << "Starting timer " << _start << std::endl;
   }
   double ElapsedMs() const
   {
-    std::cout << "En elapsed" << std::endl;
-    std::cout << "ros::Time::now().toSec()" << ros::Time::now().toSec() << std::endl;
-    std::cout << "_start" << _start << std::endl;
     return 1000 * (ros::WallTime::now().toSec() - _start);
   }
   template <typename T, typename Traits>
@@ -95,7 +91,7 @@ public:
 
 private:
   double _start;
-};*/
-}  // namespace JPS
+};
+}  // namespace MADER_timers
 
 #endif  // TIMER_HPP_

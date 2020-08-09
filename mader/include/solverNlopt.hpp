@@ -12,7 +12,7 @@
 #include "separator.hpp"
 #include "spline_AStar.hpp"
 
-typedef JPS::Timer MyTimer;
+typedef MADER_timers::Timer MyTimer;
 
 struct par_snlopt
 {
