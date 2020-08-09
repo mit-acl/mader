@@ -1,48 +1,57 @@
 # MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments #
 
-For one drone:
-```
-roslaunch mader all.launch
-roslaunch mader mader.launch
-```
+Single-Agent               |  Multi-Agent           | 
+:-------------------------:|:-------------------------:|
+[![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/uav_sim.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments")      |  [![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/gr_sim.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments") |  
+[![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/uav_hw.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments")       |  [![MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments](./mader/imgs/gr_hw.gif)](https://www.youtube.com/user/AerospaceControlsLab "MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments")    |  
 
-For many drones:
-```
-roslaunch mader mader_general.launch
-roslaunch mader many_drones.launch action:=start
-roslaunch mader many_drones.launch action:=mader
-(Take off)
-roslaunch mader many_drones.launch action:=send_goal
-```
+## Citation
 
-Note that 'CGal' takes a lot to compile if you use RelWithDebugInfo. Use Release instead (see [this](https://www.cgal.org/FAQ.html#compilation_speed)  )
+When using MADER, please cite [this paper](https://www.google.com/):
 
-Code used for the paper **MADER: Fast and Safe Trajectory Planner for Flights in Unknown Environments** (IROS 2019) ([pdf](https://arxiv.org/abs/1903.03558), [video](https://www.youtube.com/watch?v=gwV0YRs5IWs))
-
-```
-@inproceedings{tordesillas2019mader,
-  title={{MADER}: },
+```bibtex
+@inproceedings{tordesillas2019faster,
+  title={{MADER}: Trajectory Planner in Multi-Agent and Dynamic Environments},
   author={Tordesillas, Jesus and How, Jonathan P},
-  booktitle={2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
-  year={2019},
-  organization={IEEE}
+  journal={arXiv preprint},
+  year={2020}
 }
-
 ```
 
-## Instructions
-Install [Gurobi](https://www.gurobi.com/) (you can test your installation typing `gurobi.sh` in the terminal).
+## General Setup
+MADER has been tested with 
+* Ubuntu 18.04/ROS Melodic 
 
-Create a workspace, clone this repo and its dependencies, and compile the workspace:
+### Dependencies
+
+Install [NLopt](https://nlopt.readthedocs.io/en/latest/) following [these instructions](https://nlopt.readthedocs.io/en/latest/#download-and-installation) (MADER has been tested with NLopt v2.6.2).
+
+Install v4.12.4 of [CGAL](https://www.cgal.org/): 
+
+```
+sudo apt-get install libgmp3-dev libmpfr-dev
+wget https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.14.2/CGAL-4.14.2.tar.xz
+tar -xf CGAL-4.14.2.tar.xz
+cd CGAL-4.14.2/
+cmake . -DCMAKE_BUILD_TYPE=Release
+sudo make install
+```
+
+### Compilation
+
+Create a workspace, and clone this repo and its submodules:
 ```
 mkdir ws && cd ws && mkdir src && cd src
 git clone https://github.com/mit-acl/mader.git
-wstool init
-wstool merge ./mader/mader/install/mader.rosinstall
-wstool update -j8
+cd mader && git submodule init && git submodule update
 cd ..
 catkin config -DCMAKE_BUILD_TYPE=Release
 catkin build
+```
+
+Now add this to your `~/.bashrc`: 
+```
+source PATH_TO_YOUR_WS/devel/setup.bash
 ```
 
 And finally open 5 terminals and execute these commands:
@@ -50,21 +59,11 @@ And finally open 5 terminals and execute these commands:
 roslaunch acl_sim start_world.launch
 roslaunch acl_sim perfect_tracker_and_sim.launch
 roslaunch global_mapper_ros global_mapper_node.launch
-roslaunch mader mader_interface.launch
-roslaunch mader mader.launch
+roslaunch faster faster_interface.launch
+roslaunch faster faster.launch
 ```
-Now you can click `Takeoff` in the GUI, and then, in RVIZ, press `G` (or click the option `2D Nav Goal` on the top bar of RVIZ) and click any goal for the drone. 
-
-## Architecture:
-
-
-![](./mader/imgs/diagram.png) 
 
 
 ## Credits:
-This package uses code from the [JPS3D](https://github.com/KumarRobotics/jps3d) and [DecompROS](https://github.com/sikang/DecompROS) repos (included in the `thirdparty` folder), so credit to them as well. 
-
-
-
-
+This package uses some C++ classes from the [JPS3D](https://github.com/KumarRobotics/jps3d) and [DecompROS](https://github.com/sikang/DecompROS) repos (included in the `thirdparty` folder), so credit to them as well. 
 
