@@ -4,7 +4,7 @@
   <arg name="gui" default="true"/>
   <arg name="rviz" default="true"/>
 
- <include file="$(find mader)/launch/all.launch">
+ <include file="$(find mader)/launch/mader_specific_and_general.launch">
       <arg name="quad" value="$(arg quad)"/>
       <arg name="gui" value="$(arg gui)"/>
       <arg name="rviz" value="$(arg rviz)"/>

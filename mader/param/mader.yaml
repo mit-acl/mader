@@ -15,11 +15,11 @@ Ra: 4.0           # [m] Radius of my planning sphere (planning horizon). Should 
 x_min: -1000000000.0  # [m] don't forget the .0
 x_max: 10000000000.0  # [m] don't forget the .0
 
-y_min: -5.0  # [m] don't forget the .0
-y_max: 5.0 # [m] don't forget the .0
+y_min: -1000000000.0  # [m] don't forget the .0
+y_max: 1000000000.0 # [m] don't forget the .0
 
-z_ground: 0.2         #[m] points below this are considered ground
-z_max: 4.0         #[m] JPS is not allowed to give a solution that goes higher than this height
+z_ground: -1000000000.0         #[m] points below this are considered ground
+z_max: 1000000000.0         #[m] JPS is not allowed to give a solution that goes higher than this height
 
 #For multi-agent simulations
 # v_max: [2.5, 2.5, 2.5]   #[m/s]  

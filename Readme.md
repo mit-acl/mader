@@ -54,6 +54,18 @@ Now add this to your `~/.bashrc`:
 source PATH_TO_YOUR_WS/devel/setup.bash
 ```
 
+### Running Simulations
+
+#### Single-agent
+```
+roslaunch mader single_agent_simulation.launch
+```
+
+#### Multi-agent
+```
+roslaunch mader single_agent_simulation.launch
+```
+
 And finally open 5 terminals and execute these commands:
 ```
 roslaunch acl_sim start_world.launch

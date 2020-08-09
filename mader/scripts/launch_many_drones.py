@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # formation="sphere", "square" "circle"
     formation="circle"
     commands = []
-    num_of_agents=32; 
+    num_of_agents=8; 
     radius=10;
 
 

@@ -5,7 +5,6 @@
 	<arg name="z" default="1.0" />
 	<arg name="yaw" default="0.0" />
 
-	
 	<!-- Start mader commands -->
 	<node ns="$(arg quad)" name="mader_commands" pkg="mader" type="mader_commands.py" output="screen"/>
 
