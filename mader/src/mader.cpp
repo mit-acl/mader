@@ -22,9 +22,7 @@ typedef MADER_timers::Timer MyTimer;
 Mader::Mader(parameters par) : par_(par)
 {
   drone_status_ == DroneStatus::YAWING;
-  // mtx_G.lock();
   G_.pos << 0, 0, 0;
-  // mtx_G.unlock();
   G_term_.pos << 0, 0, 0;
 
   mtx_initial_cond.lock();
@@ -123,7 +121,6 @@ void Mader::dynTraj2dynTrajCompiled(const dynTraj& traj, dynTrajCompiled& traj_c
     symbol_table.add_constants();
     expression_t expression;
     expression.register_symbol_table(symbol_table);
-    // std::cout << "function_i=" << function_i << std::endl;
 
     parser_t parser;
     parser.compile(function_i, expression);
@@ -150,13 +147,6 @@ void Mader::dynTraj2dynTrajCompiled(const dynTraj& traj, dynTrajCompiled& traj_c
 // Note that we need to compile the trajectories inside mader.cpp because t_ is in mader.hpp
 void Mader::updateTrajObstacles(dynTraj traj)
 {
-  // for (auto coeff : traj.pwp.coeff_z)
-  // {
-  //   std::cout << on_magenta << "coeff.transpose()= " << coeff.transpose() << reset << std::endl;
-  // }
-
-  std::cout << "In updateTrajObstacles" << std::endl;
-
   MyTimer tmp_t(true);
 
   if (started_check_ == true && traj.is_agent == true)
@@ -164,52 +154,32 @@ void Mader::updateTrajObstacles(dynTraj traj)
     have_received_trajectories_while_checking_ = true;
   }
 
-  std::cout << "In updateTrajObstacles, waiting before mtx" << std::endl;
   mtx_trajs_.lock();
-  std::cout << on_magenta << "[UTO] mtx_trajs_ is locked" << reset << std::endl;
-  // std::cout << "In updateTrajObstacles 0.6" << std::endl;
 
   std::vector<dynTrajCompiled>::iterator obs_ptr = std::find_if(
       trajs_.begin(), trajs_.end(), [=](const dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
 
-  // std::cout << "In updateTrajObstacles 0.7" << std::endl;
-
   bool exists_in_local_map = (obs_ptr != std::end(trajs_));
 
   dynTrajCompiled traj_compiled;
-  // std::cout << "In updateTrajObstacles 0.8" << std::endl;
-
   dynTraj2dynTrajCompiled(traj, traj_compiled);
-
-  // std::cout << "In updateTrajObstacles 0.9" << std::endl;
-
-  // std::cout << bold << on_green << "[F]traj_compiled.pwp.times.size()=" << traj_compiled.pwp.times.size() << reset
-  //           << std::endl;
 
   if (exists_in_local_map)
   {  // if that object already exists, substitute its trajectory
-    // std::cout << red << "Updating " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
-    //           << reset << std::endl;
     *obs_ptr = traj_compiled;
   }
   else
   {  // if it doesn't exist, add it to the local map
     trajs_.push_back(traj_compiled);
     // ROS_WARN_STREAM("Adding " << traj_compiled.id);
-    // std::cout << red << "Adding " << traj_compiled.id << " at t=" << std::setprecision(12) << traj.time_received
-    //           << reset << std::endl;
   }
 
   // and now let's delete those trajectories of the obs/agents whose current positions are outside the local map
   // Note that these positions are obtained with the trajectory stored in the past in the local map
   std::vector<int> ids_to_remove;
 
-  // std::cout << "In updateTrajObstacles 2" << std::endl;
-
   for (int index_traj = 0; index_traj < trajs_.size(); index_traj++)
   {
-    // std::cout << "In updateTrajObstacles 3" << std::endl;
-
     bool traj_affects_me = false;
 
     mtx_t_.lock();
@@ -236,7 +206,7 @@ void Mader::updateTrajObstacles(dynTraj traj)
     // #### Dynamic Agent: 4*Ra. Same reasoning as above, but with two agets
     // #### Dynamic Obstacle: 4*Ra, it's a heuristics.
 
-    // ######IMPORTANT######
+    // ######REMEMBER######
     // Note that removeTrajsThatWillNotAffectMe will later
     // on take care of deleting the ones I don't need once
     // I know A
@@ -245,22 +215,15 @@ void Mader::updateTrajObstacles(dynTraj traj)
     }
   }
 
-  // std::cout << "In updateTrajObstacles 4" << std::endl;
-
   for (auto id : ids_to_remove)
   {
-    // std::cout << red << "Removing " << id << " at t=" << std::setprecision(12) << traj.time_received;
     // ROS_WARN_STREAM("Removing " << id);
-
     trajs_.erase(
         std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
         trajs_.end());
   }
 
-  std::cout << "In updateTrajObstacles 5" << std::endl;
   mtx_trajs_.unlock();
-  std::cout << on_magenta << "[UTO] mtx_trajs_ is unlocked" << reset << std::endl;
-  std::cout << "In updateTrajObstacles 6" << std::endl;
 
   have_received_trajectories_while_checking_ = false;
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
@@ -271,7 +234,6 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(PieceWisePol& pwp, double
 {
   std::vector<Eigen::Vector3d> points;
 
-  // std::cout << "This is an agent!" << std::endl;
   std::vector<double>::iterator low = std::lower_bound(pwp.times.begin(), pwp.times.end(), t_start);
   std::vector<double>::iterator up = std::upper_bound(pwp.times.begin(), pwp.times.end(), t_end);
 
@@ -346,13 +308,8 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(dynTrajCompiled& traj, do
       mtx_t_.lock();
       t_ = std::min(t, t_end);  // this min only has effect on the last sample
 
-      std::cout << "traj.function.size()=" << traj.function.size() << std::endl;
-      // std::cout << "traj.function[0]" << traj.function[0] << std::endl;
-      std::cout << "Computing x" << std::endl;
       double x = traj.function[0].value();
-      std::cout << "Computing y" << std::endl;
       double y = traj.function[1].value();
-      std::cout << "Computing z" << std::endl;
       double z = traj.function[2].value();
       mtx_t_.unlock();
 
@@ -391,7 +348,7 @@ CGAL_Polyhedron_3 Mader::convexHullOfInterval(dynTrajCompiled& traj, double t_st
   {
     points_cgal.push_back(Point_3(point_i.x(), point_i.y(), point_i.z()));
   }
-  // CGAL_Polyhedron_3 poly = ;
+
   return convexHullOfPoints(points_cgal);
 }
 
@@ -407,7 +364,6 @@ void Mader::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doubl
     // STATIC OBSTACLES/AGENTS
     if (traj.is_static == true)
     {
-      // mtx_t_.lock();
       mtx_t_.lock();
       t_ = t_start;  // which is constant along the trajectory
 
@@ -428,7 +384,6 @@ void Mader::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doubl
 
       Eigen::Vector3d c1 = center_obs - positive_half_diagonal;
       Eigen::Vector3d c2 = center_obs + positive_half_diagonal;
-
       traj_affects_me = boxIntersectsSphere(A.pos, par_.Ra, c1, c2);
     }
     else
@@ -453,24 +408,20 @@ void Mader::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doubl
   exit:
     if (traj_affects_me == false)
     {
-      // std::cout << red << bold << "Going to  delete t raj " << trajs_[index_traj].id << reset << std::endl;
+      // std::cout << red << bold << "Going to  delete traj " << trajs_[index_traj].id << reset << std::endl;
       ids_to_remove.push_back(traj.id);
     }
-    /*    else
-        {
-          std::cout << green << bold << "Going to delete traj " << trajs_[index_traj].id << reset << std::endl;
-        }*/
   }
 
   for (auto id : ids_to_remove)
   {
-    ROS_INFO_STREAM("traj " << id << " doesn't affect me");
+    // ROS_INFO_STREAM("traj " << id << " doesn't affect me");
     trajs_.erase(
         std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
         trajs_.end());
   }
 
-  /*  std::cout << "After deleting the trajectory, we have that ids= " << std::endl;
+  /*  std::cout << "After deleting the trajectory, we have these ids= " << std::endl;
 
     for (auto traj : trajs_)
     {
@@ -486,16 +437,12 @@ bool Mader::IsTranslating()
 ConvexHullsOfCurve Mader::convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end)
 {
   ConvexHullsOfCurve convexHulls;
-
   double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
-  // std::cout << "deltaT= " << deltaT << std::endl;
+
   for (int i = 0; i < par_.num_pol; i++)
   {
-    // std::cout << "i= " << i << std::endl;
     convexHulls.push_back(convexHullOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT));
   }
-
-  // std::cout << "Done with convexHullsOfCurve" << std::endl;
 
   return convexHulls;
 }
@@ -506,17 +453,8 @@ ConvexHullsOfCurves Mader::convexHullsOfCurves(double t_start, double t_end)
 
   for (auto traj : trajs_)
   {
-    // std::cout << "Computing convex hull of curve " << traj.id << std::endl;
-    // std::cout << "above, traj.function.size()= " << traj.function.size() << std::endl;
-    // std::cout << on_blue << "going to call convexHullsOfCurve" << reset << std::endl;
-    // for (auto coeff : traj.pwp.coeff_z)
-    // {
-    //   std::cout << on_blue << "traj.pwp.coeff_z.transpose()= " << coeff.transpose() << reset << std::endl;
-    // }
     result.push_back(convexHullsOfCurve(traj, t_start, t_end));
-    // std::cout << "called convexHullsOfCurve" << std::endl;
   }
-  // std::cout << "end of convexHullsOfCurves" << std::endl;
 
   return result;
 }
@@ -533,8 +471,7 @@ void Mader::setTerminalGoal(state& term_goal)
   G_.pos = G_term_.pos;
   if (drone_status_ == DroneStatus::GOAL_REACHED)
   {
-    // std::cout << bold << green << "[Mader] state_.yaw=" << state_.yaw << reset << std::endl;
-    changeDroneStatus(DroneStatus::YAWING);  // not done when drone_status==traveling
+    changeDroneStatus(DroneStatus::YAWING);
   }
   if (drone_status_ == DroneStatus::GOAL_SEEN)
   {
@@ -614,8 +551,8 @@ bool Mader::initialized()
 // check wheter a dynTrajCompiled and a pwp_optimized are in collision in the interval [t_start, t_end]
 bool Mader::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_start, double t_end)
 {
-  Eigen::Vector3d n_i;  // won't be used
-  double d_i;           // won't be used
+  Eigen::Vector3d n_i;
+  double d_i;
 
   double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
   for (int i = 0; i < par_.num_pol; i++)                     // for each interval
@@ -661,9 +598,6 @@ bool Mader::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
       if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
       {
         ROS_ERROR_STREAM("Traj collides with " << traj.id);
-
-        std::cout << "My traj collides with traj of " << traj.id << ", received at " << std::setprecision(12)
-                  << traj.time_received << ", opt at " << time_init_opt_ << reset << std::endl;
         result = false;  // will have to redo the optimization
         break;
       }
@@ -674,15 +608,11 @@ bool Mader::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
   if (have_received_trajectories_while_checking_ == true)
   {
     ROS_ERROR_STREAM("Recvd traj while checking ");
-
-    std::cout << "Received a trajectory while I was checking" << std::endl;
     result = false;
   }
   started_check_ = false;
 
-  ROS_INFO_STREAM("Returning " << result);
   return result;
-  // traj_compiled.time_received = ros::Time::now().toSec();
 }
 
 bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
@@ -742,62 +672,8 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
     // print_status();
     return false;
   }
-  ROS_INFO_STREAM("_________________________");
 
   std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
-
-  /////////////////////////////////// DEBUGGING ///////////////////////////////////
-  // mtx_trajs_.lock();
-  // std::cout << bold << blue << "Trajectories in the local map: " << reset << std::endl;
-
-  // std::vector<double> all_ids;
-  // /*  traj_compiled.id = traj.id;
-  //   trajs_.push_back(traj_compiled);*/
-  // int tmp_index_traj = 0;
-  // for (auto traj : trajs_)
-  // {
-  //   std::cout << traj.id << ", ";
-  //   // double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
-
-  //   all_ids.push_back(traj.id);
-  //   // all_ids = all_ids + " " + std::to_string(traj.id);
-
-  //   // t_ = time_now;
-
-  //   // Eigen::Vector3d center_obs;
-  //   // center_obs << trajs_[tmp_index_traj].function[0].value(),  ////////////////////
-  //   //     trajs_[tmp_index_traj].function[1].value(),            ////////////////
-  //   //     trajs_[tmp_index_traj].function[2].value();            /////////////////
-
-  //   // std::cout << traj.id << ", which is in " << center_obs.transpose() << std::endl;
-
-  //   // tmp_index_traj = tmp_index_traj + 1;
-  // }
-
-  // sort(all_ids.begin(), all_ids.end());
-
-  // if (all_ids.size() >= 1)
-  // {
-  //   std::ostringstream oss;
-
-  //   if (!all_ids.empty())
-  //   {
-  //     // Convert all but the last element to avoid a trailing ","
-  //     std::copy(all_ids.begin(), all_ids.end() - 1, std::ostream_iterator<double>(oss, ","));
-
-  //     // Now add the last element with no delimiter
-  //     oss << all_ids.back();
-  //   }
-
-  //   ROS_INFO_STREAM("Trajs used: " << oss.str());
-  // }
-  // else
-  // {
-  //   ROS_INFO_STREAM("Trajs used: - ");
-  // }
-
-  // std::cout << std::endl;
-  // mtx_trajs_.unlock();
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Select state A /////////////////////////////////
@@ -822,7 +698,6 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
 
   mtx_plan_.unlock();
 
-  // std::cout << blue << "Have chosen:" << reset << std::endl;
   // std::cout << blue << "k_index:" << k_index << reset << std::endl;
   // std::cout << blue << "k_index_end:" << k_index_end << reset << std::endl;
   // std::cout << blue << "plan_.size():" << plan_.size() << reset << std::endl;
@@ -840,18 +715,10 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   }
   saturate(runtime_snlopt, par_.lower_bound_runtime_snlopt, par_.upper_bound_runtime_snlopt);
 
-  std::cout << green << "Runtime snlopt= " << runtime_snlopt << reset << std::endl;
-
-  /*  if (k_index_end == 0)
-    {
-      exists_previous_pwp_ = false;
-    }*/
-
-  std::cout << "Selected state A= " << A.pos.transpose() << std::endl;
-  std::cout << "Selected state G_term= " << G_term.pos.transpose() << std::endl;
+  // std::cout << green << "Runtime snlopt= " << runtime_snlopt << reset << std::endl;
 
   /////////////////////////////////////////////////////////////////////////
-  ///////////////////////// Get global plan /////////////////////////////////
+  ///////////////////////// Global plan = Straight line  ///////////////////
   //////////////////////////////////////////////////////////////////////////
 
   std::vector<Eigen::Vector3d> global_plan;
@@ -879,15 +746,9 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   state initial = A;
   state final = E;
 
-  // std::cout << green << "================================" << reset << std::endl;
-
-  // std::cout << "Initial.pos= " << initial.pos << std::endl;
-  // std::cout << "Final.pos= " << final.pos << std::endl;
-  // std::cout << green << "================================" << reset << std::endl;
-
-  // std::cout << "norm= " << (initial.pos - final.pos).norm() << std::endl;
-
-  ////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Solve using NLopt ///////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
 
   snlopt_->setMaxRuntimeKappaAndMu(runtime_snlopt, par_.kappa, par_.mu);
 
@@ -913,20 +774,18 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
 
   if (correctInitialCond == false)
   {
-    std::cout << bold << red << "The solver cannot guarantee feasibility for v1" << std::endl;
+    std::cout << bold << red << "The solver cannot guarantee feasibility for v1" << reset << std::endl;
     return false;
   }
 
   ////////////////
 
   mtx_trajs_.lock();
-  std::cout << on_magenta << "[RC] mtx_trajs_ is locked" << reset << std::endl;
 
   time_init_opt_ = ros::Time::now().toSec();
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
   mtx_trajs_.unlock();
-  std::cout << on_magenta << "[RC] mtx_trajs_ is unlocked" << reset << std::endl;
 
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
@@ -962,28 +821,23 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
 
   av_improvement_nlopt_ = ((solutions_found_ - 1) * av_improvement_nlopt_ + snlopt_->improvement_) / solutions_found_;
 
-  std::cout << blue << "Average improvement so far" << std::setprecision(5) << av_improvement_nlopt_ << reset
-            << std::endl;
+  // std::cout << blue << "Average improvement so far" << std::setprecision(5) << av_improvement_nlopt_ << reset
+  //          << std::endl;
 
   PieceWisePol pwp_now;
   snlopt_->getSolution(pwp_now);
 
   MyTimer check_t(true);
   mtx_trajs_.lock();
-  std::cout << on_magenta << "[RC2] mtx_trajs_ is locked" << reset << std::endl;
   bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now);
   mtx_trajs_.unlock();
-  std::cout << on_magenta << "[RC2] mtx_trajs_ is unlocked" << reset << std::endl;
-  std::cout << bold << "Check Timer=" << check_t << std::endl;
+  // std::cout << bold << "Check Timer=" << check_t << std::endl;
 
   if (is_safe_after_opt == false)
   {
-    std::cout << bold << red << "safetyCheckAfterOpt is not satisfied!" << reset << std::endl;
     ROS_ERROR_STREAM("safetyCheckAfterOpt is not satisfied, returning");
     return false;
   }
-
-  /////// END OF DEBUGGING
 
   M_ = G_term;
 
@@ -992,22 +846,8 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   //////////////////////////////////////////////////////////////////////////
   mtx_plan_.lock();
 
-  // std::cout << std::endl;
-  // std::cout << "************ PLAN BEFORE***************" << std::endl;
-  // plan_.print();
-
-  // std::cout << std::endl;
-  // std::cout << "************ TRAJ FOUND***************" << std::endl;
-  // for (auto xi : snlopt_->traj_solution_)
-  // {
-  //   xi.printHorizontal();
-  // }
-
-  // std::cout << "Erasing" << std::endl;
-
   int plan_size = plan_.size();
-  //  std::cout << "plan_.size()= " << plan_.size() << std::endl;
-  //  std::cout << "plan_size - k_index_end = " << plan_size - k_index_end << std::endl;
+
   if ((plan_size - 1 - k_index_end) < 0)
   {
     std::cout << bold << red << "Already published the point A" << reset << std::endl;
@@ -1016,27 +856,17 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   }
   else
   {
-    // std::cout << "k_index_end= " << k_index_end << std::endl;
-
-    plan_.erase(plan_.end() - k_index_end - 1, plan_.end());  // this deletes also the initial condition...
-
+    plan_.erase(plan_.end() - k_index_end - 1, plan_.end());    // this deletes also the initial condition...
     for (int i = 0; i < (snlopt_->traj_solution_).size(); i++)  //... which is included in traj_solution_[0]
     {
       plan_.push_back(snlopt_->traj_solution_[i]);
     }
-    // std::cout << "Pushed everything back" << std::endl;
   }
-
-  // std::cout << "************ PLAN AFTER***************" << std::endl;
-  // plan_.print();
 
   mtx_plan_.unlock();
 
   ////////////////////
   ////////////////////
-
-  // std::cout << std::setprecision(30) << "pwp_now.times[0]=" << pwp_now.times[0] << std::endl;
-  // std::cout << "t_min= " << t_min << std::endl;
 
   if (exists_previous_pwp_ == true)
   {
@@ -1045,7 +875,6 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   }
   else
   {  //
-    // std::cout << "exists_previous_pwp_ = false" << std::endl;
     pwp_out = pwp_now;
     pwp_prev_ = pwp_now;
     exists_previous_pwp_ = true;
@@ -1053,16 +882,12 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
 
   X_safe_out = plan_.toStdVector();
 
-  //######################### End of solve with the NLOPT solver: //#########################
-
   ///////////////////////////////////////////////////////////
   ///////////////       OTHER STUFF    //////////////////////
   //////////////////////////////////////////////////////////
 
   // Check if we have planned until G_term
   state F = plan_.back();  // Final point of the safe path (\equiv final point of the comitted path)
-  // std::cout << "F is " << std::endl;
-  // F.print();
   double dist = (G_term_.pos - F.pos).norm();
 
   if (dist < par_.goal_radius)
@@ -1076,7 +901,6 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
                                                                              // would have been needed for
                                                                              // the last replan
   deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
-  // std::max(par_.alpha * states_last_replan,(double)par_.min_states_deltaT);  // Delta_t
   mtx_offsets.unlock();
 
   planner_initialized_ = true;
@@ -1101,11 +925,7 @@ void Mader::yaw(double diff, state& next_goal)
 
   dyaw_filtered_ = (1 - par_.alpha_filter_dyaw) * dyaw_not_filtered + par_.alpha_filter_dyaw * dyaw_filtered_;
   next_goal.dyaw = dyaw_filtered_;
-
-  // std::cout << "Before next_goal.yaw=" << next_goal.yaw << std::endl;
-
   next_goal.yaw = previous_yaw_ + dyaw_filtered_ * par_.dc;
-  // std::cout << "After next_goal.yaw=" << next_goal.yaw << std::endl;
 }
 
 void Mader::getDesiredYaw(state& next_goal)
@@ -1117,10 +937,7 @@ void Mader::getDesiredYaw(state& next_goal)
   {
     case DroneStatus::YAWING:
       desired_yaw = atan2(G_term_.pos[1] - next_goal.pos[1], G_term_.pos[0] - next_goal.pos[0]);
-      // std::cout << bold << green << "[Mader] state_.yaw=" << state_.yaw << reset << std::endl;
       diff = desired_yaw - state_.yaw;
-      // std::cout << bold << green << "[Mader] desired_yaw=" << desired_yaw << reset << std::endl;
-      // std::cout << "diff1= " << diff << std::endl;
       break;
     case DroneStatus::TRAVELING:
     case DroneStatus::GOAL_SEEN:
@@ -1138,18 +955,11 @@ void Mader::getDesiredYaw(state& next_goal)
   {
     changeDroneStatus(DroneStatus::TRAVELING);
   }
-  // std::cout << "diff2= " << diff << std::endl;
   yaw(diff, next_goal);
-  // std::cout << "yaw3= " << next_goal.yaw << std::endl;
 }
 
 bool Mader::getNextGoal(state& next_goal)
 {
-  /*  if (initializedAllExceptPlanner() == false)
-    {
-      std::cout << "Not publishing new goal!!" << std::endl;
-      return false;
-    }*/
   if (initializedStateAndTermGoal() == false || (drone_status_ == DroneStatus::GOAL_REACHED && plan_.size() == 1))
   {
     // std::cout << "Not publishing new goal!!" << std::endl;
@@ -1161,8 +971,6 @@ bool Mader::getNextGoal(state& next_goal)
 
   next_goal.setZero();
   next_goal = plan_.front();
-
-  // std::cout << bold << green << "[Mader] next_goal.yaw=" << next_goal.yaw << reset << std::endl;
 
   if (plan_.size() > 1)
   {

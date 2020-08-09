@@ -47,58 +47,6 @@ struct matrix_hash : std::unary_function<T, size_t>
   }
 };
 
-// https://stackoverflow.com/questions/19467485/how-to-remove-element-not-at-top-from-priority-queue
-// template <typename T>
-
-// template <typename T, typename Sequence = std::vector<T>, typename Compare = std::less<typename
-// Sequence::value_type>>
-
-// here it says that a priority_queue without a list is highly NOT recommended.
-// https://stackoverflow.com/questions/25877436/priority-que-with-a-list-container
-
-// template <typename T, typename Compare = std::less<typename std::list<T>::value_type>>
-
-// class custom_priority_queue
-//   : public std::priority_queue<T, std::list<T>, Compare>  // I need std::list, not std::vector (to be
-//                                                           // able to remove from the iterator). In std::vector, the
-//                                                           // iterators/pointers are invalid once the vector changes
-// {
-// public:
-//   bool remove(const typename std::list<T>::iterator& iterator_to_element)
-//   {
-//     // auto it = std::find(this->c.begin(), this->c.end(), value);
-//     if (iterator_to_element != this->c.end())
-//     {
-//       this->c.erase(iterator_to_element);
-//       std::make_heap(this->c.begin(), this->c.end(), this->comp);
-//       return true;
-//     }
-//     else
-//     {
-//       return false;
-//     }
-//   }
-
-//   // custom_priority_queue(const Compare& comparison_method)
-//   //   : std::priority_queue<T, std::list<T>, Compare>(comparison_method){};
-
-//   typename std::list<T>::iterator pushAndReturnIterator(const T& element)
-//   {
-//     this->c.push_back(element);
-
-//     /// typename std::list<T>::iterator it = (this->c).end();
-//     // std::advance(it, -1);  // iterator to the last element
-
-//     typename std::list<T>::iterator it = std::prev((this->c).end());
-
-//     // typename std::list<T>::iterator tmp = (this->c).end();
-//     // --tmp;  // iterator to the last element
-//     std::make_heap(this->c.begin(), this->c.end(), this->comp);
-
-//     return it;
-//   }
-// };
-
 class SplineAStar
 {
 public:
@@ -244,8 +192,6 @@ private:
 
   double voxel_size_;
 
-  // std::vector<std::vector<std::vector<bool>>> matrixExpandedNodes_;
-
   double bbox_x_;
   double bbox_y_;
   double bbox_z_;
@@ -274,27 +220,9 @@ private:
 
   std::vector<Node> expanded_valid_nodes_;
 
-  // std::unordered_map<Eigen::Vector3i, std::list<Node>::iterator, matrix_hash<Eigen::Vector3i>> map_open_list_;
   std::unordered_map<Eigen::Vector3i, bool, matrix_hash<Eigen::Vector3i>> map_open_list_;
 
-  // OPTION 1 (Doesn't work)
-  // typedef std::multiset<Node, CompareCost> my_list;
-  // typedef std::multiset<Node, CompareCost>::iterator my_list_iterator;
-  // my_list openList_;  //= OpenSet, = Q
-  // my_list_iterator openList_it_;
-  //
-
-  // Option 2 (doesn't work)
   std::priority_queue<Node, std::vector<Node>, CompareCost> openList_;  //= OpenSet, = Q
-
-  // Option 3
-  // custom_priority_queue<Node, CompareCost> openList_;
-
-  // auto cmp = [&](Node& left, Node& right) {
-  //   return (left.g + this->bias_ * left.h) > (right.g + this->bias_ * right.h);
-  // };
-
-  // bool matrixExpandedNodes_[40][40][40];
 
   double Ra_ = 1e10;
 

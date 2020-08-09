@@ -5,18 +5,19 @@
 visualization_msgs::MarkerArray pwp2ColoredMarkerArray(PieceWisePol& pwp, double t_init, double t_final, int samples,
                                                        std::string ns)
 {
+  visualization_msgs::MarkerArray marker_array;
+
   if (t_final < t_init)
   {
-    std::cout << "t_final<t_init" << std::endl;
+    // std::cout << "t_final<t_init" << std::endl;
     abort();
+    return marker_array;
   }
 
   // std::cout << "t_init= " << std::setprecision(15) << t_init << std::endl;
   // std::cout << "t_final= " << std::setprecision(15) << t_final << std::endl;
 
   double deltaT = (t_final - t_init) / (1.0 * samples);
-
-  visualization_msgs::MarkerArray marker_array;
 
   geometry_msgs::Point p_last = eigen2point(pwp.eval(t_init));
 
@@ -38,14 +39,14 @@ visualization_msgs::MarkerArray pwp2ColoredMarkerArray(PieceWisePol& pwp, double
 
     m.pose.orientation.w = 1.0;
 
-    std::cout << "t= " << std::setprecision(15) << t << std::endl;
-    std::cout << "vale " << pwp.eval(t).transpose() << std::endl;
+    // std::cout << "t= " << std::setprecision(15) << t << std::endl;
+    // std::cout << "is " << pwp.eval(t).transpose() << std::endl;
 
     geometry_msgs::Point p = eigen2point(pwp.eval(t));
 
     m.points.push_back(p_last);
     m.points.push_back(p);
-    // std::cout << "pushing marker\n" << m << std::endl;
+
     p_last = p;
     marker_array.markers.push_back(m);
     j = j + 1;
@@ -104,58 +105,14 @@ void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix
   coeff_new(3) = d + c * t0 + b * t0_2 + a * t0_3;
 }
 
-// mader_msgs::PieceWisePolTraj pwp2PwpMsg(PieceWisePol pwp, const Eigen::Vector3d& bbox, const int& id,
-//                                          const bool& is_agent)
-// {
-//   mader_msgs::PieceWisePolTraj pwp_msg;
-
-//   for (int i = 0; i < pwp.times.size(); i++)
-//   {
-//     pwp_msg.times.push_back(pwp.times[i]);
-//   }
-
-//   if (pwp.coeff_x.size() != pwp.coeff_y.size() || pwp.coeff_x.size() != pwp.coeff_z.size())
-//   {
-//     std::cout << " coeff_x,coeff_y,coeff_z should have the same elements" << std::endl;
-//     std::cout << " ================================" << std::endl;
-//     abort();
-//   }
-
-//   for (int i = 0; i < pwp.coeff_x.size(); i++)
-//   {
-//     mader_msgs::CoeffPoly3 coeff_msg_x;
-//     coeff_msg_x.a = pwp.coeff_x[i](0);
-//     coeff_msg_x.b = pwp.coeff_x[i](1);
-//     coeff_msg_x.c = pwp.coeff_x[i](2);
-//     coeff_msg_x.d = pwp.coeff_x[i](3);
-//     pwp_msg.coeff_x.push_back(coeff_msg_x);
-
-//     mader_msgs::CoeffPoly3 coeff_msg_y;
-//     coeff_msg_y.a = pwp.coeff_y[i](0);
-//     coeff_msg_y.b = pwp.coeff_y[i](1);
-//     coeff_msg_y.c = pwp.coeff_y[i](2);
-//     coeff_msg_y.d = pwp.coeff_y[i](3);
-//     pwp_msg.coeff_y.push_back(coeff_msg_y);
-
-//     mader_msgs::CoeffPoly3 coeff_msg_z;
-//     coeff_msg_z.a = pwp.coeff_z[i](0);
-//     coeff_msg_z.b = pwp.coeff_z[i](1);
-//     coeff_msg_z.c = pwp.coeff_z[i](2);
-//     coeff_msg_z.d = pwp.coeff_z[i](3);
-//     pwp_msg.coeff_z.push_back(coeff_msg_z);
-//   }
-
-//   return pwp_msg;
-// }
-
 mader_msgs::PieceWisePolTraj pwp2PwpMsg(const PieceWisePol& pwp)
 {
   mader_msgs::PieceWisePolTraj pwp_msg;
 
   for (int i = 0; i < pwp.times.size(); i++)
   {
-    std::cout << termcolor::red << "in pwp2PwpMsg, pushing back" << std::setprecision(20) << pwp.times[i]
-              << termcolor::reset << std::endl;
+    // std::cout << termcolor::red << "in pwp2PwpMsg, pushing back" << std::setprecision(20) << pwp.times[i]
+    //           << termcolor::reset << std::endl;
     pwp_msg.times.push_back(pwp.times[i]);
   }
 
@@ -231,43 +188,6 @@ PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg)
   return pwp;
 }
 
-// PieceWisePolWithInfo pwpMsg2PwpWithInfo(const mader_msgs::PieceWisePolTraj& pwp_msg)
-// {
-//   PieceWisePolWithInfo pwp_with_info;
-
-//   if (pwp_msg.coeff_x.size() != pwp_msg.coeff_y.size() || pwp_msg.coeff_x.size() != pwp_msg.coeff_z.size())
-//   {
-//     std::cout << " coeff_x,coeff_y,coeff_z of pwp_msg should have the same elements" << std::endl;
-//     std::cout << " ================================" << std::endl;
-//     abort();
-//   }
-
-//   for (int i = 0; i < pwp_msg.times.size(); i++)
-//   {
-//     pwp_with_info.pwp.times.push_back(pwp_msg.times[i]);
-//   }
-
-//   for (int i = 0; i < pwp_msg.coeff_x.size(); i++)
-//   {
-//     Eigen::Matrix<double, 4, 1> tmp_x, tmp_y, tmp_z;
-//     tmp_x << pwp_msg.coeff_x[i].a, pwp_msg.coeff_x[i].b, pwp_msg.coeff_x[i].c, pwp_msg.coeff_x[i].d;
-//     pwp_with_info.pwp.coeff_x.push_back(tmp_x);
-
-//     tmp_y << pwp_msg.coeff_y[i].a, pwp_msg.coeff_y[i].b, pwp_msg.coeff_y[i].c, pwp_msg.coeff_y[i].d;
-//     pwp_with_info.pwp.coeff_y.push_back(tmp_y);
-
-//     tmp_z << pwp_msg.coeff_z[i].a, pwp_msg.coeff_z[i].b, pwp_msg.coeff_z[i].c, pwp_msg.coeff_z[i].d;
-//     pwp_with_info.pwp.coeff_z.push_back(tmp_z);
-//   }
-
-//   pwp_with_info.bbox = Eigen::Vector3d(pwp_msg.bbox[0], pwp_msg.bbox[1], pwp_msg.bbox[2]);
-//   pwp_with_info.time_received = ros::Time::now().toSec();
-//   pwp_with_info.id = pwp_msg.id;
-//   pwp_with_info.is_agent = pwp_msg.is_agent;
-
-//   return pwp_with_info;
-// }
-
 visualization_msgs::Marker edges2Marker(const mader_types::Edges& edges, std_msgs::ColorRGBA color_marker)
 {
   visualization_msgs::Marker marker;
@@ -327,8 +247,7 @@ PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& 
 {
   // if t is in between p1 and p2, force p2[0] to be t
   if (t > p1.times.back() && t < p2.times.front())  // && fabs(t - p2.times.front()) <= dc) TODO Sometimes fabs(t -
-                                                    // p2.times.front()) is 0.18>c --> I'm doing sth wrong in the append
-                                                    // step in the plan_
+                                                    // p2.times.front()) is 0.18>c
   {
     p2.times.front() = t;
   }
@@ -350,12 +269,14 @@ PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& 
 
   if (p1.times.back() < p2.times.front() || t > p2.times.back() || t < p1.times.front())
   {
-    std::cout << "Error composing the piecewisePol" << std::endl;
-    std::cout << std::setprecision(30) << "t= " << t << std::endl;
-    std::cout << std::setprecision(30) << "p1.times.front()= " << p1.times.front() << std::endl;
-    std::cout << std::setprecision(30) << "p1.times.back()= " << p1.times.back() << std::endl;
-    std::cout << std::setprecision(30) << "p2.times.front() = " << p2.times.front() << std::endl;
-    std::cout << std::setprecision(30) << "p2.times.back() = " << p2.times.back() << std::endl;
+    // TODO: does this happen?
+
+    // std::cout << "Error composing the piecewisePol" << std::endl;
+    // std::cout << std::setprecision(30) << "t= " << t << std::endl;
+    // std::cout << std::setprecision(30) << "p1.times.front()= " << p1.times.front() << std::endl;
+    // std::cout << std::setprecision(30) << "p1.times.back()= " << p1.times.back() << std::endl;
+    // std::cout << std::setprecision(30) << "p2.times.front() = " << p2.times.front() << std::endl;
+    // std::cout << std::setprecision(30) << "p2.times.back() = " << p2.times.back() << std::endl;
     PieceWisePol dummy;
     return dummy;
   }
@@ -389,11 +310,6 @@ PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& 
     p.coeff_z.push_back(p1.coeff_z[index_1_i - 1]);
   }
 
-  /*  if (indexes1.size() == 0)
-    {
-      p.times.push_back(p2.times[0]);
-    }*/
-
   for (auto index_2_i : indexes2)
   {
     if (index_2_i == 0)
@@ -409,33 +325,6 @@ PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& 
     p.coeff_y.push_back(p2.coeff_y[index_2_i - 1]);
     p.coeff_z.push_back(p2.coeff_z[index_2_i - 1]);
   }
-
-  /*  for (int i = 0; i < (p1.times.size() - 1); i++)  // i is the index of the interval
-    {
-      if (p1.times[i + 1] > t && p1.times[i] < p2.times[0])
-      {
-        p.times.push_back(p1.times[i + 1]);
-        p.coeff_x.push_back(p1.coeff_x[i]);
-        p.coeff_y.push_back(p1.coeff_y[i]);
-        p.coeff_z.push_back(p1.coeff_z[i]);
-      }
-    }
-
-    for (int i = 0; i < (p2.times.size() - 1); i++)  // i is the index of the interval
-    {
-      std::cout << "i= " << i << std::endl;
-
-      if (t < p2.times[i + 1])
-      {
-        std::cout << "p2.times.size() - 1= " << p2.times.size() - 1 << std::endl;
-        p.times.push_back(p2.times[i + 1]);
-        p.coeff_x.push_back(p2.coeff_x[i]);
-        p.coeff_y.push_back(p2.coeff_y[i]);
-        p.coeff_z.push_back(p2.coeff_z[i]);
-      }
-    }*/
-
-  // p.times.push_back(p2.times.back());
 
   return p;
 }
@@ -472,15 +361,11 @@ std::vector<std::string> pieceWisePol2String(const PieceWisePol& piecewisepol)
              std::to_string(piecewisepol.times[i + 1]) + ")";
     }
 
-    // std::cout << "here1" << std::endl;
-
     std::string s_x_i = std::to_string((double)piecewisepol.coeff_x[i](0)) + "*" + uuu;   //////////////////
     s_x_i = s_x_i + "+" + std::to_string((double)piecewisepol.coeff_x[i](1)) + "*" + uu;  //////////////////
     s_x_i = s_x_i + "+" + std::to_string((double)piecewisepol.coeff_x[i](2)) + "*" + u;   //////////////////
     s_x_i = s_x_i + "+" + std::to_string((double)piecewisepol.coeff_x[i](3));             //////////////////
     s_x_i = cond + "*(" + s_x_i + ")";
-
-    // std::cout << "here2" << std::endl;
 
     std::string s_y_i = std::to_string((double)piecewisepol.coeff_y[i](0)) + "*" + uuu;   //////////////////
     s_y_i = s_y_i + "+" + std::to_string((double)piecewisepol.coeff_y[i](1)) + "*" + uu;  //////////////////
@@ -488,18 +373,11 @@ std::vector<std::string> pieceWisePol2String(const PieceWisePol& piecewisepol)
     s_y_i = s_y_i + "+" + std::to_string((double)piecewisepol.coeff_y[i](3));             //////////////////
     s_y_i = cond + "*(" + s_y_i + ")";
 
-    // std::cout << "here3" << std::endl;
-
     std::string s_z_i = std::to_string((double)piecewisepol.coeff_z[i](0)) + "*" + uuu;   //////////////////
     s_z_i = s_z_i + "+" + std::to_string((double)piecewisepol.coeff_z[i](1)) + "*" + uu;  //////////////////
     s_z_i = s_z_i + "+" + std::to_string((double)piecewisepol.coeff_z[i](2)) + "*" + u;   //////////////////
     s_z_i = s_z_i + "+" + std::to_string((double)piecewisepol.coeff_z[i](3));             //////////////////
     s_z_i = cond + "*(" + s_z_i + ")";
-
-    // std::cout << "here4" << std::endl;
-
-    // std::cout << "s_x_i is" << s_x_i << std::endl;
-    // std::cout << "u is" << u << std::endl;
 
     s_x = s_x + " + " + s_x_i;
     s_y = s_y + " + " + s_y_i;
@@ -685,7 +563,8 @@ std_msgs::ColorRGBA color(int id)
       return teal_normal;
       break;
     default:
-      printf("COLOR NOT DEFINED");
+      std::cout << "COLOR NOT DEFINED, returning RED" << std::endl;
+      return red;
   }
 }
 
@@ -738,34 +617,27 @@ void saturate(Eigen::Vector3d& tmp, const Eigen::Vector3d& min, const Eigen::Vec
 
 void saturate(int& var, const int min, const int max)
 {
-  // std::cout << "min=" << min << " max=" << max << std::endl;
   if (var < min)
   {
-    // std::cout << "Saturating to min" << var << std::endl;
     var = min;
   }
   else if (var > max)
   {
-    // std::cout << "Saturating to max" << var << std::endl;
     var = max;
   }
-  // std::cout << "Value saturated" << var << std::endl;
 }
 
+// TODO: Make a template here
 void saturate(double& var, const double min, const double max)
 {
-  // std::cout << "min=" << min << " max=" << max << std::endl;
   if (var < min)
   {
-    // std::cout << "Saturating to min" << var << std::endl;
     var = min;
   }
   else if (var > max)
   {
-    // std::cout << "Saturating to max" << var << std::endl;
     var = max;
   }
-  // std::cout << "Value saturated" << var << std::endl;
 }
 
 visualization_msgs::Marker getMarkerSphere(double scale, int my_color)
@@ -785,11 +657,8 @@ visualization_msgs::Marker getMarkerSphere(double scale, int my_color)
 
 double angleBetVectors(const Eigen::Vector3d& a, const Eigen::Vector3d& b)
 {
-  // std::cout << a.transpose() << std::endl;
-  // std::cout << b.transpose() << std::endl;
-
   double tmp = a.dot(b) / (a.norm() * b.norm());
-  // printf("tmp=%f\n", tmp);
+
   saturate(tmp, -1, 1);
   return acos(tmp);
 }
@@ -801,9 +670,6 @@ void angle_wrap(double& diff)
     diff += 2 * M_PI;
   diff -= M_PI;
 }
-
-// coeff is from highest degree to lowest degree. Returns the smallest positive real solution. Returns -1 if a
-// root is imaginary or if it's negative
 
 geometry_msgs::Point pointOrigin()
 {
@@ -857,24 +723,12 @@ geometry_msgs::Vector3 vectorUniform(double a)
   return tmp;
 }
 
-// template <typename T>
-// using vec_E = std::vector<T, Eigen::aligned_allocator<T>>;
-
-// template <int N>
-// using Vecf = Eigen::Matrix<decimal_t, N, 1>;  // Be CAREFUL, because this is with doubles!
-
-// template <int N>
-// using vec_Vecf = vec_E<Vecf<N>>;
-
 // given 2 points (A inside and B outside the sphere) it computes the intersection of the lines between
 // that 2 points and the sphere
 Eigen::Vector3d getIntersectionWithSphere(Eigen::Vector3d& A, Eigen::Vector3d& B, double r, Eigen::Vector3d& center)
 {
   // http://www.ambrsoft.com/TrigoCalc/Sphere/SpherLineIntersection_.htm
-  /*  std::cout << "Center=" << std::endl << center << std::endl;
-    std::cout << "Radius=" << std::endl << r << std::endl;
-    std::cout << "First Point=" << std::endl << A << std::endl;
-    std::cout << "Second Point=" << std::endl << B << std::endl;*/
+
   float x1 = A[0];
   float y1 = A[1];
   float z1 = A[2];
@@ -940,25 +794,18 @@ Eigen::Vector3d getIntersectionWithSphere(Eigen::Vector3d& A, Eigen::Vector3d& B
 Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& path, double r, Eigen::Vector3d& center,
                                                int* last_index_inside_sphere, bool* noPointsOutsideSphere)
 {
-  // printf("Utils: In getFirstIntersectionWithSphere\n");
-
-  // std::cout << "Utils: center=" << center.transpose() << std::endl;
-  // printf("here\n");
   if (noPointsOutsideSphere != NULL)
   {  // this argument has been provided
     *noPointsOutsideSphere = false;
   }
-  // printf("here2\n");
-  // path.insert(path.begin(), center);
+
   int index = -1;
   for (int i = 0; i < path.size(); i++)
   {
-    // std::cout << "path[i]=" << path[i].transpose() << std::endl;
     double dist = (path[i] - center).norm();
-    // std::cout << "dist=" << dist << std::endl;
+
     if (dist > r)
     {
-      // std::cout << "dist>r!" << std::endl;
       index = i;  // This is the first point outside the sphere
       break;
     }
@@ -968,7 +815,6 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
   Eigen::Vector3d B;
 
   Eigen::Vector3d intersection;
-  // std::cout << "Utils: index=" << index << std::endl;
   switch (index)
   {
     case -1:  // no points are outside the sphere --> return last element
@@ -983,13 +829,9 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
       {  // this argument has been provided
         *noPointsOutsideSphere = true;
       }
-      // std::cout << "Calling intersecion1 with A=" << A.transpose() << "  and B=" << B.transpose() << std::endl;
+
       intersection = getIntersectionWithSphere(A, B, r, center);
 
-      // intersection = path[path.size() - 1];
-
-      // std::cout << "Utils: Returning intersection=" << intersection.transpose() << std::endl;
-      // intersection = path[path.size() - 1];
       if (last_index_inside_sphere != NULL)
       {
         *last_index_inside_sphere = path.size() - 1;
@@ -998,8 +840,7 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
     case 0:  // First element is outside the sphere
       printf("First element is still oustide the sphere, there is sth wrong, returning the first element\n");
       intersection = path[0];
-      // std::cout << "radius=" << r << std::endl;
-      // std::cout << "dist=" << (path[0] - center).norm() << std::endl;
+
       if (last_index_inside_sphere != NULL)
       {
         *last_index_inside_sphere = 1;
@@ -1008,8 +849,7 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
     default:
       A = path[index - 1];
       B = path[index];
-      // std::cout << "Utils: calling intersecion2 with A=" << A.transpose() << "  and B=" << B.transpose() <<
-      // std::endl;
+
       intersection = getIntersectionWithSphere(A, B, r, center);
       // printf("index-1=%d\n", index - 1);
       if (last_index_inside_sphere != NULL)
@@ -1018,8 +858,6 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
       }
   }
 
-  // bool thereIsIntersec;
-  // std::cout << "Utils: returning intersection= " <<intersection.transpose()<< std::endl;
   return intersection;
 }
 

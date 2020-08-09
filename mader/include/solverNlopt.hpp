@@ -16,8 +16,7 @@ typedef MADER_timers::Timer MyTimer;
 
 struct par_snlopt
 {
-  // Will not change between iterations
-
+  ///// Will not change between iterations
   double x_min = -std::numeric_limits<double>::max();
   double x_max = std::numeric_limits<double>::max();
 
@@ -47,7 +46,8 @@ struct par_snlopt
   double Ra;
 
   double alpha_shrink;
-  // //  Will change between iterations
+
+  ///// Will change between iterations
   // double kappa;
   // double mu;
   // state initial_state;
@@ -317,21 +317,10 @@ private:
   double time_needed_;
   double dist_to_use_straight_guess_ = std::numeric_limits<double>::max();
 
-  // transformation between the B-spline control points and the MINVO control points
-  // Eigen::Matrix<double, 4, 4> Mbs2mv_;
-  // Eigen::Matrix<double, 4, 4> Mbs2mv_inverse_;
-
-  // transformation between the B-spline control points and the Bezier control points
-  // Eigen::Matrix<double, 4, 4> Mbs2be_;
-  // Eigen::Matrix<double, 4, 4> Mbs2be_inverse_;
-
   // transformation between the B-spline control points and other basis
   std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2basis_;
   std::vector<Eigen::Matrix<double, 3, 3>> M_vel_bs2basis_;
-
   std::vector<Eigen::Matrix<double, 4, 4>> A_pos_bs_;
-
-  // Eigen::Matrix<double, 4, 4> Mbs2basis_inverse_;
 
   double a_star_bias_ = 1.0;
   double a_star_fraction_voxel_size_ = 0.5;

@@ -29,16 +29,6 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   safeGetParam(nh1_, "w_max", par_.w_max);
   safeGetParam(nh1_, "alpha_filter_dyaw", par_.alpha_filter_dyaw);
 
-  // safeGetParam(nh1_, "impose_fov", par_.impose_fov);
-
-  // safeGetParam(nh1_, "fov_horiz_deg", par_.fov_horiz_deg);
-  // safeGetParam(nh1_, "fov_vert_deg", par_.fov_vert_deg);
-  // safeGetParam(nh1_, "fov_depth", par_.fov_depth);
-
-  // safeGetParam(nh1_, "R_local_map", par_.R_local_map);
-  // safeGetParam(nh1_, "R_consider_agents", par_.R_consider_agents);
-  // safeGetParam(nh1_, "R_consider_obstacles", par_.R_consider_obstacles);
-
   safeGetParam(nh1_, "x_min", par_.x_min);
   safeGetParam(nh1_, "x_max", par_.x_max);
 
@@ -139,30 +129,6 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
     abort();
   }
 
-  // if (par_.R_consider_agents < 2 * par_.Ra)
-  // {
-  //   std::cout << bold << red << "Needed: par_.R_consider_agents > 2 * par_.Ra" << reset << std::endl;
-  //   abort();
-  // }
-
-  // if (par_.impose_fov == true && (par_.R_local_map < par_.fov_depth))
-  // {
-  //   std::cout << bold << red << "Needed: par_.R_local_map >= par_.fov_depth" << reset << std::endl;
-  //   abort();
-  // }
-
-  // if (par_.fov_depth < par_.Ra)
-  // {
-  //   std::cout << bold << red << "Needed: par_.fov_depth >= par_.Ra  " << reset << std::endl;
-  //   abort();
-  // }
-
-  // if (par_.impose_fov && (par_.R_local_map < par_.fov_depth))
-  // {
-  //   std::cout << bold << red << "Needed: par_.R_local_map >= par_.fov_depth" << reset << std::endl;
-  //   abort();
-  // }
-
   if (par_.a_star_fraction_voxel_size < 0.0 || par_.a_star_fraction_voxel_size > 1.0)
   {
     std::cout << bold << red << "Needed: 0<=a_star_fraction_voxel_size<=1  " << reset << std::endl;
@@ -217,19 +183,18 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   // &MaderRos::replanCB, this);
 
   name_drone_ = ros::this_node::getNamespace();  // Return also the slashes (2 in Kinetic, 1 in Melodic)
-
   name_drone_.erase(std::remove(name_drone_.begin(), name_drone_.end(), '/'), name_drone_.end());  // Remove the slashes
 
   std::string id = name_drone_;
-  id.erase(0, 2);  // Erase SQ or HX i.e. SQ12 --> 12  HX8621 --> 8621
+  id.erase(0, 2);  // Erase SQ or HX i.e. SQ12 --> 12  HX8621 --> 8621 # TODO Hard-coded for this this convention
   id_ = std::stoi(id);
 
   timer_stop_.Reset();
 
   clearMarkerActualTraj();
 
-  ////
-  bool success_service_call = system("rosservice call /change_mode 'mode: 1'");  // to avoid having to click on the GUI
+  ////// to avoid having to click on the GUI (TODO)
+  bool success_service_call = system("rosservice call /change_mode 'mode: 1'");
   ////
 
   ROS_INFO("Planner initialized");
@@ -249,81 +214,10 @@ void MaderRos::pubObstacles(mader_types::Edges edges_obstacles)
   return;
 }
 
-// void MaderRos::publishFOV()
-// {
-//   visualization_msgs::Marker marker_fov;
-//   marker_fov.header.frame_id = name_drone_;
-//   marker_fov.header.stamp = ros::Time::now();
-//   marker_fov.ns = "marker_fov";
-//   marker_fov.id = 0;
-//   marker_fov.type = marker_fov.LINE_LIST;
-//   marker_fov.action = marker_fov.ADD;
-//   marker_fov.pose = identityGeometryMsgsPose();
-
-//   double delta_y = par_.fov_depth * fabs(tan((par_.fov_horiz_deg * M_PI / 180) / 2.0));
-//   double delta_z = par_.fov_depth * fabs(tan((par_.fov_vert_deg * M_PI / 180) / 2.0));
-
-//   geometry_msgs::Point v0 = eigen2point(Eigen::Vector3d(0.0, 0.0, 0.0));
-//   geometry_msgs::Point v1 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, -delta_z));
-//   geometry_msgs::Point v2 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, -delta_z));
-//   geometry_msgs::Point v3 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, delta_z));
-//   geometry_msgs::Point v4 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, delta_z));
-
-//   marker_fov.points.clear();
-
-//   // Line
-//   marker_fov.points.push_back(v0);
-//   marker_fov.points.push_back(v1);
-
-//   // Line
-//   marker_fov.points.push_back(v0);
-//   marker_fov.points.push_back(v2);
-
-//   // Line
-//   marker_fov.points.push_back(v0);
-//   marker_fov.points.push_back(v3);
-
-//   // Line
-//   marker_fov.points.push_back(v0);
-//   marker_fov.points.push_back(v4);
-
-//   // Line
-//   marker_fov.points.push_back(v1);
-//   marker_fov.points.push_back(v2);
-
-//   // Line
-//   marker_fov.points.push_back(v2);
-//   marker_fov.points.push_back(v3);
-
-//   // Line
-//   marker_fov.points.push_back(v3);
-//   marker_fov.points.push_back(v4);
-
-//   // Line
-//   marker_fov.points.push_back(v4);
-//   marker_fov.points.push_back(v1);
-
-//   marker_fov.scale.x = 0.03;
-//   marker_fov.scale.y = 0.00001;
-//   marker_fov.scale.z = 0.00001;
-//   marker_fov.color.a = 1.0;  // Don't forget to set the alpha!
-//   marker_fov.color.r = 0.0;
-//   marker_fov.color.g = 1.0;
-//   marker_fov.color.b = 0.0;
-
-//   pub_fov_.publish(marker_fov);
-
-//   //
-//   https://github.com/PickNikRobotics/rviz_visual_tools/blob/80212659be877f221cf23528b4e4887eaf0c08a4/src/rviz_visual_tools.cpp#L957
-
-//   return;
-// }
-
 void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 {
   if (msg.id == id_)
   {  // This is my own trajectory
-
     return;
   }
 
@@ -351,20 +245,6 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   can_use_its_info = (dist <= 4 * par_.Ra);  // See explanation of 4*Ra in Mader::updateTrajObstacles
 
-  // std::cout << "B_pos.x() < par_.fov_depth= " << (B_pos.x() < par_.fov_depth) << std::endl;
-  // std::cout << "Second= " << (fabs(atan2(B_pos.y(), B_pos.x())) < ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0))
-  //           << std::endl;
-  // std::cout << "Third= " << (fabs(atan2(B_pos.z(), B_pos.x())) < ((par_.fov_vert_deg * M_PI / 180.0) / 2.0))
-  //           << std::endl;
-
-  // std::cout << "Second1= " << fabs(atan2(B_pos.y(), B_pos.x())) << std::endl;
-  // std::cout << "Second2 " << ((par_.fov_horiz_deg * M_PI / 180.0) / 2.0) << std::endl;
-
-  // std::cout << "Third1= " << (fabs(atan2(B_pos.z(), B_pos.x()))) << std::endl;
-  // std::cout << "Third2 " << ((par_.fov_vert_deg * M_PI / 180.0) / 2.0) << std::endl;
-
-  // std::cout << "isInFOV= " << isInFOV << std::endl;
-
   if (can_use_its_info == false)
   {
     return;
@@ -387,13 +267,6 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
   }
 
   tmp.time_received = ros::Time::now().toSec();
-
-  // std::cout << bold << on_green << "[F_ROS]tmp.pwp.times.size()=" << tmp.pwp.times.size() << reset << std::endl;
-
-  // for (auto coeff : tmp.pwp.coeff_z)
-  // {
-  //   std::cout << on_blue << "[F_ROS] tmp.pwp.coeff_z.transpose()= " << coeff.transpose() << reset << std::endl;
-  // }
 
   mader_ptr_->updateTrajObstacles(tmp);
 }
@@ -420,9 +293,7 @@ void MaderRos::publishOwnTraj(const PieceWisePol& pwp)
 
   msg.is_agent = true;
 
-  std::cout << "calling pwp2PwpMsg" << std::endl;
   msg.pwp = pwp2PwpMsg(pwp);
-  std::cout << "called pwp2PwpMsg!" << std::endl;
 
   // std::cout<<"msg.pwp.times[0]= "<<msg.pwp.times[0]
 
@@ -431,11 +302,8 @@ void MaderRos::publishOwnTraj(const PieceWisePol& pwp)
 
 void MaderRos::replanCB(const ros::TimerEvent& e)
 {
-  std::cout << "********************[Callback] replanCB!!" << std::endl;
-
   if (ros::ok() && published_initial_position_ == true)
   {
-    std::cout << "********************[Callback] Entering replanCB" << std::endl;
     mader_types::Edges edges_obstacles;
     std::vector<state> X_safe;
 
@@ -457,7 +325,6 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       publishText();
     }
 
-    std::cout << "here" << std::endl;
     if (replanned)
     {
       publishOwnTraj(pwp);
@@ -478,7 +345,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       }
     }
 
-    std::cout << "[Callback] Leaving replanCB" << std::endl;
+    // std::cout << "[Callback] Leaving replanCB" << std::endl;
   }
 }
 
@@ -584,15 +451,13 @@ void MaderRos::modeCB(const mader_msgs::Mode& msg)
     // sub_state_.shutdown();
     pubCBTimer_.stop();
     replanCBTimer_.stop();
-    std::cout << on_blue << "**************stopping replanCBTimer" << reset << std::endl;
+    // std::cout << on_blue << "**************stopping replanCBTimer" << reset << std::endl;
     mader_ptr_->resetInitialization();
   }
   else
   {  // The mode changed to GO (the mode changes to go when takeoff is finished)
     // sub_state_ = nh_.subscribe("state", 1, &MaderRos::stateCB, this);  // TODO duplicated from above
-
-    std::cout << on_blue << "**************starting replanCBTimer" << reset << std::endl;
-
+    // std::cout << on_blue << "**************starting replanCBTimer" << reset << std::endl;
     pubCBTimer_.start();
     replanCBTimer_.start();
   }
@@ -604,10 +469,6 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
   if (mader_ptr_->getNextGoal(next_goal))
   {
     snapstack_msgs::QuadGoal quadGoal;
-    // visualization_msgs::Marker setpoint;
-    // Pub setpoint maker.  setpoint_ is the last quadGoal sent to the drone
-
-    // printf("Publicando Goal=%f, %f, %f\n", quadGoal_.pos.x, quadGoal_.pos.y, quadGoal_.pos.z);
 
     quadGoal.pos = eigen2rosvector(next_goal.pos);
     quadGoal.vel = eigen2rosvector(next_goal.vel);
@@ -618,7 +479,6 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
     quadGoal.header.stamp = ros::Time::now();
     quadGoal.header.frame_id = world_name_;
 
-    // std::cout << bold << blue << "[MaderRos] publishing goal= " << quadGoal.yaw << reset << std::endl;
     pub_goal_.publish(quadGoal);
 
     setpoint_.header.stamp = ros::Time::now();
@@ -637,7 +497,6 @@ void MaderRos::clearMarkerArray(visualization_msgs::MarkerArray* tmp, ros::Publi
     return;
   }
   int id_begin = (*tmp).markers[0].id;
-  // int id_end = (*path).markers[markers.size() - 1].id;
 
   for (int i = 0; i < (*tmp).markers.size(); i++)
   {
@@ -745,8 +604,6 @@ void MaderRos::pubActualTraj()
 
 void MaderRos::clearMarkerActualTraj()
 {
-  // printf("In clearMarkerActualTraj\n");
-
   visualization_msgs::Marker m;
   m.type = visualization_msgs::Marker::ARROW;
   m.action = visualization_msgs::Marker::DELETEALL;
@@ -768,7 +625,6 @@ void MaderRos::clearMarkerColoredTraj()
   m.scale.y = 1;
   m.scale.z = 1;
   pub_actual_traj_.publish(m);
-  // actual_trajID_ = 0;
 }
 
 void MaderRos::pubState(const state& data, const ros::Publisher pub)
@@ -801,5 +657,74 @@ void MaderRos::terminalGoalCB(const geometry_msgs::PoseStamped& msg)
   pubState(G, pub_point_G_);
 
   clearMarkerActualTraj();
-  // std::cout << "Exiting from goalCB\n";
 }
+
+// void MaderRos::publishFOV()
+// {
+//   visualization_msgs::Marker marker_fov;
+//   marker_fov.header.frame_id = name_drone_;
+//   marker_fov.header.stamp = ros::Time::now();
+//   marker_fov.ns = "marker_fov";
+//   marker_fov.id = 0;
+//   marker_fov.type = marker_fov.LINE_LIST;
+//   marker_fov.action = marker_fov.ADD;
+//   marker_fov.pose = identityGeometryMsgsPose();
+
+//   double delta_y = par_.fov_depth * fabs(tan((par_.fov_horiz_deg * M_PI / 180) / 2.0));
+//   double delta_z = par_.fov_depth * fabs(tan((par_.fov_vert_deg * M_PI / 180) / 2.0));
+
+//   geometry_msgs::Point v0 = eigen2point(Eigen::Vector3d(0.0, 0.0, 0.0));
+//   geometry_msgs::Point v1 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, -delta_z));
+//   geometry_msgs::Point v2 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, -delta_z));
+//   geometry_msgs::Point v3 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, delta_z));
+//   geometry_msgs::Point v4 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, delta_z));
+
+//   marker_fov.points.clear();
+
+//   // Line
+//   marker_fov.points.push_back(v0);
+//   marker_fov.points.push_back(v1);
+
+//   // Line
+//   marker_fov.points.push_back(v0);
+//   marker_fov.points.push_back(v2);
+
+//   // Line
+//   marker_fov.points.push_back(v0);
+//   marker_fov.points.push_back(v3);
+
+//   // Line
+//   marker_fov.points.push_back(v0);
+//   marker_fov.points.push_back(v4);
+
+//   // Line
+//   marker_fov.points.push_back(v1);
+//   marker_fov.points.push_back(v2);
+
+//   // Line
+//   marker_fov.points.push_back(v2);
+//   marker_fov.points.push_back(v3);
+
+//   // Line
+//   marker_fov.points.push_back(v3);
+//   marker_fov.points.push_back(v4);
+
+//   // Line
+//   marker_fov.points.push_back(v4);
+//   marker_fov.points.push_back(v1);
+
+//   marker_fov.scale.x = 0.03;
+//   marker_fov.scale.y = 0.00001;
+//   marker_fov.scale.z = 0.00001;
+//   marker_fov.color.a = 1.0;  // Don't forget to set the alpha!
+//   marker_fov.color.r = 0.0;
+//   marker_fov.color.g = 1.0;
+//   marker_fov.color.b = 0.0;
+
+//   pub_fov_.publish(marker_fov);
+
+//   //
+//   https://github.com/PickNikRobotics/rviz_visual_tools/blob/80212659be877f221cf23528b4e4887eaf0c08a4/src/rviz_visual_tools.cpp#L957
+
+//   return;
+// }

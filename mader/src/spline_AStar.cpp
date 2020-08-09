@@ -1,17 +1,12 @@
-#include "spline_AStar.hpp"
-#include "bspline_utils.hpp"
-
 #include <vector>
+#include <random>
+#include "ros/ros.h"
 
 #include "timer.hpp"
 #include "termcolor.hpp"
+#include "spline_AStar.hpp"
+#include "bspline_utils.hpp"
 using namespace termcolor;
-
-#include <boost/bind.hpp>
-
-#include <random>
-
-#include "ros/ros.h"  //Just for debugging, to be able to use ROS_INFO...
 
 typedef MADER_timers::Timer MyTimer;
 
@@ -23,21 +18,6 @@ int sgn(T val)
 
 SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol, double alpha_shrink)
 {
-  // see matlab.
-  // This is for the interval [0 1];
-
-  // Mbs2mv_ << 0.18372, 0.057009, -0.01545, -0.005338,  ///////////
-  //     0.70176, 0.6665738, 0.29187, 0.119851669,       ////////////
-  //     0.119851669, 0.2918718, 0.66657, 0.7017652,     //////////////////
-  //     -0.00533879, -0.015455, 0.0570095, 0.18372189;  //////////////////
-
-  // Mbs2be_ << 1, 0, 0, 0,  //////////
-  //     4, 4, 2, 1,         //////////
-  //     1, 2, 4, 4,         //////////
-  //     0, 0, 0, 1;         //////////
-
-  // Mbs2be_ = (1 / 6.0) * Mbs2be_;
-
   p_ = deg_pol;
   M_ = num_pol + 2 * p_;
   N_ = M_ - p_ - 1;
@@ -115,24 +95,7 @@ void SplineAStar::setUp(double t_min, double t_max, const ConvexHullsOfCurves_St
   }
 
   knots_ = knots;
-  std::cout << "knots_=" << knots_ << std::endl;
-
-  // Mbs2mv_ << 182, 685, 100, -7,  //////////////////
-  //     56, 640, 280, -16,         //////////////////
-  //     -16, 280, 640, 56,         //////////////////
-  //     -7, 100, 685, 182;
-  // Mbs2mv_ = (1.0 / 960.0) * Mbs2mv_;
-
-  // std::default_random_engine eng{ static_cast<long unsigned int>(time(0)) };
-  // double delta = 0.0;
-  // std::uniform_real_distribution<> disx(1 - delta, 1 + delta);
-  // std::uniform_real_distribution<> disy(1 - delta, 1 + delta);
-  // std::uniform_real_distribution<> disz(1 - delta, 1 + delta);
-  // epsilons_ << disx(eng), disy(eng), disz(eng);
-
-  // std::cout << bold << red << "EPSILONS= " << epsilons_.transpose() << reset << std::endl;
-
-  // computeInverses();
+  // std::cout << "knots_=" << knots_ << std::endl;
 }
 
 SplineAStar::~SplineAStar()
@@ -151,7 +114,6 @@ void SplineAStar::setVisual(bool visual)
 
 void SplineAStar::getBestTrajFound(trajectory& best_traj_found, PieceWisePol& pwp, double dc)
 {
-  std::cout << "******************BEST_TRAJ_FOUND**************" << std::endl;
   trajectory traj;
   CPs2TrajAndPwp(result_, best_traj_found, pwp, N_, p_, num_pol_, knots_, dc);
 }
@@ -198,8 +160,6 @@ void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
 
   for (auto node : expanded_valid_nodes_)
   {
-    // std::cout << "using expanded_node= " << node.qi.transpose() << std::endl;
-
     std::vector<Eigen::Vector3d> cps;
 
     Node* tmp = &node;
@@ -223,11 +183,6 @@ void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
   }
 }
 
-// void SplineAStar::setBasisUsedForCollision(int basis)
-// {
-
-// }
-
 void SplineAStar::setBBoxSearch(double x, double y, double z)
 {
   bbox_x_ = x;
@@ -250,8 +205,6 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   num_samples_x_ = (num_samples_x % 2 == 0) ? ceil(num_samples_x) : num_samples_x;
   num_samples_y_ = (num_samples_y % 2 == 0) ? ceil(num_samples_y) : num_samples_y;
   num_samples_z_ = (num_samples_z % 2 == 0) ? ceil(num_samples_z) : num_samples_z;
-
-  ////////////
 
   for (int i = 0; i < num_samples_x; i++)
   {
@@ -286,9 +239,6 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   double min_voxel_size;
   double max_voxel_size;
   computeLimitsVoxelSize(min_voxel_size, max_voxel_size);
-
-  // voxel_size_ = std::max(voxel_size_, min_voxel_size);
-  // voxel_size_ = std::min(voxel_size, max_voxel_size);
 
   // Ensure  fraction_voxel_size is in [0,1]
   fraction_voxel_size = (fraction_voxel_size > 1) ? 1 : fraction_voxel_size;
@@ -342,8 +292,6 @@ void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_vox
   int i = 2;
   double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
 
-  // std::cout << "Computing upper and lower, qiM1=" << q1_.transpose() << ", and qi=" << q2_.transpose() << std::endl;
-
   computeUpperAndLowerConstraints(i, q0_, q1_, q2_, constraint_xL, constraint_xU, constraint_yL, constraint_yU,
                                   constraint_zL, constraint_zU);
 
@@ -379,30 +327,7 @@ void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_vox
       }
     }
   }
-
-  /*  Eigen::Vector3d vi;
-
-    vi << constraint_xU, constraint_yU, constraint_zU;
-    Eigen::Vector3d neighbor_of_q2_U = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q2_;
-
-    vi << constraint_xL, constraint_yL, constraint_zL;
-    Eigen::Vector3d neighbor_of_q2_L = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + q2_;
-
-    max_voxel_size = std::max((neighbor_of_q2_L - q2_).norm(), (neighbor_of_q2_U - q2_).norm());*/
-
-  /*  return 1.001 * std::max((neighbor_of_q2_L - q2_).norm(), (neighbor_of_q2_U - q2_).norm());
-
-    return min_voxel_size;*/
 }
-
-// std::cout << bold << "***************************" << reset << std::endl;
-
-// std::cout << "viM2= " << viM2.transpose() << std::endl;
-// std::cout << "viM1= " << viM1.transpose() << std::endl;
-// std::cout << "Vbs_firstblock= " << Vbs_firstblock << std::endl;
-// std::cout << "M_interv.block(0, 0, 2, 3)= \n" << M_interv.block(0, 0, 2, 3) << std::endl;
-// std::cout << " tmp is " << std::endl;
-// std::cout << tmp << std::endl;
 
 // compute constraints so that it satisfies interval i-1
 // axis=0 (x), 1(y) or 2(z)
@@ -447,26 +372,12 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   // std::cout << "qiM1= " << qiM1.transpose() << std::endl;
   // std::cout << "qi= " << qi.transpose() << std::endl;
 
-  // std::cout << "in computeUpperAndLowerConstraints, i=" << i << std::endl;
-
   int interv = i - 2;  // index of the interval (i is the index of the control point)
-  // std::cout << red << "[computing] qi=" << qi.transpose() << ", interv=" << interv << reset << std::endl;
-
-  // std::cout << green << bold << "i= " << i << reset << std::endl;
-  // std::cout << green << bold << "interv= " << interv << reset << std::endl;
-  // std::cout << green << bold << "num_of_segments_= " << num_of_segments_ << reset << std::endl;
-  // std::cout << green << bold << "N_= " << N_ << reset << std::endl;
 
   Eigen::Vector3d viM2 =
       p_ * (qiM1 - qiM2) / (knots_(i - 2 + p_ + 1) - knots_(i - 2 + 1));  // velocity_{current.index -2}
   Eigen::Vector3d viM1 =
       p_ * (qi - qiM1) / (knots_(i - 1 + p_ + 1) - knots_(i - 1 + 1));  // velocity_{current.index -1}
-
-  // std::cout << "viM2= " << viM2.transpose() << std::endl;
-  // std::cout << "viM1= " << viM1.transpose() << std::endl;
-
-  // M_vel_bs2basis_[i - 2] = Eigen::Matrix<double, 3, 3>::Identity();
-  // std::cout << "M_interv= " << M_interv << std::endl;
 
   constraint_xL = -std::numeric_limits<double>::max();
   constraint_xU = std::numeric_limits<double>::max();
@@ -476,7 +387,6 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   constraint_zU = std::numeric_limits<double>::max();
 
   ////////////////////////IMPOSE VELOCITY CONSTRAINTS
-  ////////////////////////
 
   Eigen::Matrix<double, 3, 3> M_interv = M_vel_bs2basis_[interv];
 
@@ -597,30 +507,6 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
     constraint_zU = mean_z + alpha_shrink_ * dist_z;
   }
 
-  //////////////////////////
-  ////////////////////////// Remove later
-
-  // constraint_xL = std::max(constraint_xL, -v_max_.x());  // lower bound
-  // constraint_xU = std::min(constraint_xU, v_max_.x());   // upper bound
-
-  // constraint_yL = std::max(constraint_yL, -v_max_.y());  // lower bound
-  // constraint_yU = std::min(constraint_yU, v_max_.y());   // upper bound
-
-  // constraint_zL = std::max(constraint_zL, -v_max_.z());  // lower bound
-  // constraint_zU = std::min(constraint_zU, v_max_.z());   // upper bound
-
-  // constraint_xL = -7.0;
-  // constraint_xU = 7.0;
-
-  // constraint_yL = -7.0;
-  // constraint_yU = 7.0;
-
-  // constraint_zL = -7.0;
-  // constraint_zU = 7.0;
-
-  ////////////////////////// Remove later
-  //////////////////////////
-
   ////////////////////////IMPOSE ACCELERATION CONSTRAINTS
   ////////////////////////
 
@@ -730,52 +616,7 @@ void SplineAStar::setq0q1q2(Eigen::Vector3d& q0, Eigen::Vector3d& q1, Eigen::Vec
 
 double SplineAStar::h(Node& node)
 {
-  // See Notebook mathematica
-  /*  int dim_var = N_ - node.index;
-
-    Eigen::Matrix<double, -1, 1> b = Eigen::MatrixXd::Zero(dim_var, 1);
-
-    double heuristics = 0;
-
-    for (int coord = 0; coord < 3; coord++)  // separation in the three coordinates
-    {
-      double qi = node.qi(coord);
-      double qiM1;
-
-      if (node.index == 2)
-      {
-        qiM1 = q1_(coord);
-      }
-      else
-      {
-        qiM1 = node.previous->qi(coord);
-      }
-
-      double goal = goal_(coord);
-
-      b(0, 0) = 2 * (qiM1 - 4 * qi);
-
-      // See mathematica notebook
-      if (dim_var == 3)
-      {
-        b(1, 0) = 2 * qi + 2 * goal;
-      }
-      else
-      {
-        b(1, 0) = 2 * qi;
-        b(b.size() - 2, 0) = 2 * goal;
-      }
-      b(b.size() - 1, 0) = -6 * goal;
-      // std::cout << "Going to compute coordinates now3" << std::endl;
-      double c = qiM1 * qiM1 - 4 * qiM1 * qi + 5 * qi * qi + 2 * goal * goal;
-
-      heuristics = heuristics + (-0.5 * b.transpose() * Ainverses_[dim_var] * b + c);
-    }*/
-
-  double heuristics = (node.qi - goal_).norm();  // hack
-  // Eigen::Vector3d deltas2 = (node.qi - goal_).array().square();  //[Deltax^2  Deltay^2  Deltaz^2]''
-  // double heuristics = sqrt(epsilons_.dot(deltas2));              // hack
-  return heuristics;
+  return (node.qi - goal_).norm();
 }
 
 double SplineAStar::g(Node& node)
@@ -793,18 +634,7 @@ double SplineAStar::g(Node& node)
 
 double SplineAStar::weightEdge(Node& node1, Node& node2)  // edge cost when adding node 2
 {
-  /*  if (node1.index == 2)
-    {
-      return (node2.qi - 2 * node1.qi + q1_).squaredNorm();
-    }
-  // return (node2.qi - 2 * node1.qi + node1.previous->qi).squaredNorm();
-    */
-
-  double weight_edge = (node2.qi - node1.qi).norm();
-  // Eigen::Vector3d deltas2 = (node2.qi - node1.qi).array().square();  //[Deltax^2  Deltay^2  Deltaz^2]''
-  // double weight_edge = sqrt(epsilons_.dot(deltas2));                 // hack
-
-  return weight_edge;
+  return (node2.qi - node1.qi).norm();
 }
 
 void SplineAStar::printPath(Node& node1)
@@ -846,11 +676,10 @@ void SplineAStar::recoverPath(Node* result_ptr)
   while (tmp != NULL)
   {
     result_.push_back(tmp->qi);
-    // std::cout << "pushing" << tmp->qi.transpose() << std::endl;
 
     tmp = tmp->previous;
   }
-  // std::cout << "going to push q0 and q1" << std::endl;
+
   result_.push_back(q1_);
   result_.push_back(q0_);
 
@@ -877,34 +706,13 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
   n.resize(std::max(num_of_normals_, 0), Eigen::Vector3d::Zero());
   d.resize(std::max(num_of_normals_, 0), 0.0);
 
-  // std::vector<Eigen::Vector3d> last4Cps(4);
-
   Eigen::Matrix<double, 3, 4> last4Cps;  // Each column contains a control point
 
   bool isFeasible = true;
 
-  // std::cout << "q=" << std::endl;
-
-  // for (auto q_i : q)
-  // {
-  //   std::cout << q_i.transpose() << std::endl;
-  // }
-  /*
-   std::cout << "num_of_segments_= " << num_of_segments_ << std::endl;
-     std::cout << "num_of_normals_= " << num_of_normals_ << std::endl;
-     std::cout << "M_= " << M_ << std::endl;
-     std::cout << "N_= " << N_ << std::endl;
-     std::cout << "p_= " << p_ << std::endl;
-   */
-
   // Check obstacles constraints (and compute n and d)
   for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++)
   {
-    // last4Cps[0] = q[index_interv];
-    // last4Cps[1] = q[index_interv + 1];
-    // last4Cps[2] = q[index_interv + 2];
-    // last4Cps[3] = q[index_interv + 3];
-
     last4Cps.col(0) = q[index_interv];
     last4Cps.col(1) = q[index_interv + 1];
     last4Cps.col(2) = q[index_interv + 2];
@@ -922,10 +730,9 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
       // std::cout << "index_interv= " << index_interv << std::endl;
       if (solved == false)
       {
-        ////////////////////////////// REMOVE LATER, just for debug
-
-        std::cout << red << "\nThis does NOT satisfy the LP:  obstacle= " << obst_index
-                  << ", last index=" << index_interv + 3 << reset << std::endl;
+        ////////////////////////////// For debugging
+        // std::cout << red << "\nThis does NOT satisfy the LP:  obstacle= " << obst_index
+        //          << ", last index=" << index_interv + 3 << reset << std::endl;
 
         // std::cout << " (in basis_ form)" << std::endl;
 
@@ -949,6 +756,7 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
       }
       else
       {
+        ////////////////////////////// For debugging
         // std::cout << "\nThis satisfies the LP:  obstacle= " << obst_index << ", last index=" << index_interv + 3
         //           << std::endl;
 
@@ -965,6 +773,7 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
         // std::cout << last4Cps[1].transpose() << std::endl;
         // std::cout << last4Cps[2].transpose() << std::endl;
         // std::cout << last4Cps[3].transpose() << std::endl;
+        ///////////////////////////
       }
 
       /*      std::cout << "solved with ni=" << n_i.transpose() << std::endl;
@@ -1113,19 +922,13 @@ bool SplineAStar::collidesWithObstacles(Node& current)
 void SplineAStar::expandAndAddToQueue(Node& current, double constraint_xL, double constraint_xU, double constraint_yL,
                                       double constraint_yU, double constraint_zL, double constraint_zU)
 {
-  // std::cout << bold << "openList_ size " << openList_.size() << reset << std::endl;
-
-  // std::cout << "in expandAndAddToQueue" << std::endl;
-
   MyTimer timer_expand(true);
 
   if (current.index == (N_ - 2))
   {
-    // std::cout << "can't expand more in this direction" << std::endl;  // can't expand more
+    // std::cout << "can't expand more in this direction" << std::endl;
     return;  // neighbors = empty vector
   }
-
-  // std::cout << "here6" << std::endl;
 
   int i = current.index;
 
@@ -1142,21 +945,14 @@ void SplineAStar::expandAndAddToQueue(Node& current, double constraint_xL, doubl
   double delta_y = ((constraint_yU - constraint_yL) / (num_samples_y_ - 1));
   double delta_z = ((constraint_zU - constraint_zL) / (num_samples_z_ - 1));
 
-  // std::cout << "here" << std::endl;
   // MyTimer timer_forLoop(true);
-  // double time_openList = 0.0;
   for (auto comb : all_combinations_)
   {
     jx = std::get<0>(comb);
     jy = std::get<1>(comb);
     jz = std::get<2>(comb);
 
-    // std::cout << "here2" << std::endl;
-
     vi << constraint_xL + jx * delta_x, constraint_yL + jy * delta_y, constraint_zL + jz * delta_z;
-
-    // std::cout << "jx= " << jx << ", jy=" << jy << ", jz=" << jz << std::endl;
-    // std::cout << "vi= " << vi.transpose() << std::endl;
 
     neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
 
@@ -1181,17 +977,10 @@ void SplineAStar::expandAndAddToQueue(Node& current, double constraint_xL, doubl
     // std::endl;
     openList_.push(neighbor);
   }
-  // std::cout << green << "pushing" << reset << std::endl;
-
-  // std::cout << "here3, openList_.size()=" << openList_.size() << std::endl;
-
   // std::cout << "pushing to openList  took " << time_openList << std::endl;
   // std::cout << "openList size= " << openList_.size() << std::endl;
-
   // std::cout << "for loop took " << timer_forLoop << std::endl;
-
   // std::cout << "time_solving_lps_ " << time_solving_lps_ << std::endl;
-
   // std::cout << bold << "expanding took " << timer_expand << reset << std::endl;
 
   //  time_solving_lps_ = 0.0;
@@ -1250,25 +1039,15 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
 
   ////////////////////////////
 
-  // Option 1
   CompareCost comparer;
   comparer.bias = bias_;
-  // typedef std::set<Node, CompareCost> my_list;
-  // typedef std::set<Node, CompareCost>::iterator my_list_iterator;
-  // my_list openList_tmp(comparer);
 
-  // Option 2
   std::priority_queue<Node, std::vector<Node>, CompareCost> openList_tmp(comparer);
   openList_ = openList_tmp;
-
-  // Option 3
-  // custom_priority_queue<Node, CompareCost> openList_tmp;
-  // openList_ = openList_tmp;
 
   std::cout << "[A*] Running..." << std::endl;
 
   MyTimer timer_astar(true);
-  // std::cout << "this->bias_ =" << this->bias_ << std::endl;
 
   Node nodeq2;
   nodeq2.index = 0;
@@ -1278,21 +1057,6 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
   nodeq2.index = 2;
   nodeq2.h = h(nodeq2);  // f=g+h
 
-  // if (q2_.z() > z_max_ || q2_.z() < z_min_)
-  // {  // happens in some corner cases
-  //   // I need to detect it here because if not, no other nodes will be expanded, and I'll just fill everything with
-  //   q2,
-  //   // and nlopt will crash
-  //   return false;
-  // }
-
-  // Option 1
-  // openList_.insert(nodeq2);
-
-  // Option 2
-  // openList_.push(nodeq2);
-
-  // Option 3
   openList_.push(nodeq2);
 
   Node* current_ptr;
@@ -1315,23 +1079,6 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
 
     current_ptr = new Node;
 
-    // Option 1
-    //*current_ptr = *openList_.begin();
-
-    // std::priority_queue<Node, std::vector<Node>, CompareCost> openList_novale;
-    // openList_novale = openList_;
-    // std::cout << "=====================================" << reset << std::endl;
-    // std::cout << "Current openList is:" << reset << std::endl;
-    // int novale = 0;
-    // while (!openList_novale.empty() && novale < 5)
-    // {
-    //   std::cout << openList_novale.top().qi.transpose()
-    //             << ", cost=" << openList_novale.top().g + bias_ * openList_novale.top().h << "\n";
-    //   openList_novale.pop();
-    //   novale = novale + 1;
-    // }
-
-    // Option 2 and 3
     *current_ptr = openList_.top();  // copy the first element onto (*current_ptr)
     openList_.pop();                 // remove it from the list
 
@@ -1362,7 +1109,6 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
       continue;
     }
 
-    /////////////////////
     /////////////////////
     int i = (*current_ptr).index;
 
@@ -1400,7 +1146,6 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     }
 
     /////////////////////
-    /////////////////////
 
     MyTimer timer_collision_check(true);
     bool collides = collidesWithObstacles(*current_ptr);
@@ -1409,12 +1154,7 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
     // already_exist = false;
     if (collides)
     {
-      // std::cout << red << bold << "collides: " << (*current_ptr).qi.transpose() << "(i= " << i << ")" << reset
-      //           << std::endl;
-      // std::cout << "already_exist= " << already_exist << std::endl;
-
       // Node* tmp = current_ptr;
-
       // while (tmp != NULL)
       // {
       //   // cps.push_back(Eigen::Vector3d(tmp->qi.x(), tmp->qi.y(), tmp->qi.z()));
@@ -1422,12 +1162,7 @@ bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::V
       //   ix2 = round((tmp->qi.x() - orig_.x()) / voxel_size_);
       //   iy2 = round((tmp->qi.y() - orig_.y()) / voxel_size_);
       //   iz2 = round((tmp->qi.z() - orig_.z()) / voxel_size_);
-      //   // std::cout << "ix2= " << ix2 << std::endl;
-      //   // std::cout << "iy2= " << iy2 << std::endl;
-      //   // std::cout << "iz2= " << iz2 << std::endl;
-
       //   map_open_list_[Eigen::Vector3i(ix2, iy2, iz2)] = false;
-
       //   tmp = tmp->previous;
       // }
 
@@ -1541,7 +1276,7 @@ exitloop:
       Node* node_ptr = new Node;
       node_ptr->qi = best_node_ptr->qi;
       node_ptr->index = j;
-      //   ROS_INFO_STREAM("Filled " << j);
+
       std::cout << red << "Filled " << j << ", " << reset;
 
       // << node_ptr->qi.transpose() << std::endl;
@@ -1559,11 +1294,6 @@ exitloop:
   // }
   result = result_;
 
-  // if (visual_)
-  // {
-  //   plotExpandedNodesAndResult(expanded_nodes_, best_node_ptr);
-  // }
-
   bool isFeasible = checkFeasAndFillND(result_, n, d);
 
   if (isFeasible == false && path_found_is_not_complete == false)
@@ -1574,14 +1304,7 @@ exitloop:
     std::cout << red << "=====================================================" << std::endl;
 
     abort();
-
-    // if (accel_constraints_not_satisfied_)
-    // {
-    // abort();
-    //}
   }
-
-  //  std::cout << "returning isFeasible= " << isFeasible << std::endl;
 
   return isFeasible;
 }

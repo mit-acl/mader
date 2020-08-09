@@ -86,16 +86,16 @@ add_executable(${PROJECT_NAME}_node src/main.cpp src/mader_ros.cpp src/mader.cpp
 target_link_libraries(${PROJECT_NAME}_node PUBLIC ${catkin_LIBRARIES}  solverNlopt utils)  #${CGAL_LIBS}
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
-add_executable(astar_example src/testSplineAStar.cpp src/spline_AStar.cpp src/bspline_utils.cpp) # src/solvers/cvxgen/solver_cvxgen.cpp
+add_executable(astar_example src/examples/testSplineAStar.cpp src/spline_AStar.cpp src/bspline_utils.cpp) # src/solvers/cvxgen/solver_cvxgen.cpp
 add_dependencies(astar_example ${catkin_EXPORTED_TARGETS} )
 target_link_libraries(astar_example ${catkin_LIBRARIES} utils cgal_utils) # ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so
 
-add_executable(test_utils src/test_utils.cpp)
+add_executable(test_utils src/examples/test_utils.cpp)
 add_dependencies(test_utils ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_utils ${catkin_LIBRARIES} utils)
 
 
-add_executable(test_bspline_utils src/test_bspline_utils.cpp src/bspline_utils.cpp)
+add_executable(test_bspline_utils src/examples/test_bspline_utils.cpp src/bspline_utils.cpp)
 add_dependencies(test_bspline_utils ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_bspline_utils ${catkin_LIBRARIES})
 

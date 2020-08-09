@@ -1,11 +1,10 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
-//#include <iostream>
+
 #include <std_msgs/ColorRGBA.h>
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Point.h>
 #include <visualization_msgs/Marker.h>
-//#include <jps_basis/data_utils.h>
 
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "visualization_msgs/Marker.h"
@@ -16,7 +15,7 @@
 #include <mader_msgs/PieceWisePolTraj.h>
 #include <mader_msgs/CoeffPoly3.h>
 
-#include "ros/ros.h"  //TODO this shouldn't be here (separate in utils_ros and utils)
+#include "ros/ros.h"
 
 #define RED_NORMAL 1
 #define RED_TRANS 2
@@ -62,11 +61,6 @@ visualization_msgs::MarkerArray pwp2ColoredMarkerArray(PieceWisePol& pwp, double
 void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix<double, 4, 1>& coeff_new, double t0,
                      double tf);
 
-// mader_msgs::PieceWisePolTraj pwp2PwpMsg(PieceWisePol pwp, const Eigen::Vector3d& bbox, const int& id,
-//                                          const bool& is_agent);
-
-// PieceWisePolWithInfo pwpMsg2PwpWithInfo(const mader_msgs::PieceWisePolTraj& pwp_msg);
-
 PieceWisePol createPwpFromStaticPosition(const state& current_state);
 
 PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg);
@@ -90,7 +84,6 @@ std_msgs::ColorRGBA getColorJet(double v, double vmin, double vmax);
 
 std_msgs::ColorRGBA color(int id);
 
-//## From Wikipedia - http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 void quaternion2Euler(tf2::Quaternion q, double& roll, double& pitch, double& yaw);
 
 void quaternion2Euler(Eigen::Quaterniond q, double& roll, double& pitch, double& yaw);
@@ -109,9 +102,6 @@ double angleBetVectors(const Eigen::Vector3d& a, const Eigen::Vector3d& b);
 
 void angle_wrap(double& diff);
 
-// coeff is from highest degree to lowest degree. Returns the smallest positive real solution. Returns -1 if a
-// root is imaginary or if it's negative
-
 geometry_msgs::Point pointOrigin();
 
 Eigen::Vector3d vec2eigen(geometry_msgs::Vector3 vector);
@@ -123,15 +113,6 @@ geometry_msgs::Point eigen2point(Eigen::Vector3d vector);
 geometry_msgs::Vector3 vectorNull();
 
 geometry_msgs::Vector3 vectorUniform(double a);
-
-// template <typename T>
-// using vec_E = std::vector<T, Eigen::aligned_allocator<T>>;
-
-// template <int N>
-// using Vecf = Eigen::Matrix<decimal_t, N, 1>;  // Be CAREFUL, because this is with doubles!
-
-// template <int N>
-// using vec_Vecf = vec_E<Vecf<N>>;
 
 // sign function
 template <typename T>

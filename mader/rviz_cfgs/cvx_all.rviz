@@ -209,70 +209,168 @@ Visualization Manager:
           Value: false
         4069:
           Value: false
+        4070:
+          Value: true
+        4071:
+          Value: true
+        4072:
+          Value: true
+        4073:
+          Value: true
+        4074:
+          Value: true
+        4075:
+          Value: true
+        4076:
+          Value: true
+        4077:
+          Value: true
+        4078:
+          Value: true
+        4079:
+          Value: true
+        4080:
+          Value: true
+        4081:
+          Value: true
+        4082:
+          Value: true
+        4083:
+          Value: true
+        4084:
+          Value: true
+        4085:
+          Value: true
+        4086:
+          Value: true
+        4087:
+          Value: true
+        4088:
+          Value: true
+        4089:
+          Value: true
+        4090:
+          Value: true
+        4091:
+          Value: true
+        4092:
+          Value: true
+        4093:
+          Value: true
+        4094:
+          Value: true
+        4095:
+          Value: true
+        4096:
+          Value: true
+        4097:
+          Value: true
+        4098:
+          Value: true
+        4099:
+          Value: true
+        4100:
+          Value: true
+        4101:
+          Value: true
+        4102:
+          Value: true
+        4103:
+          Value: true
+        4104:
+          Value: true
+        4105:
+          Value: true
+        4106:
+          Value: true
+        4107:
+          Value: true
+        4108:
+          Value: true
+        4109:
+          Value: true
+        4110:
+          Value: true
+        4111:
+          Value: true
+        4112:
+          Value: true
+        4113:
+          Value: true
+        4114:
+          Value: true
+        4115:
+          Value: true
+        4116:
+          Value: true
+        4117:
+          Value: true
+        4118:
+          Value: true
+        4119:
+          Value: true
+        4120:
+          Value: true
+        4121:
+          Value: true
+        4122:
+          Value: true
+        4123:
+          Value: true
+        4124:
+          Value: true
+        4125:
+          Value: true
+        4126:
+          Value: true
+        4127:
+          Value: true
+        4128:
+          Value: true
+        4129:
+          Value: true
+        4130:
+          Value: true
+        4131:
+          Value: true
+        4132:
+          Value: true
+        4133:
+          Value: true
+        4134:
+          Value: true
+        4135:
+          Value: true
+        4136:
+          Value: true
+        4137:
+          Value: true
+        4138:
+          Value: true
+        4139:
+          Value: true
+        4140:
+          Value: true
+        4141:
+          Value: true
+        4142:
+          Value: true
+        4143:
+          Value: true
+        4144:
+          Value: true
+        4145:
+          Value: true
+        4146:
+          Value: true
+        4147:
+          Value: true
+        4148:
+          Value: true
+        4149:
+          Value: true
         All Enabled: false
-        SQ010s:
-          Value: true
-        SQ011s:
-          Value: true
-        SQ012s:
-          Value: true
-        SQ013s:
-          Value: true
-        SQ014s:
-          Value: true
-        SQ015s:
-          Value: true
-        SQ016s:
-          Value: true
-        SQ017s:
-          Value: true
-        SQ018s:
-          Value: true
-        SQ019s:
-          Value: true
         SQ01s:
-          Value: true
-        SQ020s:
-          Value: true
-        SQ021s:
-          Value: true
-        SQ022s:
-          Value: true
-        SQ023s:
-          Value: true
-        SQ024s:
-          Value: true
-        SQ025s:
-          Value: true
-        SQ026s:
-          Value: true
-        SQ027s:
-          Value: true
-        SQ028s:
-          Value: true
-        SQ029s:
-          Value: true
-        SQ02s:
-          Value: true
-        SQ030s:
-          Value: true
-        SQ031s:
-          Value: true
-        SQ032s:
-          Value: true
-        SQ03s:
-          Value: true
-        SQ04s:
-          Value: true
-        SQ05s:
-          Value: true
-        SQ06s:
-          Value: true
-        SQ07s:
-          Value: true
-        SQ08s:
-          Value: true
-        SQ09s:
           Value: true
         vicon:
           Value: false
@@ -425,70 +523,168 @@ Visualization Manager:
             {}
           4069:
             {}
+          4070:
+            {}
+          4071:
+            {}
+          4072:
+            {}
+          4073:
+            {}
+          4074:
+            {}
+          4075:
+            {}
+          4076:
+            {}
+          4077:
+            {}
+          4078:
+            {}
+          4079:
+            {}
+          4080:
+            {}
+          4081:
+            {}
+          4082:
+            {}
+          4083:
+            {}
+          4084:
+            {}
+          4085:
+            {}
+          4086:
+            {}
+          4087:
+            {}
+          4088:
+            {}
+          4089:
+            {}
+          4090:
+            {}
+          4091:
+            {}
+          4092:
+            {}
+          4093:
+            {}
+          4094:
+            {}
+          4095:
+            {}
+          4096:
+            {}
+          4097:
+            {}
+          4098:
+            {}
+          4099:
+            {}
+          4100:
+            {}
+          4101:
+            {}
+          4102:
+            {}
+          4103:
+            {}
+          4104:
+            {}
+          4105:
+            {}
+          4106:
+            {}
+          4107:
+            {}
+          4108:
+            {}
+          4109:
+            {}
+          4110:
+            {}
+          4111:
+            {}
+          4112:
+            {}
+          4113:
+            {}
+          4114:
+            {}
+          4115:
+            {}
+          4116:
+            {}
+          4117:
+            {}
+          4118:
+            {}
+          4119:
+            {}
+          4120:
+            {}
+          4121:
+            {}
+          4122:
+            {}
+          4123:
+            {}
+          4124:
+            {}
+          4125:
+            {}
+          4126:
+            {}
+          4127:
+            {}
+          4128:
+            {}
+          4129:
+            {}
+          4130:
+            {}
+          4131:
+            {}
+          4132:
+            {}
+          4133:
+            {}
+          4134:
+            {}
+          4135:
+            {}
+          4136:
+            {}
+          4137:
+            {}
+          4138:
+            {}
+          4139:
+            {}
+          4140:
+            {}
+          4141:
+            {}
+          4142:
+            {}
+          4143:
+            {}
+          4144:
+            {}
+          4145:
+            {}
+          4146:
+            {}
+          4147:
+            {}
+          4148:
+            {}
+          4149:
+            {}
           vicon:
-            SQ010s:
-              {}
-            SQ011s:
-              {}
-            SQ012s:
-              {}
-            SQ013s:
-              {}
-            SQ014s:
-              {}
-            SQ015s:
-              {}
-            SQ016s:
-              {}
-            SQ017s:
-              {}
-            SQ018s:
-              {}
-            SQ019s:
-              {}
             SQ01s:
-              {}
-            SQ020s:
-              {}
-            SQ021s:
-              {}
-            SQ022s:
-              {}
-            SQ023s:
-              {}
-            SQ024s:
-              {}
-            SQ025s:
-              {}
-            SQ026s:
-              {}
-            SQ027s:
-              {}
-            SQ028s:
-              {}
-            SQ029s:
-              {}
-            SQ02s:
-              {}
-            SQ030s:
-              {}
-            SQ031s:
-              {}
-            SQ032s:
-              {}
-            SQ03s:
-              {}
-            SQ04s:
-              {}
-            SQ05s:
-              {}
-            SQ06s:
-              {}
-            SQ07s:
-              {}
-            SQ08s:
-              {}
-            SQ09s:
               {}
       Update Interval: 0
       Value: true
@@ -686,7 +882,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        SQ01s: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -886,7 +1082,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ02s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -894,7 +1090,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ03s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -902,7 +1098,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ04s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -910,7 +1106,7 @@ Visualization Manager:
       Marker Topic: /SQ05s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ05s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -918,7 +1114,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ06s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -926,7 +1122,7 @@ Visualization Manager:
       Marker Topic: /SQ07s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ07s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -934,7 +1130,7 @@ Visualization Manager:
       Marker Topic: /SQ08s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ08s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -942,7 +1138,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ06s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -950,7 +1146,7 @@ Visualization Manager:
       Marker Topic: /SQ07s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ07s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -958,7 +1154,7 @@ Visualization Manager:
       Marker Topic: /SQ08s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ08s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -966,7 +1162,7 @@ Visualization Manager:
       Marker Topic: /SQ09s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ09s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -974,7 +1170,7 @@ Visualization Manager:
       Marker Topic: /SQ010s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ010s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -982,7 +1178,7 @@ Visualization Manager:
       Marker Topic: /SQ011s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ011s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -990,7 +1186,7 @@ Visualization Manager:
       Marker Topic: /SQ012s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ012s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -998,7 +1194,7 @@ Visualization Manager:
       Marker Topic: /SQ013s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ013s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1006,7 +1202,7 @@ Visualization Manager:
       Marker Topic: /SQ014s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ014s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1014,7 +1210,7 @@ Visualization Manager:
       Marker Topic: /SQ015s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ015s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1022,7 +1218,7 @@ Visualization Manager:
       Marker Topic: /SQ016s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ016s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1030,7 +1226,7 @@ Visualization Manager:
       Marker Topic: /SQ017s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ017s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1038,7 +1234,7 @@ Visualization Manager:
       Marker Topic: /SQ018s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ018s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1046,7 +1242,7 @@ Visualization Manager:
       Marker Topic: /SQ019s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ019s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1054,7 +1250,7 @@ Visualization Manager:
       Marker Topic: /SQ020s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ020s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1062,7 +1258,7 @@ Visualization Manager:
       Marker Topic: /SQ021s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ021s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1070,7 +1266,7 @@ Visualization Manager:
       Marker Topic: /SQ022s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ022s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1078,7 +1274,7 @@ Visualization Manager:
       Marker Topic: /SQ023s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ023s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1086,7 +1282,7 @@ Visualization Manager:
       Marker Topic: /SQ024s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ024s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1094,7 +1290,7 @@ Visualization Manager:
       Marker Topic: /SQ025s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ025s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1102,7 +1298,7 @@ Visualization Manager:
       Marker Topic: /SQ026s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ026s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1110,7 +1306,7 @@ Visualization Manager:
       Marker Topic: /SQ027s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ027s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1118,7 +1314,7 @@ Visualization Manager:
       Marker Topic: /SQ028s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ028s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1126,7 +1322,7 @@ Visualization Manager:
       Marker Topic: /SQ029s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ029s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1134,7 +1330,7 @@ Visualization Manager:
       Marker Topic: /SQ030s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ030s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1142,7 +1338,7 @@ Visualization Manager:
       Marker Topic: /SQ031s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ031s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1150,7 +1346,7 @@ Visualization Manager:
       Marker Topic: /SQ032s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ032s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1228,34 +1424,34 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 20.353605270385742
+      Class: rviz/ThirdPersonFollower
+      Distance: 58.11052322387695
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -6.0489301681518555
-        Y: -3.1599066257476807
-        Z: 4.381952285766602
+        X: 40.73563003540039
+        Y: -11.097864151000977
+        Z: -3.814697265625e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5257969498634338
+      Pitch: 1.0107964277267456
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 3.888180732727051
+      Value: ThirdPersonFollower (rviz)
+      Yaw: -1.1349992752075195
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
   Height: 1376
   Hide Left Dock: true
-  Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd000000040000000000000156000004c2fc020000000efb0000001200530065006c0065006300740069006f006e0000000028000000830000005c00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730200000b4b00000293000002b300000152fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000028000003960000000000000000fb000000100044006900730070006c006100790073000000003d000004c2000000c900fffffffb0000000a0049006d006100670065000000006e000003500000000000000000fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000002f4000000ca0000000000000000fb0000000a0049006d00610067006501000001530000012c0000000000000000fb0000000c00430061006d0065007200610100000285000001390000000000000000000000010000016a000004c2fc0200000004fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d000004c2000000a400fffffffb000000100044006900730070006c00610079007300000000db000002e3000000c900fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009bd0000003efc0100000002fb0000000800540069006d00650100000000000009bd000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000009bd000004c200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd000000040000000000000156000004c2fc020000000efb0000001200530065006c0065006300740069006f006e0000000028000000830000005c00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730200000b4b00000293000002b300000152fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000028000003960000000000000000fb000000100044006900730070006c006100790073000000003d000004c2000000c900fffffffb0000000a0049006d006100670065000000006e000003500000000000000000fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000002f4000000ca0000000000000000fb0000000a0049006d00610067006501000001530000012c0000000000000000fb0000000c00430061006d0065007200610100000285000001390000000000000000000000010000016a000004c2fc0200000004fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000004c2000000a400fffffffb000000100044006900730070006c00610079007300000000db000002e3000000c900fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009bd0000003efc0100000002fb0000000800540069006d00650100000000000009bd000002eb00fffffffb0000000800540069006d006501000000000000045000000000000000000000084d000004c200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1263,7 +1459,7 @@ Window Geometry:
   Tool Properties:
     collapsed: false
   Views:
-    collapsed: true
+    collapsed: false
   Width: 2493
   X: 67
   Y: 27
