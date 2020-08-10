@@ -76,12 +76,12 @@ a_star_bias: 7.0
 and then open four terminals and run these commands:
 
 ```
-roslaunch mader mader_general.launch
+roslaunch mader mader_general.launch type_of_environment:="dynamic_forest"
 roslaunch mader many_drones.launch action:=start
 roslaunch mader many_drones.launch action:=mader
 roslaunch mader many_drones.launch action:=send_goal
 ```
 
 ## Credits:
-This package uses some C++ classes from the [JPS3D](https://github.com/KumarRobotics/jps3d) and [DecompROS](https://github.com/sikang/DecompROS) repos (included in the `thirdparty` folder), so credit to them as well. 
+This package uses some C++ classes from the [DecompROS](https://github.com/sikang/DecompROS) repos (included in the `thirdparty` folder), so credit to it as well. 
 
