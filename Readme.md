@@ -84,5 +84,5 @@ roslaunch mader many_drones.launch action:=send_goal
 ```
 
 ## Credits:
-This package uses some C++ classes from the [DecompROS](https://github.com/sikang/DecompROS) repos (included in the `thirdparty` folder), so credit to it as well. 
+This package uses some C++ classes from the [DecompROS](https://github.com/sikang/DecompROS) repo (included in the `thirdparty` folder), so credit to it as well. 
 
