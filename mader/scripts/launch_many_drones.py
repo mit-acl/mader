@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 # coding=utf-8
-# author: thinkycx
-# date: 2018-01-11
-# modified by: Jesus Tordesillas, jtorde@mit.edu
-# date: 2020-February
+
+# /* ----------------------------------------------------------------------------
+#  * Copyright 2020, Jesus Tordesillas Torres, Aerospace Controls Laboratory
+#  * Massachusetts Institute of Technology
+#  * All Rights Reserved
+#  * Authors: Jesus Tordesillas, et al.
+#  * See LICENSE file for the license information
+#  * -------------------------------------------------------------------------- */
+
 
 import math
 import os

@@ -1,3 +1,11 @@
+/* ----------------------------------------------------------------------------
+ * Copyright 2020, Jesus Tordesillas Torres, Aerospace Controls Laboratory
+ * Massachusetts Institute of Technology
+ * All Rights Reserved
+ * Authors: Jesus Tordesillas, et al.
+ * See LICENSE file for the license information
+ * -------------------------------------------------------------------------- */
+
 #include "predictor.hpp"
 #include "utils.hpp"
 #include "bspline_utils.hpp"
@@ -97,8 +105,7 @@ void Predictor::trajCB(const mader_msgs::DynTraj& msg)
   // pwp2PwpMsg(PieceWisePol pwp, const std::vector<double>& bbox, const int& id,
   // const bool& is_agent)
   bool is_agent = true;
-  mader_msgs::PieceWisePolTraj pwp_msg =
-      pwp2PwpMsg(pwp_predicted_traj, traj_compiled.bbox, traj_compiled.id, is_agent);
+  mader_msgs::PieceWisePolTraj pwp_msg = pwp2PwpMsg(pwp_predicted_traj, traj_compiled.bbox, traj_compiled.id, is_agent);
 
   std::cout << green << "going to publish\n" << reset;
   pwp_predicted_traj.print();

@@ -1,4 +1,10 @@
-// Jesus Tordesillas Torres, jtorde@mit.edu, May 2020
+/* ----------------------------------------------------------------------------
+ * Copyright 2020, Jesus Tordesillas Torres, Aerospace Controls Laboratory
+ * Massachusetts Institute of Technology
+ * All Rights Reserved
+ * Authors: Jesus Tordesillas, et al.
+ * See LICENSE file for the license information
+ * -------------------------------------------------------------------------- */
 
 // This file simply creates a solverNlopt object, sets its params and some random obstacles, and then checks all the
 // gradients numerically

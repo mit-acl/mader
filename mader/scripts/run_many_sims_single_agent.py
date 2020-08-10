@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Jesus Tordesillas, jtorde@mit.edu
-# date: June 2020
+
+# /* ----------------------------------------------------------------------------
+#  * Copyright 2020, Jesus Tordesillas Torres, Aerospace Controls Laboratory
+#  * Massachusetts Institute of Technology
+#  * All Rights Reserved
+#  * Authors: Jesus Tordesillas, et al.
+#  * See LICENSE file for the license information
+#  * -------------------------------------------------------------------------- */
 
 import math
 import os

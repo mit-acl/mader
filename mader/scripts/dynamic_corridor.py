@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
-#Jesus Tordesillas Torres, December 2019
+# /* ----------------------------------------------------------------------------
+#  * Copyright 2020, Jesus Tordesillas Torres, Aerospace Controls Laboratory
+#  * Massachusetts Institute of Technology
+#  * All Rights Reserved
+#  * Authors: Jesus Tordesillas, et al.
+#  * See LICENSE file for the license information
+#  * -------------------------------------------------------------------------- */
 
 #This files plots in gazebo with the position and orientation of the drone according to the desired position and acceleration specified in the goal topic
 
