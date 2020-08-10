@@ -66,6 +66,7 @@ roslaunch mader single_agent_simulation.launch
 Change these parameters in `mader.yaml`:
 
 ```yaml
+drone_radius: 0.05
 v_max: [2.5, 2.5, 2.5]     
 a_max: [30.0, 30.0, 9.6]  
 num_pol: 3
