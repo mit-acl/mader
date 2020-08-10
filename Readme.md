@@ -62,19 +62,25 @@ roslaunch mader single_agent_simulation.launch
 ```
 
 #### Multi-agent
-```
-roslaunch mader single_agent_simulation.launch
+
+Change these parameters in `mader.yaml`:
+
+```yaml
+v_max: [2.5, 2.5, 2.5]     
+a_max: [30.0, 30.0, 9.6]  
+num_pol: 3
+a_star_fraction_voxel_size: 0.0
+a_star_bias: 7.0
 ```
 
-And finally open 5 terminals and execute these commands:
-```
-roslaunch acl_sim start_world.launch
-roslaunch acl_sim perfect_tracker_and_sim.launch
-roslaunch global_mapper_ros global_mapper_node.launch
-roslaunch faster faster_interface.launch
-roslaunch faster faster.launch
-```
+and then open four terminals and run these commands:
 
+```
+roslaunch mader mader_general.launch
+roslaunch mader many_drones.launch action:=start
+roslaunch mader many_drones.launch action:=mader
+roslaunch mader many_drones.launch action:=send_goal
+```
 
 ## Credits:
 This package uses some C++ classes from the [JPS3D](https://github.com/KumarRobotics/jps3d) and [DecompROS](https://github.com/sikang/DecompROS) repos (included in the `thirdparty` folder), so credit to them as well. 

@@ -317,7 +317,7 @@ if __name__ == '__main__':
     # print("********************************")
     # print(sys.argv)
     # if(len(sys.argv)<=1):
-    #     # print("Usage: python dynamic_obstacles.py [Num_of_obstacles]")
+    #     # print("Usage: python dynamic_corridor.py [Num_of_obstacles]")
     #     total_num_obs=140; 
     # else:
     #     total_num_obs=int(sys.argv[1])

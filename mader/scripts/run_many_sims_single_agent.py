@@ -42,7 +42,7 @@ if __name__ == '__main__':
                 commands = []
 
                 commands.append("roslaunch mader mader_specific_and_general.launch gui:=false rviz:=false environment:=false");
-                commands.append("sleep 1.0 &&rosrun mader dynamic_obstacles.py "+str(total_num_of_obs[k]));
+                commands.append("sleep 1.0 &&rosrun mader dynamic_corridor.py "+str(total_num_of_obs[k]));
                 commands.append("sleep 3.0 && rosparam set /SQ01s/mader/basis "+basis); #Remember to comment the parameter "basis" in mader.yaml before running this file
                 commands.append("sleep 3.0 && rosparam set /SQ01s/mader/visual false"); #Remember to comment the parameter "visual" in mader.yaml before running this file
 

@@ -2,6 +2,7 @@
 	<arg name="gui" default="false"/>
 	<arg name="rviz" default="true"/>
 	<arg name="environment" default="true"/>
+	<arg name="type_of_environment" default="dynamic_corridor"/>  <!-- dynamic_corridor or dynamic_forest -->
 
 <!-- Start Behaviour Selector-->
 <node pkg="behavior_selector" type="behavior_selector_node.py" name="behavior_selector" output="screen" />
@@ -18,8 +19,7 @@
 </group>
 
 <group if="$(arg environment)">
-<!-- 	<node name="dynamic_obstacles" pkg="mader" type="dynamic_obstacles.py" output="screen" args="150"/> -->
-	<node name="dynamic_obstacles" pkg="mader" type="dynamic_forest.py" output="screen"/>
+	<node name="$(arg type_of_environment)" pkg="mader" type="$(arg type_of_environment).py" output="screen" args="150"/>	<!--  args is not used in dynamic_forest (TODO)-->
 </group>s	
 
 </launch>
