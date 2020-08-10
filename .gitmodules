@@ -1,6 +1,6 @@
 [submodule "acl-gazebo"]
 	path = submodules/acl-gazebo
-	url = hhttps://gitlab.com/mit-acl/lab/acl-gazebo.git
+	url = https://gitlab.com/mit-acl/lab/acl-gazebo.git
 	branch = master
 [submodule "catkin_simple"]
 	path = submodules/catkin_simple
