@@ -44,7 +44,7 @@ Create a workspace, and clone this repo and its submodules:
 mkdir ws && cd ws && mkdir src && cd src
 git clone https://github.com/mit-acl/mader.git
 cd mader && git submodule init && git submodule update
-cd ..
+cd ../../
 catkin config -DCMAKE_BUILD_TYPE=Release
 catkin build
 ```
