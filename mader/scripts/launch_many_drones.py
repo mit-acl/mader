@@ -39,7 +39,7 @@ def convertToStringCommand(action,quad,x,y,z,goal_x,goal_y,goal_z, yaw):
 
 if __name__ == '__main__':
     # formation="sphere", "square" "circle"
-    formation="circle"
+    formation="sphere"
     commands = []
     num_of_agents=8; 
     radius=10;
