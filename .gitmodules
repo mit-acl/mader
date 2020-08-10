@@ -8,7 +8,7 @@
 	branch = master
 [submodule "separator"]
 	path = submodules/separator
-	url = git@github.com:jtorde/separator.git
+	url = git@github.com:mit-acl/separator.git
 	branch = master
 [submodule "behavior_selector"]
 	path = submodules/behavior_selector
