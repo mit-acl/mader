@@ -60,6 +60,7 @@ source PATH_TO_YOUR_WS/devel/setup.bash
 ```
 roslaunch mader single_agent_simulation.launch
 ```
+Now you can press `G` (or click the option `2D Nav Goal` on the top bar of RVIZ) and click any goal for the drone. 
 
 #### Multi-agent
 
