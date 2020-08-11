@@ -10,7 +10,7 @@ Single-Agent               |  Multi-Agent           |
 When using MADER, please cite [this paper](https://www.google.com/):
 
 ```bibtex
-@inproceedings{tordesillas2019faster,
+@article{tordesillas2020mader,
   title={{MADER}: Trajectory Planner in Multi-Agent and Dynamic Environments},
   author={Tordesillas, Jesus and How, Jonathan P},
   journal={arXiv preprint},
