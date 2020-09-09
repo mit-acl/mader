@@ -90,13 +90,13 @@ void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix
 
   std::cout << "delta= " << delta << std::endl;
 
-  if (isnan(delta))
-  {
-    std::cout << "tf= " << tf << std::endl;
-    std::cout << "t0= " << tf << std::endl;
-    std::cout << "delta is NAN" << std::endl;
-    abort();
-  }
+ // if (isnan(delta))
+ // {
+ //   std::cout << "tf= " << tf << std::endl;
+ //   std::cout << "t0= " << tf << std::endl;
+ //   std::cout << "delta is NAN" << std::endl;
+ //   abort();
+ // }
 
   std::cout << "a= " << a << std::endl;
   std::cout << "b= " << b << std::endl;
