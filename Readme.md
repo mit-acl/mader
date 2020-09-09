@@ -19,40 +19,20 @@ When using MADER, please cite [this paper](https://www.google.com/):
 ```
 
 ## General Setup
+
 MADER has been tested with 
+* Ubuntu 16.04/ROS Kinetic
 * Ubuntu 18.04/ROS Melodic 
 
-### Dependencies
+To download the repo, install all the dependencies and compile simply run these commands:
 
-Install [NLopt](https://nlopt.readthedocs.io/en/latest/) following [these instructions](https://nlopt.readthedocs.io/en/latest/#download-and-installation) (MADER has been tested with NLopt v2.6.2).
-
-Install v4.12.4 of [CGAL](https://www.cgal.org/): 
-
-```
-sudo apt-get install libgmp3-dev libmpfr-dev
-wget https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.14.2/CGAL-4.14.2.tar.xz
-tar -xf CGAL-4.14.2.tar.xz
-cd CGAL-4.14.2/
-cmake . -DCMAKE_BUILD_TYPE=Release
-sudo make install
-```
-
-### Compilation
-
-Create a workspace, and clone this repo and its submodules, make sure all the dependencies are installed and compile:
-```
-mkdir ws && cd ws && mkdir src && cd src
+```bash
+cd ~/ && mkdir ws && cd ws && mkdir src && cd src
 git clone https://github.com/mit-acl/mader.git
-cd mader && git submodule init && git submodule update && cd ../../
-rosdep install --from-paths src --ignore-src -r -y
-catkin config -DCMAKE_BUILD_TYPE=Release
-catkin build
+bash mader/install_and_compile.sh
 ```
 
-Now add this to your `~/.bashrc`: 
-```
-source PATH_TO_YOUR_WS/devel/setup.bash
-```
+The bash file will install [NLopt v2.6.2](https://nlopt.readthedocs.io/en/latest/), [CGAL v4.12.4](https://www.cgal.org/) and other ROS packages (check the file for details).
 
 ### Running Simulations
 

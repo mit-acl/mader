@@ -1,11 +1,6 @@
 #!/bin/bash
 # Author: Jesus Tordesillas Torres
 
-
-#cd ~/ mkdir ws && cd ws && mkdir src && cd src
-#git clone https://github.com/mit-acl/mader.git
-#bash mader/install_and_compile.sh
-
 source ~/.bashrc
 
 #INSTALL NLOPT v2.6.2
@@ -27,7 +22,6 @@ sudo make install
 
 #INSTALL python-catkin-tools (to be able to use catkin build)
 ##########################################
-cd ..
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
 wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 sudo apt-get update
