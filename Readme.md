@@ -32,7 +32,7 @@ git clone https://github.com/mit-acl/mader.git
 bash mader/install_and_compile.sh
 ```
 
-The [bash script](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh) will install [NLopt v2.6.2](https://nlopt.readthedocs.io/en/latest/), [CGAL v4.12.4](https://www.cgal.org/), [GLPK](https://www.gnu.org/software/glpk/) and other ROS packages (check the script for details). This bash script assummes that you already have ROS installed in your machine. 
+The [bash script](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh) will install [NLopt v2.6.2](https://nlopt.readthedocs.io/en/latest/), [CGAL v4.12.4](https://www.cgal.org/), [GLPK](https://www.gnu.org/software/glpk/) and other ROS packages (check the script for details). This bash script assumes that you already have ROS installed in your machine. 
 
 ### Running Simulations
 
