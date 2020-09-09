@@ -1,4 +1,5 @@
 #!/bin/bash
+# Author: Jesus Tordesillas Torres
 
 #INSTALL NLOPT v2.6.2
 ##########################################
