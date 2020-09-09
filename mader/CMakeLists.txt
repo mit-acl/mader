@@ -5,7 +5,6 @@ project(mader)
 add_definitions(-std=c++11)
 #add_definitions(-std=c99)
 
-
 #For unity build, 
 #See example https://gist.github.com/AlexsJones/0a574d32a0541a384f81
 function(enable_unity_build UB_SUFFIX SOURCE_VARIABLE_NAME)
@@ -25,11 +24,8 @@ function(enable_unity_build UB_SUFFIX SOURCE_VARIABLE_NAME)
 endfunction(enable_unity_build)
 
 
-
-
 find_package( Eigen3 REQUIRED )
 include_directories(${EIGEN3_INCLUDE_DIR})
-
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 
@@ -70,25 +66,25 @@ add_library(utils STATIC src/utils.cpp)
 target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(utils PUBLIC ${catkin_LIBRARIES})
 
-add_library(spline_AStar STATIC src/spline_AStar.cpp ) #src/solvers/cvxgen/solver_cvxgen.cpp
-target_include_directories (spline_AStar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(spline_AStar PUBLIC ${catkin_LIBRARIES}) # ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so
+add_library(octopus_search STATIC src/octopus_search.cpp ) #src/solvers/cvxgen/solver_cvxgen.cpp
+target_include_directories (octopus_search PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(octopus_search PUBLIC ${catkin_LIBRARIES}) # ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so
 
 
-add_library(solverNlopt STATIC src/solverNlopt.cpp src/bspline_utils.cpp src/nlopt_utils.cpp )
-target_include_directories (solverNlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
-target_link_libraries(solverNlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils spline_AStar ${catkin_LIBRARIES} cgal_utils)
+add_library(solver_nlopt STATIC src/solver_nlopt.cpp src/bspline_utils.cpp src/nlopt_utils.cpp )
+target_include_directories (solver_nlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
+target_link_libraries(solver_nlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils octopus_search ${catkin_LIBRARIES} cgal_utils)
 
 
-# enable_unity_build(UNITY_BUILD_NAME src/main.cpp)
+# enable_unity_build(UNITY_BUILD_NAME src/mader_node.cpp)
 
-add_executable(${PROJECT_NAME}_node src/main.cpp src/mader_ros.cpp src/mader.cpp )
-target_link_libraries(${PROJECT_NAME}_node PUBLIC ${catkin_LIBRARIES}  solverNlopt utils)  #${CGAL_LIBS}
+add_executable(${PROJECT_NAME}_node src/mader_node.cpp src/mader_ros.cpp src/mader.cpp )
+target_link_libraries(${PROJECT_NAME}_node PUBLIC ${catkin_LIBRARIES}  solver_nlopt utils)  #${CGAL_LIBS}
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
-add_executable(astar_example src/examples/testSplineAStar.cpp src/spline_AStar.cpp src/bspline_utils.cpp) # src/solvers/cvxgen/solver_cvxgen.cpp
-add_dependencies(astar_example ${catkin_EXPORTED_TARGETS} )
-target_link_libraries(astar_example ${catkin_LIBRARIES} utils cgal_utils) # ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so
+add_executable(test_octopus_search src/examples/test_octopus_search.cpp src/octopus_search.cpp src/bspline_utils.cpp) # src/solvers/cvxgen/solver_cvxgen.cpp
+add_dependencies(test_octopus_search ${catkin_EXPORTED_TARGETS} )
+target_link_libraries(test_octopus_search ${catkin_LIBRARIES} utils cgal_utils) # ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so
 
 add_executable(test_utils src/examples/test_utils.cpp)
 add_dependencies(test_utils ${catkin_EXPORTED_TARGETS})
@@ -102,12 +98,12 @@ target_link_libraries(test_bspline_utils ${catkin_LIBRARIES})
 
 # add_library(mader STATIC src/mader.cpp src/mader.hpp)
 # target_include_directories (mader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-# target_link_libraries(mader PUBLIC utils ${CGAL_LIBS} solverNlopt)
+# target_link_libraries(mader PUBLIC utils ${CGAL_LIBS} solver_nlopt)
 
 
 # add_library(mader_ros STATIC src/mader_ros.cpp src/mader_ros.hpp src/mader.cpp src/mader.hpp)
 # target_include_directories (mader_ros PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-# target_link_libraries(mader_ros PUBLIC ${catkin_LIBRARIES}  solverNlopt utils)
+# target_link_libraries(mader_ros PUBLIC ${catkin_LIBRARIES}  solver_nlopt utils)
 
 
 # add_executable(predictor_node src/predictor_node.cpp src/predictor.cpp src/bspline_utils.cpp)

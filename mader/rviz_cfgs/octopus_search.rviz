@@ -68,35 +68,35 @@ Visualization Manager:
       Update Interval: 0
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /astar_example/A_star_trajectories_found
       Name: AllTrajs
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /astar_example/A_star_best_trajectory_found
       Name: BestTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /astar_example/convex_hulls
       Name: ConvexHulls
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /astar_example/traj_obstacle_colored_int_0
       Name: MarkerArray0
       Namespaces:
-        marker_dyn_obs: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -104,7 +104,7 @@ Visualization Manager:
       Marker Topic: /astar_example/traj_obstacle_colored_int_1
       Name: MarkerArray1
       Namespaces:
-        marker_dyn_obs: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -112,7 +112,7 @@ Visualization Manager:
       Marker Topic: /astar_example/traj_obstacle_colored_int_2
       Name: MarkerArray2
       Namespaces:
-        marker_dyn_obs: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -120,7 +120,7 @@ Visualization Manager:
       Marker Topic: /astar_example/traj_obstacle_colored_int_3
       Name: MarkerArray3
       Namespaces:
-        marker_dyn_obs: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -128,7 +128,7 @@ Visualization Manager:
       Marker Topic: /astar_example/traj_obstacle_colored_int_4
       Name: MarkerArray4
       Namespaces:
-        marker_dyn_obs: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -136,7 +136,7 @@ Visualization Manager:
       Marker Topic: /astar_example/traj_obstacle_colored_int_5
       Name: MarkerArray5
       Namespaces:
-        marker_dyn_obs: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -144,7 +144,7 @@ Visualization Manager:
       Marker Topic: /astar_example/traj_obstacle_colored_int_6
       Name: MarkerArray6
       Namespaces:
-        marker_dyn_obs: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -152,7 +152,7 @@ Visualization Manager:
       Marker Topic: /astar_example/A_star_best_trajectory_found_int_0
       Name: BestTraj0
       Namespaces:
-        traj227: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -160,7 +160,7 @@ Visualization Manager:
       Marker Topic: /astar_example/A_star_best_trajectory_found_int_1
       Name: BestTraj1
       Namespaces:
-        traj227: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -168,7 +168,7 @@ Visualization Manager:
       Marker Topic: /astar_example/A_star_best_trajectory_found_int_2
       Name: BestTraj2
       Namespaces:
-        traj227: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -176,7 +176,7 @@ Visualization Manager:
       Marker Topic: /astar_example/A_star_best_trajectory_found_int_3
       Name: BestTraj3
       Namespaces:
-        traj227: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -184,7 +184,7 @@ Visualization Manager:
       Marker Topic: /astar_example/A_star_best_trajectory_found_int_4
       Name: BestTraj4
       Namespaces:
-        traj227: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -192,7 +192,7 @@ Visualization Manager:
       Marker Topic: /astar_example/A_star_best_trajectory_found_int_5
       Name: BestTraj5
       Namespaces:
-        traj227: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -200,7 +200,7 @@ Visualization Manager:
       Marker Topic: /astar_example/A_star_best_trajectory_found_int_6
       Name: BestTraj6
       Namespaces:
-        traj227: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 0.05000000074505806

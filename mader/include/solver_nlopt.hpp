@@ -17,7 +17,7 @@
 #include "timer.hpp"
 #include <decomp_geometry/polyhedron.h>  //For Polyhedron  and Hyperplane definition
 #include "separator.hpp"
-#include "spline_AStar.hpp"
+#include "octopus_search.hpp"
 
 typedef MADER_timers::Timer MyTimer;
 

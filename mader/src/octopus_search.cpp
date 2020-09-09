@@ -11,7 +11,7 @@
 
 #include "timer.hpp"
 #include "termcolor.hpp"
-#include "spline_AStar.hpp"
+#include "octopus_search.hpp"
 #include "bspline_utils.hpp"
 using namespace termcolor;
 

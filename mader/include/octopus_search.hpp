@@ -11,12 +11,10 @@
 #include "mader_types.hpp"
 
 #include "separator.hpp"
-#include <unordered_map>
-
 #include "cgal_utils.hpp"
 
+#include <unordered_map>
 #include <queue>
-
 #include <tuple>
 
 //#include "solvers/cvxgen/solver_cvxgen.hpp"

@@ -18,7 +18,7 @@
 #include <random>
 #include "timer.hpp"
 
-#include "solverNlopt.hpp"
+#include "solver_nlopt.hpp"
 #include "nlopt_utils.hpp"
 
 bool nlopt_utils::checkGradientsNlopt(std::string basis)

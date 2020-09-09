@@ -7,6 +7,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "mader_ros.hpp"
+
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <nav_msgs/Path.h>

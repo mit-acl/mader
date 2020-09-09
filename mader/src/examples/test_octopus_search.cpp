@@ -1,5 +1,5 @@
 #include <Eigen/Dense>
-#include "spline_AStar.hpp"
+#include "octopus_search.hpp"
 #include "mader_types.hpp"
 #include "utils.hpp"
 #include "ros/ros.h"

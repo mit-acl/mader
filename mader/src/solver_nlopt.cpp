@@ -6,22 +6,18 @@
  * See LICENSE file for the license information
  * -------------------------------------------------------------------------- */
 
-#include "solverNlopt.hpp"
-
-#include <iostream>
-#include <vector>
+#include "solver_nlopt.hpp"
 #include "termcolor.hpp"
-
-#include <random>
+#include "bspline_utils.hpp"
+#include "ros/ros.h"
 
 #include <decomp_util/ellipsoid_decomp.h>  //For Polyhedron definition
 #include <unsupported/Eigen/Splines>
-
-#include "bspline_utils.hpp"
-#include "ros/ros.h"
 #include <iostream>
 #include <list>
-
+#include <random>
+#include <iostream>
+#include <vector>
 #include <chrono>
 #include <thread>
 #include <mutex>

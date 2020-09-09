@@ -16,7 +16,7 @@
 #include <mutex>
 
 #include "mader_types.hpp"
-#include "solverNlopt.hpp"
+#include "solver_nlopt.hpp"
 
 // status_ : YAWING-->TRAVELING-->GOAL_SEEN-->GOAL_REACHED-->YAWING-->TRAVELING-->...
 
