@@ -1,7 +1,7 @@
 <launch>
 
 	<arg name="quad" default="SQ01s"/>
-  <arg name="gui" default="true"/>
+  <arg name="gui" default="false"/>
   <arg name="rviz" default="true"/>
 
  <include file="$(find mader)/launch/mader_specific_and_general.launch">

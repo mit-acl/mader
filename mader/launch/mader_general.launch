@@ -14,7 +14,7 @@
 </group>
 
 <!-- Don't run this, for instance, for ssh connections -->
-<group if="$(arg gui)">
+<group if="$(arg gui)"> 
 	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" args="--perspective-file $(find mader)/rqt_cfgs/demo_interface.perspective"/>
 </group>
 
