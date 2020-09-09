@@ -92,7 +92,7 @@ roslaunch mader octopus_search.launch
 ```
 And you should obtain this:
 
-![](./imgs/octopus_search.png) 
+![](./mader/imgs/octopus_search.png) 
 
 (note that the octopus search has some randomness in it, so you may obtain a different result each time you run it).
 
