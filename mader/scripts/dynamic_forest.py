@@ -107,7 +107,7 @@ class FakeSim:
             else:
                 bbox_i=self.world.bbox_static_horiz;
                 self.z_all.append(random.uniform(0.0, 3.0));  #-3.0, 3.0 for sphere sim
-                self.type.append("static_horiz")
+                self.type.append("static_horiz")#They are actually dynamic (moving in z) //TODO (change name)
                 self.meshes.append(random.choice(available_meshes_dynamic));
 
 

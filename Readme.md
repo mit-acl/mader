@@ -39,12 +39,12 @@ sudo make install
 
 ### Compilation
 
-Create a workspace, and clone this repo and its submodules:
+Create a workspace, and clone this repo and its submodules, make sure all the dependencies are installed and compile:
 ```
 mkdir ws && cd ws && mkdir src && cd src
 git clone https://github.com/mit-acl/mader.git
-cd mader && git submodule init && git submodule update
-cd ../../
+cd mader && git submodule init && git submodule update && cd ../../
+rosdep install --from-paths src --ignore-src -r -y
 catkin config -DCMAKE_BUILD_TYPE=Release
 catkin build
 ```
