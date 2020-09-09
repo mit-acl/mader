@@ -1,6 +1,11 @@
 #!/bin/bash
 # Author: Jesus Tordesillas Torres
 
+#mkdir ws && cd ws && mkdir src && cd src
+#git clone https://github.com/mit-acl/mader.git
+
+source ~/.bashrc
+
 #INSTALL NLOPT v2.6.2
 ##########################################
 cd ~/
@@ -26,12 +31,9 @@ wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install python-catkin-tools -y
 
-#CREATE WORKSPACE, CLONE REPOS AND COMPILE
+#CLONE SUBMODULES, INSTALL DEPENDENCIES AND COMPILE
 ##########################################
-mkdir ws && cd ws && mkdir src && cd src
-git clone https://github.com/mit-acl/mader.git
 cd mader && git submodule init && git submodule update && cd ../../
-source ~/.bashrc
 rosdep install --from-paths src --ignore-src -r -y
 catkin config -DCMAKE_BUILD_TYPE=Release
 catkin build
