@@ -84,6 +84,18 @@ roslaunch mader many_drones.launch action:=mader
 roslaunch mader many_drones.launch action:=send_goal
 ```
 
+#### Octopus Search
+You can run the octopus search with a dynamic obstacle by simply running
+
+```
+roslaunch mader octopus_search.launch
+```
+And you should obtain this:
+
+![](./imgs/octopus_search.png) 
+
+(note that the octopus search has some randomness in it, so you may obtain a different result each time you run it).
+
 ## Credits:
 This package uses some C++ classes from the [DecompROS](https://github.com/sikang/DecompROS) repo (included in the `thirdparty` folder), so credit to it as well. 
 
