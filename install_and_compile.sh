@@ -1,8 +1,10 @@
 #!/bin/bash
 # Author: Jesus Tordesillas Torres
 
-#mkdir ws && cd ws && mkdir src && cd src
+
+#cd ~/ mkdir ws && cd ws && mkdir src && cd src
 #git clone https://github.com/mit-acl/mader.git
+#bash mader/install_and_compile.sh
 
 source ~/.bashrc
 
@@ -33,7 +35,7 @@ sudo apt-get install python-catkin-tools -y
 
 #CLONE SUBMODULES, INSTALL DEPENDENCIES AND COMPILE
 ##########################################
-cd mader && git submodule init && git submodule update && cd ../../
+cd ~/ws/src && cd mader && git submodule init && git submodule update && cd ../../
 rosdep install --from-paths src --ignore-src -r -y
 catkin config -DCMAKE_BUILD_TYPE=Release
 catkin build
