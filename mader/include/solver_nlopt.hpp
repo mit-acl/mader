@@ -334,7 +334,7 @@ private:
   bool allow_infeasible_guess_ = false;
 
   separator::Separator *separator_solver_;
-  SplineAStar *myAStarSolver_;
+  OctopusSearch *myAStarSolver_;
 
   double Ra_ = 1e10;
 };

@@ -23,7 +23,7 @@ int sgn(T val)
   return (T(0) < val) - (val < T(0));
 }
 
-SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol, double alpha_shrink)
+OctopusSearch::OctopusSearch(std::string basis, int num_pol, int deg_pol, double alpha_shrink)
 {
   p_ = deg_pol;
   M_ = num_pol + 2 * p_;
@@ -74,7 +74,7 @@ SplineAStar::SplineAStar(std::string basis, int num_pol, int deg_pol, double alp
   // Mbs2basis_inverse_ = Mbs2basis_.inverse();
 }
 
-void SplineAStar::setUp(double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls)
+void OctopusSearch::setUp(double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls)
 {
   num_of_segments_ = (M_ - 2 * p_);
 
@@ -105,27 +105,27 @@ void SplineAStar::setUp(double t_min, double t_max, const ConvexHullsOfCurves_St
   // std::cout << "knots_=" << knots_ << std::endl;
 }
 
-SplineAStar::~SplineAStar()
+OctopusSearch::~OctopusSearch()
 {
 }
 
-int SplineAStar::getNumOfLPsRun()
+int OctopusSearch::getNumOfLPsRun()
 {
   return num_of_LPs_run_;
 }
 
-void SplineAStar::setVisual(bool visual)
+void OctopusSearch::setVisual(bool visual)
 {
   visual_ = visual;
 }
 
-void SplineAStar::getBestTrajFound(trajectory& best_traj_found, PieceWisePol& pwp, double dc)
+void OctopusSearch::getBestTrajFound(trajectory& best_traj_found, PieceWisePol& pwp, double dc)
 {
   trajectory traj;
   CPs2TrajAndPwp(result_, best_traj_found, pwp, N_, p_, num_pol_, knots_, dc);
 }
 
-void SplineAStar::getEdgesConvexHulls(mader_types::Edges& edges_convex_hulls)
+void OctopusSearch::getEdgesConvexHulls(mader_types::Edges& edges_convex_hulls)
 {
   Eigen::Matrix<double, 3, 4> last4Cps;
   Eigen::Matrix<double, 3, 4> last4Cps_new_basis;
@@ -161,7 +161,7 @@ void SplineAStar::getEdgesConvexHulls(mader_types::Edges& edges_convex_hulls)
   }
 }
 
-void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
+void OctopusSearch::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
 {
   all_trajs_found.clear();
 
@@ -190,14 +190,14 @@ void SplineAStar::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
   }
 }
 
-void SplineAStar::setBBoxSearch(double x, double y, double z)
+void OctopusSearch::setBBoxSearch(double x, double y, double z)
 {
   bbox_x_ = x;
   bbox_y_ = y;
   bbox_z_ = z;
 }
 
-void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int num_samples_x,
+void OctopusSearch::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int num_samples_x,
                                          int num_samples_y, int num_samples_z, double fraction_voxel_size)
 {
   all_combinations_.clear();
@@ -256,7 +256,7 @@ void SplineAStar::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d
   orig_ = q2_ - Eigen::Vector3d(bbox_x_ / 2.0, bbox_y_ / 2.0, bbox_z_ / 2.0);
 }
 
-void SplineAStar::setXYZMinMaxAndRa(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max,
+void OctopusSearch::setXYZMinMaxAndRa(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max,
                                     double Ra)
 {
   x_min_ = x_min;
@@ -270,21 +270,21 @@ void SplineAStar::setXYZMinMaxAndRa(double x_min, double x_max, double y_min, do
   Ra_ = Ra;
 }
 
-void SplineAStar::setBias(double bias)
+void OctopusSearch::setBias(double bias)
 {
   bias_ = bias;
 }
 
-void SplineAStar::setGoal(Eigen::Vector3d& goal)
+void OctopusSearch::setGoal(Eigen::Vector3d& goal)
 {
   goal_ = goal;
 }
 
-void SplineAStar::setRunTime(double max_runtime)
+void OctopusSearch::setRunTime(double max_runtime)
 {
   max_runtime_ = max_runtime;
 }
-void SplineAStar::setGoalSize(double goal_size)
+void OctopusSearch::setGoalSize(double goal_size)
 {
   goal_size_ = goal_size;
 }
@@ -294,7 +294,7 @@ void SplineAStar::setGoalSize(double goal_size)
 // max_voxel_size: if voxel_size > max_voxel_size, there will be no nodes expanded from q2_ (they are on the same cell
 // as q2_)
 
-void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size)
+void OctopusSearch::computeLimitsVoxelSize(double& min_voxel_size, double& max_voxel_size)
 {
   int i = 2;
   double constraint_xL, constraint_xU, constraint_yL, constraint_yU, constraint_zL, constraint_zU;
@@ -338,7 +338,7 @@ void SplineAStar::computeLimitsVoxelSize(double& min_voxel_size, double& max_vox
 
 // compute constraints so that it satisfies interval i-1
 // axis=0 (x), 1(y) or 2(z)
-bool SplineAStar::computeAxisForNextInterval(const int i, const Eigen::Vector3d& viM1, int axis, double& constraint_L,
+bool OctopusSearch::computeAxisForNextInterval(const int i, const Eigen::Vector3d& viM1, int axis, double& constraint_L,
                                              double& constraint_U)
 {
   Eigen::Matrix<double, 3, 3> M_interv_next = M_vel_bs2basis_[i - 1];
@@ -368,7 +368,7 @@ bool SplineAStar::computeAxisForNextInterval(const int i, const Eigen::Vector3d&
 
 // Compute the lower and upper bounds on the velocity based on the velocity and acceleration constraints
 // return false if any of the intervals, the lower bound is > the upper bound
-bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM2, const Eigen::Vector3d& qiM1,
+bool OctopusSearch::computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM2, const Eigen::Vector3d& qiM1,
                                                   const Eigen::Vector3d& qi, double& constraint_xL,
                                                   double& constraint_xU, double& constraint_yL, double& constraint_yU,
                                                   double& constraint_zL, double& constraint_zU)
@@ -594,7 +594,7 @@ bool SplineAStar::computeUpperAndLowerConstraints(const int i, const Eigen::Vect
   // }
 }
 
-void SplineAStar::computeInverses()
+void OctopusSearch::computeInverses()
 {
   Ainverses_.clear();
   Ainverses_.push_back(Eigen::MatrixXd::Zero(1, 1));  // dimension 0
@@ -614,19 +614,19 @@ void SplineAStar::computeInverses()
   }
 }
 
-void SplineAStar::setq0q1q2(Eigen::Vector3d& q0, Eigen::Vector3d& q1, Eigen::Vector3d& q2)
+void OctopusSearch::setq0q1q2(Eigen::Vector3d& q0, Eigen::Vector3d& q1, Eigen::Vector3d& q2)
 {
   q0_ = q0;
   q1_ = q1;
   q2_ = q2;
 }
 
-double SplineAStar::h(Node& node)
+double OctopusSearch::h(Node& node)
 {
   return (node.qi - goal_).norm();
 }
 
-double SplineAStar::g(Node& node)
+double OctopusSearch::g(Node& node)
 {
   double cost = 0;
   Node* tmp = &node;
@@ -639,12 +639,12 @@ double SplineAStar::g(Node& node)
   return cost;
 }
 
-double SplineAStar::weightEdge(Node& node1, Node& node2)  // edge cost when adding node 2
+double OctopusSearch::weightEdge(Node& node1, Node& node2)  // edge cost when adding node 2
 {
   return (node2.qi - node1.qi).norm();
 }
 
-void SplineAStar::printPath(Node& node1)
+void OctopusSearch::printPath(Node& node1)
 {
   Node tmp = node1;
   while (tmp.previous != NULL)
@@ -656,7 +656,7 @@ void SplineAStar::printPath(Node& node1)
   std::cout << std::endl;
 }
 
-void SplineAStar::recoverPath(Node* result_ptr)
+void OctopusSearch::recoverPath(Node* result_ptr)
 {
   // std::cout << "Recovering path" << std::endl;
   result_.clear();
@@ -695,19 +695,19 @@ void SplineAStar::recoverPath(Node* result_ptr)
   std::reverse(std::begin(result_), std::end(result_));  // result_ is [q0 q1 q2 q3 ...]
 }
 
-Eigen::Matrix<double, 3, 4> SplineAStar::transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4>& Qbs,
+Eigen::Matrix<double, 3, 4> OctopusSearch::transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4>& Qbs,
                                                                      int interval)
 {
   return Qbs * M_pos_bs2basis_[interval];
 }
 
-Eigen::Matrix<double, 3, 4> SplineAStar::transformOtherBasis2BSpline(const Eigen::Matrix<double, 3, 4>& Qmv,
+Eigen::Matrix<double, 3, 4> OctopusSearch::transformOtherBasis2BSpline(const Eigen::Matrix<double, 3, 4>& Qmv,
                                                                      int interval)
 {
   return Qmv * M_pos_bs2basis_inverse_[interval];
 }
 
-bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vector<Eigen::Vector3d>& n,
+bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vector<Eigen::Vector3d>& n,
                                      std::vector<double>& d)
 {
   n.resize(std::max(num_of_normals_, 0), Eigen::Vector3d::Zero());
@@ -863,7 +863,7 @@ bool SplineAStar::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vecto
   return isFeasible;
 }
 
-bool SplineAStar::collidesWithObstacles(Node& current)
+bool OctopusSearch::collidesWithObstacles(Node& current)
 {
   Eigen::Matrix<double, 3, 4> last4Cps;  // Each column contains a control point
 
@@ -926,7 +926,7 @@ bool SplineAStar::collidesWithObstacles(Node& current)
   }
 }
 
-void SplineAStar::expandAndAddToQueue(Node& current, double constraint_xL, double constraint_xU, double constraint_yL,
+void OctopusSearch::expandAndAddToQueue(Node& current, double constraint_xL, double constraint_xU, double constraint_yL,
                                       double constraint_yU, double constraint_zL, double constraint_zU)
 {
   MyTimer timer_expand(true);
@@ -996,7 +996,7 @@ void SplineAStar::expandAndAddToQueue(Node& current, double constraint_xL, doubl
   // std::cout << "End of expand Function" << std::endl;
 }
 
-bool SplineAStar::collidesWithObstaclesGivenVertexes(const Eigen::Matrix<double, 3, 4>& last4Cps, int index_lastCP)
+bool OctopusSearch::collidesWithObstaclesGivenVertexes(const Eigen::Matrix<double, 3, 4>& last4Cps, int index_lastCP)
 {
   // MyTimer timer_function(true);
   // std::cout << "In collidesWithObstaclesGivenVertexes, index_lastCP= " << index_lastCP << std::endl;
@@ -1025,7 +1025,7 @@ exit:
   return (!satisfies_LP);
 }
 
-bool SplineAStar::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d)
+bool OctopusSearch::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d)
 {
   /////////// reset some stuff
   // stores the closest node found

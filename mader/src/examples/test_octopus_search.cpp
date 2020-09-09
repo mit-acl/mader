@@ -159,14 +159,14 @@ ConvexHullsOfCurve createDynamicObstacle(std::vector<visualization_msgs::MarkerA
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "testSplineAStar");
+  ros::init(argc, argv, "testOctopusSearch");
   ros::NodeHandle nh("~");
   ros::Publisher trajectories_found_pub =
-      nh.advertise<visualization_msgs::MarkerArray>("A_star_trajectories_found", 1000, true);
+      nh.advertise<visualization_msgs::MarkerArray>("/trajectories_found", 1000, true);
 
   ros::Publisher best_trajectory_found_pub =
-      nh.advertise<visualization_msgs::MarkerArray>("A_star_best_trajectory_found", 1000, true);
-  ros::Publisher convex_hulls_pub = nh.advertise<visualization_msgs::Marker>("convex_hulls", 1, true);
+      nh.advertise<visualization_msgs::MarkerArray>("/best_trajectory_found", 1000, true);
+  ros::Publisher convex_hulls_pub = nh.advertise<visualization_msgs::Marker>("/convex_hulls", 1, true);
 
   std::vector<ros::Publisher> jps_poly_pubs;  // = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_jps", 1, true);
   std::vector<ros::Publisher> traj_obstacle_colored_pubs;
@@ -178,14 +178,14 @@ int main(int argc, char** argv)
   for (int i = 0; i < num_pol; i++)
   {
     ros::Publisher tmp =
-        nh.advertise<visualization_msgs::MarkerArray>("traj_obstacle_colored_int_" + std::to_string(i), 1, true);
+        nh.advertise<visualization_msgs::MarkerArray>("/traj_obstacle_colored_int_" + std::to_string(i), 1, true);
     traj_obstacle_colored_pubs.push_back(tmp);
 
-    ros::Publisher tmp2 = nh.advertise<decomp_ros_msgs::PolyhedronArray>("poly_jps_int_" + std::to_string(i), 1, true);
+    ros::Publisher tmp2 = nh.advertise<decomp_ros_msgs::PolyhedronArray>("/poly_jps_int_" + std::to_string(i), 1, true);
     jps_poly_pubs.push_back(tmp2);
 
     ros::Publisher tmp3 =
-        nh.advertise<visualization_msgs::MarkerArray>("A_star_best_trajectory_found_int_" + std::to_string(i), 1, true);
+        nh.advertise<visualization_msgs::MarkerArray>("/best_trajectory_found_int_" + std::to_string(i), 1, true);
     best_trajectory_found_intervals_pubs.push_back(tmp3);
   }
 
@@ -296,7 +296,7 @@ int main(int argc, char** argv)
 
     hulls_curves.push_back(hulls_curve);*/
 
-  SplineAStar myAStarSolver(basis, num_pol, deg_pol, alpha_shrink);
+  OctopusSearch myAStarSolver(basis, num_pol, deg_pol, alpha_shrink);
   myAStarSolver.setUp(t_min, t_max, hulls_std);
 
   myAStarSolver.setq0q1q2(q0, q1, q2);

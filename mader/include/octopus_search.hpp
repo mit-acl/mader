@@ -52,12 +52,12 @@ struct matrix_hash : std::unary_function<T, size_t>
   }
 };
 
-class SplineAStar
+class OctopusSearch
 {
 public:
-  SplineAStar(std::string basis, int num_pol, int deg_pol, double alpha_shrink);
+  OctopusSearch(std::string basis, int num_pol, int deg_pol, double alpha_shrink);
   void setUp(double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls);
-  ~SplineAStar();
+  ~OctopusSearch();
 
   void setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int num_samples_x, int num_samples_y,
                               int num_samples_z, double fraction_voxel_size);

@@ -101,7 +101,7 @@ SolverNlopt::SolverNlopt(par_snlopt &par)
 
   separator_solver_ = new separator::Separator();
 
-  myAStarSolver_ = new SplineAStar(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
+  myAStarSolver_ = new OctopusSearch(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
 }
 
 SolverNlopt::~SolverNlopt()
@@ -2140,12 +2140,10 @@ nlopt::algorithm SolverNlopt::getSolver(std::string &solver)
   {
     return nlopt::LN_SBPLX;
   }
-
   else if (solver == "LN_PRAXIS")
   {
     return nlopt::LN_PRAXIS;
   }
-
   else if (solver == "LD_AUGLAG")
   {
     return nlopt::LD_AUGLAG;
