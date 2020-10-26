@@ -70,7 +70,7 @@ private:
 
   void publishText();
 
-  // void publishFOV();
+  void publishFOV();
 
   void pubObstacles(mader_types::Edges edges_obstacles);
 
