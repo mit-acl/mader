@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 
   spinner1.start();  // start spinner of the custom queue 1
   spinner2.start();  // start spinner of the custom queue 2
-  spinner3.start();  // start spinner of the custom queue 2
+  spinner3.start();  // start spinner of the custom queue 3
 
   ros::waitForShutdown();
   return 0;
