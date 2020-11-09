@@ -91,9 +91,9 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   safeGetParam(nh1_, "alpha_shrink", par_.alpha_shrink);
 
-  safeGetParam(nh1_,"fov_horiz_deg", par_.fov_horiz_deg);
-  safeGetParam(nh1_,"fov_vert_deg", par_.fov_vert_deg);
-  safeGetParam(nh1_,"fov_depth", par_.fov_depth);
+  safeGetParam(nh1_, "fov_horiz_deg", par_.fov_horiz_deg);
+  safeGetParam(nh1_, "fov_vert_deg", par_.fov_vert_deg);
+  safeGetParam(nh1_, "fov_depth", par_.fov_depth);
 
   std::cout << "Parameters obtained" << std::endl;
 
@@ -207,6 +207,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   clearMarkerActualTraj();
 
   ////// to avoid having to click on the GUI (TODO)
+  ros::Duration(0.5).sleep();  // TODO
   bool success_service_call = system("rosservice call /change_mode 'mode: 1'");
   ////
 
@@ -452,7 +453,7 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
     pubActualTraj();
   }
 
-  //publishFOV();
+  // publishFOV();
 }
 
 void MaderRos::modeCB(const mader_msgs::Mode& msg)
@@ -729,14 +730,15 @@ void MaderRos::publishFOV()
   marker_fov.scale.x = 0.03;
   marker_fov.scale.y = 0.00001;
   marker_fov.scale.z = 0.00001;
-  marker_fov.color.a = 1.0;  
+  marker_fov.color.a = 1.0;
   marker_fov.color.r = 0.0;
   marker_fov.color.g = 1.0;
   marker_fov.color.b = 0.0;
 
   pub_fov_.publish(marker_fov);
 
-  //// https://github.com/PickNikRobotics/rviz_visual_tools/blob/80212659be877f221cf23528b4e4887eaf0c08a4/src/rviz_visual_tools.cpp#L957
+  ////
+  /// https://github.com/PickNikRobotics/rviz_visual_tools/blob/80212659be877f221cf23528b4e4887eaf0c08a4/src/rviz_visual_tools.cpp#L957
 
   return;
 }
