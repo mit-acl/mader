@@ -16,6 +16,10 @@
 #include <type_traits>
 // using namespace std;
 
+// custom typedefs
+typedef std::vector<GRBLinExpr> GRBVector;
+typedef std::vector<std::vector<GRBLinExpr>> GRBMatrix;
+
 inline double minPositiveElement(std::vector<double> v)
 {
   std::sort(v.begin(), v.end());  // sorted in ascending order
@@ -43,9 +47,9 @@ GRBQuadExpr getNorm2(const std::vector<T>& x)  // Return the squared norm of a v
 }
 
 template <typename T, typename R>
-std::vector<GRBLinExpr> matrixMultiply(const std::vector<std::vector<R>>& A, const std::vector<T>& x)
+GRBVector matrixMultiply(const std::vector<std::vector<R>>& A, const std::vector<T>& x)
 {
-  std::vector<GRBLinExpr> result;
+  GRBVector result;
 
   for (int i = 0; i < A.size(); i++)
   {
@@ -60,12 +64,10 @@ std::vector<GRBLinExpr> matrixMultiply(const std::vector<std::vector<R>>& A, con
 }
 
 template <typename T>
-std::vector<std::vector<GRBLinExpr>> matrixMultiply(const std::vector<std::vector<T>>& A,
-                                                    const std::vector<std::vector<double>>& B)
+std::vector<GRBVector> matrixMultiply(const std::vector<std::vector<T>>& A, const std::vector<std::vector<double>>& B)
 {
-  std::vector<std::vector<GRBLinExpr>> result(A.size(),
-                                              std::vector<GRBLinExpr>(B[0].size(), 0.0));  // Initialize all the
-                                                                                           // elements to zero
+  std::vector<GRBVector> result(A.size(), GRBVector(B[0].size(), 0.0));  // Initialize all the
+                                                                         // elements to zero
 
   for (int i = 0; i < A.size(); i++)  // multiply row if of A
   {
@@ -120,9 +122,9 @@ std::vector<T> operator*(const double& a, const std::vector<T>& b)
 }
 
 template <typename T>
-std::vector<GRBLinExpr> operator-(const std::vector<T>& x, const std::vector<double>& b)
+GRBVector operator-(const std::vector<T>& x, const std::vector<double>& b)
 {
-  std::vector<GRBLinExpr> result;
+  GRBVector result;
   for (int i = 0; i < x.size(); i++)
   {
     GRBLinExpr tmp = x[i] - b[i];
@@ -235,9 +237,9 @@ std::vector<T> getColumn(std::vector<std::vector<T>> x, int column)
 // }
 
 // template <typename T, typename R>
-// std::vector<GRBLinExpr> matrixMultiply(const std::vector<std::vector<R>>& A, const std::vector<std::vector<R>>& B)
+// GRBVector matrixMultiply(const std::vector<std::vector<R>>& A, const std::vector<std::vector<R>>& B)
 // {
-//   std::vector<std::vector<GRBLinExpr>> result;
+//   std::vector<GRBVector> result;
 
 //   for (int i = 0; i < A.size(); i++)
 //   {
@@ -374,9 +376,9 @@ std::vector<T> getColumn(std::vector<std::vector<T>> x, int column)
 //   return result;
 // }
 
-/*std::vector<GRBLinExpr> MatrixMultiply(const std::vector<std::vector<double>>& A, const std::vector<GRBLinExpr>& x)
+/*GRBVector MatrixMultiply(const std::vector<std::vector<double>>& A, const GRBVector& x)
 {
-  std::vector<GRBLinExpr> result;
+  GRBVector result;
   for (int i = 0; i < A.size(); i++)
   {
     GRBLinExpr lin_exp = 0;

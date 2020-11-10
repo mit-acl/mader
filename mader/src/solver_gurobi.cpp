@@ -401,7 +401,7 @@ void SolverGurobi::setHulls(ConvexHullsOfCurves_Std &hulls)
   for (int i = 0; i <= N_; i++)
   {
     std::vector<GRBVar> q_var_i;
-    std::vector<GRBLinExpr> q_exp_i;
+    GRBVector q_exp_i;
     for (int j = 0; j < 3; j++)  // x,y,z
     {
       GRBVar tmp = m.addVar(mins[j], maxs[j], 0, GRB_CONTINUOUS, "q_" + std::to_string(i) + coords[j]);
@@ -432,11 +432,11 @@ void SolverGurobi::prepareObjective()
   {
     Eigen::Matrix<double, -1, 1> A_i_times_tmp = A_pos_bs_[i] * tmp;  // TODO (this is 4x1)
 
-    std::vector<std::vector<GRBLinExpr>> Q;
+    GRBMatrix Q;
 
-    std::vector<GRBLinExpr> tmp_x = { q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] };
-    std::vector<GRBLinExpr> tmp_y = { q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] };
-    std::vector<GRBLinExpr> tmp_z = { q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] };
+    GRBVector tmp_x = { q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] };
+    GRBVector tmp_y = { q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] };
+    GRBVector tmp_z = { q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] };
 
     Q.push_back(tmp_x);  // row0
     Q.push_back(tmp_y);  // row1
@@ -449,7 +449,7 @@ void SolverGurobi::prepareObjective()
     // Q.col(3) = q[i + 3];
     // cost += (Q * A_i_times_tmp).squaredNorm();
 
-    std::vector<GRBLinExpr> tmp = matrixMultiply(Q, eigenVector2std(A_i_times_tmp));
+    GRBVector tmp = matrixMultiply(Q, eigenVector2std(A_i_times_tmp));
     cost += getNorm2(tmp);
 
     // std::cout << "cost=" << cost << std::endl;
@@ -673,8 +673,7 @@ int SolverGurobi::lastDecCP()
   return (N_ - 2);
 }
 
-void SolverGurobi::transformPosBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
-                                                  std::vector<std::vector<GRBLinExpr>> &Qmv, int interval)
+void SolverGurobi::transformPosBSpline2otherBasis(const GRBMatrix &Qbs, GRBMatrix &Qmv, int interval)
 {
   Qmv = matrixMultiply(Qbs, eigenMatrix2std(M_pos_bs2basis_[interval]));
 
@@ -694,8 +693,7 @@ void SolverGurobi::transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3,
   Qmv = Qbs * M_vel_bs2basis_[interval];
 }
 
-void SolverGurobi::transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
-                                                  std::vector<std::vector<GRBLinExpr>> &Qmv, int interval)
+void SolverGurobi::transformVelBSpline2otherBasis(const GRBMatrix &Qbs, GRBMatrix &Qmv, int interval)
 {
   Qmv = matrixMultiply(Qbs, eigenMatrix2std(M_vel_bs2basis_[interval]));
 
@@ -709,7 +707,7 @@ void SolverGurobi::transformVelBSpline2otherBasis(const std::vector<std::vector<
 //   // Qmv = Qbs * M_vel_bs2basis_[interval];
 // }
 
-void SolverGurobi::addVectorEqConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b)
+void SolverGurobi::addVectorEqConstraint(const GRBVector a, const Eigen::Vector3d &b)
 {
   for (int i = 0; i < a.size(); i++)
   {
@@ -717,7 +715,7 @@ void SolverGurobi::addVectorEqConstraint(const std::vector<GRBLinExpr> a, const 
   }
 }
 
-void SolverGurobi::addVectorLessEqualConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b)
+void SolverGurobi::addVectorLessEqualConstraint(const GRBVector a, const Eigen::Vector3d &b)
 {
   for (int i = 0; i < a.size(); i++)
   {
@@ -725,7 +723,7 @@ void SolverGurobi::addVectorLessEqualConstraint(const std::vector<GRBLinExpr> a,
   }
 }
 
-void SolverGurobi::addVectorGreaterEqualConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b)
+void SolverGurobi::addVectorGreaterEqualConstraint(const GRBVector a, const Eigen::Vector3d &b)
 {
   for (int i = 0; i < a.size(); i++)
   {
@@ -769,23 +767,19 @@ void SolverGurobi::addConstraints()
       // }
 
       // and the control points on the other side
-      std::vector<std::vector<GRBLinExpr>> Qbs;
-      std::vector<std::vector<GRBLinExpr>> Qmv;  // other basis "basis_" (minvo, bezier,...).
+      GRBMatrix Qbs;
+      GRBMatrix Qmv;  // other basis "basis_" (minvo, bezier,...).
 
-      std::vector<GRBLinExpr> tmp_x = { q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] };
-      std::vector<GRBLinExpr> tmp_y = { q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] };
-      std::vector<GRBLinExpr> tmp_z = { q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] };
-
-      Qbs.push_back(tmp_x);  // row0
-      Qbs.push_back(tmp_y);  // row1
-      Qbs.push_back(tmp_z);  // row2
+      Qbs.push_back(GRBVector{ q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] });  // row0
+      Qbs.push_back(GRBVector{ q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] });  // row1
+      Qbs.push_back(GRBVector{ q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] });  // row2
 
       transformPosBSpline2otherBasis(Qbs, Qmv, i);  // each row of Qmv will contain a "basis_" control point
 
       for (int u = 0; u <= 3; u++)
       {
         // q_ipu = Qmv.col(u);
-        std::vector<GRBLinExpr> q_ipu = getColumn(Qmv, u);
+        GRBVector q_ipu = getColumn(Qmv, u);
         GRBLinExpr dot = n_[ip].x() * q_ipu[0] + n_[ip].y() * q_ipu[1] + n_[ip].z() * q_ipu[2];
         m.addConstr(dot + d_[ip] + epsilon <= 0);
         // constraints[r] = (n[ip].dot(q_ipu) + d[ip] + epsilon);  //  // fi<=0
@@ -803,28 +797,16 @@ void SolverGurobi::addConstraints()
     double ciM1 = p_ / (knots_(i + p_ + 1 - 1) - knots_(i + 1 - 1));
     double ci = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
 
-    std::vector<GRBLinExpr> v_iM2 = ciM2 * (q_exp_[i - 1] - q_exp_[i - 2]);
-    std::vector<GRBLinExpr> v_iM1 = ciM1 * (q_exp_[i] - q_exp_[i - 1]);
-    std::vector<GRBLinExpr> v_i = ci * (q_exp_[i + 1] - q_exp_[i]);
+    GRBVector v_iM2 = ciM2 * (q_exp_[i - 1] - q_exp_[i - 2]);
+    GRBVector v_iM1 = ciM1 * (q_exp_[i] - q_exp_[i - 1]);
+    GRBVector v_i = ci * (q_exp_[i + 1] - q_exp_[i]);
 
-    std::cout << "Constants" << std::endl;
-    std::cout << bold << ciM2 << reset << std::endl;
-    std::cout << bold << ciM1 << reset << std::endl;
-    std::cout << bold << ci << reset << std::endl;
+    GRBMatrix Qbs;
+    GRBMatrix Qmv;  // other basis "basis_" (minvo, bezier,...).
 
-    std::cout << "KNOTS" << std::endl;
-    std::cout << knots_ << std::endl;
-
-    std::vector<std::vector<GRBLinExpr>> Qbs;
-    std::vector<std::vector<GRBLinExpr>> Qmv;  // other basis "basis_" (minvo, bezier,...).
-
-    std::vector<GRBLinExpr> tmp_x = { v_iM2[0], v_iM1[0], v_i[0] };
-    std::vector<GRBLinExpr> tmp_y = { v_iM2[1], v_iM1[1], v_i[1] };
-    std::vector<GRBLinExpr> tmp_z = { v_iM2[2], v_iM1[2], v_i[2] };
-
-    Qbs.push_back(tmp_x);  // row0
-    Qbs.push_back(tmp_y);  // row1
-    Qbs.push_back(tmp_z);  // row2
+    Qbs.push_back(GRBVector{ v_iM2[0], v_iM1[0], v_i[0] });  // row0
+    Qbs.push_back(GRBVector{ v_iM2[1], v_iM1[1], v_i[1] });  // row1
+    Qbs.push_back(GRBVector{ v_iM2[2], v_iM1[2], v_i[2] });  // row2
 
     // Qbs.col(0) = v_iM2;
     // Qbs.col(1) = v_iM1;
@@ -843,7 +825,7 @@ void SolverGurobi::addConstraints()
       // // Constraint -v_{i-2+j} - vmax <= 0
       // assignEigenToVector(constraints, r, -v_iM2Pj - v_max_);  // f<=0
 
-      std::vector<GRBLinExpr> v_iM2Pj = getColumn(Qmv, j);
+      GRBVector v_iM2Pj = getColumn(Qmv, j);
 
       // Eigen::Vector3d tmp = Eigen::Vector3d::Ones();
 
@@ -863,15 +845,14 @@ void SolverGurobi::addConstraints()
     double c2 = p_ / (knots_(i + p_ + 1 + 1) - knots_(i + 1 + 1));
     double c3 = (p_ - 1) / (knots_(i + p_ + 1) - knots_(i + 2));
 
-    std::vector<GRBLinExpr> v_i = c1 * (q_exp_[i + 1] - q_exp_[i]);
-    std::vector<GRBLinExpr> v_iP1 = c2 * (q_exp_[i + 2] - q_exp_[i + 1]);
-    std::vector<GRBLinExpr> a_i = c3 * (v_iP1 - v_i);
+    GRBVector v_i = c1 * (q_exp_[i + 1] - q_exp_[i]);
+    GRBVector v_iP1 = c2 * (q_exp_[i + 2] - q_exp_[i + 1]);
+    GRBVector a_i = c3 * (v_iP1 - v_i);
 
     addVectorLessEqualConstraint(a_i, a_max_);      // v_max_
     addVectorGreaterEqualConstraint(a_i, ma_max_);  // mv_max_
 
     // assignEigenToVector(constraints, r, a_i - a_max_);  // f<=0
-
     // assignEigenToVector(constraints, r, -a_i - a_max_);  // f<=0
   }
 }

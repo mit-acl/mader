@@ -174,9 +174,6 @@ private:
 
   GRBEnv *env = new GRBEnv();
   GRBModel m = GRBModel(*env);
-  std::vector<GRBConstr> plane_constraints_;
-  std::vector<GRBConstr> init_constraints_;
-  std::vector<GRBConstr> dyn_constraints_;
 
   std::vector<std::vector<GRBVar>> q_var_;      // Each q_var_[i] has 3 elements (x,y,z)
   std::vector<std::vector<GRBLinExpr>> q_exp_;  // Each q_exp_[i] has 3 elements (x,y,z)
