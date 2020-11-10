@@ -92,7 +92,11 @@ SolverGurobi::SolverGurobi(par_sgurobi &par)
   dist_to_use_straight_guess_ = par.dist_to_use_straight_guess;
   dc_ = par.dc;
   v_max_ = par.v_max;
+  mv_max_ = -v_max_;
+
   a_max_ = par.a_max;
+  ma_max_ = -a_max_;
+
   allow_infeasible_guess_ = par.allow_infeasible_guess;
   // solver_ = getSolver(par.solver);                         // getSolver(nlopt::LD_VAR2);
   epsilon_tol_constraints_ = par.epsilon_tol_constraints;  // 1e-1;
@@ -369,17 +373,6 @@ void SolverGurobi::generateGuessNDFromQ(const std::vector<Eigen::Vector3d> &q, s
   }
 }
 
-void SolverGurobi::assignEigenToVector(double *result, int var_gindex, const Eigen::Vector3d &tmp)
-
-{
-  /*  std::cout << "i= " << var_gindex << std::endl;
-    std::cout << "i= " << var_gindex + 1 << std::endl;
-    std::cout << "i= " << var_gindex + 2 << std::endl;*/
-  result[var_gindex] = tmp(0);
-  result[var_gindex + 1] = tmp(1);
-  result[var_gindex + 2] = tmp(2);
-}
-
 void SolverGurobi::setHulls(ConvexHullsOfCurves_Std &hulls)
 
 {
@@ -399,17 +392,25 @@ void SolverGurobi::setHulls(ConvexHullsOfCurves_Std &hulls)
   num_of_variables_ = k_max_ + 1;  // k_max_ + 1;
 
   std::vector<std::string> coords = { "x", "y", "z" };
+  std::vector<double> mins = { x_min_, y_min_, z_min_ };
+  std::vector<double> maxs = { x_max_, y_max_, z_max_ };
 
   // Create the variables: control points
   q_var_.clear();
+  q_exp_.clear();
   for (int i = 0; i <= N_; i++)
   {
-    std::vector<GRBVar> q_i;
+    std::vector<GRBVar> q_var_i;
+    std::vector<GRBLinExpr> q_exp_i;
     for (int j = 0; j < 3; j++)  // x,y,z
     {
-      q_i.push_back(m.addVar(-GRB_INFINITY, GRB_INFINITY, 0, GRB_CONTINUOUS, "q_" + std::to_string(i) + coords[j]));
+      GRBVar tmp = m.addVar(mins[j], maxs[j], 0, GRB_CONTINUOUS, "q_" + std::to_string(i) + coords[j]);
+      // (If no bounds wanted above, use-GRB_INFINITY, GRB_INFINITY)
+      q_var_i.push_back(tmp);
+      q_exp_i.push_back(GRBLinExpr(tmp));
     }
-    q_var_.push_back(q_i);
+    q_var_.push_back(q_var_i);
+    q_exp_.push_back(q_exp_i);
     std::cout << "Creating variables!" << std::endl;
   }
 
@@ -431,11 +432,11 @@ void SolverGurobi::prepareObjective()
   {
     Eigen::Matrix<double, -1, 1> A_i_times_tmp = A_pos_bs_[i] * tmp;  // TODO (this is 4x1)
 
-    std::vector<std::vector<GRBVar>> Q;
+    std::vector<std::vector<GRBLinExpr>> Q;
 
-    std::vector<GRBVar> tmp_x = { q_var_[i][0], q_var_[i + 1][0], q_var_[i + 2][0], q_var_[i + 3][0] };
-    std::vector<GRBVar> tmp_y = { q_var_[i][1], q_var_[i + 1][1], q_var_[i + 2][1], q_var_[i + 3][1] };
-    std::vector<GRBVar> tmp_z = { q_var_[i][2], q_var_[i + 1][2], q_var_[i + 2][2], q_var_[i + 3][2] };
+    std::vector<GRBLinExpr> tmp_x = { q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] };
+    std::vector<GRBLinExpr> tmp_y = { q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] };
+    std::vector<GRBLinExpr> tmp_z = { q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] };
 
     Q.push_back(tmp_x);  // row0
     Q.push_back(tmp_y);  // row1
@@ -456,7 +457,9 @@ void SolverGurobi::prepareObjective()
 
   double weight = 1.5;
 
-  cost += weight * getNorm2(q_var_[N_] - eigenVector2std(final_state_.pos));
+  std::cout << "final_state_.pos= " << final_state_.pos.transpose() << std::endl;
+
+  cost += weight * getNorm2(q_exp_[N_] - eigenVector2std(final_state_.pos));
 
   m.setObjective(cost, GRB_MINIMIZE);
 }
@@ -586,7 +589,9 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(state initial_state, state 
 
   knots_ = knots;
 
-  // std::cout << "knots_" << knots_ << std::endl;
+  std::cout << red << "knots_" << knots_ << reset << std::endl;
+  std::cout << red << "t_final" << t_final << reset << std::endl;
+  std::cout << red << "t_init_" << t_init_ << reset << std::endl;
 
   //////////////////
 
@@ -668,14 +673,6 @@ int SolverGurobi::lastDecCP()
   return (N_ - 2);
 }
 
-void SolverGurobi::transformPosBSpline2otherBasis(const std::vector<std::vector<GRBVar>> &Qbs,
-                                                  std::vector<std::vector<GRBLinExpr>> &Qmv, int interval)
-{
-  Qmv = matrixMultiply(Qbs, eigenMatrix2std(M_pos_bs2basis_[interval]));
-
-  // Qmv = Qbs * M_pos_bs2basis_[interval];
-}
-
 void SolverGurobi::transformPosBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
                                                   std::vector<std::vector<GRBLinExpr>> &Qmv, int interval)
 {
@@ -687,6 +684,7 @@ void SolverGurobi::transformPosBSpline2otherBasis(const std::vector<std::vector<
 void SolverGurobi::transformPosBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs,
                                                   Eigen::Matrix<double, 3, 4> &Qmv, int interval)
 {
+  std::cout << "M_pos_bs2basis_[interval]= \n" << M_pos_bs2basis_[interval] << std::endl;
   Qmv = Qbs * M_pos_bs2basis_[interval];
 }
 
@@ -696,6 +694,34 @@ void SolverGurobi::transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3,
   Qmv = Qbs * M_vel_bs2basis_[interval];
 }
 
+std::vector<std::vector<GRBLinExpr>>
+SolverGurobi::transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs, int interval)
+{
+  std::cout << "M_vel_bs2basis_[interval]= \n" << M_vel_bs2basis_[interval] << std::endl;
+
+  std::vector<std::vector<GRBLinExpr>> Qmv;
+
+  std::vector<std::vector<double>> tmp = eigenMatrix2std(M_vel_bs2basis_[interval]);
+
+  // std::cout << "eigenMatrix2std(M_vel_bs2basis_[interval])= " << std::endl;
+
+  // for (int i = 0; i < tmp.size(); i++)
+  // {
+  //   for (int j = 0; j < tmp[i].size(); j++)
+  //   {
+  //     std::cout << "tmp[i][j]= " << tmp[i][j] << std::endl;
+  //   }
+  // }
+
+  // printStd(tmp);
+
+  Qmv = matrixMultiply(Qbs, tmp);
+
+  return Qmv;
+
+  // Qmv = Qbs * M_pos_bs2basis_[interval];
+}
+
 // void SolverGurobi::transformVelBSpline2otherBasis(const std::vector<std::vector<Eigen::Vector3d>> &Qbs,
 //                                                   std::vector<std::vector<Eigen::Vector3d>> &Qmv, int interval)
 // {
@@ -703,11 +729,46 @@ void SolverGurobi::transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3,
 //   // Qmv = Qbs * M_vel_bs2basis_[interval];
 // }
 
+void SolverGurobi::addVectorEqConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b)
+{
+  for (int i = 0; i < a.size(); i++)
+  {
+    m.addConstr(a[i] == b[i]);
+  }
+}
+
+void SolverGurobi::addVectorLessEqualConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b)
+{
+  for (int i = 0; i < a.size(); i++)
+  {
+    m.addConstr(a[i] <= b[i]);
+  }
+}
+
+void SolverGurobi::addVectorGreaterEqualConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b)
+{
+  for (int i = 0; i < a.size(); i++)
+  {
+    m.addConstr(a[i] >= b[i]);
+  }
+}
+
 void SolverGurobi::addConstraints()
 {
   // See here why we can use an epsilon of 1.0:
   // http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
   double epsilon = 1.0;
+
+  addVectorEqConstraint(q_exp_[0], q0_);
+  addVectorEqConstraint(q_exp_[1], q1_);
+  addVectorEqConstraint(q_exp_[2], q2_);
+
+  Eigen::Vector3d zeros = Eigen::Vector3d::Zero();
+
+  // Final velocity and acceleration are zero \equiv q_exp_[N_]=q_exp_[N_-1]=q_exp_[N_-2]
+
+  addVectorEqConstraint(q_exp_[N_] - q_exp_[N_ - 1], zeros);
+  addVectorEqConstraint(q_exp_[N_ - 1] - q_exp_[N_ - 2], zeros);
 
   /////////////////////////////////////////////////
   //////////// PLANES CONSTRAINTS    //////////////
@@ -728,12 +789,12 @@ void SolverGurobi::addConstraints()
       // }
 
       // and the control points on the other side
-      std::vector<std::vector<GRBVar>> Qbs;
+      std::vector<std::vector<GRBLinExpr>> Qbs;
       std::vector<std::vector<GRBLinExpr>> Qmv;  // other basis "basis_" (minvo, bezier,...).
 
-      std::vector<GRBVar> tmp_x = { q_var_[i][0], q_var_[i + 1][0], q_var_[i + 2][0], q_var_[i + 3][0] };
-      std::vector<GRBVar> tmp_y = { q_var_[i][1], q_var_[i + 1][1], q_var_[i + 2][1], q_var_[i + 3][1] };
-      std::vector<GRBVar> tmp_z = { q_var_[i][2], q_var_[i + 1][2], q_var_[i + 2][2], q_var_[i + 3][2] };
+      std::vector<GRBLinExpr> tmp_x = { q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] };
+      std::vector<GRBLinExpr> tmp_y = { q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] };
+      std::vector<GRBLinExpr> tmp_z = { q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] };
 
       Qbs.push_back(tmp_x);  // row0
       Qbs.push_back(tmp_y);  // row1
@@ -762,14 +823,17 @@ void SolverGurobi::addConstraints()
     double ciM1 = p_ / (knots_(i + p_ + 1 - 1) - knots_(i + 1 - 1));
     double ci = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
 
-    std::vector<double> c;
-    c.push_back(ciM2);
-    c.push_back(ciM1);
-    c.push_back(ci);
+    std::vector<GRBLinExpr> v_iM2 = ciM2 * (q_exp_[i - 1] - q_exp_[i - 2]);
+    std::vector<GRBLinExpr> v_iM1 = ciM1 * (q_exp_[i] - q_exp_[i - 1]);
+    std::vector<GRBLinExpr> v_i = ci * (q_exp_[i + 1] - q_exp_[i]);
 
-    auto v_iM2 = ciM2 * (q_var_[i - 1] - q_var_[i - 2]);
-    auto v_iM1 = ciM1 * (q_var_[i] - q_var_[i - 1]);
-    auto v_i = ci * (q_var_[i + 1] - q_var_[i]);
+    std::cout << "Constants" << std::endl;
+    std::cout << bold << ciM2 << reset << std::endl;
+    std::cout << bold << ciM1 << reset << std::endl;
+    std::cout << bold << ci << reset << std::endl;
+
+    std::cout << "KNOTS" << std::endl;
+    std::cout << knots_ << std::endl;
 
     std::vector<std::vector<GRBLinExpr>> Qbs;
     std::vector<std::vector<GRBLinExpr>> Qmv;  // other basis "basis_" (minvo, bezier,...).
@@ -786,7 +850,7 @@ void SolverGurobi::addConstraints()
     // Qbs.col(1) = v_iM1;
     // Qbs.col(2) = v_i;
 
-    transformVelBSpline2otherBasis(Qbs, Qmv, i - 2);
+    Qmv = transformVelBSpline2otherBasis(Qbs, i - 2);
 
     for (int j = 0; j < 3; j++)
     {  // loop over each of the velocity control points (v_{i-2+j}) of the new basis
@@ -799,13 +863,36 @@ void SolverGurobi::addConstraints()
       // // Constraint -v_{i-2+j} - vmax <= 0
       // assignEigenToVector(constraints, r, -v_iM2Pj - v_max_);  // f<=0
 
-      std::vector<GRBExpr> v_iM2Pj = getColumn(Qmv, j);
-      for (auto tmp : v_iM2Pj)
-      {
-        m.addConstr(tmp - v_max_ <= 0);
-        m.addConstr(-tmp - v_max_ <= 0);
-      }
+      std::vector<GRBLinExpr> v_iM2Pj = getColumn(Qmv, j);
+
+      // Eigen::Vector3d tmp = Eigen::Vector3d::Ones();
+
+      addVectorLessEqualConstraint(v_iM2Pj, v_max_);      // v_max_
+      addVectorGreaterEqualConstraint(v_iM2Pj, mv_max_);  // mv_max_
     }
+  }
+
+  /////////////////////////////////////////////////
+  ////////// ACCELERATION CONSTRAINTS    //////////
+  /////////////////////////////////////////////////
+
+  for (int i = 1; i <= (N_ - 3); i++)  // a0 is already determined by the initial state
+
+  {
+    double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
+    double c2 = p_ / (knots_(i + p_ + 1 + 1) - knots_(i + 1 + 1));
+    double c3 = (p_ - 1) / (knots_(i + p_ + 1) - knots_(i + 2));
+
+    std::vector<GRBLinExpr> v_i = c1 * (q_exp_[i + 1] - q_exp_[i]);
+    std::vector<GRBLinExpr> v_iP1 = c2 * (q_exp_[i + 2] - q_exp_[i + 1]);
+    std::vector<GRBLinExpr> a_i = c3 * (v_iP1 - v_i);
+
+    addVectorLessEqualConstraint(a_i, a_max_);      // v_max_
+    addVectorGreaterEqualConstraint(a_i, ma_max_);  // mv_max_
+
+    // assignEigenToVector(constraints, r, a_i - a_max_);  // f<=0
+
+    // assignEigenToVector(constraints, r, -a_i - a_max_);  // f<=0
   }
 }
 
@@ -818,93 +905,6 @@ void SolverGurobi::addConstraints()
 //   int r = 0;
 
 //   index_const_obs_ = r;
-
-//   /////////////////////////////////////////////////
-//   ////////// ACCELERATION CONSTRAINTS    //////////
-//   /////////////////////////////////////////////////
-
-//   for (int i = 1; i <= (N_ - 3); i++)  // a0 is already determined by the initial state
-
-//   {
-//     double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
-//     double c2 = p_ / (knots_(i + p_ + 1 + 1) - knots_(i + 1 + 1));
-//     double c3 = (p_ - 1) / (knots_(i + p_ + 1) - knots_(i + 2));
-
-//     Eigen::Vector3d v_i = c1 * (q[i + 1] - q[i]);
-//     Eigen::Vector3d v_iP1 = c2 * (q[i + 2] - q[i + 1]);
-//     Eigen::Vector3d a_i = c3 * (v_iP1 - v_i);
-
-//     // a<=amax  ==  a_i - amax <= 0  ==  c3 * (v_iP1 - v_i)<=0 ==
-//     // c3*c2 *q[i + 2] - c3*c2* q[i + 1]  -  c3*c1*q[i + 1] + c3*c1*q[i]   - amax <= 0
-
-//     // if (((a_i - a_max_).array() > Eigen::Vector3d::Zero().array()).any())
-//     // {
-//     //   std::cout << "__________________ i= " << i << " _________________" << std::endl;
-
-//     //   std::cout << "v_i= " << v_i.transpose() << std::endl;
-//     //   std::cout << "a_i= " << a_i.transpose() << std::endl;
-//     //   std::cout << "v_iP1= " << v_iP1.transpose() << std::endl;
-
-//     //   std::cout << "r= " << r << ", a_i= " << a_i.transpose() << "  a_max_=" << a_max_.transpose() << std::endl;
-//     // }
-
-//     assignEigenToVector(constraints, r, a_i - a_max_);  // f<=0
-//     if (grad)
-//     {
-//       if (isADecisionCP(i))  // If Q[i] is a decision variable
-//       {
-//         toGradDiffConstraintsDiffVariables(gIndexQ(i), c3 * c1 * ones, grad, r, nn);
-//       }
-
-//       if (i == (N_ - 3))
-//       {  // this is needed because qN=qNm1=qNm2 (and therefore the gradient of qNm2 should take into account also
-//       qNm1)
-//         toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), (-c3 * c2 - c3 * c1) * ones + c3 * c2 * ones, grad, r,
-//         nn);
-//       }
-//       else
-//       {
-//         if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
-//         {
-//           toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), (-c3 * c2 - c3 * c1) * ones, grad, r, nn);
-//         }
-//         if (isADecisionCP(i + 2))  // If Q[i+2] is a decision variable
-//         {
-//           toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), c3 * c2 * ones, grad, r, nn);
-//         }
-//       }
-//     }
-//     r = r + 3;
-
-//     assignEigenToVector(constraints, r, -a_i - a_max_);  // f<=0
-//     if (grad)
-//     {
-//       if (isADecisionCP(i))  // If Q[i] is a decision variable
-//       {
-//         toGradDiffConstraintsDiffVariables(gIndexQ(i), -c3 * c1 * ones, grad, r, nn);
-//       }
-
-//       if (i == (N_ - 3))
-//       {
-//         toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -(-c3 * c2 - c3 * c1) * ones - c3 * c2 * ones, grad, r,
-//         nn);
-//       }
-//       else
-//       {
-//         if (isADecisionCP(i + 1))  // If Q[i+1] is a decision variable
-//         {
-//           toGradDiffConstraintsDiffVariables(gIndexQ(i + 1), -(-c3 * c2 - c3 * c1) * ones, grad, r, nn);
-//         }
-//         if (isADecisionCP(i + 2))  // If Q[i+2] is a decision variable
-//         {
-//           toGradDiffConstraintsDiffVariables(gIndexQ(i + 2), -c3 * c2 * ones, grad, r, nn);
-//         }
-//       }
-//     }
-//     r = r + 3;
-//   }
-
-//   index_const_normals_ = r;
 
 //   /////////////////////////////////////////////////
 //   //////////// SPHERE CONSTRAINTS    /////////////
@@ -948,8 +948,8 @@ void SolverGurobi::addConstraints()
 //           {  // The last control point of the interval is qNm1, and the variable is qNm2
 //             // Needed because qN=qNm1=qNm2
 //             toGradSameConstraintDiffVariables(
-//                 gIndexQ(i + k), 2 * (q_ipu - q0_) * (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u)), grad,
-//                 r, nn);
+//                 gIndexQ(i + k), 2 * (q_ipu - q0_) * (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u)),
+//                 grad, r, nn);
 //           }
 
 //           else if ((i + 3) == (N_) && k == 1)
@@ -978,7 +978,8 @@ void SolverGurobi::addConstraints()
 //   }
 
 //   num_of_constraints_ = r;  // + 1 has already been added in the last loop of the previous for loop;
-// }
+//
+//}
 
 void SolverGurobi::printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
 {
@@ -1030,6 +1031,21 @@ void SolverGurobi::printStd(const std::vector<Eigen::Vector3d> &v)
 
 bool SolverGurobi::optimize()
 {
+  // reset some stuff
+  traj_solution_.clear();
+  // note that, for a v0 and a0 given, q2_ is not guaranteed to lie within the bounds. If that's the case --> keep
+  // executing previous trajectory
+  if (q2_.x() > x_max_ || q2_.x() < x_min_ ||  //////////////
+      q2_.y() > y_max_ || q2_.y() < y_min_ ||  /////////////////
+      q2_.z() > z_max_ || q2_.z() < z_min_)
+  {
+    std::cout << bold << red << "q2_ is not in [min, max]" << reset << std::endl;
+    std::cout << "q2_= " << q2_.transpose() << std::endl;
+    std::cout << "x_min_= " << x_min_ << ", x_max_=" << x_max_ << std::endl;
+    std::cout << "y_min_= " << y_min_ << ", y_max_=" << y_max_ << std::endl;
+    std::cout << "z_min_= " << z_min_ << ", z_max_=" << z_max_ << std::endl;
+    return false;
+  }
   generateAStarGuess();
   n_ = n_guess_;
   d_ = d_guess_;
@@ -1040,119 +1056,27 @@ bool SolverGurobi::optimize()
   m.update();
   m.write("/home/jtorde/Desktop/ws/src/mader/model.lp");
   m.optimize();
+
+  std::cout << "result" << std::endl;
+
+  std::cout << "N_=" << N_ << std::endl;
+
+  for (auto q_i : q_exp_)
+  {
+    std::cout << q_i[0].getValue() << ", " << q_i[1].getValue() << ", " << q_i[2].getValue() << std::endl;
+  }
 }
 
 // bool SolverGurobi::optimize()
 
 // {
-//   // reset some stuff
-//   traj_solution_.clear();
+
 //   best_cost_so_far_ = std::numeric_limits<double>::max();
 //   best_feasible_sol_so_far_.clear();
 //   got_a_feasible_solution_ = false;
 //   best_feasible_sol_so_far_.resize(num_of_variables_);
 
-//   // note that, for a v0 and a0 given, q2_ is not guaranteed to lie within the bounds. If that's the case --> keep
-//   // executing previous trajectory
-//   if (q2_.x() > x_max_ || q2_.x() < x_min_ ||  //////////////
-//       q2_.y() > y_max_ || q2_.y() < y_min_ ||  /////////////////
-//       q2_.z() > z_max_ || q2_.z() < z_min_)
-//   {
-//     std::cout << bold << red << "q2_ is not in [min, max]" << reset << std::endl;
-//     std::cout << "q2_= " << q2_.transpose() << std::endl;
-//     std::cout << "x_min_= " << x_min_ << ", x_max_=" << x_max_ << std::endl;
-//     std::cout << "y_min_= " << y_min_ << ", y_max_=" << y_max_ << std::endl;
-//     std::cout << "z_min_= " << z_min_ << ", z_max_=" << z_max_ << std::endl;
-//     return false;
-//   }
-
-//   generateAStarGuess();
-
-//   // https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#augmented-lagrangian-algorithm
-//   // The augmented Lagrangian method is specified in NLopt as NLOPT_AUGLAG. We also provide a variant,
-//   NLOPT_AUGLAG_EQ,
-//   // that only uses penalty functions for equality constraints, while inequality constraints are passed through to
-//   the
-//   // subsidiary algorithm to be handled directly; in this case, the subsidiary algorithm must handle inequality
-//   // constraints (e.g. MMA or COBYLA)
-
-//   nlopt::opt opt(nlopt::AUGLAG, num_of_variables_);  // need to create it here because I need the # of variables
-//   nlopt::opt local_opt(solver_, num_of_variables_);  // need to create it here because I need the # of variables
-
-//   // opt_ = new nlopt::opt(nlopt::AUGLAG_EQ, num_of_variables_);  // nlopt::AUGLAG
-//   // local_opt_ = new nlopt::opt(solver_, num_of_variables_);
-
-//   local_opt.set_xtol_rel(xtol_rel_);  // stopping criteria.
-//   local_opt.set_ftol_rel(ftol_rel_);  // stopping criteria.
-//   local_opt.set_maxtime(std::max(mu_ * max_runtime_, 0.001));
-
-//   opt.set_local_optimizer(local_opt);
-//   opt.set_xtol_rel(xtol_rel_);  // Stopping criteria.
-//   opt.set_ftol_rel(ftol_rel_);  // Stopping criteria.
-
-//   // opt.set_maxeval(1e6);  // maximum number of evaluations. Negative --> don't use this criterion
-
-//   opt.set_maxtime(std::max(mu_ * max_runtime_, 0.001));  // 0.001 to make sure this criterion is used  // maximum
-//   time
-//                                                          // in seconds. Negative --> don't use this criterion
-
-//   // opt.set_maxtime(max_runtime_);
-//   initializeNumOfConstraints();
-
-//   // see https://github.com/stevengj/nlopt/issues/168
-//   std::vector<double> tol_constraints;
-//   for (int i = 0; i < num_of_constraints_; i++)
-//   {
-//     tol_constraints.push_back(epsilon_tol_constraints_);
-//   }
-
-//   // andd lower and upper bounds
-//   std::vector<double> lb;
-//   std::vector<double> ub;
-//   // control points q
-//   for (int i = 0; i <= i_max_; i = i + 3)
-//   {
-//     // x component
-//     lb.push_back(x_min_);
-//     ub.push_back(x_max_);
-//     // y component
-//     lb.push_back(y_min_);
-//     ub.push_back(y_max_);
-//     // z component
-//     lb.push_back(z_min_);
-//     ub.push_back(z_max_);
-//   }
-//   // normals n
-//   for (int j = j_min_; j <= j_max_; j++)
-//   {
-//     lb.push_back(-1e9);
-//     ub.push_back(1e9);
-//   }
-//   // coefficients d
-//   for (int k = k_min_; k <= k_max_; k++)
-//   {
-//     lb.push_back(-1e9);
-//     ub.push_back(1e9);
-//   }
-//   // opt.set_lower_bounds(lb);
-//   // opt.set_upper_bounds(ub);
-//   // // if (local_opt_)
-//   // // {
-//   // local_opt.set_lower_bounds(lb);
-//   // local_opt.set_upper_bounds(ub);
-//   // }
-
-//   // set constraint and objective
-//   opt.add_inequality_mconstraint(SolverGurobi::myIneqConstraints, this, tol_constraints);
-//   opt.set_min_objective(SolverGurobi::myObjFunc,
-//                         this);  // this is passed as a parameter (the obj function has to be static)
-
 //   qnd2x(q_guess_, n_guess_, d_guess_, x_);
-
-//   double obj_guess = computeObjFunctionJerk(num_of_variables_, nullptr, q_guess_, n_guess_, d_guess_);
-
-//   double second_term_obj_guess = weight_modified_ * (q_guess_[N_] - final_state_.pos).squaredNorm();
-//   double first_term_obj_guess = obj_guess - second_term_obj_guess;
 
 //   // std::cout << "The guess is the following one:" << std::endl;
 //   // printQVA(q_guess_);
@@ -1164,12 +1088,6 @@ bool SolverGurobi::optimize()
 
 //   printInfeasibleConstraints(q_guess_, n_guess_, d_guess_);
 
-//   printIndexesConstraints();
-//   printIndexesVariables();
-
-//   double obj_obtained;
-
-//   opt_timer_.Reset();
 //   std::cout << "[NL] Optimizing now, allowing time = " << mu_ * max_runtime_ * 1000 << "ms" << std::endl;
 
 //   int result;
@@ -1229,7 +1147,8 @@ bool SolverGurobi::optimize()
 
 //     double second_term_obj_obtained = weight_modified_ * (q[N_] - final_state_.pos).squaredNorm();
 //     double first_term_obj_obtained = obj_obtained - second_term_obj_obtained;
-//     // std::cout << "obj_guess= " << std::setprecision(7) << obj_guess << reset << "(" << first_term_obj_guess << " +
+//     // std::cout << "obj_guess= " << std::setprecision(7) << obj_guess << reset << "(" << first_term_obj_guess << "
+//     +
 //     "
 //     //           << second_term_obj_guess << ")" << std::endl;
 //     // std::cout << "obj_obtained= " << std::setprecision(7) << obj_obtained << reset << "(" <<
@@ -1252,7 +1171,8 @@ bool SolverGurobi::optimize()
 
 //     double second_term_obj_obtained = weight_modified_ * (q[N_] - final_state_.pos).squaredNorm();
 //     double first_term_obj_obtained = best_cost_so_far_ - second_term_obj_obtained;
-//     std::cout << "obj_guess= " << std::setprecision(7) << obj_guess << reset << "(" << first_term_obj_guess << " + "
+//     std::cout << "obj_guess= " << std::setprecision(7) << obj_guess << reset << "(" << first_term_obj_guess << " +
+//     "
 //               << second_term_obj_guess << ")" << std::endl;
 //     std::cout << "obj_obtained= " << std::setprecision(7) << best_cost_so_far_ << reset << "("
 //               << first_term_obj_obtained << " + " << second_term_obj_obtained << ")" << std::endl;

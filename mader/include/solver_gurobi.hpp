@@ -119,6 +119,12 @@ private:
   void transformPosBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv,
                                       int interval);
 
+  // void transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
+  //                                     std::vector<std::vector<GRBLinExpr>> &Qmv, int interval);
+
+  std::vector<std::vector<GRBLinExpr>> transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
+                                                                      int interval);
+
   void transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3, 3> &Qbs, Eigen::Matrix<double, 3, 3> &Qmv,
                                       int interval);
 
@@ -172,7 +178,8 @@ private:
   std::vector<GRBConstr> init_constraints_;
   std::vector<GRBConstr> dyn_constraints_;
 
-  std::vector<std::vector<GRBVar>> q_var_;  // Each q_var_[i] has 3 elements (x,y,z)
+  std::vector<std::vector<GRBVar>> q_var_;      // Each q_var_[i] has 3 elements (x,y,z)
+  std::vector<std::vector<GRBLinExpr>> q_exp_;  // Each q_exp_[i] has 3 elements (x,y,z)
 
   // std::vector<Eigen::Matrix<GRBVar, 3, 1>> q_var_;  // Each q_var_[i] has 3 elements (x,y,z)
 
@@ -211,6 +218,12 @@ private:
                           const std::vector<double> &d);
 
   void initializeNumOfConstraints();
+
+  void addVectorEqConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b);
+
+  void addVectorLessEqualConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b);
+
+  void addVectorGreaterEqualConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b);
 
   void printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                                   std::vector<double> &d);
@@ -282,7 +295,9 @@ private:
   double t_final_;
   double deltaT_;
   Eigen::Vector3d v_max_;
+  Eigen::Vector3d mv_max_;
   Eigen::Vector3d a_max_;
+  Eigen::Vector3d ma_max_;
 
   double weight_ = 10000;
   double weight_modified_ = 10000;

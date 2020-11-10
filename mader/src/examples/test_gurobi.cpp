@@ -10,8 +10,11 @@
 #include "timer.hpp"
 
 #include "solver_gurobi.hpp"
+#include "termcolor.hpp"
 
 #include <fstream>
+
+using namespace termcolor;
 
 typedef MADER_timers::Timer MyTimer;
 
@@ -54,8 +57,8 @@ int main()
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
 
   par_sgurobi parameters;
-  parameters.v_max = 20 * Eigen::Vector3d::Ones();
-  parameters.a_max = 20 * Eigen::Vector3d::Ones();
+  parameters.v_max = 2 * Eigen::Vector3d::Ones();
+  parameters.a_max = 2 * Eigen::Vector3d::Ones();
   parameters.dc = 0.01;
   parameters.dist_to_use_straight_guess = 1;
   parameters.a_star_samp_x = 5;
@@ -69,7 +72,7 @@ int main()
   parameters.xtol_rel = 0.0000000000001;
   parameters.ftol_rel = 0.0000000000001;
   parameters.solver = "LD_MMA";
-  parameters.basis = "MINVO";
+  parameters.basis = "B_SPLINE";
   parameters.a_star_bias = 1.0;
   parameters.allow_infeasible_guess = true;
   parameters.Ra = 4.0;
@@ -86,6 +89,9 @@ int main()
 
   double t_min = 0.0;
   double t_max = t_min + (final_state.pos - initial_state.pos).norm() / (0.3 * parameters.v_max(0));
+
+  std::cout << green << "t_final" << t_min << reset << std::endl;
+  std::cout << green << "t_init_" << t_max << reset << std::endl;
 
   my_solver.setInitStateFinalStateInitTFinalT(initial_state, final_state, t_min, t_max);
 
