@@ -46,6 +46,30 @@ GRBQuadExpr getNorm2(const std::vector<T>& x)  // Return the squared norm of a v
   return result;
 }
 
+inline void addVectorEqConstraint(GRBModel& m, const GRBVector a, const Eigen::Vector3d& b)
+{
+  for (int i = 0; i < a.size(); i++)
+  {
+    m.addConstr(a[i] == b[i]);
+  }
+}
+
+inline void addVectorLessEqualConstraint(GRBModel& m, const GRBVector a, const Eigen::Vector3d& b)
+{
+  for (int i = 0; i < a.size(); i++)
+  {
+    m.addConstr(a[i] <= b[i]);
+  }
+}
+
+inline void addVectorGreaterEqualConstraint(GRBModel& m, const GRBVector a, const Eigen::Vector3d& b)
+{
+  for (int i = 0; i < a.size(); i++)
+  {
+    m.addConstr(a[i] >= b[i]);
+  }
+}
+
 template <typename T, typename R>
 GRBVector matrixMultiply(const std::vector<std::vector<R>>& A, const std::vector<T>& x)
 {
@@ -155,7 +179,7 @@ std::vector<T> eigenVector2std(const Eigen::Matrix<T, 3, 1>& x)  // TODO: Merge 
   return result;
 }
 
-std::vector<std::vector<double>> eigenMatrix2std(const Eigen::Matrix<double, -1, -1>& x)
+inline std::vector<std::vector<double>> eigenMatrix2std(const Eigen::Matrix<double, -1, -1>& x)
 {
   std::vector<std::vector<double>> result;
 

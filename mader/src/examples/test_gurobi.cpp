@@ -10,6 +10,7 @@
 #include "timer.hpp"
 
 #include "solver_gurobi.hpp"
+#include "solver_params.hpp"
 #include "termcolor.hpp"
 
 #include <fstream>
@@ -56,7 +57,7 @@ int main()
   hulls_curves.push_back(hulls_curve);
   ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
 
-  par_sgurobi parameters;
+  par_solver parameters;
   parameters.v_max = 2 * Eigen::Vector3d::Ones();
   parameters.a_max = 2 * Eigen::Vector3d::Ones();
   parameters.dc = 0.01;
@@ -100,7 +101,7 @@ int main()
   std::cout << "Calling optimize" << std::endl;
   bool converged = my_solver.optimize();
 
-  double time_needed = my_solver.getTimeNeeded();
+  // double time_needed = my_solver.getTimeNeeded();
   double delta = (t_max - t_min) / num_pol;
 }
 // std::ofstream myfile;

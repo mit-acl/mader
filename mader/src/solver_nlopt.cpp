@@ -25,7 +25,7 @@
 
 using namespace termcolor;
 
-SolverNlopt::SolverNlopt(par_snlopt &par)
+SolverNlopt::SolverNlopt(par_solver &par)
 {
   deg_pol_ = par.deg_pol;
   num_pol_ = par.num_pol;

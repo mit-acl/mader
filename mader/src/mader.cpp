@@ -55,7 +55,7 @@ Mader::Mader(parameters par) : par_(par)
   changeDroneStatus(DroneStatus::GOAL_REACHED);
   resetInitialization();
 
-  par_snlopt par_for_solver;
+  par_solver par_for_solver;
 
   par_for_solver.x_min = par_.x_min;
   par_for_solver.x_max = par_.x_max;
@@ -110,7 +110,7 @@ Mader::Mader(parameters par) : par_(par)
 
   A_rest_pos_basis_inverse_ = A_rest_pos_basis_.inverse();
 
-  snlopt_ = new SolverNlopt(par_for_solver);
+  solver_ = new SolverNlopt(par_for_solver);
   separator_solver_ = new separator::Separator();
 }
 
@@ -589,7 +589,7 @@ bool Mader::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_opt
     }
   }
 
-  // if reached this point, they don't colide
+  // if reached this point, they don't collide
   return false;
 }
 // Checks that I have not received new trajectories that affect me while doing the optimization
@@ -754,10 +754,10 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   state final = E;
 
   //////////////////////////////////////////////////////////////////////////
-  ///////////////////////// Solve using NLopt ///////////////////////////////
+  ///////////////////////// Solve optimization! ////////////////////////////
   //////////////////////////////////////////////////////////////////////////
 
-  snlopt_->setMaxRuntimeKappaAndMu(runtime_snlopt, par_.kappa, par_.mu);
+  solver_->setMaxRuntimeKappaAndMu(runtime_snlopt, par_.kappa, par_.mu);
 
   //////////////////////
   double time_now = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
@@ -776,7 +776,7 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
                                  (factor_v_max_tmp * par_.v_max.x());  // time to execute the optimized path
 
   bool correctInitialCond =
-      snlopt_->setInitStateFinalStateInitTFinalT(initial, final, t_start,
+      solver_->setInitStateFinalStateInitTFinalT(initial, final, t_start,
                                                  t_final);  // note that here t_final may have been updated
 
   if (correctInitialCond == false)
@@ -798,7 +798,7 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
   edges_obstacles_out = vectorGCALPol2edges(hulls);
 
-  snlopt_->setHulls(hulls_std);
+  solver_->setHulls(hulls_std);
 
   //////////////////////
   std::cout << on_cyan << bold << "Solved so far" << solutions_found_ << "/" << total_replannings_ << reset
@@ -806,10 +806,10 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
 
   std::cout << "[FA] Calling NL" << std::endl;
 
-  bool result = snlopt_->optimize();
+  bool result = solver_->optimize();
 
-  num_of_LPs_run += snlopt_->getNumOfLPsRun();
-  num_of_QCQPs_run += snlopt_->getNumOfQCQPsRun();
+  num_of_LPs_run += solver_->getNumOfLPsRun();
+  num_of_QCQPs_run += solver_->getNumOfQCQPsRun();
 
   total_replannings_++;
   if (result == false)
@@ -822,17 +822,17 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
     return false;
   }
 
-  snlopt_->getGuessForPlanes(planes_guesses);
+  solver_->getGuessForPlanes(planes_guesses);
 
   solutions_found_++;
 
-  av_improvement_nlopt_ = ((solutions_found_ - 1) * av_improvement_nlopt_ + snlopt_->improvement_) / solutions_found_;
+  av_improvement_nlopt_ = ((solutions_found_ - 1) * av_improvement_nlopt_ + solver_->improvement_) / solutions_found_;
 
   // std::cout << blue << "Average improvement so far" << std::setprecision(5) << av_improvement_nlopt_ << reset
   //          << std::endl;
 
   PieceWisePol pwp_now;
-  snlopt_->getSolution(pwp_now);
+  solver_->getSolution(pwp_now);
 
   MyTimer check_t(true);
   mtx_trajs_.lock();
@@ -864,9 +864,9 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   else
   {
     plan_.erase(plan_.end() - k_index_end - 1, plan_.end());    // this deletes also the initial condition...
-    for (int i = 0; i < (snlopt_->traj_solution_).size(); i++)  //... which is included in traj_solution_[0]
+    for (int i = 0; i < (solver_->traj_solution_).size(); i++)  //... which is included in traj_solution_[0]
     {
-      plan_.push_back(snlopt_->traj_solution_[i]);
+      plan_.push_back(solver_->traj_solution_[i]);
     }
   }
 

@@ -85,12 +85,11 @@ add_library(solver_nlopt STATIC src/solver_nlopt.cpp src/bspline_utils.cpp src/n
 target_include_directories (solver_nlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
 target_link_libraries(solver_nlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils octopus_search ${catkin_LIBRARIES} cgal_utils)
 
-add_library(solver_gurobi STATIC src/solver_gurobi.cpp src/bspline_utils.cpp src/nlopt_utils.cpp )
+add_library(solver_gurobi STATIC src/solver_gurobi.cpp src/bspline_utils.cpp src/nlopt_utils.cpp src/solver_gurobi_utils.cpp src/solver_gurobi_guess.cpp)
 target_include_directories (solver_gurobi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
 target_link_libraries(solver_gurobi PUBLIC ${NLOPT_LIBRARIES} ${GUROBI_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils octopus_search ${catkin_LIBRARIES} cgal_utils)
 
 # enable_unity_build(UNITY_BUILD_NAME src/mader_node.cpp)
-
 add_executable(${PROJECT_NAME}_node src/mader_node.cpp src/mader_ros.cpp src/mader.cpp )
 target_link_libraries(${PROJECT_NAME}_node PUBLIC ${catkin_LIBRARIES}  solver_nlopt utils)  #${CGAL_LIBS}
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )

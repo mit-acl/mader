@@ -60,7 +60,7 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   double a_star_fraction_voxel_size = 0.0;
   int num_pol = 8;
 
-  par_snlopt param;
+  par_solver param;
 
   param.x_min = x_min;
   param.x_max = x_max;

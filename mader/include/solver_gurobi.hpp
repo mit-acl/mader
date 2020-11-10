@@ -20,58 +20,14 @@
 #include <decomp_geometry/polyhedron.h>  //For Polyhedron  and Hyperplane definition
 #include "separator.hpp"
 #include "octopus_search.hpp"
+#include "solver_params.hpp"
 
 typedef MADER_timers::Timer MyTimer;
-
-struct par_sgurobi
-{
-  ///// Will not change between iterations
-  double x_min = -std::numeric_limits<double>::max();
-  double x_max = std::numeric_limits<double>::max();
-
-  double y_min = -std::numeric_limits<double>::max();
-  double y_max = std::numeric_limits<double>::max();
-
-  double z_min = -std::numeric_limits<double>::max();
-  double z_max = std::numeric_limits<double>::max();
-  Eigen::Vector3d v_max;
-  Eigen::Vector3d a_max;
-  double dc;
-  double dist_to_use_straight_guess;
-  int a_star_samp_x;
-  int a_star_samp_y;
-  int a_star_samp_z;
-  double a_star_fraction_voxel_size;
-  int num_pol;
-  int deg_pol;
-  double weight;
-  double epsilon_tol_constraints;
-  double xtol_rel;
-  double ftol_rel;
-  std::string solver;
-  std::string basis;
-  double a_star_bias;
-  bool allow_infeasible_guess;
-  double Ra;
-
-  double alpha_shrink;
-
-  ///// Will change between iterations
-  // double kappa;
-  // double mu;
-  // state initial_state;
-  // state final_state;
-  // ConvexHullsOfCurves_Std hulls;
-  // double t_min;
-  // double t_max;
-  // double max_runtime;
-  // int num_obst;
-};
 
 class SolverGurobi
 {
 public:
-  SolverGurobi(par_sgurobi &par);
+  SolverGurobi(par_solver &par);
 
   ~SolverGurobi();
 
@@ -108,28 +64,21 @@ private:
 
   bool isDegenerate(const std::vector<double> &x);
 
-  void transformPosBSpline2otherBasis(const std::vector<std::vector<GRBVar>> &Qbs,
-                                      std::vector<std::vector<GRBLinExpr>> &Qmv, int interval);
-  // void transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3, 3> &Qbs, Eigen::Matrix<double, 3, 3> &Qmv,
-  //                                     int interval);
-
-  void transformPosBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
-                                      std::vector<std::vector<GRBLinExpr>> &Qmv, int interval);
-
+  // transform functions (with Eigen)
   void transformPosBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs, Eigen::Matrix<double, 3, 4> &Qmv,
                                       int interval);
+  void transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3, 3> &Qbs, Eigen::Matrix<double, 3, 3> &Qmv,
+                                      int interval);
 
-  // void transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
-  //                                     std::vector<std::vector<GRBLinExpr>> &Qmv, int interval);
+  // transform functions (with std)
+  void transformPosBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
+                                      std::vector<std::vector<GRBLinExpr>> &Qmv, int interval);
 
   void transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
                                       std::vector<std::vector<GRBLinExpr>> &Qmv, int interval);
 
-  void transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3, 3> &Qbs, Eigen::Matrix<double, 3, 3> &Qmv,
-                                      int interval);
-
   void generateRandomGuess();
-  void generateAStarGuess();
+  bool generateAStarGuess();
   void generateStraightLineGuess();
 
   void sampleFeasible(Eigen::Vector3d &qiP1, std::vector<Eigen::Vector3d> &q);
@@ -215,12 +164,6 @@ private:
                           const std::vector<double> &d);
 
   void initializeNumOfConstraints();
-
-  void addVectorEqConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b);
-
-  void addVectorLessEqualConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b);
-
-  void addVectorGreaterEqualConstraint(const std::vector<GRBLinExpr> a, const Eigen::Vector3d &b);
 
   void printInfeasibleConstraints(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                                   std::vector<double> &d);

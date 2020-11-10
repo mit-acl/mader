@@ -150,7 +150,8 @@ private:
 
   double av_improvement_nlopt_ = 0.0;
 
-  SolverNlopt* snlopt_;  // pointer to the nonconvex solver
+  SolverNlopt* solver_;  // pointer to the optimization solver
+  // SolverGurobi* solver_;  // pointer to the optimization solver
 
   Eigen::Matrix<double, 4, 4> A_rest_pos_basis_;
   Eigen::Matrix<double, 4, 4> A_rest_pos_basis_inverse_;

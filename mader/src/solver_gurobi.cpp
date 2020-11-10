@@ -6,7 +6,6 @@
  * See LICENSE file for the license information
  * -------------------------------------------------------------------------- */
 
-#include "solver_nlopt.hpp"
 #include "solver_gurobi.hpp"
 #include "termcolor.hpp"
 #include "bspline_utils.hpp"
@@ -20,14 +19,10 @@
 #include <random>
 #include <iostream>
 #include <vector>
-#include <chrono>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 
 using namespace termcolor;
 
-SolverGurobi::SolverGurobi(par_sgurobi &par)
+SolverGurobi::SolverGurobi(par_solver &par)
 {
   deg_pol_ = par.deg_pol;
   num_pol_ = par.num_pol;
@@ -38,11 +33,7 @@ SolverGurobi::SolverGurobi(par_sgurobi &par)
   num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
 
   ///////////////////////////////////////
-  ///////////////////////////////////////
-
   basisConverter basis_converter;
-
-  std::cout << "In the SolverGurobi Constructor\n";
 
   a_star_bias_ = par.a_star_bias;
   // basis used for collision
@@ -97,37 +88,165 @@ SolverGurobi::SolverGurobi(par_sgurobi &par)
   a_max_ = par.a_max;
   ma_max_ = -a_max_;
 
-  allow_infeasible_guess_ = par.allow_infeasible_guess;
-  // solver_ = getSolver(par.solver);                         // getSolver(nlopt::LD_VAR2);
-  epsilon_tol_constraints_ = par.epsilon_tol_constraints;  // 1e-1;
-  xtol_rel_ = par.xtol_rel;                                // 1e-1;
-  ftol_rel_ = par.ftol_rel;                                // 1e-1;
+  //  allow_infeasible_guess_ = par.allow_infeasible_guess;
 
   weight_ = par.weight;
 
   separator_solver_ = new separator::Separator();
-
   myAStarSolver_ = new OctopusSearch(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
 }
 
 SolverGurobi::~SolverGurobi()
 {
-  // delete opt_;
-  // delete local_opt_;
+}
+
+void SolverGurobi::prepareObjective()
+{
+  GRBQuadExpr cost = 0.0;
+
+  Eigen::Matrix<double, 4, 1> tmp;
+  tmp << 6.0, 0.0, 0.0, 0.0;
+
+  for (int i = 0; i < num_of_segments_; i++)
+  {
+    Eigen::Matrix<double, -1, 1> A_i_times_tmp = A_pos_bs_[i] * tmp;  // TODO (this is 4x1)
+
+    GRBMatrix Q;
+    Q.push_back(GRBVector{ q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] });  // row0
+    Q.push_back(GRBVector{ q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] });  // row1
+    Q.push_back(GRBVector{ q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] });  // row2
+
+    cost += getNorm2(matrixMultiply(Q, eigenVector2std(A_i_times_tmp)));
+  }
+
+  double weight = 1.5;
+
+  cost += weight * getNorm2(q_exp_[N_] - eigenVector2std(final_state_.pos));
+
+  m.setObjective(cost, GRB_MINIMIZE);
+}
+
+void SolverGurobi::addConstraints()
+{
+  double epsilon = 1.0;  // http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
+
+  addVectorEqConstraint(m, q_exp_[0], q0_);
+  addVectorEqConstraint(m, q_exp_[1], q1_);
+  addVectorEqConstraint(m, q_exp_[2], q2_);
+
+  Eigen::Vector3d zeros = Eigen::Vector3d::Zero();
+
+  // Final velocity and acceleration are zero \equiv q_exp_[N_]=q_exp_[N_-1]=q_exp_[N_-2]
+  addVectorEqConstraint(m, q_exp_[N_] - q_exp_[N_ - 1], zeros);
+  addVectorEqConstraint(m, q_exp_[N_ - 1] - q_exp_[N_ - 2], zeros);
+
+  /////////////////////////////////////////////////
+  ////// PLANES AND SPHERE CONSTRAINTS    /////////
+  /////////////////////////////////////////////////
+
+  for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
+  {
+    GRBMatrix Qbs;
+    GRBMatrix Qmv;  // other basis "basis_" (minvo, bezier,...).
+
+    Qbs.push_back(GRBVector{ q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] });  // row0
+    Qbs.push_back(GRBVector{ q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] });  // row1
+    Qbs.push_back(GRBVector{ q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] });  // row2
+
+    transformPosBSpline2otherBasis(Qbs, Qmv, i);  // each row of Qmv will contain a "basis_" control point
+
+    /////// Plane constraints
+    /////////////////////////////////////////////////
+
+    for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+    {
+      int ip = obst_index * num_of_segments_ + i;  // index plane
+
+      // impose that all the vertexes of the obstacle are on one side of the plane
+      // for (int j = 0; j < hulls_[obst_index][i].cols(); j++)  // Eigen::Vector3d vertex : hulls_[obst_index][i]
+      // {
+      //   Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
+      //   m.addConstr((-(n_[ip].dot(vertex) + d_[ip] - epsilon)) <= 0, "plane" + std::to_string(j));
+      //   // constraints[r] = -(n[ip].dot(vertex) + d[ip] - epsilon);  // f<=0
+      // }
+
+      // and the control points on the other side
+
+      for (int u = 0; u <= 3; u++)
+      {
+        GRBVector q_ipu = getColumn(Qmv, u);
+        GRBLinExpr dot = n_[ip].x() * q_ipu[0] + n_[ip].y() * q_ipu[1] + n_[ip].z() * q_ipu[2];
+        m.addConstr(dot + d_[ip] + epsilon <= 0);
+        // constraints[r] = (n[ip].dot(q_ipu) + d[ip] + epsilon);  //  // fi<=0
+      }
+    }
+
+    /////// Sphere constraints
+    /////////////////////////////////////////////////
+    Eigen::Vector3d q_ipu;
+    for (int u = 0; u <= 3; u++)
+    {
+      GRBVector q_ipu = getColumn(Qmv, u);
+      GRBQuadExpr tmp = getNorm2(q_ipu - eigenVector2std(q0_));
+      m.addQConstr(tmp <= Ra_ * Ra_);
+    }
+  }
+
+  /////////////////////////////////////////////////
+  ////////// VELOCITY CONSTRAINTS    //////////////
+  /////////////////////////////////////////////////
+
+  for (int i = 2; i <= (N_ - 2); i++)  // If using BSpline basis, v0 and v1 are already determined by initial_state
+  {
+    double ciM2 = p_ / (knots_(i + p_ + 1 - 2) - knots_(i + 1 - 2));
+    double ciM1 = p_ / (knots_(i + p_ + 1 - 1) - knots_(i + 1 - 1));
+    double ci = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
+
+    GRBVector v_iM2 = ciM2 * (q_exp_[i - 1] - q_exp_[i - 2]);
+    GRBVector v_iM1 = ciM1 * (q_exp_[i] - q_exp_[i - 1]);
+    GRBVector v_i = ci * (q_exp_[i + 1] - q_exp_[i]);
+
+    GRBMatrix Qbs;
+    GRBMatrix Qmv;  // other basis "basis_" (minvo, bezier,...).
+
+    Qbs.push_back(GRBVector{ v_iM2[0], v_iM1[0], v_i[0] });  // row0
+    Qbs.push_back(GRBVector{ v_iM2[1], v_iM1[1], v_i[1] });  // row1
+    Qbs.push_back(GRBVector{ v_iM2[2], v_iM1[2], v_i[2] });  // row2
+
+    transformVelBSpline2otherBasis(Qbs, Qmv, i - 2);
+
+    for (int j = 0; j < 3; j++)
+    {  // loop over each of the velocity control points (v_{i-2+j}) of the new basis
+       //|v_{i-2+j}| <= v_max ////// v_{i-2}, v_{i-1}, v_{i}
+
+      GRBVector v_iM2Pj = getColumn(Qmv, j);
+      addVectorLessEqualConstraint(m, v_iM2Pj, v_max_);      // v_max_
+      addVectorGreaterEqualConstraint(m, v_iM2Pj, mv_max_);  // mv_max_
+    }
+  }
+
+  /////////////////////////////////////////////////
+  ////////// ACCELERATION CONSTRAINTS    //////////
+  /////////////////////////////////////////////////
+
+  for (int i = 1; i <= (N_ - 3); i++)  // a0 is already determined by the initial state
+  {
+    double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
+    double c2 = p_ / (knots_(i + p_ + 1 + 1) - knots_(i + 1 + 1));
+    double c3 = (p_ - 1) / (knots_(i + p_ + 1) - knots_(i + 2));
+
+    GRBVector v_i = c1 * (q_exp_[i + 1] - q_exp_[i]);
+    GRBVector v_iP1 = c2 * (q_exp_[i + 2] - q_exp_[i + 1]);
+    GRBVector a_i = c3 * (v_iP1 - v_i);
+
+    addVectorLessEqualConstraint(m, a_i, a_max_);      // v_max_
+    addVectorGreaterEqualConstraint(m, a_i, ma_max_);  // mv_max_
+  }
 }
 
 void SolverGurobi::getGuessForPlanes(std::vector<Hyperplane3D> &planes)
 {
   planes = planes_;
-  /*  planes.clear();
-    std::cout << "GettingGuessesForPlanes= " << n_guess_.size() << std::endl;
-    for (auto n_i : n_guess_)
-    {
-      Eigen::Vector3d p_i;
-      p_i << 0.0, 0.0, -1.0 / n_i.z();  // TODO deal with n_i.z()=0
-      Hyperplane3D plane(p_i, n_i);
-      planes.push_back(plane);
-    }*/
 }
 
 int SolverGurobi::getNumOfLPsRun()
@@ -185,194 +304,6 @@ void SolverGurobi::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const s
   }
 }
 
-void SolverGurobi::generateAStarGuess()
-{
-  std::cout << "[NL] Running A* from" << q0_.transpose() << " to " << final_state_.pos.transpose()
-            << ", allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << std::endl;
-
-  //  std::cout << bold << blue << "z_max_= " << z_max_ << reset << std::endl;
-
-  n_guess_.clear();
-  q_guess_.clear();
-  d_guess_.clear();
-  planes_.clear();
-
-  generateStraightLineGuess();  // If A* doesn't succeed --> use straight lineGuess
-  /*  generateRandomN(n_guess_);
-    generateRandomD(d_guess_);
-    generateRandomQ(q_guess_);*/
-
-  // std::cout << "The StraightLineGuess is" << std::endl;
-  // printStd(q_guess_);
-  // std::cout << "************" << std::endl;
-
-  myAStarSolver_->setUp(t_init_, t_final_, hulls_);
-
-  // std::cout << "q0_=" << q0_.transpose() << std::endl;
-  // std::cout << "q1_=" << q1_.transpose() << std::endl;
-  // std::cout << "q2_=" << q2_.transpose() << std::endl;
-
-  myAStarSolver_->setq0q1q2(q0_, q1_, q2_);
-  myAStarSolver_->setGoal(final_state_.pos);
-
-  // double runtime = 0.05;   //[seconds]
-  double goal_size = 0.05;  //[meters]
-
-  myAStarSolver_->setXYZMinMaxAndRa(x_min_, x_max_, y_min_, y_max_, z_min_, z_max_,
-                                    Ra_);                 // z limits for the search, in world frame
-  myAStarSolver_->setBBoxSearch(2000.0, 2000.0, 2000.0);  // limits for the search, centered on q2
-  myAStarSolver_->setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
-                                         a_star_fraction_voxel_size_);
-
-  myAStarSolver_->setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
-  myAStarSolver_->setGoalSize(goal_size);
-
-  myAStarSolver_->setBias(a_star_bias_);
-  // if (basis_ == MINVO)
-  // {
-  //   // std::cout << green << bold << "snlopt is using MINVO" << reset << std::endl;
-  //   myAStarSolver_->setBasisUsedForCollision(myAStarSolver_->MINVO);
-  // }
-  // else if (basis_ == BEZIER)
-  // {
-  //   // std::cout << green << bold << "snlopt is using BEZIER" << reset << std::endl;
-  //   myAStarSolver_->setBasisUsedForCollision(myAStarSolver_->BEZIER);
-  // }
-  // else
-  // {
-  //   // std::cout << green << bold << "snlopt is using B_SPLINE" << reset << std::endl;
-  //   myAStarSolver_->setBasisUsedForCollision(myAStarSolver_->B_SPLINE);
-  // }
-
-  myAStarSolver_->setVisual(false);
-
-  std::vector<Eigen::Vector3d> q;
-  std::vector<Eigen::Vector3d> n;
-  std::vector<double> d;
-  bool is_feasible = myAStarSolver_->run(q, n, d);
-
-  num_of_LPs_run_ = myAStarSolver_->getNumOfLPsRun();
-  // std::cout << "After Running solved, n= " << std::endl;
-  // printStd(n);
-
-  fillPlanesFromNDQ(planes_, n_guess_, d_guess_, q_guess_);
-
-  if (is_feasible)
-  {
-    ROS_INFO_STREAM("[NL] A* found a feasible solution!");
-  }
-  else
-  {
-    ROS_ERROR_STREAM("[NL] A* didn't find a feasible solution!");
-  }
-
-  if (is_feasible == true || (is_feasible == false && allow_infeasible_guess_ == true))
-  {
-    q_guess_ = q;
-    n_guess_ = n;
-    d_guess_ = d;
-
-    ROS_INFO_STREAM("[NL] Using the A* guess");
-  }
-  else
-  {
-    std::cout << "[NL] Using straight line guess" << std::endl;
-  }
-
-  return;
-}
-
-void SolverGurobi::generateRandomD(std::vector<double> &d)
-{
-  d.clear();
-  for (int k = k_min_; k <= k_max_; k++)
-  {
-    double r1 = ((double)rand() / (RAND_MAX));
-    d.push_back(r1);
-  }
-}
-
-void SolverGurobi::generateRandomN(std::vector<Eigen::Vector3d> &n)
-{
-  n.clear();
-  for (int j = j_min_; j < j_max_; j = j + 3)
-  {
-    double r1 = ((double)rand() / (RAND_MAX));
-    double r2 = ((double)rand() / (RAND_MAX));
-    double r3 = ((double)rand() / (RAND_MAX));
-    n.push_back(Eigen::Vector3d(r1, r2, r3));
-  }
-
-  // std::cout << "After Generating RandomN, n has size= " << n.size() << std::endl;
-}
-
-void SolverGurobi::generateRandomQ(std::vector<Eigen::Vector3d> &q)
-{
-  q.clear();
-
-  std::default_random_engine generator;
-  generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
-  std::uniform_real_distribution<double> dist_x(0, 1);  // TODO
-  std::uniform_real_distribution<double> dist_y(0, 1);  // TODO
-  std::uniform_real_distribution<double> dist_z(z_min_, z_max_);
-
-  for (int i = 0; i <= N_; i++)
-  {
-    q.push_back(Eigen::Vector3d(dist_x(generator), dist_y(generator), dist_z(generator)));
-  }
-
-  saturateQ(q);  // make sure is inside the bounds specified
-}
-
-void SolverGurobi::findCentroidHull(const Polyhedron_Std &hull, Eigen::Vector3d &centroid)
-{
-  centroid = Eigen::Vector3d::Zero();
-
-  for (int i = 0; i < hull.cols(); i++)
-  {
-    centroid += hull.col(i);
-  }
-  if (hull.cols() > 0)
-  {
-    centroid = centroid / hull.cols();
-  }
-}
-
-void SolverGurobi::generateGuessNDFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
-                                        std::vector<double> &d)
-{
-  n.clear();
-  d.clear();
-
-  planes_.clear();
-
-  for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
-  {
-    for (int i = 0; i < num_of_segments_; i++)
-    {
-      Eigen::Vector3d centroid_hull;
-      findCentroidHull(hulls_[obst_index][i], centroid_hull);
-
-      Eigen::Vector3d n_i =
-          (centroid_hull - q[i]).normalized();  // n_i should point towards the obstacle (i.e. towards the hull)
-
-      double alpha = 0.01;  // the smaller, the higher the chances the plane is outside the obstacle. Should be <1
-
-      Eigen::Vector3d point_in_middle = q[i] + (centroid_hull - q[i]) * alpha;
-
-      double d_i = -n_i.dot(point_in_middle);  // n'x + d = 0
-
-      n.push_back(n_i);  // n'x + 1 = 0
-      d.push_back(d_i);  // n'x + 1 = 0
-
-      Hyperplane3D plane(point_in_middle, n_i);
-      planes_.push_back(plane);
-
-      // d.push_back(d_i);
-    }
-  }
-}
-
 void SolverGurobi::setHulls(ConvexHullsOfCurves_Std &hulls)
 
 {
@@ -419,55 +350,6 @@ void SolverGurobi::setHulls(ConvexHullsOfCurves_Std &hulls)
   num_of_normals_ = num_of_segments_ * num_of_obst_;
 }
 
-void SolverGurobi::prepareObjective()
-{
-  GRBQuadExpr cost = 0.0;
-
-  // Cost. See Lyx derivation (notes.lyx)
-
-  Eigen::Matrix<double, 4, 1> tmp;
-  tmp << 6.0, 0.0, 0.0, 0.0;
-
-  for (int i = 0; i < num_of_segments_; i++)
-  {
-    Eigen::Matrix<double, -1, 1> A_i_times_tmp = A_pos_bs_[i] * tmp;  // TODO (this is 4x1)
-
-    GRBMatrix Q;
-
-    GRBVector tmp_x = { q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] };
-    GRBVector tmp_y = { q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] };
-    GRBVector tmp_z = { q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] };
-
-    Q.push_back(tmp_x);  // row0
-    Q.push_back(tmp_y);  // row1
-    Q.push_back(tmp_z);  // row2
-
-    // Eigen::Matrix<double, 3, 4> Q;
-    // Q.col(0) = q[i];
-    // Q.col(1) = q[i + 1];
-    // Q.col(2) = q[i + 2];
-    // Q.col(3) = q[i + 3];
-    // cost += (Q * A_i_times_tmp).squaredNorm();
-
-    GRBVector tmp = matrixMultiply(Q, eigenVector2std(A_i_times_tmp));
-    cost += getNorm2(tmp);
-
-    // std::cout << "cost=" << cost << std::endl;
-  }
-
-  double weight = 1.5;
-
-  std::cout << "final_state_.pos= " << final_state_.pos.transpose() << std::endl;
-
-  cost += weight * getNorm2(q_exp_[N_] - eigenVector2std(final_state_.pos));
-
-  m.setObjective(cost, GRB_MINIMIZE);
-}
-
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
 // Note that t_final will be updated in case the saturation in deltaT_ has had effect
@@ -505,9 +387,7 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(state initial_state, state 
 
   //////////////////////////////
   // Now make sure deltaT in knots_ is such that -v_max<=v1<=v_max is satisfied:
-
   // std::cout << bold << "deltaT_ before= " << deltaT_ << reset << std::endl;
-
   for (int axis = 0; axis < 3; axis++)
   {
     double upper_bound, lower_bound;
@@ -596,8 +476,7 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(state initial_state, state 
   //////////////////
 
   // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
-  // I think equation (7) of the paper "Robust and Efficent quadrotor..." has a typo, p_ is missing there (compare
-  // with equation 15 of that paper)
+  // See also eq. 15 of the paper "Robust and Efficent quadrotor..."
 
   weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
 
@@ -621,373 +500,7 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(state initial_state, state 
   qNm2_ = (p_ * p_ * qNm1_ - (tNm1 - tNm1Pp) * (af * (-tN + tNm1Pp) + vf) - p_ * (qNm1_ + (-tNm1 + tNm1Pp) * vf)) /
           ((-1 + p_) * p_);
 
-  /////////////////////////////////////////// FOR DEBUGGING
-
-  // Eigen::MatrixXd knots_0 = knots_;
-  // for (int i = 0; i < knots_0.cols(); i++)
-  // {
-  //   knots_0(0, i) = knots_(0, 0);
-  // }
-  // std::cout << "knots_ - knots[0]= " << std::endl;
-  // std::cout << std::setprecision(13) << (knots_ - knots_0).transpose() << reset << std::endl;
-
-  // int i = 1;
-  // Eigen::Vector3d vcomputed_1 = p_ * (q2_ - q1_) / (knots_(i + p_ + 1) - knots_(i + 1));
-
-  // i = 0;
-  // Eigen::Vector3d vcomputed_0 = p_ * (q1_ - q0_) / (knots_(i + p_ + 1) - knots_(i + 1));
-  // Eigen::Vector3d acomputed_0 = (p_ - 1) * (vcomputed_1 - vcomputed_0) / (knots_(i + p_ + 1) - knots_(i + 2));
-
-  // // std::cout << "vcomputed_0= " << vcomputed_0.transpose() << std::endl;
-  // // std::cout << "vcomputed_1= " << vcomputed_1.transpose() << std::endl;
-  // // std::cout << "acomputed_0= " << acomputed_0.transpose() << std::endl;
-
-  // double epsilon = 1.0001;
-
-  // // TODO: remove this (it's not valid for Bezier/MINVO)
-  // if ((vcomputed_1.array() > epsilon * v_max_.array()).any() || (vcomputed_1.array() < -epsilon *
-  // v_max_.array()).any())
-  // {
-  //   std::cout << bold << red << "vel constraint for v1 is not satisfied" << reset << std::endl;
-
-  //   abort();
-  // }
-  ///////////////////////////////////////////
-
   return true;
-}
-
-bool SolverGurobi::isADecisionCP(int i)
-
-{  // If Q[i] is a decision variable
-  return ((i >= 3) && i <= (N_ - 2));
-}
-
-double SolverGurobi::getTimeNeeded()
-{
-  return time_needed_;
-}
-
-int SolverGurobi::lastDecCP()
-{
-  return (N_ - 2);
-}
-
-void SolverGurobi::transformPosBSpline2otherBasis(const GRBMatrix &Qbs, GRBMatrix &Qmv, int interval)
-{
-  Qmv = matrixMultiply(Qbs, eigenMatrix2std(M_pos_bs2basis_[interval]));
-
-  // Qmv = Qbs * M_pos_bs2basis_[interval];
-}
-
-void SolverGurobi::transformPosBSpline2otherBasis(const Eigen::Matrix<double, 3, 4> &Qbs,
-                                                  Eigen::Matrix<double, 3, 4> &Qmv, int interval)
-{
-  std::cout << "M_pos_bs2basis_[interval]= \n" << M_pos_bs2basis_[interval] << std::endl;
-  Qmv = Qbs * M_pos_bs2basis_[interval];
-}
-
-void SolverGurobi::transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3, 3> &Qbs,
-                                                  Eigen::Matrix<double, 3, 3> &Qmv, int interval)
-{
-  Qmv = Qbs * M_vel_bs2basis_[interval];
-}
-
-void SolverGurobi::transformVelBSpline2otherBasis(const GRBMatrix &Qbs, GRBMatrix &Qmv, int interval)
-{
-  Qmv = matrixMultiply(Qbs, eigenMatrix2std(M_vel_bs2basis_[interval]));
-
-  // Qmv = Qbs * M_pos_bs2basis_[interval];
-}
-
-// void SolverGurobi::transformVelBSpline2otherBasis(const std::vector<std::vector<Eigen::Vector3d>> &Qbs,
-//                                                   std::vector<std::vector<Eigen::Vector3d>> &Qmv, int interval)
-// {
-//   Qmv = matrixMultiply(Qbs, M_vel_bs2basis_[interval]);
-//   // Qmv = Qbs * M_vel_bs2basis_[interval];
-// }
-
-void SolverGurobi::addVectorEqConstraint(const GRBVector a, const Eigen::Vector3d &b)
-{
-  for (int i = 0; i < a.size(); i++)
-  {
-    m.addConstr(a[i] == b[i]);
-  }
-}
-
-void SolverGurobi::addVectorLessEqualConstraint(const GRBVector a, const Eigen::Vector3d &b)
-{
-  for (int i = 0; i < a.size(); i++)
-  {
-    m.addConstr(a[i] <= b[i]);
-  }
-}
-
-void SolverGurobi::addVectorGreaterEqualConstraint(const GRBVector a, const Eigen::Vector3d &b)
-{
-  for (int i = 0; i < a.size(); i++)
-  {
-    m.addConstr(a[i] >= b[i]);
-  }
-}
-
-void SolverGurobi::addConstraints()
-{
-  // See here why we can use an epsilon of 1.0:
-  // http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
-  double epsilon = 1.0;
-
-  addVectorEqConstraint(q_exp_[0], q0_);
-  addVectorEqConstraint(q_exp_[1], q1_);
-  addVectorEqConstraint(q_exp_[2], q2_);
-
-  Eigen::Vector3d zeros = Eigen::Vector3d::Zero();
-
-  // Final velocity and acceleration are zero \equiv q_exp_[N_]=q_exp_[N_-1]=q_exp_[N_-2]
-
-  addVectorEqConstraint(q_exp_[N_] - q_exp_[N_ - 1], zeros);
-  addVectorEqConstraint(q_exp_[N_ - 1] - q_exp_[N_ - 2], zeros);
-
-  /////////////////////////////////////////////////
-  //////////// PLANES CONSTRAINTS    //////////////
-  /////////////////////////////////////////////////
-
-  for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
-  {
-    for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
-    {
-      int ip = obst_index * num_of_segments_ + i;  // index plane
-
-      // impose that all the vertexes of the obstacle are on one side of the plane
-      // for (int j = 0; j < hulls_[obst_index][i].cols(); j++)  // Eigen::Vector3d vertex : hulls_[obst_index][i]
-      // {
-      //   Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
-      //   m.addConstr((-(n_[ip].dot(vertex) + d_[ip] - epsilon)) <= 0, "plane" + std::to_string(j));
-      //   // constraints[r] = -(n[ip].dot(vertex) + d[ip] - epsilon);  // f<=0
-      // }
-
-      // and the control points on the other side
-      GRBMatrix Qbs;
-      GRBMatrix Qmv;  // other basis "basis_" (minvo, bezier,...).
-
-      Qbs.push_back(GRBVector{ q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] });  // row0
-      Qbs.push_back(GRBVector{ q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] });  // row1
-      Qbs.push_back(GRBVector{ q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] });  // row2
-
-      transformPosBSpline2otherBasis(Qbs, Qmv, i);  // each row of Qmv will contain a "basis_" control point
-
-      for (int u = 0; u <= 3; u++)
-      {
-        // q_ipu = Qmv.col(u);
-        GRBVector q_ipu = getColumn(Qmv, u);
-        GRBLinExpr dot = n_[ip].x() * q_ipu[0] + n_[ip].y() * q_ipu[1] + n_[ip].z() * q_ipu[2];
-        m.addConstr(dot + d_[ip] + epsilon <= 0);
-        // constraints[r] = (n[ip].dot(q_ipu) + d[ip] + epsilon);  //  // fi<=0
-      }
-    }
-  }
-
-  /////////////////////////////////////////////////
-  ////////// VELOCITY CONSTRAINTS    //////////////
-  /////////////////////////////////////////////////
-
-  for (int i = 2; i <= (N_ - 2); i++)  // If using BSpline basis, v0 and v1 are already determined by initial_state
-  {
-    double ciM2 = p_ / (knots_(i + p_ + 1 - 2) - knots_(i + 1 - 2));
-    double ciM1 = p_ / (knots_(i + p_ + 1 - 1) - knots_(i + 1 - 1));
-    double ci = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
-
-    GRBVector v_iM2 = ciM2 * (q_exp_[i - 1] - q_exp_[i - 2]);
-    GRBVector v_iM1 = ciM1 * (q_exp_[i] - q_exp_[i - 1]);
-    GRBVector v_i = ci * (q_exp_[i + 1] - q_exp_[i]);
-
-    GRBMatrix Qbs;
-    GRBMatrix Qmv;  // other basis "basis_" (minvo, bezier,...).
-
-    Qbs.push_back(GRBVector{ v_iM2[0], v_iM1[0], v_i[0] });  // row0
-    Qbs.push_back(GRBVector{ v_iM2[1], v_iM1[1], v_i[1] });  // row1
-    Qbs.push_back(GRBVector{ v_iM2[2], v_iM1[2], v_i[2] });  // row2
-
-    // Qbs.col(0) = v_iM2;
-    // Qbs.col(1) = v_iM1;
-    // Qbs.col(2) = v_i;
-
-    transformVelBSpline2otherBasis(Qbs, Qmv, i - 2);
-
-    for (int j = 0; j < 3; j++)
-    {  // loop over each of the velocity control points (v_{i-2+j}) of the new basis
-      //|v_{i-2+j}| <= v_max ////// v_{i-2}, v_{i-1}, v_{i}
-
-      // Eigen::Vector3d v_iM2Pj = Qmv.col(j);  // v_{i-2+j};
-      // // Constraint v_{i-2+j} - vmax <= 0
-      // assignEigenToVector(constraints, r, v_iM2Pj - v_max_);  // f<=0
-
-      // // Constraint -v_{i-2+j} - vmax <= 0
-      // assignEigenToVector(constraints, r, -v_iM2Pj - v_max_);  // f<=0
-
-      GRBVector v_iM2Pj = getColumn(Qmv, j);
-
-      // Eigen::Vector3d tmp = Eigen::Vector3d::Ones();
-
-      addVectorLessEqualConstraint(v_iM2Pj, v_max_);      // v_max_
-      addVectorGreaterEqualConstraint(v_iM2Pj, mv_max_);  // mv_max_
-    }
-  }
-
-  /////////////////////////////////////////////////
-  ////////// ACCELERATION CONSTRAINTS    //////////
-  /////////////////////////////////////////////////
-
-  for (int i = 1; i <= (N_ - 3); i++)  // a0 is already determined by the initial state
-
-  {
-    double c1 = p_ / (knots_(i + p_ + 1) - knots_(i + 1));
-    double c2 = p_ / (knots_(i + p_ + 1 + 1) - knots_(i + 1 + 1));
-    double c3 = (p_ - 1) / (knots_(i + p_ + 1) - knots_(i + 2));
-
-    GRBVector v_i = c1 * (q_exp_[i + 1] - q_exp_[i]);
-    GRBVector v_iP1 = c2 * (q_exp_[i + 2] - q_exp_[i + 1]);
-    GRBVector a_i = c3 * (v_iP1 - v_i);
-
-    addVectorLessEqualConstraint(a_i, a_max_);      // v_max_
-    addVectorGreaterEqualConstraint(a_i, ma_max_);  // mv_max_
-
-    // assignEigenToVector(constraints, r, a_i - a_max_);  // f<=0
-    // assignEigenToVector(constraints, r, -a_i - a_max_);  // f<=0
-  }
-}
-
-// // m is the number of constraints, nn is the number of variables
-// void SolverGurobi::computeConstraints(unsigned m, double *constraints, unsigned nn, double *grad,
-//                                       const std::vector<Eigen::Vector3d> &q, const std::vector<Eigen::Vector3d> &n,
-//                                       const std::vector<double> &d)
-// {
-//   Eigen::Vector3d ones = Eigen::Vector3d::Ones();
-//   int r = 0;
-
-//   index_const_obs_ = r;
-
-//   /////////////////////////////////////////////////
-//   //////////// SPHERE CONSTRAINTS    /////////////
-//   /////////////////////////////////////////////////
-//   // Impose that all the control points are inside an sphere of radius Ra
-
-//   // for (int i = 2; i <= N_ - 2; i++)  // Asumming q0_, q1_ and q2_ are inside the sphere TODO: Add this check
-//   //                                    // when computing q0_, q1_ and q2_ (and return false if not)
-//   // {
-//   //   constraints[r] = (q[i] - q0_).squaredNorm() - Ra_ * Ra_;  // fi<=0
-//   //   if (grad)
-//   //   {
-//   //     toGradSameConstraintDiffVariables(gIndexQ(i), 2 * (q[i] - q0_), grad, r, nn);
-//   //   }
-
-//   for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
-//   {
-//     Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
-//     Eigen::Matrix<double, 3, 4> Qmv;  // other basis "basis_" (minvo, bezier,...).
-//     Qbs.col(0) = q[i];
-//     Qbs.col(1) = q[i + 1];
-//     Qbs.col(2) = q[i + 2];
-//     Qbs.col(3) = q[i + 3];
-
-//     transformPosBSpline2otherBasis(Qbs, Qmv,
-//                                    i);  // Now Qmv is a matrix whose each row contains a "basis_" control point
-
-//     Eigen::Vector3d q_ipu;
-//     for (int u = 0; u <= 3; u++)
-//     {
-//       q_ipu = Qmv.col(u);  // if using the MINVO basis
-
-//       constraints[r] = (q_ipu - q0_).squaredNorm() - Ra_ * Ra_;  // fi<=0
-
-//       if (grad)
-//       {
-//         for (int k = 0; (k <= 3); k++)
-//         // This loop is needed because each q in MINVO depends on every q in BSpline
-//         {
-//           if ((i + 3) == (N_ - 1) && k == 2)
-//           {  // The last control point of the interval is qNm1, and the variable is qNm2
-//             // Needed because qN=qNm1=qNm2
-//             toGradSameConstraintDiffVariables(
-//                 gIndexQ(i + k), 2 * (q_ipu - q0_) * (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u)),
-//                 grad, r, nn);
-//           }
-
-//           else if ((i + 3) == (N_) && k == 1)
-//           {  // The last 2 control points of the interval are qNm1 and qN, and the variable is qNm2
-//             // Needed because qN=qNm1=qNm2
-//             toGradSameConstraintDiffVariables(
-//                 gIndexQ(i + k),
-//                 2 * (q_ipu - q0_) *
-//                     (M_pos_bs2basis_[i](k, u) + M_pos_bs2basis_[i](k + 1, u) + M_pos_bs2basis_[i](k + 2, u)),
-//                 grad, r, nn);
-//           }
-
-//           else
-//           {
-//             if (isADecisionCP(i + k))  // If Q[i] is a decision variable
-//             {
-//               toGradSameConstraintDiffVariables(gIndexQ(i + k), 2 * (q_ipu - q0_) * M_pos_bs2basis_[i](k, u), grad,
-//               r,
-//                                                 nn);
-//             }
-//           }
-//         }
-//       }
-//       r++;
-//     }
-//   }
-
-//   num_of_constraints_ = r;  // + 1 has already been added in the last loop of the previous for loop;
-//
-//}
-
-void SolverGurobi::printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d)
-{
-  std::cout << std::setprecision(5) << std::endl;
-  std::cout << "   control points:" << std::endl;
-  for (Eigen::Vector3d q_i : q)
-  {
-    std::cout << q_i.transpose() << std::endl;
-  }
-  std::cout << "   normals:" << std::endl;
-  for (Eigen::Vector3d n_i : n)
-  {
-    std::cout << n_i.transpose() << std::endl;
-  }
-  std::cout << "   d coeffs:" << std::endl;
-  for (double d_i : d)
-  {
-    std::cout << d_i << std::endl;
-  }
-  std::cout << reset << std::endl;
-}
-
-void SolverGurobi::generateRandomGuess()
-{
-  n_guess_.clear();
-  q_guess_.clear();
-  d_guess_.clear();
-
-  generateRandomN(n_guess_);
-  generateRandomD(d_guess_);
-  generateRandomQ(q_guess_);
-}
-
-void SolverGurobi::printStd(const std::vector<double> &v)
-{
-  for (auto v_i : v)
-  {
-    std::cout << v_i << std::endl;
-  }
-}
-
-void SolverGurobi::printStd(const std::vector<Eigen::Vector3d> &v)
-{
-  for (auto v_i : v)
-  {
-    std::cout << v_i.transpose() << std::endl;
-  }
 }
 
 bool SolverGurobi::optimize()
@@ -1007,26 +520,72 @@ bool SolverGurobi::optimize()
     std::cout << "z_min_= " << z_min_ << ", z_max_=" << z_max_ << std::endl;
     return false;
   }
-  generateAStarGuess();
+  bool guess_is_feasible = generateAStarGuess();  // I obtain q_quess_, n_guess_, d_guess_
+  if (guess_is_feasible == false)
+  {
+    std::cout << "Planes haven't been found" << std::endl;
+    return false;
+  }
   n_ = n_guess_;
   d_ = d_guess_;
 
   prepareObjective();
   addConstraints();
-
   m.update();
-  m.write("/home/jtorde/Desktop/ws/src/mader/model.lp");
+  // m.write("/home/jtorde/Desktop/ws/src/mader/model.lp");
   m.optimize();
 
-  std::cout << "result" << std::endl;
+  int optimstatus = m.get(GRB_IntAttr_Status);
+
+  std::vector<Eigen::Vector3d> q;
+
+  switch (optimstatus)
+  {
+    case GRB_OPTIMAL:
+
+      // copy the solution
+      for (auto tmp : q_exp_)
+      {
+        q.push_back(Eigen::Vector3d(tmp[0].getValue(), tmp[1].getValue(), tmp[2].getValue()));
+      }
+
+      CPs2TrajAndPwp(q, traj_solution_, solution_, N_, p_, num_pol_, knots_, dc_);
+      // Force last position =final_state_ (which it's not guaranteed because of the discretization with dc_)
+      traj_solution_.back().vel = final_state_.vel;
+      traj_solution_.back().accel = final_state_.accel;
+      traj_solution_.back().jerk = Eigen::Vector3d::Zero();
+
+      return true;
+      break;
+    case GRB_INF_OR_UNBD:
+      std::cout << red << "GUROBI Status: Unbounded or Infeasible" << reset << std::endl;
+      return false;
+      break;
+    case GRB_NUMERIC:
+      std::cout << red << "GUROBI Status:  Numerical issues" << reset << std::endl;
+      std::cout << red << "(Model may be infeasible or unbounded)" << reset << std::endl;
+      return false;
+      break;
+    case GRB_INTERRUPTED:
+      std::cout << red << "GUROBI Status:  Interrumped by the user" << reset << std::endl;
+      return false;
+      break;
+  }
+}
+
+void SolverGurobi::getSolution(PieceWisePol &solution)
+{
+  solution = solution_;
+}
+
+/*  std::cout << "result" << std::endl;
 
   std::cout << "N_=" << N_ << std::endl;
 
   for (auto q_i : q_exp_)
   {
     std::cout << q_i[0].getValue() << ", " << q_i[1].getValue() << ", " << q_i[2].getValue() << std::endl;
-  }
-}
+  }*/
 
 // bool SolverGurobi::optimize()
 
@@ -1164,98 +723,6 @@ bool SolverGurobi::optimize()
 
 //   return true;
 // }
-
-void SolverGurobi::getSolution(PieceWisePol &solution)
-{
-  solution = solution_;
-}
-
-void SolverGurobi::saturateQ(std::vector<Eigen::Vector3d> &q)
-{
-  for (int i = 0; i < q.size(); i++)
-  {
-    q[i].z() = std::max(q[i].z(), z_min_);  // Make sure it's within the limits
-    q[i].z() = std::min(q[i].z(), z_max_);  // Make sure it's within the limits
-  }
-}
-
-void SolverGurobi::generateStraightLineGuess()
-{
-  // std::cout << "Using StraightLineGuess" << std::endl;
-  q_guess_.clear();
-  n_guess_.clear();
-  d_guess_.clear();
-
-  q_guess_.push_back(q0_);  // Not a decision variable
-  q_guess_.push_back(q1_);  // Not a decision variable
-  q_guess_.push_back(q2_);  // Not a decision variable
-
-  for (int i = 1; i < (N_ - 2 - 2); i++)
-  {
-    Eigen::Vector3d q_i = q2_ + i * (final_state_.pos - q2_) / (N_ - 2 - 2);
-    q_guess_.push_back(q_i);
-  }
-
-  q_guess_.push_back(qNm2_);  // three last cps are the same because of the vel/accel final conditions
-  q_guess_.push_back(qNm1_);
-  q_guess_.push_back(qN_);
-  // Now q_guess_ should have (N_+1) elements
-  saturateQ(q_guess_);  // make sure is inside the bounds specified
-
-  // std::vector<Eigen::Vector3d> q_guess_with_qNm1N = q_guess_;
-  // q_guess_with_qNm1N.push_back(qNm1_);
-  // q_guess_with_qNm1N.push_back(qN_);
-  //////////////////////
-
-  for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
-  {
-    for (int i = 0; i < num_of_segments_; i++)
-    {
-      std::vector<Eigen::Vector3d> last4Cps(4);
-
-      Eigen::Matrix<double, 3, 4> Qbs;  // b-spline
-      Eigen::Matrix<double, 3, 4> Qmv;  // minvo. each column contains a MINVO control point
-      Qbs.col(0) = q_guess_[i];
-      Qbs.col(1) = q_guess_[i + 1];
-      Qbs.col(2) = q_guess_[i + 2];
-      Qbs.col(3) = q_guess_[i + 3];
-
-      transformPosBSpline2otherBasis(Qbs, Qmv, i);
-
-      Eigen::Vector3d n_i;
-      double d_i;
-
-      bool satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][i], Qmv);
-
-      n_guess_.push_back(n_i);
-      d_guess_.push_back(d_i);
-    }
-  }
-}
-
-void SolverGurobi::printIndexesVariables()
-{
-  std::cout << "_______________________" << std::endl;
-  std::cout << "Indexes variables" << std::endl;
-  std::cout << "q: " << i_min_ << "-->" << i_max_ << std::endl;
-  std::cout << "n: " << j_min_ << "-->" << j_max_ << std::endl;
-  std::cout << "d: " << k_min_ << "-->" << k_max_ << std::endl;
-
-  std::cout << "Total number of Variables: " << num_of_variables_ << std::endl;
-  std::cout << "_______________________" << std::endl;
-}
-
-void SolverGurobi::printIndexesConstraints()
-{
-  std::cout << "_______________________" << std::endl;
-  std::cout << "Indexes constraints" << std::endl;
-  std::cout << "Obstacles: " << index_const_obs_ << "-->" << index_const_vel_ - 1 << std::endl;
-  std::cout << "Velocity: " << index_const_vel_ << "-->" << index_const_accel_ - 1 << std::endl;
-  std::cout << "Accel: " << index_const_accel_ << "-->" << index_const_normals_ - 1 << std::endl;
-  // std::cout << "Normals: " << index_const_normals_ << "-->" << num_of_constraints_ << std::endl;
-  std::cout << "Total number of Constraints: " << num_of_constraints_ << std::endl;
-  std::cout << "_______________________" << std::endl;
-}
 
 // void SolverGurobi::printQVA(const std::vector<Eigen::Vector3d> &q)
 // {
