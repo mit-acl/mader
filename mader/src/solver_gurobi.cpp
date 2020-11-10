@@ -694,30 +694,10 @@ void SolverGurobi::transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3,
   Qmv = Qbs * M_vel_bs2basis_[interval];
 }
 
-std::vector<std::vector<GRBLinExpr>>
-SolverGurobi::transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs, int interval)
+void SolverGurobi::transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
+                                                  std::vector<std::vector<GRBLinExpr>> &Qmv, int interval)
 {
-  std::cout << "M_vel_bs2basis_[interval]= \n" << M_vel_bs2basis_[interval] << std::endl;
-
-  std::vector<std::vector<GRBLinExpr>> Qmv;
-
-  std::vector<std::vector<double>> tmp = eigenMatrix2std(M_vel_bs2basis_[interval]);
-
-  // std::cout << "eigenMatrix2std(M_vel_bs2basis_[interval])= " << std::endl;
-
-  // for (int i = 0; i < tmp.size(); i++)
-  // {
-  //   for (int j = 0; j < tmp[i].size(); j++)
-  //   {
-  //     std::cout << "tmp[i][j]= " << tmp[i][j] << std::endl;
-  //   }
-  // }
-
-  // printStd(tmp);
-
-  Qmv = matrixMultiply(Qbs, tmp);
-
-  return Qmv;
+  Qmv = matrixMultiply(Qbs, eigenMatrix2std(M_vel_bs2basis_[interval]));
 
   // Qmv = Qbs * M_pos_bs2basis_[interval];
 }
@@ -850,7 +830,7 @@ void SolverGurobi::addConstraints()
     // Qbs.col(1) = v_iM1;
     // Qbs.col(2) = v_i;
 
-    Qmv = transformVelBSpline2otherBasis(Qbs, i - 2);
+    transformVelBSpline2otherBasis(Qbs, Qmv, i - 2);
 
     for (int j = 0; j < 3; j++)
     {  // loop over each of the velocity control points (v_{i-2+j}) of the new basis

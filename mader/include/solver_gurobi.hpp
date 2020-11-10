@@ -122,8 +122,8 @@ private:
   // void transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
   //                                     std::vector<std::vector<GRBLinExpr>> &Qmv, int interval);
 
-  std::vector<std::vector<GRBLinExpr>> transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
-                                                                      int interval);
+  void transformVelBSpline2otherBasis(const std::vector<std::vector<GRBLinExpr>> &Qbs,
+                                      std::vector<std::vector<GRBLinExpr>> &Qmv, int interval);
 
   void transformVelBSpline2otherBasis(const Eigen::Matrix<double, 3, 3> &Qbs, Eigen::Matrix<double, 3, 3> &Qmv,
                                       int interval);
