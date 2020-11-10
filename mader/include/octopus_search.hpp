@@ -6,6 +6,10 @@
  * See LICENSE file for the license information
  * -------------------------------------------------------------------------- */
 
+#pragma once
+#ifndef OCTOPUS_SEARCH_HPP
+#define OCTOPUS_SEARCH_HPP
+
 #include <vector>
 #include <Eigen/Dense>
 #include "mader_types.hpp"
@@ -235,3 +239,5 @@ private:
 
   double alpha_shrink_;
 };
+
+#endif

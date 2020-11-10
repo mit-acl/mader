@@ -28,12 +28,21 @@ find_package( Eigen3 REQUIRED )
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
+find_package(GUROBI REQUIRED)
+
+if(GUROBI_FOUND)
+  message(STATUS "GUROBI FOUND")
+else(GUROBI_FOUND)
+  message(FATAL_ERROR "GUROBI NOT FOUND!")
+endif(GUROBI_FOUND)
 
 find_package(NLOPT REQUIRED)
 find_package(CGAL REQUIRED)
 include(${CGAL_USE_FILE})
 
-set(CMAKE_BUILD_TYPE Release) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo) or Debug
+set(CMAKE_BUILD_TYPE RelWithDebInfo) #From terminal: catkin config -DCMAKE_BUILD_TYPE=Release (or RelWithDebInfo) or Debug
+
+include_directories(${GUROBI_INCLUDE_DIRS})
 
 find_package(catkin REQUIRED COMPONENTS 
 	roscpp
@@ -54,6 +63,7 @@ catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS} include)
 
+set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;$ENV{GUROBI_HOME}/lib/libgurobi90.so;$ENV{GUROBI_HOME}/lib/" )
 
 #For precompile headers see example here
 #https://gitlab.kitware.com/cmake/cmake/tree/375d01c6808713a0cfeef9ea092c8236ba063525/Tests/PrecompileHeaders
@@ -66,7 +76,7 @@ add_library(utils STATIC src/utils.cpp)
 target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(utils PUBLIC ${catkin_LIBRARIES})
 
-add_library(octopus_search STATIC src/octopus_search.cpp ) #src/solvers/cvxgen/solver_cvxgen.cpp
+add_library(octopus_search STATIC src/octopus_search.cpp src/bspline_utils.cpp) #src/solvers/cvxgen/solver_cvxgen.cpp
 target_include_directories (octopus_search PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(octopus_search PUBLIC ${catkin_LIBRARIES}) # ${CMAKE_CURRENT_LIST_DIR}/src/solvers/cvxgen/cvxgen/libcvx.so
 
@@ -75,6 +85,9 @@ add_library(solver_nlopt STATIC src/solver_nlopt.cpp src/bspline_utils.cpp src/n
 target_include_directories (solver_nlopt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
 target_link_libraries(solver_nlopt PUBLIC ${NLOPT_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils octopus_search ${catkin_LIBRARIES} cgal_utils)
 
+add_library(solver_gurobi STATIC src/solver_gurobi.cpp src/bspline_utils.cpp src/nlopt_utils.cpp )
+target_include_directories (solver_gurobi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${DECOMP_UTIL_INCLUDE_DIRS})
+target_link_libraries(solver_gurobi PUBLIC ${NLOPT_LIBRARIES} ${GUROBI_LIBRARIES} ${DECOMP_UTIL_LIBRARIES} utils octopus_search ${catkin_LIBRARIES} cgal_utils)
 
 # enable_unity_build(UNITY_BUILD_NAME src/mader_node.cpp)
 
@@ -93,6 +106,10 @@ target_link_libraries(test_utils ${catkin_LIBRARIES} utils)
 add_executable(test_nlopt src/examples/test_nlopt.cpp)
 add_dependencies(test_nlopt ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_nlopt ${catkin_LIBRARIES} utils solver_nlopt)
+
+add_executable(test_gurobi src/examples/test_gurobi.cpp)
+add_dependencies(test_gurobi ${catkin_EXPORTED_TARGETS})
+target_link_libraries(test_gurobi ${catkin_LIBRARIES} utils ${GUROBI_LIBRARIES} solver_gurobi)
 
 add_executable(test_bspline_utils src/examples/test_bspline_utils.cpp src/bspline_utils.cpp)
 add_dependencies(test_bspline_utils ${catkin_EXPORTED_TARGETS})
