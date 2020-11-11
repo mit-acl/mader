@@ -103,6 +103,61 @@ inline void resetCompleteModel(GRBModel& m)
   m.reset();  // Note that this function, only by itself, does NOT remove vars or constraints
 }
 
+// See https://www.gurobi.com/documentation/9.0/refman/optimization_status_codes.html#sec:StatusCodes
+inline void printGurobiStatus(int status)
+{
+  switch (status)
+  {
+    case GRB_LOADED:
+      std::cout << "GUROBI Status: GRB_LOADED" << std::endl;
+      break;
+    case GRB_OPTIMAL:
+      std::cout << "GUROBI Status: GRB_OPTIMAL" << std::endl;
+      break;
+    case GRB_INFEASIBLE:
+      std::cout << "GUROBI Status: GRB_INFEASIBLE" << std::endl;
+      break;
+    case GRB_INF_OR_UNBD:
+      std::cout << "GUROBI Status: GRB_INF_OR_UNBD" << std::endl;
+      break;
+    case GRB_UNBOUNDED:
+      std::cout << "GUROBI Status: GRB_UNBOUNDED" << std::endl;
+      break;
+    case GRB_CUTOFF:
+      std::cout << "GUROBI Status: GRB_CUTOFF" << std::endl;
+      break;
+    case GRB_ITERATION_LIMIT:
+      std::cout << "GUROBI Status: GRB_ITERATION_LIMIT" << std::endl;
+      break;
+    case GRB_NODE_LIMIT:
+      std::cout << "GUROBI Status: GRB_NODE_LIMIT" << std::endl;
+      break;
+    case GRB_TIME_LIMIT:
+      std::cout << "GUROBI Status: GRB_TIME_LIMIT" << std::endl;
+      break;
+    case GRB_SOLUTION_LIMIT:
+      std::cout << "GUROBI Status: GRB_SOLUTION_LIMIT" << std::endl;
+      break;
+    case GRB_INTERRUPTED:
+      std::cout << "GUROBI Status: GRB_INTERRUPTED" << std::endl;
+      break;
+    case GRB_NUMERIC:
+      std::cout << "GUROBI Status: GRB_NUMERIC" << std::endl;
+      break;
+    case GRB_SUBOPTIMAL:
+      std::cout << "GUROBI Status: GRB_SUBOPTIMAL" << std::endl;
+      break;
+    case GRB_INPROGRESS:
+      std::cout << "GUROBI Status: GRB_INPROGRESS" << std::endl;
+      break;
+    case GRB_USER_OBJ_LIMIT:
+      std::cout << "GUROBI Status: GRB_USER_OBJ_LIMIT" << std::endl;
+      break;
+    default:
+      std::cout << "GUROBI Status Code=: " << status << std::endl;
+  }
+}
+
 template <typename T, typename R>
 GRBVector matrixMultiply(const std::vector<std::vector<R>>& A, const std::vector<T>& x)
 {

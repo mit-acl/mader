@@ -861,16 +861,23 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   if ((plan_size - 1 - k_index_end) < 0)
   {
     std::cout << bold << red << "Already published the point A" << reset << std::endl;
+    // std::cout << "plan_size= " << plan_size << std::endl;
+    // std::cout << "k_index_end= " << k_index_end << std::endl;
     mtx_plan_.unlock();
     return false;
   }
   else
   {
-    plan_.erase(plan_.end() - k_index_end - 1, plan_.end());    // this deletes also the initial condition...
+    // std::cout << "Appending" << std::endl;
+    // std::cout << "before, plan_size=" << plan_.size() << std::endl;
+    plan_.erase(plan_.end() - k_index_end - 1, plan_.end());  // this deletes also the initial condition...
+    // std::cout << "middle, plan_size=" << plan_.size() << " sol.size()=" << (solver_->traj_solution_).size()
+    // << std::endl;
     for (int i = 0; i < (solver_->traj_solution_).size(); i++)  //... which is included in traj_solution_[0]
     {
       plan_.push_back(solver_->traj_solution_[i]);
     }
+    // std::cout << "after, plan_size=" << plan_.size() << std::endl;
   }
 
   mtx_plan_.unlock();

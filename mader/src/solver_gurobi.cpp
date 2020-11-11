@@ -528,47 +528,54 @@ bool SolverGurobi::optimize()
   d_ = d_guess_;
 
   resetCompleteModel(m_);
+  m_.set("OutputFlag", std::to_string(0));  // verbose (1) or not (0)
+  // See https://www.gurobi.com/documentation/9.0/refman/cpp_parameter_examples.html
+  m_.set("TimeLimit", std::to_string(mu_ * max_runtime_));
   addObjective();
   addConstraints();
   m_.update();  // needed due to the lazy evaluation
   // m_.write("/home/jtorde/Desktop/ws/src/mader/model.lp");
+  std::cout << "Starting optimization, allowing time = " << mu_ * max_runtime_ * 1000 << " ms" << std::endl;
   m_.optimize();
 
   int optimstatus = m_.get(GRB_IntAttr_Status);
 
+  printGurobiStatus(optimstatus);
+
+  int number_of_stored_solutions = m_.get(GRB_IntAttr_SolCount);
+
   std::vector<Eigen::Vector3d> q;
 
-  switch (optimstatus)
+  if ((optimstatus == GRB_OPTIMAL || optimstatus == GRB_USER_OBJ_LIMIT ||      ///////////////
+       optimstatus == GRB_ITERATION_LIMIT || optimstatus == GRB_NODE_LIMIT ||  ///////////////
+       optimstatus == GRB_TIME_LIMIT || optimstatus == GRB_SOLUTION_LIMIT ||   ///////////////
+       optimstatus == GRB_SUBOPTIMAL) &&
+      number_of_stored_solutions > 0)
+
   {
-    case GRB_OPTIMAL:
-      // copy the solution
-      for (auto tmp : q_exp_)
-      {
-        q.push_back(Eigen::Vector3d(tmp[0].getValue(), tmp[1].getValue(), tmp[2].getValue()));
-      }
-
-      CPs2TrajAndPwp(q, traj_solution_, solution_, N_, p_, num_pol_, knots_, dc_);
-      // Force last position =final_state_ (which it's not guaranteed because of the discretization with dc_)
-      traj_solution_.back().vel = final_state_.vel;
-      traj_solution_.back().accel = final_state_.accel;
-      traj_solution_.back().jerk = Eigen::Vector3d::Zero();
-
-      return true;
-      break;
-    case GRB_INF_OR_UNBD:
-      std::cout << red << "GUROBI Status: Unbounded or Infeasible" << reset << std::endl;
-      return false;
-      break;
-    case GRB_NUMERIC:
-      std::cout << red << "GUROBI Status:  Numerical issues" << reset << std::endl;
-      std::cout << red << "(Model may be infeasible or unbounded)" << reset << std::endl;
-      return false;
-      break;
-    case GRB_INTERRUPTED:
-      std::cout << red << "GUROBI Status:  Interrumped by the user" << reset << std::endl;
-      return false;
-      break;
+    std::cout << green << "Gurobi found a solution" << reset << std::endl;
+    // copy the solution
+    for (auto tmp : q_exp_)
+    {
+      q.push_back(Eigen::Vector3d(tmp[0].getValue(), tmp[1].getValue(), tmp[2].getValue()));
+    }
   }
+  else
+  {
+    std::cout << red << "Gurobi failed to find a solution, using initial guess (which is feasible)" << reset
+              << std::endl;
+    q = q_guess_;
+  }
+
+  CPs2TrajAndPwp(q, traj_solution_, solution_, N_, p_, num_pol_, knots_, dc_);
+  // Force last position =final_state_ (which it's not guaranteed because of the discretization with dc_)
+  traj_solution_.back().vel = final_state_.vel;
+  traj_solution_.back().accel = final_state_.accel;
+  traj_solution_.back().jerk = Eigen::Vector3d::Zero();
+
+  std::cout << blue << "traj_solution_.size()=" << traj_solution_.size() << std::endl;
+
+  return true;
 }
 
 void SolverGurobi::getSolution(PieceWisePol &solution)
