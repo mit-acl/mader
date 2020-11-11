@@ -828,7 +828,8 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
 
   solutions_found_++;
 
-  av_improvement_nlopt_ = ((solutions_found_ - 1) * av_improvement_nlopt_ + solver_->improvement_) / solutions_found_;
+  // av_improvement_nlopt_ = ((solutions_found_ - 1) * av_improvement_nlopt_ + solver_->improvement_) /
+  // solutions_found_;
 
   // std::cout << blue << "Average improvement so far" << std::setprecision(5) << av_improvement_nlopt_ << reset
   //          << std::endl;

@@ -80,7 +80,7 @@ SolverGurobi::SolverGurobi(par_solver &par)
   a_star_samp_y_ = par.a_star_samp_y;
   a_star_samp_z_ = par.a_star_samp_z;
   a_star_fraction_voxel_size_ = par.a_star_fraction_voxel_size;
-  dist_to_use_straight_guess_ = par.dist_to_use_straight_guess;
+
   dc_ = par.dc;
   v_max_ = par.v_max;
   mv_max_ = -v_max_;
@@ -180,14 +180,14 @@ void SolverGurobi::addConstraints()
     }
 
     /////// Sphere constraints
-    /////////////////////////////////////////////////
-    // Eigen::Vector3d q_ipu;
-    // for (int u = 0; u <= 3; u++)
-    // {
-    //   GRBVector q_ipu = getColumn(Qmv, u);
-    //   GRBQuadExpr tmp = getNorm2(q_ipu - eigenVector2std(q0_));
-    //   m_.addQConstr(tmp <= Ra_ * Ra_);
-    // }
+    ///////////////////////////////////////////////
+    Eigen::Vector3d q_ipu;
+    for (int u = 0; u <= 3; u++)
+    {
+      GRBVector q_ipu = getColumn(Qmv, u);
+      GRBQuadExpr tmp = getNorm2(q_ipu - eigenVector2std(q0_));
+      m_.addQConstr(tmp <= Ra_ * Ra_);
+    }
   }
 
   /////////////////////////////////////////////////
@@ -317,8 +317,6 @@ void SolverGurobi::setHulls(ConvexHullsOfCurves_Std &hulls)
   j_max_ = j_min_ + 3 * (M_ - 2 * p_) * num_of_obst_ - 1;
   k_min_ = j_max_ + 1;
   k_max_ = k_min_ + (M_ - 2 * p_) * num_of_obst_ - 1;
-
-  num_of_variables_ = k_max_ + 1;  // k_max_ + 1;
 
   std::vector<std::string> coords = { "x", "y", "z" };
   std::vector<double> mins = { x_min_, y_min_, z_min_ };
@@ -533,7 +531,7 @@ bool SolverGurobi::optimize()
   addObjective();
   addConstraints();
   m_.update();  // needed due to the lazy evaluation
-  m_.write("/home/jtorde/Desktop/ws/src/mader/model.lp");
+  // m_.write("/home/jtorde/Desktop/ws/src/mader/model.lp");
   m_.optimize();
 
   int optimstatus = m_.get(GRB_IntAttr_Status);

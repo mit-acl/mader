@@ -69,29 +69,29 @@ void SolverGurobi::saturateQ(std::vector<Eigen::Vector3d> &q)
   }
 }
 
-void SolverGurobi::printIndexesVariables()
-{
-  std::cout << "_______________________" << std::endl;
-  std::cout << "Indexes variables" << std::endl;
-  std::cout << "q: " << i_min_ << "-->" << i_max_ << std::endl;
-  std::cout << "n: " << j_min_ << "-->" << j_max_ << std::endl;
-  std::cout << "d: " << k_min_ << "-->" << k_max_ << std::endl;
+// void SolverGurobi::printIndexesVariables()
+// {
+//   std::cout << "_______________________" << std::endl;
+//   std::cout << "Indexes variables" << std::endl;
+//   std::cout << "q: " << i_min_ << "-->" << i_max_ << std::endl;
+//   std::cout << "n: " << j_min_ << "-->" << j_max_ << std::endl;
+//   std::cout << "d: " << k_min_ << "-->" << k_max_ << std::endl;
 
-  std::cout << "Total number of Variables: " << num_of_variables_ << std::endl;
-  std::cout << "_______________________" << std::endl;
-}
+//   std::cout << "Total number of Variables: " << num_of_variables_ << std::endl;
+//   std::cout << "_______________________" << std::endl;
+// }
 
-void SolverGurobi::printIndexesConstraints()
-{
-  std::cout << "_______________________" << std::endl;
-  std::cout << "Indexes constraints" << std::endl;
-  std::cout << "Obstacles: " << index_const_obs_ << "-->" << index_const_vel_ - 1 << std::endl;
-  std::cout << "Velocity: " << index_const_vel_ << "-->" << index_const_accel_ - 1 << std::endl;
-  std::cout << "Accel: " << index_const_accel_ << "-->" << index_const_normals_ - 1 << std::endl;
-  // std::cout << "Normals: " << index_const_normals_ << "-->" << num_of_constraints_ << std::endl;
-  std::cout << "Total number of Constraints: " << num_of_constraints_ << std::endl;
-  std::cout << "_______________________" << std::endl;
-}
+// void SolverGurobi::printIndexesConstraints()
+// {
+//   std::cout << "_______________________" << std::endl;
+//   std::cout << "Indexes constraints" << std::endl;
+//   std::cout << "Obstacles: " << index_const_obs_ << "-->" << index_const_vel_ - 1 << std::endl;
+//   std::cout << "Velocity: " << index_const_vel_ << "-->" << index_const_accel_ - 1 << std::endl;
+//   std::cout << "Accel: " << index_const_accel_ << "-->" << index_const_normals_ - 1 << std::endl;
+//   // std::cout << "Normals: " << index_const_normals_ << "-->" << num_of_constraints_ << std::endl;
+//   std::cout << "Total number of Constraints: " << num_of_constraints_ << std::endl;
+//   std::cout << "_______________________" << std::endl;
+// }
 
 void SolverGurobi::findCentroidHull(const Polyhedron_Std &hull, Eigen::Vector3d &centroid)
 {
