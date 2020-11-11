@@ -286,10 +286,6 @@ void SolverGurobi::fillPlanesFromNDQ(const std::vector<Eigen::Vector3d> &n, cons
 
       transformPosBSpline2otherBasis(Qbs, Qmv, i);
 
-      std::cout << "=======================================" << std::endl;
-      std::cout << "Qbs= " << Qbs << std::endl;
-      std::cout << "Qmv= " << Qmv << std::endl;
-
       Eigen::Vector3d centroid_cps = Qmv.rowwise().mean();
 
       double A = n[obst_index * num_of_segments_ + i].x();
