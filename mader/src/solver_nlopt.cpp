@@ -778,8 +778,7 @@ bool SolverNlopt::setInitStateFinalStateInitTFinalT(state initial_state, state f
   //////////////////
 
   // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
-  // I think equation (7) of the paper "Robust and Efficent quadrotor..." has a typo, p_ is missing there (compare
-  // with equation 15 of that paper)
+  // See also eq. 15 of of the paper "Robust and Efficent quadrotor..."
 
   weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
 
