@@ -546,6 +546,7 @@ bool SolverGurobi::optimize()
 
   std::vector<Eigen::Vector3d> q;
 
+  // See https://www.gurobi.com/documentation/9.0/refman/optimization_status_codes.html#sec:StatusCodes
   if ((optimstatus == GRB_OPTIMAL || optimstatus == GRB_USER_OBJ_LIMIT ||      ///////////////
        optimstatus == GRB_ITERATION_LIMIT || optimstatus == GRB_NODE_LIMIT ||  ///////////////
        optimstatus == GRB_TIME_LIMIT || optimstatus == GRB_SOLUTION_LIMIT ||   ///////////////
