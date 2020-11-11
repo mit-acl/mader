@@ -110,7 +110,7 @@ SolverNlopt::~SolverNlopt()
   // delete local_opt_;
 }
 
-void SolverNlopt::getGuessForPlanes(std::vector<Hyperplane3D> &planes)
+void SolverNlopt::getPlanes(std::vector<Hyperplane3D> &planes)
 {
   planes = planes_;
   /*  planes.clear();

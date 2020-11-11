@@ -321,21 +321,20 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     mader_types::Edges edges_obstacles;
     std::vector<state> X_safe;
 
-    std::vector<Hyperplane3D> planes_guesses;
+    std::vector<Hyperplane3D> planes;
     PieceWisePol pwp;
 
-    bool replanned =
-        mader_ptr_->replan(edges_obstacles, X_safe, planes_guesses, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
+    bool replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
 
     if (par_.visual)
     {
       // Delete markers to publish stuff
-      // visual_tools_->deleteAllMarkers();
+      visual_tools_->deleteAllMarkers();
       visual_tools_->enableBatchPublishing();
 
       pubObstacles(edges_obstacles);
       pubTraj(X_safe);
-      publishPlanes(planes_guesses);
+      publishPlanes(planes);
       publishText();
     }
 
@@ -393,7 +392,7 @@ void MaderRos::publishPlanes(std::vector<Hyperplane3D>& planes)
   {
     if ((i % par_.num_pol) == 0)  // planes for a new obstacle --> new color
     {
-      color = visual_tools_->getRandColor();
+      color = visual_tools_->getRandColor();  // rviz_visual_tools::TRANSLUCENT_LIGHT;  //
     }
     Eigen::Isometry3d pose;
     pose.translation() = plane_i.p_;

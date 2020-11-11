@@ -126,7 +126,7 @@ void SolverGurobi::addObjective()
 
 void SolverGurobi::addConstraints()
 {
-  double epsilon = 1.0;  // http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
+  double epsilon = 1.0;  // See http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
 
   addVectorEqConstraint(m_, q_exp_[0], q0_);
   addVectorEqConstraint(m_, q_exp_[1], q1_);
@@ -242,7 +242,7 @@ void SolverGurobi::addConstraints()
   }
 }
 
-void SolverGurobi::getGuessForPlanes(std::vector<Hyperplane3D> &planes)
+void SolverGurobi::getPlanes(std::vector<Hyperplane3D> &planes)
 {
   planes = planes_;
 }
@@ -264,8 +264,8 @@ void SolverGurobi::setMaxRuntimeKappaAndMu(double max_runtime, double kappa, dou
   max_runtime_ = max_runtime;
 }
 
-void SolverGurobi::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const std::vector<Eigen::Vector3d> &n,
-                                     const std::vector<double> &d, const std::vector<Eigen::Vector3d> &q)
+void SolverGurobi::fillPlanesFromNDQ(const std::vector<Eigen::Vector3d> &n, const std::vector<double> &d,
+                                     const std::vector<Eigen::Vector3d> &q)
 {
   planes_.clear();
 
@@ -274,33 +274,118 @@ void SolverGurobi::fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const s
     for (int i = 0; i < num_of_segments_; i++)
     {
       Eigen::Vector3d centroid_hull;
-      // findCentroidHull(hulls_[obst_index][i], centroid_hull);
-      // Eigen::Vector3d tmp = (centroid_hull + q[i]) / 2.0;
+      findCentroidHull(hulls_[obst_index][i], centroid_hull);
 
-      Eigen::Vector3d tmp = q[i];  //(centroid_hull + q[i]) / 2.0;
+      Eigen::Vector3d point_in_plane;
 
-      Eigen::Vector3d point_in_plane = Eigen::Vector3d::Zero();
+      Eigen::Matrix<double, 3, 4> Qmv, Qbs;  // minvo. each column contains a MINVO control point
+      Qbs.col(0) = q[i];
+      Qbs.col(1) = q[i + 1];
+      Qbs.col(2) = q[i + 2];
+      Qbs.col(3) = q[i + 3];
 
-      // std::cout << "tmp= " << tmp.transpose() << std::endl;
-      // std::cout << "centroid_hull= " << centroid_hull.transpose() << std::endl;
+      transformPosBSpline2otherBasis(Qbs, Qmv, i);
 
-      if (fabs(n[i].x()) != 0)
+      std::cout << "=======================================" << std::endl;
+      std::cout << "Qbs= " << Qbs << std::endl;
+      std::cout << "Qmv= " << Qmv << std::endl;
+
+      Eigen::Vector3d centroid_cps = Qmv.rowwise().mean();
+
+      double A = n[obst_index * num_of_segments_ + i].x();
+      double B = n[obst_index * num_of_segments_ + i].y();
+      double C = n[obst_index * num_of_segments_ + i].z();
+      double D = d[obst_index * num_of_segments_ + i];
+
+      bool intersects =
+          getIntersectionWithPlane(centroid_cps, centroid_hull, Eigen::Vector4d(A, B, C, D), point_in_plane);
+
+      if (intersects == false)
       {
-        point_in_plane << -(n[i].y() * tmp.y() + n[i].z() * tmp.z() + d[i]) / (n[i].x()), tmp.y(), tmp.z();
+        // std::cout << "Puntos: " << std::endl;
+        // std::cout << hulls_[obst_index][i] << std::endl;
+
+        // std::cout << "centroid_hull= " << centroid_hull.transpose() << std::endl;
+
+        // std::cout << "n= " << A << ", " << B << ", " << C << ", " << D << std::endl;
+        // std::cout << "d= " << D << std::endl;
+        // std::cout << "p0= " << centroid_hull.transpose() << std::endl;
+        // std::cout << "p1= " << centroid_cps.transpose() << std::endl;
+
+        // Eigen::Vector3d novale_n;
+        // double novale_d;
+
+        // separator_solver_->solveModel(novale_n, novale_d, hulls_[obst_index][i], Qmv);
+
+        // std::cout << "n= " << novale_n.transpose() << std::endl;
+        // std::cout << "d= " << novale_d << std::endl;
+
+        std::cout << "There is no intersection, this should never happen" << std::endl;
+
+        abort();
       }
-      else if (fabs(n[i].y()) != 0)
-      {
-        point_in_plane << tmp.x(), -(n[i].x() * tmp.x() + n[i].z() * tmp.z() + d[i]) / (n[i].y()), tmp.z();
-      }
-      else
-      {
-        point_in_plane << tmp.x(), tmp.y(), -(n[i].x() * tmp.x() + n[i].y() * tmp.y() + d[i]) / (n[i].z());
-      }
+
       Hyperplane3D plane(point_in_plane, n[i]);
       planes_.push_back(plane);
     }
   }
 }
+
+// returns 1 if there is an intersection between the segment P1-P2 and the plane given by coeff=[A B C D]
+// (Ax+By+Cz+D==0)  returns 0 if there is no intersection.
+// The intersection point is saved in "intersection"
+bool SolverGurobi::getIntersectionWithPlane(const Eigen::Vector3d &P1, const Eigen::Vector3d &P2,
+                                            const Eigen::Vector4d &coeff, Eigen::Vector3d &intersection)
+{
+  double A = coeff[0];
+  double B = coeff[1];
+  double C = coeff[2];
+  double D = coeff[3];
+  // http://www.ambrsoft.com/TrigoCalc/Plan3D/PlaneLineIntersection_.htm
+  double x1 = P1[0];
+  double a = (P2[0] - P1[0]);
+  double y1 = P1[1];
+  double b = (P2[1] - P1[1]);
+  double z1 = P1[2];
+  double c = (P2[2] - P1[2]);
+  double t = -(A * x1 + B * y1 + C * z1 + D) / (A * a + B * b + C * c);
+
+  (intersection)[0] = x1 + a * t;
+  (intersection)[1] = y1 + b * t;
+  (intersection)[2] = z1 + c * t;
+
+  bool result =
+      (t < 0 || t > 1) ? false : true;  // False if the intersection is with the line P1-P2, not with the segment P1-P2
+
+  return result;
+}
+
+// Intersection between the ray p0<-->p1 and the plane n'x+f==0
+// Eigen::Vector3d SolverGurobi::intersectPoint(Eigen::Vector3d p0, Eigen::Vector3d p1, Eigen::Vector3d n, double f)
+// {
+//   Eigen::Vector3d planePoint = Eigen::Vector3d::Zero();
+
+//   if (fabs(n.x()) != 0)
+//   {
+//     planePoint << -f / (n.x()), 0.0, 0.0;
+//   }
+//   else if (fabs(n.y()) != 0)
+//   {
+//     planePoint << 0.0, -f / (n.y()), 0.0;
+//   }
+//   else
+//   {
+//     planePoint << 0, 0, -f / (n.z());
+//   }
+
+//   // https://rosettacode.org/wiki/Find_the_intersection_of_a_line_with_a_plane#C.2B.2B
+
+//   Eigen::Vector3d planeNormal = n.normalize();
+//   Vector3D diff = p0 - planePoint;
+//   Eigen::Vector3d rayVector = p1 - p0;
+
+//   return p0 - rayVector * (diff.dot(planeNormal)) / (rayVector.dot(planeNormal));
+// }
 
 void SolverGurobi::setHulls(ConvexHullsOfCurves_Std &hulls)
 
@@ -574,7 +659,9 @@ bool SolverGurobi::optimize()
   traj_solution_.back().accel = final_state_.accel;
   traj_solution_.back().jerk = Eigen::Vector3d::Zero();
 
-  std::cout << blue << "traj_solution_.size()=" << traj_solution_.size() << std::endl;
+  // std::cout << blue << "traj_solution_.size()=" << traj_solution_.size() <<reset<< std::endl;
+
+  fillPlanesFromNDQ(n_, d_, q);
 
   return true;
 }

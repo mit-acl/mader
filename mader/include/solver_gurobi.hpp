@@ -41,7 +41,7 @@ public:
   trajectory traj_solution_;
 
   // getters
-  void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
+  void getPlanes(std::vector<Hyperplane3D> &planes);
   int getNumOfLPsRun();
   int getNumOfQCQPsRun();
   void getSolution(PieceWisePol &solution);
@@ -55,6 +55,9 @@ public:
 
 protected:
 private:
+  bool getIntersectionWithPlane(const Eigen::Vector3d &P1, const Eigen::Vector3d &P2, const Eigen::Vector4d &coeff,
+                                Eigen::Vector3d &intersection);
+
   void addObjective();
   void addConstraints();
 
@@ -82,8 +85,8 @@ private:
   void generateGuessNDFromQ(const std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n,
                             std::vector<double> &d);
 
-  void fillPlanesFromNDQ(std::vector<Hyperplane3D> &planes_, const std::vector<Eigen::Vector3d> &n,
-                         const std::vector<double> &d, const std::vector<Eigen::Vector3d> &q);
+  void fillPlanesFromNDQ(const std::vector<Eigen::Vector3d> &n, const std::vector<double> &d,
+                         const std::vector<Eigen::Vector3d> &q);
 
   void generateRandomD(std::vector<double> &d);
   void generateRandomN(std::vector<Eigen::Vector3d> &n);

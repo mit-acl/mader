@@ -625,8 +625,7 @@ bool Mader::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
 }
 
 bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
-                   std::vector<Hyperplane3D>& planes_guesses, int& num_of_LPs_run, int& num_of_QCQPs_run,
-                   PieceWisePol& pwp_out)
+                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run, PieceWisePol& pwp_out)
 {
   MyTimer replanCB_t(true);
 
@@ -824,7 +823,7 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
     return false;
   }
 
-  solver_->getGuessForPlanes(planes_guesses);
+  solver_->getPlanes(planes);
 
   solutions_found_++;
 

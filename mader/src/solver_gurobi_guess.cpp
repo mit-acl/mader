@@ -58,7 +58,7 @@ bool SolverGurobi::generateAStarGuess()
 
   num_of_LPs_run_ = myAStarSolver_->getNumOfLPsRun();
 
-  fillPlanesFromNDQ(planes_, n_guess_, d_guess_, q_guess_);
+  // fillPlanesFromNDQ(n_guess_, d_guess_, q_guess_);
 
   if (is_feasible)
   {

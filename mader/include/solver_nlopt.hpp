@@ -39,7 +39,7 @@ public:
   trajectory traj_solution_;
 
   // getters
-  void getGuessForPlanes(std::vector<Hyperplane3D> &planes);
+  void getPlanes(std::vector<Hyperplane3D> &planes);
   int getNumOfLPsRun();
   int getNumOfQCQPsRun();
   void getSolution(PieceWisePol &solution);

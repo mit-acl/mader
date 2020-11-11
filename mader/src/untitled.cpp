@@ -112,7 +112,7 @@ SolverGurobi::~SolverGurobi()
   // delete local_opt_;
 }
 
-void SolverGurobi::getGuessForPlanes(std::vector<Hyperplane3D> &planes)
+void SolverGurobi::getPlanes(std::vector<Hyperplane3D> &planes)
 {
   planes = planes_;
   /*  planes.clear();
