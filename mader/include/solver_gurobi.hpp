@@ -57,7 +57,7 @@ public:
 
 protected:
 private:
-  void prepareObjective();
+  void addObjective();
   void addConstraints();
 
   void saturateQ(std::vector<Eigen::Vector3d> &q);
@@ -121,8 +121,8 @@ private:
 
   void printQND(std::vector<Eigen::Vector3d> &q, std::vector<Eigen::Vector3d> &n, std::vector<double> &d);
 
-  GRBEnv *env = new GRBEnv();
-  GRBModel m = GRBModel(*env);
+  GRBEnv *env_ = new GRBEnv();
+  GRBModel m_ = GRBModel(*env_);
 
   std::vector<std::vector<GRBVar>> q_var_;      // Each q_var_[i] has 3 elements (x,y,z)
   std::vector<std::vector<GRBLinExpr>> q_exp_;  // Each q_exp_[i] has 3 elements (x,y,z)

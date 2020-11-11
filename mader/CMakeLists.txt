@@ -91,7 +91,7 @@ target_link_libraries(solver_gurobi PUBLIC ${NLOPT_LIBRARIES} ${GUROBI_LIBRARIES
 
 # enable_unity_build(UNITY_BUILD_NAME src/mader_node.cpp)
 add_executable(${PROJECT_NAME}_node src/mader_node.cpp src/mader_ros.cpp src/mader.cpp )
-target_link_libraries(${PROJECT_NAME}_node PUBLIC ${catkin_LIBRARIES}  solver_nlopt utils)  #${CGAL_LIBS}
+target_link_libraries(${PROJECT_NAME}_node PUBLIC ${catkin_LIBRARIES}  solver_nlopt  solver_gurobi utils)  #${CGAL_LIBS}
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
 
 add_executable(test_octopus_search src/examples/test_octopus_search.cpp src/octopus_search.cpp src/bspline_utils.cpp) # src/solvers/cvxgen/solver_cvxgen.cpp

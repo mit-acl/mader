@@ -70,6 +70,39 @@ inline void addVectorGreaterEqualConstraint(GRBModel& m, const GRBVector a, cons
   }
 }
 
+inline void resetCompleteModel(GRBModel& m)
+{
+  GRBConstr* c = 0;
+  c = m.getConstrs();
+  for (int i = 0; i < m.get(GRB_IntAttr_NumConstrs); ++i)
+  {
+    m.remove(c[i]);
+  }
+
+  GRBQConstr* cq = 0;
+  cq = m.getQConstrs();
+  for (int i = 0; i < m.get(GRB_IntAttr_NumQConstrs); ++i)
+  {
+    m.remove(cq[i]);
+  }
+
+  GRBGenConstr* gc = 0;
+  gc = m.getGenConstrs();
+  for (int i = 0; i < m.get(GRB_IntAttr_NumGenConstrs); ++i)
+  {
+    m.remove(gc[i]);
+  }
+
+  GRBVar* vars = 0;
+  vars = m.getVars();
+  for (int i = 0; i < m.get(GRB_IntAttr_NumVars); ++i)
+  {
+    m.remove(vars[i]);
+  }
+
+  m.reset();  // Note that this function, only by itself, does NOT remove vars or constraints
+}
+
 template <typename T, typename R>
 GRBVector matrixMultiply(const std::vector<std::vector<R>>& A, const std::vector<T>& x)
 {

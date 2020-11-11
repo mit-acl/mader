@@ -100,7 +100,7 @@ SolverGurobi::~SolverGurobi()
 {
 }
 
-void SolverGurobi::prepareObjective()
+void SolverGurobi::addObjective()
 {
   GRBQuadExpr cost = 0.0;
 
@@ -119,26 +119,24 @@ void SolverGurobi::prepareObjective()
     cost += getNorm2(matrixMultiply(Q, eigenVector2std(A_i_times_tmp)));
   }
 
-  double weight = 1.5;
+  cost += weight_modified_ * getNorm2(q_exp_[N_] - eigenVector2std(final_state_.pos));
 
-  cost += weight * getNorm2(q_exp_[N_] - eigenVector2std(final_state_.pos));
-
-  m.setObjective(cost, GRB_MINIMIZE);
+  m_.setObjective(cost, GRB_MINIMIZE);
 }
 
 void SolverGurobi::addConstraints()
 {
   double epsilon = 1.0;  // http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
 
-  addVectorEqConstraint(m, q_exp_[0], q0_);
-  addVectorEqConstraint(m, q_exp_[1], q1_);
-  addVectorEqConstraint(m, q_exp_[2], q2_);
+  addVectorEqConstraint(m_, q_exp_[0], q0_);
+  addVectorEqConstraint(m_, q_exp_[1], q1_);
+  addVectorEqConstraint(m_, q_exp_[2], q2_);
 
   Eigen::Vector3d zeros = Eigen::Vector3d::Zero();
 
   // Final velocity and acceleration are zero \equiv q_exp_[N_]=q_exp_[N_-1]=q_exp_[N_-2]
-  addVectorEqConstraint(m, q_exp_[N_] - q_exp_[N_ - 1], zeros);
-  addVectorEqConstraint(m, q_exp_[N_ - 1] - q_exp_[N_ - 2], zeros);
+  addVectorEqConstraint(m_, q_exp_[N_] - q_exp_[N_ - 1], zeros);
+  addVectorEqConstraint(m_, q_exp_[N_ - 1] - q_exp_[N_ - 2], zeros);
 
   /////////////////////////////////////////////////
   ////// PLANES AND SPHERE CONSTRAINTS    /////////
@@ -166,7 +164,7 @@ void SolverGurobi::addConstraints()
       // for (int j = 0; j < hulls_[obst_index][i].cols(); j++)  // Eigen::Vector3d vertex : hulls_[obst_index][i]
       // {
       //   Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
-      //   m.addConstr((-(n_[ip].dot(vertex) + d_[ip] - epsilon)) <= 0, "plane" + std::to_string(j));
+      //   m_.addConstr((-(n_[ip].dot(vertex) + d_[ip] - epsilon)) <= 0, "plane" + std::to_string(j));
       //   // constraints[r] = -(n[ip].dot(vertex) + d[ip] - epsilon);  // f<=0
       // }
 
@@ -176,20 +174,20 @@ void SolverGurobi::addConstraints()
       {
         GRBVector q_ipu = getColumn(Qmv, u);
         GRBLinExpr dot = n_[ip].x() * q_ipu[0] + n_[ip].y() * q_ipu[1] + n_[ip].z() * q_ipu[2];
-        m.addConstr(dot + d_[ip] + epsilon <= 0);
+        m_.addConstr(dot + d_[ip] + epsilon <= 0);
         // constraints[r] = (n[ip].dot(q_ipu) + d[ip] + epsilon);  //  // fi<=0
       }
     }
 
     /////// Sphere constraints
     /////////////////////////////////////////////////
-    Eigen::Vector3d q_ipu;
-    for (int u = 0; u <= 3; u++)
-    {
-      GRBVector q_ipu = getColumn(Qmv, u);
-      GRBQuadExpr tmp = getNorm2(q_ipu - eigenVector2std(q0_));
-      m.addQConstr(tmp <= Ra_ * Ra_);
-    }
+    // Eigen::Vector3d q_ipu;
+    // for (int u = 0; u <= 3; u++)
+    // {
+    //   GRBVector q_ipu = getColumn(Qmv, u);
+    //   GRBQuadExpr tmp = getNorm2(q_ipu - eigenVector2std(q0_));
+    //   m_.addQConstr(tmp <= Ra_ * Ra_);
+    // }
   }
 
   /////////////////////////////////////////////////
@@ -220,8 +218,8 @@ void SolverGurobi::addConstraints()
        //|v_{i-2+j}| <= v_max ////// v_{i-2}, v_{i-1}, v_{i}
 
       GRBVector v_iM2Pj = getColumn(Qmv, j);
-      addVectorLessEqualConstraint(m, v_iM2Pj, v_max_);      // v_max_
-      addVectorGreaterEqualConstraint(m, v_iM2Pj, mv_max_);  // mv_max_
+      addVectorLessEqualConstraint(m_, v_iM2Pj, v_max_);      // v_max_
+      addVectorGreaterEqualConstraint(m_, v_iM2Pj, mv_max_);  // mv_max_
     }
   }
 
@@ -239,8 +237,8 @@ void SolverGurobi::addConstraints()
     GRBVector v_iP1 = c2 * (q_exp_[i + 2] - q_exp_[i + 1]);
     GRBVector a_i = c3 * (v_iP1 - v_i);
 
-    addVectorLessEqualConstraint(m, a_i, a_max_);      // v_max_
-    addVectorGreaterEqualConstraint(m, a_i, ma_max_);  // mv_max_
+    addVectorLessEqualConstraint(m_, a_i, a_max_);      // v_max_
+    addVectorGreaterEqualConstraint(m_, a_i, ma_max_);  // mv_max_
   }
 }
 
@@ -335,14 +333,21 @@ void SolverGurobi::setHulls(ConvexHullsOfCurves_Std &hulls)
     GRBVector q_exp_i;
     for (int j = 0; j < 3; j++)  // x,y,z
     {
-      GRBVar tmp = m.addVar(mins[j], maxs[j], 0, GRB_CONTINUOUS, "q_" + std::to_string(i) + coords[j]);
-      // (If no bounds wanted above, use-GRB_INFINITY, GRB_INFINITY)
+      GRBVar tmp;
+      if (fabs(maxs[j] - mins[j]) > 100)
+      {  // this is to prevent numerical issues with the solver (happen when the bounds are too large)
+        // Here we let the variable be free (by using -GRB_INFINITY and GRB_INFINITY)
+        tmp = m_.addVar(-GRB_INFINITY, GRB_INFINITY, 0, GRB_CONTINUOUS, "q_" + std::to_string(i) + coords[j]);
+      }
+      else
+      {
+        tmp = m_.addVar(mins[j], maxs[j], 0, GRB_CONTINUOUS, "q_" + std::to_string(i) + coords[j]);
+      }
       q_var_i.push_back(tmp);
       q_exp_i.push_back(GRBLinExpr(tmp));
     }
     q_var_.push_back(q_var_i);
     q_exp_.push_back(q_exp_i);
-    std::cout << "Creating variables!" << std::endl;
   }
 
   int num_of_cpoints = N_ + 1;
@@ -468,17 +473,12 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(state initial_state, state 
   }
 
   knots_ = knots;
-
-  std::cout << red << "knots_" << knots_ << reset << std::endl;
-  std::cout << red << "t_final" << t_final << reset << std::endl;
-  std::cout << red << "t_init_" << t_init_ << reset << std::endl;
-
   //////////////////
+
+  weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
 
   // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
   // See also eq. 15 of the paper "Robust and Efficent quadrotor..."
-
-  weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
 
   double t1 = knots_(1);
   double t2 = knots_(2);
@@ -529,20 +529,20 @@ bool SolverGurobi::optimize()
   n_ = n_guess_;
   d_ = d_guess_;
 
-  prepareObjective();
+  resetCompleteModel(m_);
+  addObjective();
   addConstraints();
-  m.update();
-  // m.write("/home/jtorde/Desktop/ws/src/mader/model.lp");
-  m.optimize();
+  m_.update();  // needed due to the lazy evaluation
+  m_.write("/home/jtorde/Desktop/ws/src/mader/model.lp");
+  m_.optimize();
 
-  int optimstatus = m.get(GRB_IntAttr_Status);
+  int optimstatus = m_.get(GRB_IntAttr_Status);
 
   std::vector<Eigen::Vector3d> q;
 
   switch (optimstatus)
   {
     case GRB_OPTIMAL:
-
       // copy the solution
       for (auto tmp : q_exp_)
       {

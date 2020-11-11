@@ -110,7 +110,9 @@ Mader::Mader(parameters par) : par_(par)
 
   A_rest_pos_basis_inverse_ = A_rest_pos_basis_.inverse();
 
-  solver_ = new SolverNlopt(par_for_solver);
+  // solver_ = new SolverNlopt(par_for_solver);
+  solver_ = new SolverGurobi(par_for_solver);
+
   separator_solver_ = new separator::Separator();
 }
 
