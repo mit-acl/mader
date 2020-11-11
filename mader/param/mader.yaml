@@ -59,9 +59,9 @@ solver: "LD_MMA"
 
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
 upper_bound_runtime_snlopt: 0.35 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
-lower_bound_runtime_snlopt: 0.01 #[seconds] snlopt (init guess + solver) will never take less than this amount of seconds
-kappa: 0.5 #% of time spent to find initial guess
-mu: 0.15    #% of time spent to solve the optimization
+lower_bound_runtime_snlopt: 0.05 #[seconds] snlopt (init guess + solver) will never take less than this amount of seconds
+kappa: 0.4 #% of time spent to find initial guess
+mu: 0.4    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
 a_star_samp_x: 5
