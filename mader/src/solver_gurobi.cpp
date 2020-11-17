@@ -298,7 +298,7 @@ void SolverGurobi::fillPlanesFromNDQ(const std::vector<Eigen::Vector3d> &n, cons
 
       if (intersects == false)
       {
-        // std::cout << "Puntos: " << std::endl;
+        // std::cout << "Points: " << std::endl;
         // std::cout << hulls_[obst_index][i] << std::endl;
 
         // std::cout << "centroid_hull= " << centroid_hull.transpose() << std::endl;
@@ -316,9 +316,10 @@ void SolverGurobi::fillPlanesFromNDQ(const std::vector<Eigen::Vector3d> &n, cons
         // std::cout << "n= " << novale_n.transpose() << std::endl;
         // std::cout << "d= " << novale_d << std::endl;
 
-        std::cout << "There is no intersection, this should never happen" << std::endl;
-
-        abort();
+        // TODO: this msg is printed sometimes in Multi-Agent simulations
+        std::cout << red << "There is no intersection, this should never happen (TODO)" << reset << std::endl;
+        continue;
+        // abort();
       }
 
       Hyperplane3D plane(point_in_plane, n[i]);
@@ -627,11 +628,14 @@ bool SolverGurobi::optimize()
 
   std::vector<Eigen::Vector3d> q;
 
+  //        optimstatus == GRB_SUBOPTIMAL //Don't include this one (sometimes it generates very long/suboptimal
+  //        trajectories)
+
   // See https://www.gurobi.com/documentation/9.0/refman/optimization_status_codes.html#sec:StatusCodes
-  if ((optimstatus == GRB_OPTIMAL || optimstatus == GRB_USER_OBJ_LIMIT ||      ///////////////
+  if ((optimstatus == GRB_OPTIMAL || optimstatus == GRB_TIME_LIMIT ||
+       optimstatus == GRB_USER_OBJ_LIMIT ||                                    ///////////////
        optimstatus == GRB_ITERATION_LIMIT || optimstatus == GRB_NODE_LIMIT ||  ///////////////
-       optimstatus == GRB_TIME_LIMIT || optimstatus == GRB_SOLUTION_LIMIT ||   ///////////////
-       optimstatus == GRB_SUBOPTIMAL) &&
+       optimstatus == GRB_SOLUTION_LIMIT) &&
       number_of_stored_solutions > 0)
 
   {

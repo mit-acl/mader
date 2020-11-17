@@ -151,7 +151,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mader_ptr_ = std::unique_ptr<Mader>(new Mader(par_));
 
   // Publishers
-  pub_goal_ = nh1_.advertise<snapstack_msgs::QuadGoal>("goal", 1);
+  pub_goal_ = nh1_.advertise<snapstack_msgs::Goal>("goal", 1);
   pub_setpoint_ = nh1_.advertise<visualization_msgs::Marker>("setpoint", 1);
   pub_point_G_ = nh1_.advertise<geometry_msgs::PointStamped>("point_G", 1);
   pub_point_G_term_ = nh1_.advertise<geometry_msgs::PointStamped>("point_G_term", 1);
@@ -481,12 +481,12 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
   state next_goal;
   if (mader_ptr_->getNextGoal(next_goal))
   {
-    snapstack_msgs::QuadGoal quadGoal;
+    snapstack_msgs::Goal quadGoal;
 
-    quadGoal.pos = eigen2rosvector(next_goal.pos);
-    quadGoal.vel = eigen2rosvector(next_goal.vel);
-    quadGoal.accel = eigen2rosvector(next_goal.accel);
-    quadGoal.jerk = eigen2rosvector(next_goal.jerk);
+    quadGoal.p = eigen2rosvector(next_goal.pos);
+    quadGoal.v = eigen2rosvector(next_goal.vel);
+    quadGoal.a = eigen2rosvector(next_goal.accel);
+    quadGoal.j = eigen2rosvector(next_goal.jerk);
     quadGoal.dyaw = next_goal.dyaw;
     quadGoal.yaw = next_goal.yaw;
     quadGoal.header.stamp = ros::Time::now();
@@ -495,9 +495,9 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
     pub_goal_.publish(quadGoal);
 
     setpoint_.header.stamp = ros::Time::now();
-    setpoint_.pose.position.x = quadGoal.pos.x;
-    setpoint_.pose.position.y = quadGoal.pos.y;
-    setpoint_.pose.position.z = quadGoal.pos.z;
+    setpoint_.pose.position.x = quadGoal.p.x;
+    setpoint_.pose.position.y = quadGoal.p.y;
+    setpoint_.pose.position.z = quadGoal.p.z;
 
     pub_setpoint_.publish(setpoint_);
   }

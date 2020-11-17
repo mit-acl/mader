@@ -17,7 +17,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <rviz_visual_tools/rviz_visual_tools.h>
 #include <snapstack_msgs/State.h>
-#include <snapstack_msgs/QuadGoal.h>
+#include <snapstack_msgs/Goal.h>
 
 #include <mader_msgs/Mode.h>
 #include <mader_msgs/DynTraj.h>

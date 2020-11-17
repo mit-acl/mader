@@ -13,7 +13,7 @@ import roslib
 import rospy
 import math
 from mader_msgs.msg import DynTraj
-from snapstack_msgs.msg import QuadGoal, State
+from snapstack_msgs.msg import Goal, State
 from gazebo_msgs.msg import ModelState
 from geometry_msgs.msg import Vector3
 

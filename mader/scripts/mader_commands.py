@@ -10,7 +10,7 @@
 
 import rospy
 from mader_msgs.msg import Mode
-from snapstack_msgs.msg import QuadGoal, State
+from snapstack_msgs.msg import Goal, State
 from geometry_msgs.msg import Pose, PoseStamped
 from snapstack_msgs.msg import QuadFlightMode
 #from behavior_selector.srv import MissionModeChange
@@ -27,7 +27,7 @@ class Behavior_Selector:
         self.mode=Mode();
         self.pose = Pose();
         self.mode.mode=self.mode.ON_GROUND
-        self.pubGoal = rospy.Publisher('goal', QuadGoal, queue_size=1)
+        self.pubGoal = rospy.Publisher('goal', Goal, queue_size=1)
         self.pubMode = rospy.Publisher("mader/mode",Mode,queue_size=1,latch=True) #TODO Namespace
         self.pubClickedPoint = rospy.Publisher("/move_base_simple/goal",PoseStamped,queue_size=1,latch=True)
         
@@ -75,10 +75,10 @@ class Behavior_Selector:
 
 
     def takeOff(self):
-        goal=QuadGoal();
-        goal.pos.x = self.pose.position.x;
-        goal.pos.y = self.pose.position.y;
-        goal.pos.z = self.pose.position.z;
+        goal=Goal();
+        goal.p.x = self.pose.position.x;
+        goal.p.y = self.pose.position.y;
+        goal.p.z = self.pose.position.z;
         goal.yaw = quat2yaw(self.pose.orientation)
         #Note that self.pose.position is being updated in the parallel callback
 
@@ -93,7 +93,7 @@ class Behavior_Selector:
         self.sendMode();
 
     def land(self):
-        goal=QuadGoal();
+        goal=Goal();
         goal.pos.x = self.pose.position.x;
         goal.pos.y = self.pose.position.y;
         goal.pos.z = self.pose.position.z;
@@ -107,7 +107,7 @@ class Behavior_Selector:
         self.kill()
 
     def kill(self):
-        goal=QuadGoal();
+        goal=Goal();
         goal.pos.x = self.pose.position.x;
         goal.pos.y = self.pose.position.y;
         goal.pos.z = self.pose.position.z;
