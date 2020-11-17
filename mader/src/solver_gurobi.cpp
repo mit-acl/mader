@@ -316,7 +316,7 @@ void SolverGurobi::fillPlanesFromNDQ(const std::vector<Eigen::Vector3d> &n, cons
         // std::cout << "n= " << novale_n.transpose() << std::endl;
         // std::cout << "d= " << novale_d << std::endl;
 
-        // TODO: this msg is printed sometimes in Multi-Agent simulations
+        // TODO: this msg is printed sometimes in Multi-Agent simulations. Find out why
         std::cout << red << "There is no intersection, this should never happen (TODO)" << reset << std::endl;
         continue;
         // abort();
