@@ -29,6 +29,7 @@ To download the repo, install all the dependencies and compile simply run these 
 ```bash
 cd ~/ && mkdir ws && cd ws && mkdir src && cd src
 git clone https://github.com/mit-acl/mader.git
+cd ..
 bash mader/install_and_compile.sh
 ```
 
