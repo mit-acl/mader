@@ -63,7 +63,7 @@ catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS} include)
 
-set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;$ENV{GUROBI_HOME}/lib/libgurobi90.so;$ENV{GUROBI_HOME}/lib/" )
+set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;$ENV{GUROBI_HOME}/lib/libgurobi91.so;$ENV{GUROBI_HOME}/lib/" )
 
 #For precompile headers see example here
 #https://gitlab.kitware.com/cmake/cmake/tree/375d01c6808713a0cfeef9ea092c8236ba063525/Tests/PrecompileHeaders
