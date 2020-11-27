@@ -27,9 +27,9 @@ import numpy as np
 from numpy import linalg as LA
 import random
 
-from tf.transformations import quaternion_from_euler, euler_from_quaternion
+# from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
-from pyquaternion import Quaternion
+# from pyquaternion import Quaternion
 import tf
 
 from math import sin, cos, tan
