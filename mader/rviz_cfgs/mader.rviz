@@ -6,10 +6,14 @@ Panels:
       Expanded:
         - /Global Options1
         - /Grid1
-        - /TF1
+        - /TF1/Frames1
         - /Console1
-      Splitter Ratio: 0.5676470398902893
-    Tree Height: 1166
+        - /CameraPub1
+        - /Image1
+        - /Light1
+        - /Light1/Direction1
+      Splitter Ratio: 0.3382789194583893
+    Tree Height: 851
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -69,105 +73,105 @@ Visualization Manager:
       Frame Timeout: 1000
       Frames:
         4000:
-          Value: false
+          Value: true
         4001:
-          Value: false
+          Value: true
         4002:
-          Value: false
+          Value: true
         4003:
-          Value: false
+          Value: true
         4004:
-          Value: false
+          Value: true
         4005:
-          Value: false
+          Value: true
         4006:
-          Value: false
+          Value: true
         4007:
-          Value: false
+          Value: true
         4008:
-          Value: false
+          Value: true
         4009:
-          Value: false
+          Value: true
         4010:
-          Value: false
+          Value: true
         4011:
-          Value: false
+          Value: true
         4012:
-          Value: false
+          Value: true
         4013:
-          Value: false
+          Value: true
         4014:
-          Value: false
+          Value: true
         4015:
-          Value: false
+          Value: true
         4016:
-          Value: false
+          Value: true
         4017:
-          Value: false
+          Value: true
         4018:
-          Value: false
+          Value: true
         4019:
-          Value: false
+          Value: true
         4020:
-          Value: false
+          Value: true
         4021:
-          Value: false
+          Value: true
         4022:
-          Value: false
+          Value: true
         4023:
-          Value: false
+          Value: true
         4024:
-          Value: false
+          Value: true
         4025:
-          Value: false
+          Value: true
         4026:
-          Value: false
+          Value: true
         4027:
-          Value: false
+          Value: true
         4028:
-          Value: false
+          Value: true
         4029:
-          Value: false
+          Value: true
         4030:
-          Value: false
+          Value: true
         4031:
-          Value: false
+          Value: true
         4032:
-          Value: false
+          Value: true
         4033:
-          Value: false
+          Value: true
         4034:
-          Value: false
+          Value: true
         4035:
-          Value: false
+          Value: true
         4036:
-          Value: false
+          Value: true
         4037:
-          Value: false
+          Value: true
         4038:
-          Value: false
+          Value: true
         4039:
-          Value: false
+          Value: true
         4040:
-          Value: false
+          Value: true
         4041:
-          Value: false
+          Value: true
         4042:
-          Value: false
+          Value: true
         4043:
-          Value: false
+          Value: true
         4044:
-          Value: false
+          Value: true
         4045:
-          Value: false
+          Value: true
         4046:
-          Value: false
+          Value: true
         4047:
-          Value: false
+          Value: true
         4048:
-          Value: false
+          Value: true
         4049:
-          Value: false
+          Value: true
         4050:
           Value: true
         4051:
@@ -368,18 +372,18 @@ Visualization Manager:
           Value: true
         4149:
           Value: true
-        All Enabled: false
+        All Enabled: true
         SQ01s:
           Value: true
         vicon:
           Value: true
         world:
-          Value: false
+          Value: true
       Marker Scale: 2
       Name: TF
       Show Arrows: false
       Show Axes: true
-      Show Names: false
+      Show Names: true
       Tree:
         world:
           4000:
@@ -1400,6 +1404,74 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: false
+    - Background Color: 0; 0; 0
+      Camera Info Topic: /camera1/camera_info
+      Class: rviz_camera_stream/CameraPub
+      Display namespace: ""
+      Enabled: true
+      Frame Rate: -1
+      Image Encoding: rgb8
+      Image Topic: /rviz1/camera1/image
+      Name: CameraPub
+      Near Clip Distance: 0.009999999776482582
+      Queue Size: 2
+      Value: true
+      Visibility:
+        ActTraj: true
+        Console: true
+        Dynamic_Obstacles_Mesh: true
+        FOV: true
+        G: true
+        GTerm: true
+        Grid: true
+        Image: true
+        Light: true
+        Marker: true
+        Obstacles: true
+        OpsProblemRun: true
+        Planes: true
+        PointA: true
+        PointE: true
+        PolySafe: true
+        RViz_Dynamic_Obstacles: true
+        RViz_Static_Obstacles: true
+        RealTrajectory: true
+        Safe_Color: true
+        Setpoint: true
+        Static_Obstacles_Mesh: true
+        TF: true
+        TFTrajectory: true
+        Value: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /rviz1/camera1/image
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: true
+    - Class: rviz_lighting/Light
+      Diffuse Color: 255; 255; 255
+      Direction:
+        X: 0
+        Y: 0
+        Z: 1
+      Enabled: true
+      Falloff: 1
+      Light Type: Directional
+      Name: Light
+      Outer Angle: 0.5
+      Position:
+        X: 0
+        Y: 0
+        Z: 0
+      Reference Frame: camera1
+      Specular Color: 255; 255; 255
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 238; 238; 236
@@ -1428,25 +1500,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 59.42732238769531
+      Distance: 90.15233612060547
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 16.092504501342773
-        Y: -9.341228485107422
-        Z: 2.968417902593501e-6
+        X: 36.556640625
+        Y: -12.243379592895508
+        Z: 6.783115168218501e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4507967233657837
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.698184013366699
+      Yaw: 4.719998359680176
     Saved: ~
 Window Geometry:
   Displays:
@@ -1454,7 +1526,9 @@ Window Geometry:
   Height: 1385
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd000000040000000000000156000004cbfc020000000efb0000001200530065006c0065006300740069006f006e000000003d000004c20000005c00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730200000b4b00000293000002b300000152fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000028000003960000000000000000fb000000100044006900730070006c006100790073010000003d000004cb000000c900fffffffb0000000a0049006d006100670065000000006e000003500000000000000000fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000002f4000000ca0000000000000000fb0000000a0049006d00610067006501000001530000012c0000000000000000fb0000000c00430061006d0065007200610100000285000001390000000000000000000000010000016a000004cbfc0200000004fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000004cb000000a400fffffffb000000100044006900730070006c00610079007300000000db000002e3000000c900fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009bd0000003efc0100000002fb0000000800540069006d00650100000000000009bd000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000006f1000004cb00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Image:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd000000040000000000000256000004cbfc020000000ffb0000001200530065006c0065006300740069006f006e000000003d000004c20000005c00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730200000b4b00000293000002b300000152fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000028000003960000000000000000fb000000100044006900730070006c006100790073010000003d00000390000000c900fffffffb0000000a0049006d00610067006501000003d3000001350000001600fffffffb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000002f4000000ca0000000000000000fb0000000a0049006d00610067006501000001530000012c0000000000000000fb0000000c00430061006d0065007200610100000285000001390000000000000000fb0000000a0049006d00610067006501000002dd0000022b0000000000000000000000010000016a000004cbfc0200000004fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000004cb000000a400fffffffb000000100044006900730070006c00610079007300000000db000002e3000000c900fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009bd0000003efc0100000002fb0000000800540069006d00650100000000000009bd000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000005f1000004cb00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
