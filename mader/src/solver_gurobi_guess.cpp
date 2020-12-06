@@ -66,6 +66,43 @@ bool SolverGurobi::generateAStarGuess()
     q_guess_ = q;
     n_guess_ = n;
     d_guess_ = d;
+
+    // the colors refer to the second figure of
+    // https://github.com/mit-acl/separator/tree/06c0ddc6e2f11dbfc5b6083c2ea31b23fd4fa9d1
+
+    // At this point the blue planes have the the equation n'x+d == -1
+    // The free space is on the side n'x+d <= -1
+    // and these blue planes does NOT have to be close to the vertexes of the obstacle
+
+    /////////////////////////////////////
+    //// This section moves the planes to put them as close as possible to the obstacles, but
+    //// doing so provokes numerical issues in Gurobi. TODO: find out why (maybe ||n|| too big?)
+    ////
+    //// See 2nd figure of https://github.com/mit-acl/separator
+    // for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
+    // {
+    //   for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+    //   {
+    //     int ip = obst_index * num_of_segments_ + i;             // index plane
+    //     double delta_min = std::numeric_limits<double>::max();  // delta_min will contain the minimum distance
+    //     between
+    //                                                             // the plane and the obstacle
+    //     for (int j = 0; j < hulls_[obst_index][i].cols(); j++)
+    //     {
+    //       // std::cout << "heree " << j << std::endl;
+    //       Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
+    //       delta_min = std::min(delta_min, (n_guess_[ip].dot(vertex) + d_guess_[ip] - 1) / n_guess_[ip].norm());
+    //       //   m_.addConstr((-(n_[ip].dot(vertex) + d_[ip] - epsilon)) <= 0, "plane" + std::to_string(j));
+    //     }
+    //     d_guess_[ip] = d_guess_[ip] - n_guess_[ip].norm() * delta_min -
+    //                    2 * 0.99;  // See 2nd figure of https://github.com/mit-acl/separator
+    //   }
+    // }
+    // Now the blue planes still have the equation n'x+d == -1
+    // (but with different n and d than before)
+    // and they are close to the vertexes of the obstacle
+    /////////////////////////////////////
+
     return true;
   }
   else
@@ -75,7 +112,7 @@ bool SolverGurobi::generateAStarGuess()
   }
 }
 
-void SolverGurobi::generateRandomD(std::vector<double> &d)
+void SolverGurobi::generateRandomD(std::vector<double>& d)
 {
   d.clear();
   for (int k = k_min_; k <= k_max_; k++)
@@ -85,7 +122,7 @@ void SolverGurobi::generateRandomD(std::vector<double> &d)
   }
 }
 
-void SolverGurobi::generateRandomN(std::vector<Eigen::Vector3d> &n)
+void SolverGurobi::generateRandomN(std::vector<Eigen::Vector3d>& n)
 {
   n.clear();
   for (int j = j_min_; j < j_max_; j = j + 3)
@@ -99,7 +136,7 @@ void SolverGurobi::generateRandomN(std::vector<Eigen::Vector3d> &n)
   // std::cout << "After Generating RandomN, n has size= " << n.size() << std::endl;
 }
 
-void SolverGurobi::generateRandomQ(std::vector<Eigen::Vector3d> &q)
+void SolverGurobi::generateRandomQ(std::vector<Eigen::Vector3d>& q)
 {
   q.clear();
 

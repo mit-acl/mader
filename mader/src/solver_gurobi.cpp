@@ -126,7 +126,7 @@ void SolverGurobi::addObjective()
 
 void SolverGurobi::addConstraints()
 {
-  double epsilon = 1.0;  // See http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
+  // double epsilon = 1.0;  // See http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
 
   addVectorEqConstraint(m_, q_exp_[0], q0_);
   addVectorEqConstraint(m_, q_exp_[1], q1_);
@@ -174,8 +174,7 @@ void SolverGurobi::addConstraints()
       {
         GRBVector q_ipu = getColumn(Qmv, u);
         GRBLinExpr dot = n_[ip].x() * q_ipu[0] + n_[ip].y() * q_ipu[1] + n_[ip].z() * q_ipu[2];
-        m_.addConstr(dot + d_[ip] + epsilon <= 0);
-        // constraints[r] = (n[ip].dot(q_ipu) + d[ip] + epsilon);  //  // fi<=0
+        m_.addConstr(dot + d_[ip] + 1 <= 0);
       }
     }
 
@@ -273,6 +272,7 @@ void SolverGurobi::fillPlanesFromNDQ(const std::vector<Eigen::Vector3d> &n, cons
   {
     for (int i = 0; i < num_of_segments_; i++)
     {
+      int ip = obst_index * num_of_segments_ + i;  // index plane
       Eigen::Vector3d centroid_hull;
       findCentroidHull(hulls_[obst_index][i], centroid_hull);
 
@@ -288,38 +288,50 @@ void SolverGurobi::fillPlanesFromNDQ(const std::vector<Eigen::Vector3d> &n, cons
 
       Eigen::Vector3d centroid_cps = Qmv.rowwise().mean();
 
-      double A = n[obst_index * num_of_segments_ + i].x();
-      double B = n[obst_index * num_of_segments_ + i].y();
-      double C = n[obst_index * num_of_segments_ + i].z();
-      double D = d[obst_index * num_of_segments_ + i];
+      // the colors refer to the second figure of
+      // https://github.com/mit-acl/separator/tree/06c0ddc6e2f11dbfc5b6083c2ea31b23fd4fa9d1
 
-      bool intersects =
-          getIntersectionWithPlane(centroid_cps, centroid_hull, Eigen::Vector4d(A, B, C, D), point_in_plane);
+      // Equation of the blue planes is n'x+d == -1
+      // Convert here to equation [A B C]'x+D ==0
+      double A = n[ip].x();
+      double B = n[ip].y();
+      double C = n[ip].z();
+      double D = d[ip] + 1;
+
+      /////////////////// OPTION 1: point_in_plane = intersection between line  centroid_cps --> centroid_hull
+      // bool intersects = getIntersectionWithPlane(centroid_cps, centroid_hull, Eigen::Vector4d(A, B, C, D),
+      //                                            point_in_plane);  // result saved in point_in_plane
+
+      //////////////////////////
+
+      /////////////////// OPTION 2: point_in_plane = intersection between line  centroid_cps --> closest_vertex
+      double dist_min = std::numeric_limits<double>::max();  // delta_min will contain the minimum distance between
+                                                             // the centroid_cps and the vertexes of the obstacle
+      int index_closest_vertex = 0;
+      for (int j = 0; j < hulls_[obst_index][i].cols(); j++)
+      {
+        Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
+
+        double distance_to_vertex = (centroid_cps - vertex).norm();
+        if (distance_to_vertex < dist_min)
+        {
+          dist_min = distance_to_vertex;
+          index_closest_vertex = j;
+        }
+      }
+
+      Eigen::Vector3d closest_vertex = hulls_[obst_index][i].col(index_closest_vertex);
+
+      bool intersects = getIntersectionWithPlane(centroid_cps, closest_vertex, Eigen::Vector4d(A, B, C, D),
+                                                 point_in_plane);  // result saved in point_in_plane
+
+      //////////////////////////
 
       if (intersects == false)
       {
-        // std::cout << "Points: " << std::endl;
-        // std::cout << hulls_[obst_index][i] << std::endl;
-
-        // std::cout << "centroid_hull= " << centroid_hull.transpose() << std::endl;
-
-        // std::cout << "n= " << A << ", " << B << ", " << C << ", " << D << std::endl;
-        // std::cout << "d= " << D << std::endl;
-        // std::cout << "p0= " << centroid_hull.transpose() << std::endl;
-        // std::cout << "p1= " << centroid_cps.transpose() << std::endl;
-
-        // Eigen::Vector3d novale_n;
-        // double novale_d;
-
-        // separator_solver_->solveModel(novale_n, novale_d, hulls_[obst_index][i], Qmv);
-
-        // std::cout << "n= " << novale_n.transpose() << std::endl;
-        // std::cout << "d= " << novale_d << std::endl;
-
         // TODO: this msg is printed sometimes in Multi-Agent simulations. Find out why
         std::cout << red << "There is no intersection, this should never happen (TODO)" << reset << std::endl;
-        continue;
-        // abort();
+        continue;  // abort();
       }
 
       Hyperplane3D plane(point_in_plane, n[i]);
@@ -661,7 +673,8 @@ bool SolverGurobi::optimize()
 
   // std::cout << blue << "traj_solution_.size()=" << traj_solution_.size() <<reset<< std::endl;
 
-  fillPlanesFromNDQ(n_, d_, q);
+  // Uncomment the following line if you wanna visualize the planes
+  // fillPlanesFromNDQ(n_, d_, q);  // TODO: move this outside the SolverGurobi class
 
   return true;
 }
