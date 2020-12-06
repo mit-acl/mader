@@ -290,7 +290,7 @@ private:
   bool allow_infeasible_guess_ = false;
 
   separator::Separator *separator_solver_;
-  OctopusSearch *myAStarSolver_;
+  OctopusSearch *octopusSolver_;
 
   double Ra_ = 1e10;
 };

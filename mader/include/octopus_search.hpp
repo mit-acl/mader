@@ -216,8 +216,6 @@ private:
   double z_min_ = -std::numeric_limits<double>::max();
   double z_max_ = std::numeric_limits<double>::max();
 
-  int num_of_LPs_run_ = 0;
-
   // transformation between the B-spline control points and other basis (MINVO or Bezier)
   std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2basis_;
   std::vector<Eigen::Matrix<double, 3, 3>> M_vel_bs2basis_;

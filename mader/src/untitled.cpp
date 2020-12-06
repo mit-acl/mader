@@ -103,7 +103,7 @@ SolverGurobi::SolverGurobi(par_sgurobi &par)
 
   separator_solver_ = new separator::Separator();
 
-  myAStarSolver_ = new OctopusSearch(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
+  octopusSolver_ = new OctopusSearch(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
 }
 
 SolverGurobi::~SolverGurobi()
@@ -202,52 +202,52 @@ void SolverGurobi::generateAStarGuess()
   // printStd(q_guess_);
   // std::cout << "************" << std::endl;
 
-  myAStarSolver_->setUp(t_init_, t_final_, hulls_);
+  octopusSolver_->setUp(t_init_, t_final_, hulls_);
 
   // std::cout << "q0_=" << q0_.transpose() << std::endl;
   // std::cout << "q1_=" << q1_.transpose() << std::endl;
   // std::cout << "q2_=" << q2_.transpose() << std::endl;
 
-  myAStarSolver_->setq0q1q2(q0_, q1_, q2_);
-  myAStarSolver_->setGoal(final_state_.pos);
+  octopusSolver_->setq0q1q2(q0_, q1_, q2_);
+  octopusSolver_->setGoal(final_state_.pos);
 
   // double runtime = 0.05;   //[seconds]
   double goal_size = 0.05;  //[meters]
 
-  myAStarSolver_->setXYZMinMaxAndRa(x_min_, x_max_, y_min_, y_max_, z_min_, z_max_,
+  octopusSolver_->setXYZMinMaxAndRa(x_min_, x_max_, y_min_, y_max_, z_min_, z_max_,
                                     Ra_);                 // z limits for the search, in world frame
-  myAStarSolver_->setBBoxSearch(2000.0, 2000.0, 2000.0);  // limits for the search, centered on q2
-  myAStarSolver_->setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
+  octopusSolver_->setBBoxSearch(2000.0, 2000.0, 2000.0);  // limits for the search, centered on q2
+  octopusSolver_->setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
                                          a_star_fraction_voxel_size_);
 
-  myAStarSolver_->setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
-  myAStarSolver_->setGoalSize(goal_size);
+  octopusSolver_->setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
+  octopusSolver_->setGoalSize(goal_size);
 
-  myAStarSolver_->setBias(a_star_bias_);
+  octopusSolver_->setBias(a_star_bias_);
   // if (basis_ == MINVO)
   // {
   //   // std::cout << green << bold << "snlopt is using MINVO" << reset << std::endl;
-  //   myAStarSolver_->setBasisUsedForCollision(myAStarSolver_->MINVO);
+  //   octopusSolver_->setBasisUsedForCollision(octopusSolver_->MINVO);
   // }
   // else if (basis_ == BEZIER)
   // {
   //   // std::cout << green << bold << "snlopt is using BEZIER" << reset << std::endl;
-  //   myAStarSolver_->setBasisUsedForCollision(myAStarSolver_->BEZIER);
+  //   octopusSolver_->setBasisUsedForCollision(octopusSolver_->BEZIER);
   // }
   // else
   // {
   //   // std::cout << green << bold << "snlopt is using B_SPLINE" << reset << std::endl;
-  //   myAStarSolver_->setBasisUsedForCollision(myAStarSolver_->B_SPLINE);
+  //   octopusSolver_->setBasisUsedForCollision(octopusSolver_->B_SPLINE);
   // }
 
-  myAStarSolver_->setVisual(false);
+  octopusSolver_->setVisual(false);
 
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
-  bool is_feasible = myAStarSolver_->run(q, n, d);
+  bool is_feasible = octopusSolver_->run(q, n, d);
 
-  num_of_LPs_run_ = myAStarSolver_->getNumOfLPsRun();
+  num_of_LPs_run_ = octopusSolver_->getNumOfLPsRun();
   // std::cout << "After Running solved, n= " << std::endl;
   // printStd(n);
 

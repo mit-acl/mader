@@ -71,6 +71,9 @@ OctopusSearch::OctopusSearch(std::string basis, int num_pol, int deg_pol, double
 
   alpha_shrink_ = alpha_shrink;
 
+  time_solving_lps_ = 0.0;
+  time_expanding_ = 0.0;
+
   // Mbs2basis_inverse_ = Mbs2basis_.inverse();
 }
 
@@ -111,7 +114,7 @@ OctopusSearch::~OctopusSearch()
 
 int OctopusSearch::getNumOfLPsRun()
 {
-  return num_of_LPs_run_;
+  return separator_solver_->getNumOfLPsRun();
 }
 
 void OctopusSearch::setVisual(bool visual)
@@ -198,7 +201,7 @@ void OctopusSearch::setBBoxSearch(double x, double y, double z)
 }
 
 void OctopusSearch::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int num_samples_x,
-                                         int num_samples_y, int num_samples_z, double fraction_voxel_size)
+                                           int num_samples_y, int num_samples_z, double fraction_voxel_size)
 {
   all_combinations_.clear();
   indexes_samples_x_.clear();
@@ -256,8 +259,8 @@ void OctopusSearch::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector
   orig_ = q2_ - Eigen::Vector3d(bbox_x_ / 2.0, bbox_y_ / 2.0, bbox_z_ / 2.0);
 }
 
-void OctopusSearch::setXYZMinMaxAndRa(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max,
-                                    double Ra)
+void OctopusSearch::setXYZMinMaxAndRa(double x_min, double x_max, double y_min, double y_max, double z_min,
+                                      double z_max, double Ra)
 {
   x_min_ = x_min;
   x_max_ = x_max;
@@ -339,7 +342,7 @@ void OctopusSearch::computeLimitsVoxelSize(double& min_voxel_size, double& max_v
 // compute constraints so that it satisfies interval i-1
 // axis=0 (x), 1(y) or 2(z)
 bool OctopusSearch::computeAxisForNextInterval(const int i, const Eigen::Vector3d& viM1, int axis, double& constraint_L,
-                                             double& constraint_U)
+                                               double& constraint_U)
 {
   Eigen::Matrix<double, 3, 3> M_interv_next = M_vel_bs2basis_[i - 1];
   constraint_L = -std::numeric_limits<double>::max();
@@ -368,10 +371,10 @@ bool OctopusSearch::computeAxisForNextInterval(const int i, const Eigen::Vector3
 
 // Compute the lower and upper bounds on the velocity based on the velocity and acceleration constraints
 // return false if any of the intervals, the lower bound is > the upper bound
-bool OctopusSearch::computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM2, const Eigen::Vector3d& qiM1,
-                                                  const Eigen::Vector3d& qi, double& constraint_xL,
-                                                  double& constraint_xU, double& constraint_yL, double& constraint_yU,
-                                                  double& constraint_zL, double& constraint_zU)
+bool OctopusSearch::computeUpperAndLowerConstraints(const int i, const Eigen::Vector3d& qiM2,
+                                                    const Eigen::Vector3d& qiM1, const Eigen::Vector3d& qi,
+                                                    double& constraint_xL, double& constraint_xU, double& constraint_yL,
+                                                    double& constraint_yU, double& constraint_zL, double& constraint_zU)
 {
   // std::cout << "_______________________ " << std::endl;
   // std::cout << "i= " << i << std::endl;
@@ -696,19 +699,19 @@ void OctopusSearch::recoverPath(Node* result_ptr)
 }
 
 Eigen::Matrix<double, 3, 4> OctopusSearch::transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4>& Qbs,
-                                                                     int interval)
+                                                                       int interval)
 {
   return Qbs * M_pos_bs2basis_[interval];
 }
 
 Eigen::Matrix<double, 3, 4> OctopusSearch::transformOtherBasis2BSpline(const Eigen::Matrix<double, 3, 4>& Qmv,
-                                                                     int interval)
+                                                                       int interval)
 {
   return Qmv * M_pos_bs2basis_inverse_[interval];
 }
 
 bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vector<Eigen::Vector3d>& n,
-                                     std::vector<double>& d)
+                                       std::vector<double>& d)
 {
   n.resize(std::max(num_of_normals_, 0), Eigen::Vector3d::Zero());
   d.resize(std::max(num_of_normals_, 0), 0.0);
@@ -927,7 +930,7 @@ bool OctopusSearch::collidesWithObstacles(Node& current)
 }
 
 void OctopusSearch::expandAndAddToQueue(Node& current, double constraint_xL, double constraint_xU, double constraint_yL,
-                                      double constraint_yU, double constraint_zL, double constraint_zU)
+                                        double constraint_yU, double constraint_zL, double constraint_zU)
 {
   MyTimer timer_expand(true);
 
@@ -1012,7 +1015,6 @@ bool OctopusSearch::collidesWithObstaclesGivenVertexes(const Eigen::Matrix<doubl
   for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
   {
     satisfies_LP = separator_solver_->solveModel(n_i, d_i, hulls_[obst_index][interval], last4Cps_new_basis);
-    num_of_LPs_run_++;
     if (satisfies_LP == false)
     {
       goto exit;
@@ -1035,10 +1037,6 @@ bool OctopusSearch::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen:
   // stores the closest node found that has full length (i.e. its index == (N_ - 2) )
   complete_closest_dist_so_far_ = std::numeric_limits<double>::max();
   complete_closest_result_so_far_ptr_ = NULL;
-
-  num_of_LPs_run_ = 0;
-  time_solving_lps_ = 0.0;
-  time_expanding_ = 0.0;
 
   expanded_valid_nodes_.clear();
   result_.clear();

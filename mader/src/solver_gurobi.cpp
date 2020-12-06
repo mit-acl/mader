@@ -93,7 +93,7 @@ SolverGurobi::SolverGurobi(par_solver &par)
   weight_ = par.weight;
 
   separator_solver_ = new separator::Separator();
-  myAStarSolver_ = new OctopusSearch(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
+  octopusSolver_ = new OctopusSearch(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
 }
 
 SolverGurobi::~SolverGurobi()
@@ -248,7 +248,7 @@ void SolverGurobi::getPlanes(std::vector<Hyperplane3D> &planes)
 
 int SolverGurobi::getNumOfLPsRun()
 {
-  return num_of_LPs_run_;
+  return octopusSolver_->getNumOfLPsRun();
 }
 
 int SolverGurobi::getNumOfQCQPsRun()

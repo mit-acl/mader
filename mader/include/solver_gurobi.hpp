@@ -176,7 +176,6 @@ private:
   double z_min_ = -std::numeric_limits<double>::max();
   double z_max_ = std::numeric_limits<double>::max();
 
-  int num_of_LPs_run_ = 0;
   int num_of_QCQPs_run_ = 0;
 
   int a_star_samp_x_ = 7;
@@ -192,7 +191,7 @@ private:
   double a_star_fraction_voxel_size_ = 0.5;
 
   separator::Separator *separator_solver_;
-  OctopusSearch *myAStarSolver_;
+  OctopusSearch *octopusSolver_;
 
   double Ra_ = 1e10;
 };

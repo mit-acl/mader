@@ -809,8 +809,8 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
 
   bool result = solver_->optimize();
 
-  num_of_LPs_run += solver_->getNumOfLPsRun();
-  num_of_QCQPs_run += solver_->getNumOfQCQPsRun();
+  num_of_LPs_run = solver_->getNumOfLPsRun();
+  num_of_QCQPs_run = solver_->getNumOfQCQPsRun();
 
   total_replannings_++;
   if (result == false)
