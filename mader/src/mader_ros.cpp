@@ -207,8 +207,11 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   clearMarkerActualTraj();
 
   ////// to avoid having to click on the GUI (TODO)
-  ros::Duration(0.5).sleep();  // TODO
-  bool success_service_call = system("rosservice call /change_mode 'mode: 1'");
+  mader_msgs::Mode tmp;
+  tmp.mode = 1;
+  modeCB(tmp);
+  // ros::Duration(1.0).sleep();  // TODO
+  // bool success_service_call = system("rosservice call /change_mode 'mode: 1'");
   ////
 
   ROS_INFO("Planner initialized");
