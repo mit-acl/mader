@@ -317,7 +317,7 @@ def startNode(total_num_obs):
 
 if __name__ == '__main__':
 
-    # I think I should use https://docs.python.org/3.3/library/argparse.html
+    # TODO: Use instead https://docs.python.org/3.3/library/argparse.html
     # print("********************************")
     # print(sys.argv)
     # if(len(sys.argv)<=1):
