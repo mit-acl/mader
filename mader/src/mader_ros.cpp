@@ -224,7 +224,7 @@ MaderRos::~MaderRos()
   replanCBTimer_.stop();
 }
 
-void MaderRos::pubObstacles(mader_types::Edges edges_obstacles)
+void MaderRos::pubObstacles(mt::Edges edges_obstacles)
 {
   pub_obstacles_.publish(edges2Marker(edges_obstacles, color(RED_NORMAL)));
 
@@ -267,7 +267,7 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
     return;
   }
 
-  dynTraj tmp;
+  mt::dynTraj tmp;
   tmp.function.push_back(msg.function[0]);
   tmp.function.push_back(msg.function[1]);
   tmp.function.push_back(msg.function[2]);
@@ -290,7 +290,7 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
 // This trajectory contains all the future trajectory (current_pos --> A --> final_point_of_traj), because it's the
 // composition of pwp
-void MaderRos::publishOwnTraj(const PieceWisePol& pwp)
+void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
 {
   std::vector<std::string> s;  // pieceWisePol2String(pwp); The rest of the agents will use the pwp field, not the
                                // string
@@ -321,11 +321,11 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 {
   if (ros::ok() && published_initial_position_ == true)
   {
-    mader_types::Edges edges_obstacles;
+    mt::Edges edges_obstacles;
     std::vector<state> X_safe;
 
     std::vector<Hyperplane3D> planes;
-    PieceWisePol pwp;
+    mt::PieceWisePol pwp;
 
     bool replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
 

@@ -20,7 +20,7 @@
 
 #include <snapstack_msgs/State.h>
 #include <mader_msgs/DynTraj.h>
-#include <mader_msgs/PieceWisePolTraj.h>
+#include <mader_msgs/mt::PieceWisePolTraj.h>
 #include <mader_msgs/CoeffPoly3.h>
 
 using namespace termcolor;
@@ -30,13 +30,13 @@ class Predictor
 public:
   Predictor(ros::NodeHandle nh);
 
-  PieceWisePol predictPwp(std::vector<double>& times, std::vector<Eigen::Vector3d>& last_positions);
+  mt::PieceWisePol predictPwp(std::vector<double>& times, std::vector<Eigen::Vector3d>& last_positions);
 
 private:
   void trajCB(const mader_msgs::DynTraj& msg);
   void stateCB(const snapstack_msgs::State& msg);
 
-  void sample(const dynTrajCompiled& traj_compiled, std::vector<double>& times,
+  void sample(const mt::dynTrajCompiled& traj_compiled, std::vector<double>& times,
               std::vector<Eigen::Vector3d>& last_positions);
 
   ros::Publisher pub_predicted_traj_;

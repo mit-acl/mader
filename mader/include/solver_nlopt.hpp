@@ -34,15 +34,15 @@ public:
   // setters
   void setMaxRuntimeKappaAndMu(double runtime, double kappa, double mu);
   bool setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init, double &t_final);
-  void setHulls(ConvexHullsOfCurves_Std &hulls);
+  void setHulls(mt::ConvexHullsOfCurves_Std &hulls);
 
-  trajectory traj_solution_;
+  mt::trajectory traj_solution_;
 
   // getters
   void getPlanes(std::vector<Hyperplane3D> &planes);
   int getNumOfLPsRun();
   int getNumOfQCQPsRun();
-  void getSolution(PieceWisePol &solution);
+  void getSolution(mt::PieceWisePol &solution);
   double getTimeNeeded();
 
   int B_SPLINE = 1;  // B-Spline Basis
@@ -155,7 +155,7 @@ private:
 
   std::string getResultCode(int &result);
 
-  void findCentroidHull(const Polyhedron_Std &hull, Eigen::Vector3d &centroid);
+  void findCentroidHull(const mt::Polyhedron_Std &hull, Eigen::Vector3d &centroid);
 
   int lastDecCP();
 
@@ -170,7 +170,7 @@ private:
   void printIndexesConstraints();
   void printIndexesVariables();
 
-  PieceWisePol solution_;
+  mt::PieceWisePol solution_;
 
   int basis_ = B_SPLINE;
 
@@ -230,7 +230,7 @@ private:
 
   Eigen::Vector3d q0_, q1_, q2_, qNm2_, qNm1_, qN_;
 
-  ConvexHullsOfCurves_Std hulls_;
+  mt::ConvexHullsOfCurves_Std hulls_;
 
   MyTimer opt_timer_;
 

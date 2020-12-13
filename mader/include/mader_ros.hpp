@@ -28,9 +28,6 @@
 
 #include "timer.hpp"
 
-// #define WHOLE 1  // Whole trajectory (part of which is planned on unkonwn space)
-// #define SAFE 2   // Safe path
-
 namespace rvt = rviz_visual_tools;
 
 class MaderRos
@@ -42,7 +39,7 @@ public:
 private:
   std::unique_ptr<Mader> mader_ptr_;
 
-  void publishOwnTraj(const PieceWisePol& pwp);
+  void publishOwnTraj(const mt::PieceWisePol& pwp);
   void publishPlanes(std::vector<Hyperplane3D>& planes);
 
   // class methods
@@ -72,7 +69,7 @@ private:
 
   void publishFOV();
 
-  void pubObstacles(mader_types::Edges edges_obstacles);
+  void pubObstacles(mt::Edges edges_obstacles);
 
   state state_;
 
@@ -115,7 +112,7 @@ private:
   ros::Timer pubCBTimer_;
   ros::Timer replanCBTimer_;
 
-  parameters par_;  // where all the parameters are
+  mt::parameters par_;  // where all the parameters are
 
   std::string name_drone_;
 
@@ -134,7 +131,7 @@ private:
 
   Eigen::Affine3d W_T_B_;
 
-  PieceWisePol pwp_last_;
+  mt::PieceWisePol pwp_last_;
 
   MADER_timers::Timer timer_stop_;
 };

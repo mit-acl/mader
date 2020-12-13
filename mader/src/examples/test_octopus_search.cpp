@@ -261,7 +261,7 @@ int main(int argc, char** argv)
 
   std::cout << "hulls_curves.size()= " << hulls_curves.size() << std::endl;
 
-  ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
+  mt::ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
   // vec_E<Polyhedron<3>> jps_poly = vectorGCALPol2vectorJPSPol(hulls_curves);
 
   for (int i = 0; i < num_pol; i++)
@@ -319,11 +319,11 @@ int main(int argc, char** argv)
   bool solved = myAStarSolver.run(q, n, d);
 
   // Recover all the trajectories found and the best trajectory
-  std::vector<trajectory> all_trajs_found;
+  std::vector<mt::trajectory> all_trajs_found;
   myAStarSolver.getAllTrajsFound(all_trajs_found);
 
-  trajectory best_traj_found;
-  PieceWisePol pwp_best_traj_found;
+  mt::trajectory best_traj_found;
+  mt::PieceWisePol pwp_best_traj_found;
   myAStarSolver.getBestTrajFound(best_traj_found, pwp_best_traj_found, dc);
 
   // for (double t = t_min; t <= t_max; t = t + dc)
@@ -375,7 +375,7 @@ int main(int argc, char** argv)
   best_trajectory_found_pub.publish(marker_array_best_traj);
 
   // Get the edges of the convex hulls and publish them
-  mader_types::Edges edges_convex_hulls;
+  mt::Edges edges_convex_hulls;
   myAStarSolver.getEdgesConvexHulls(edges_convex_hulls);
   convex_hulls_pub.publish(edges2Marker(edges_convex_hulls, color(RED_NORMAL)));
 

@@ -22,7 +22,7 @@ struct Plane_equation
 };
 
 // Convert several polyhedra to a vector that contains all the edges of all these polyhedra
-mader_types::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls)
+mt::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls)
 {
   // See example here:
   // http://cgal-discuss.949826.n4.nabble.com/Take-the-triangles-of-a-polyhedron-td4460275.html
@@ -31,7 +31,7 @@ mader_types::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls)
   // https://doc.cgal.org/5.0/Triangulation_3/Triangulation_3_2for_loop_8cpp-example.html
   // https://stackoverflow.com/questions/4837179/getting-a-vertex-handle-from-an-edge-iterator
 
-  mader_types::Edges all_edges;
+  mt::Edges all_edges;
 
   for (int index_curve = 0; index_curve < convexHulls.size(); index_curve++)  // for each curve
   {
@@ -62,21 +62,21 @@ mader_types::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls)
   return all_edges;
 }
 
-ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls)
+mt::ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls)
 {
-  ConvexHullsOfCurves_Std convexHulls_of_curves_std;
+  mt::ConvexHullsOfCurves_Std convexHulls_of_curves_std;
 
   // std::cout << "convexHulls.size()= " << convexHulls.size() << std::endl;
 
   for (int index_curve = 0; index_curve < convexHulls.size(); index_curve++)  // for each curve
   {
-    ConvexHullsOfCurve_Std convexHulls_of_curve_std;
+    mt::ConvexHullsOfCurve_Std convexHulls_of_curve_std;
 
     for (int i = 0; i < convexHulls[index_curve].size(); i++)  // for each interval along the curve
     {
       CGAL_Polyhedron_3 poly = convexHulls[index_curve][i];
 
-      Polyhedron_Std convexHull_std(3, poly.size_of_vertices());  // poly.size_of_vertices() is the number of vertexes
+      mt::Polyhedron_Std convexHull_std(3, poly.size_of_vertices());  // poly.size_of_vertices() is the number of vertexes
       // std::vector<Eigen::Vector3d> convexHull_std;
       int j = 0;
       for (CGAL_Polyhedron_3::Vertex_iterator v = poly.vertices_begin(); v != poly.vertices_end(); ++v)

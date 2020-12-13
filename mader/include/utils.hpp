@@ -63,28 +63,28 @@ bool safeGetParam(ros::NodeHandle& nh, std::string const& param_name, T& param_v
   return true;
 }
 
-visualization_msgs::MarkerArray pwp2ColoredMarkerArray(PieceWisePol& pwp, double t_init, double t_final, int samples,
+visualization_msgs::MarkerArray pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, double t_init, double t_final, int samples,
                                                        std::string ns);
 
 void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix<double, 4, 1>& coeff_new, double t0,
                      double tf);
 
-PieceWisePol createPwpFromStaticPosition(const state& current_state);
+mt::PieceWisePol createPwpFromStaticPosition(const state& current_state);
 
-PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg);
-mader_msgs::PieceWisePolTraj pwp2PwpMsg(const PieceWisePol& pwp);
+mt::PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg);
+mader_msgs::PieceWisePolTraj pwp2PwpMsg(const mt::PieceWisePol& pwp);
 
-visualization_msgs::Marker edges2Marker(const mader_types::Edges& edges, std_msgs::ColorRGBA color_marker);
+visualization_msgs::Marker edges2Marker(const mt::Edges& edges, std_msgs::ColorRGBA color_marker);
 
 geometry_msgs::Pose identityGeometryMsgsPose();
 
-PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& p1, PieceWisePol& p2);
+mt::PieceWisePol composePieceWisePol(const double t, const double dc, mt::PieceWisePol& p1, mt::PieceWisePol& p2);
 
 bool boxIntersectsSphere(Eigen::Vector3d center, double r, Eigen::Vector3d c1, Eigen::Vector3d c2);
 
 void printStateDeque(std::deque<state>& data);
 
-std::vector<std::string> pieceWisePol2String(const PieceWisePol& piecewisepol);
+std::vector<std::string> pieceWisePol2String(const mt::PieceWisePol& piecewisepol);
 
 void printStateVector(std::vector<state>& data);
 
@@ -154,7 +154,7 @@ std::ostream& operator<<(std::ostream& out, const std::vector<T>& v)
   return out;
 }
 
-visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& data, double max_value, int increm,
+visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const mt::trajectory& data, double max_value, int increm,
                                                               std::string ns, double scale, std::string color_type,
                                                               int id_agent, int n_agents);
 

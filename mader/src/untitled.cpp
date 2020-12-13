@@ -40,7 +40,7 @@ SolverGurobi::SolverGurobi(par_sgurobi &par)
   ///////////////////////////////////////
   ///////////////////////////////////////
 
-  basisConverter basis_converter;
+  mt::basisConverter basis_converter;
 
   std::cout << "In the SolverGurobi Constructor\n";
 
@@ -320,7 +320,7 @@ void SolverGurobi::generateRandomQ(std::vector<Eigen::Vector3d> &q)
   saturateQ(q);  // make sure is inside the bounds specified
 }
 
-void SolverGurobi::findCentroidHull(const Polyhedron_Std &hull, Eigen::Vector3d &centroid)
+void SolverGurobi::findCentroidHull(const mt::Polyhedron_Std &hull, Eigen::Vector3d &centroid)
 {
   centroid = Eigen::Vector3d::Zero();
 
@@ -401,7 +401,7 @@ void SolverGurobi::toGradSameConstraintDiffVariables(int var_gindex, const Eigen
   grad[r * nn + var_gindex + 2] = tmp(2);
 }
 
-void SolverGurobi::setHulls(ConvexHullsOfCurves_Std &hulls)
+void SolverGurobi::setHulls(mt::ConvexHullsOfCurves_Std &hulls)
 
 {
   hulls_.clear();
@@ -2054,7 +2054,7 @@ bool SolverGurobi::optimize()
   return true;
 }
 
-void SolverGurobi::getSolution(PieceWisePol &solution)
+void SolverGurobi::getSolution(mt::PieceWisePol &solution)
 {
   solution = solution_;
 }

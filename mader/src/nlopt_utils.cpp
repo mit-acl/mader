@@ -90,7 +90,7 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   double t_min = 0.0;
   double t_max = t_min + (final.pos - initial.pos).norm() / (0.3 * v_max);
 
-  Polyhedron_Std hull(3, 8);
+  mt::Polyhedron_Std hull(3, 8);
 
   hull.col(0) = Eigen::Vector3d(-0.5, -0.5, -70.0);
   hull.col(1) = Eigen::Vector3d(-0.5, 0.5, 70.0);
@@ -101,8 +101,8 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   hull.col(6) = Eigen::Vector3d(-0.5, 0.5, -70.0);
   hull.col(7) = Eigen::Vector3d(0.5, 0.5, 70.0);
 
-  ConvexHullsOfCurves_Std hulls_curves;
-  ConvexHullsOfCurve_Std hulls_curve;
+  mt::ConvexHullsOfCurves_Std hulls_curves;
+  mt::ConvexHullsOfCurve_Std hulls_curve;
   // Assummes static obstacle
   for (int i = 0; i < num_pol; i++)
   {

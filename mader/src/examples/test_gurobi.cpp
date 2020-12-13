@@ -55,7 +55,7 @@ int main()
   ConvexHullsOfCurve hulls_curve = createStaticObstacle(0.0, 0.0, bbox_z / 2.0, num_pol, bbox_x, bbox_y, bbox_z);
   ConvexHullsOfCurves hulls_curves;
   hulls_curves.push_back(hulls_curve);
-  ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
+  mt::ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
 
   par_solver parameters;
   parameters.v_max = 2 * Eigen::Vector3d::Ones();

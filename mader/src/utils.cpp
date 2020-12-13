@@ -9,7 +9,7 @@
 
 #include "termcolor.hpp"
 
-visualization_msgs::MarkerArray pwp2ColoredMarkerArray(PieceWisePol& pwp, double t_init, double t_final, int samples,
+visualization_msgs::MarkerArray pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, double t_init, double t_final, int samples,
                                                        std::string ns)
 {
   visualization_msgs::MarkerArray marker_array;
@@ -112,7 +112,7 @@ void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix
   coeff_new(3) = d + c * t0 + b * t0_2 + a * t0_3;
 }
 
-mader_msgs::PieceWisePolTraj pwp2PwpMsg(const PieceWisePol& pwp)
+mader_msgs::PieceWisePolTraj pwp2PwpMsg(const mt::PieceWisePol& pwp)
 {
   mader_msgs::PieceWisePolTraj pwp_msg;
 
@@ -159,9 +159,9 @@ mader_msgs::PieceWisePolTraj pwp2PwpMsg(const PieceWisePol& pwp)
   return pwp_msg;
 }
 
-PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg)
+mt::PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg)
 {
-  PieceWisePol pwp;
+  mt::PieceWisePol pwp;
 
   if (pwp_msg.coeff_x.size() != pwp_msg.coeff_y.size() || pwp_msg.coeff_x.size() != pwp_msg.coeff_z.size())
   {
@@ -195,7 +195,7 @@ PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg)
   return pwp;
 }
 
-visualization_msgs::Marker edges2Marker(const mader_types::Edges& edges, std_msgs::ColorRGBA color_marker)
+visualization_msgs::Marker edges2Marker(const mt::Edges& edges, std_msgs::ColorRGBA color_marker)
 {
   visualization_msgs::Marker marker;
 
@@ -229,9 +229,9 @@ visualization_msgs::Marker edges2Marker(const mader_types::Edges& edges, std_msg
   return marker;
 }
 
-PieceWisePol createPwpFromStaticPosition(const state& current_state)
+mt::PieceWisePol createPwpFromStaticPosition(const state& current_state)
 {
-  PieceWisePol pwp;
+  mt::PieceWisePol pwp;
   pwp.times = { ros::Time::now().toSec(), ros::Time::now().toSec() + 1e10 };
 
   Eigen::Matrix<double, 4, 1> coeff_x_interv0;  // [a b c d]' of the interval 0
@@ -249,8 +249,8 @@ PieceWisePol createPwpFromStaticPosition(const state& current_state)
   return pwp;
 }
 
-// returns a PieceWisePol, taking the polynomials of p1 and p2 that should satisfy p1>t, p2>t
-PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& p1, PieceWisePol& p2)
+// returns a mt::PieceWisePol, taking the polynomials of p1 and p2 that should satisfy p1>t, p2>t
+mt::PieceWisePol composePieceWisePol(const double t, const double dc, mt::PieceWisePol& p1, mt::PieceWisePol& p2)
 {
   // if t is in between p1 and p2, force p2[0] to be t
   if (t > p1.times.back() && t < p2.times.front())  // && fabs(t - p2.times.front()) <= dc) TODO Sometimes fabs(t -
@@ -284,7 +284,7 @@ PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& 
     // std::cout << std::setprecision(30) << "p1.times.back()= " << p1.times.back() << std::endl;
     // std::cout << std::setprecision(30) << "p2.times.front() = " << p2.times.front() << std::endl;
     // std::cout << std::setprecision(30) << "p2.times.back() = " << p2.times.back() << std::endl;
-    PieceWisePol dummy;
+    mt::PieceWisePol dummy;
     return dummy;
   }
 
@@ -306,7 +306,7 @@ PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& 
     }
   }
 
-  PieceWisePol p;
+  mt::PieceWisePol p;
   p.times.push_back(t);
 
   for (auto index_1_i : indexes1)
@@ -336,7 +336,7 @@ PieceWisePol composePieceWisePol(const double t, const double dc, PieceWisePol& 
   return p;
 }
 
-std::vector<std::string> pieceWisePol2String(const PieceWisePol& piecewisepol)
+std::vector<std::string> pieceWisePol2String(const mt::PieceWisePol& piecewisepol)
 {
   // Define strings
   std::string s_x = "0.0";
@@ -868,7 +868,7 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
   return intersection;
 }
 
-visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const trajectory& data, double max_value, int increm,
+visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const mt::trajectory& data, double max_value, int increm,
                                                               std::string ns, double scale, std::string color_type,
                                                               int id_agent, int n_agents)
 {

@@ -28,10 +28,10 @@ typedef CGAL::Creator_uniform_3<double, Point_3> PointCreator;
 typedef std::vector<CGAL_Polyhedron_3> ConvexHullsOfCurve;
 typedef std::vector<ConvexHullsOfCurve> ConvexHullsOfCurves;
 
-ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls);
+mt::ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls);
 
 vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves);
 
 CGAL_Polyhedron_3 convexHullOfPoints(const std::vector<Point_3>& points);
 
-mader_types::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls);
+mt::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls);

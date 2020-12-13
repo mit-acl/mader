@@ -60,7 +60,7 @@ class OctopusSearch
 {
 public:
   OctopusSearch(std::string basis, int num_pol, int deg_pol, double alpha_shrink);
-  void setUp(double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls);
+  void setUp(double t_min, double t_max, const mt::ConvexHullsOfCurves_Std& hulls);
   ~OctopusSearch();
 
   void setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector3d& a_max, int num_samples_x, int num_samples_y,
@@ -80,7 +80,7 @@ public:
 
   void recoverPath(Node* node1_ptr);
 
-  void getAllTrajsFound(std::vector<trajectory>& all_trajs_found);
+  void getAllTrajsFound(std::vector<mt::trajectory>& all_trajs_found);
 
   void computeInverses();
 
@@ -92,8 +92,8 @@ public:
 
   int getNumOfLPsRun();
 
-  void getBestTrajFound(trajectory& best_traj_found, PieceWisePol& pwp, double dc);
-  void getEdgesConvexHulls(mader_types::Edges& edges_convex_hulls);
+  void getBestTrajFound(mt::trajectory& best_traj_found, mt::PieceWisePol& pwp, double dc);
+  void getEdgesConvexHulls(mt::Edges& edges_convex_hulls);
 
   int B_SPLINE = 1;  // B-Spline Basis
   int MINVO = 2;     // Minimum volume basis
@@ -155,7 +155,7 @@ private:
   Eigen::Vector3d v_max_;
   Eigen::Vector3d a_max_;
 
-  ConvexHullsOfCurves_Std hulls_;
+  mt::ConvexHullsOfCurves_Std hulls_;
   separator::Separator* separator_solver_;
 
   int num_samples_x_ = 3;

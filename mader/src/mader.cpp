@@ -26,7 +26,7 @@ using namespace termcolor;
 // typedef ROSWallTimer MyTimer;
 typedef MADER_timers::Timer MyTimer;
 
-Mader::Mader(parameters par) : par_(par)
+Mader::Mader(mt::parameters par) : par_(par)
 {
   drone_status_ == DroneStatus::YAWING;
   G_.pos << 0, 0, 0;
@@ -87,7 +87,7 @@ Mader::Mader(parameters par) : par_(par)
   par_for_solver.allow_infeasible_guess = par_.allow_infeasible_guess;
   par_for_solver.alpha_shrink = par_.alpha_shrink;
 
-  basisConverter basis_converter;
+  mt::basisConverter basis_converter;
 
   if (par.basis == "MINVO")
   {
@@ -116,7 +116,7 @@ Mader::Mader(parameters par) : par_(par)
   separator_solver_ = new separator::Separator();
 }
 
-void Mader::dynTraj2dynTrajCompiled(const dynTraj& traj, dynTrajCompiled& traj_compiled)
+void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled& traj_compiled)
 {
   mtx_t_.lock();
   for (auto function_i : traj.function)
@@ -154,7 +154,7 @@ void Mader::dynTraj2dynTrajCompiled(const dynTraj& traj, dynTrajCompiled& traj_c
   traj_compiled.pwp = traj.pwp;
 }
 // Note that we need to compile the trajectories inside mader.cpp because t_ is in mader.hpp
-void Mader::updateTrajObstacles(dynTraj traj)
+void Mader::updateTrajObstacles(mt::dynTraj traj)
 {
   MyTimer tmp_t(true);
 
@@ -165,12 +165,12 @@ void Mader::updateTrajObstacles(dynTraj traj)
 
   mtx_trajs_.lock();
 
-  std::vector<dynTrajCompiled>::iterator obs_ptr = std::find_if(
-      trajs_.begin(), trajs_.end(), [=](const dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
+  std::vector<mt::dynTrajCompiled>::iterator obs_ptr = std::find_if(
+      trajs_.begin(), trajs_.end(), [=](const mt::dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
 
   bool exists_in_local_map = (obs_ptr != std::end(trajs_));
 
-  dynTrajCompiled traj_compiled;
+  mt::dynTrajCompiled traj_compiled;
   dynTraj2dynTrajCompiled(traj, traj_compiled);
 
   if (exists_in_local_map)
@@ -228,7 +228,7 @@ void Mader::updateTrajObstacles(dynTraj traj)
   {
     // ROS_WARN_STREAM("Removing " << id);
     trajs_.erase(
-        std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
+        std::remove_if(trajs_.begin(), trajs_.end(), [&](mt::dynTrajCompiled const& traj) { return traj.id == id; }),
         trajs_.end());
   }
 
@@ -238,7 +238,7 @@ void Mader::updateTrajObstacles(dynTraj traj)
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
 
-std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(PieceWisePol& pwp, double t_start, double t_end,
+std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, double t_start, double t_end,
                                                        const Eigen::Vector3d& delta)
 {
   std::vector<Eigen::Vector3d> points;
@@ -299,7 +299,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(PieceWisePol& pwp, double
 }
 
 // return a vector that contains all the vertexes of the polyhedral approx of an interval.
-std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(dynTrajCompiled& traj, double t_start, double t_end)
+std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj, double t_start, double t_end)
 {
   Eigen::Vector3d delta = Eigen::Vector3d::Zero();
   if (traj.is_agent == false)
@@ -348,7 +348,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(dynTrajCompiled& traj, do
 }
 
 // See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
-CGAL_Polyhedron_3 Mader::convexHullOfInterval(dynTrajCompiled& traj, double t_start, double t_end)
+CGAL_Polyhedron_3 Mader::convexHullOfInterval(mt::dynTrajCompiled& traj, double t_start, double t_end)
 {
   std::vector<Eigen::Vector3d> points = vertexesOfInterval(traj, t_start, t_end);
 
@@ -426,7 +426,7 @@ void Mader::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doubl
   {
     // ROS_INFO_STREAM("traj " << id << " doesn't affect me");
     trajs_.erase(
-        std::remove_if(trajs_.begin(), trajs_.end(), [&](dynTrajCompiled const& traj) { return traj.id == id; }),
+        std::remove_if(trajs_.begin(), trajs_.end(), [&](mt::dynTrajCompiled const& traj) { return traj.id == id; }),
         trajs_.end());
   }
 
@@ -443,7 +443,7 @@ bool Mader::IsTranslating()
   return (drone_status_ == DroneStatus::GOAL_SEEN || drone_status_ == DroneStatus::TRAVELING);
 }
 
-ConvexHullsOfCurve Mader::convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end)
+ConvexHullsOfCurve Mader::convexHullsOfCurve(mt::dynTrajCompiled& traj, double t_start, double t_end)
 {
   ConvexHullsOfCurve convexHulls;
   double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
@@ -557,8 +557,8 @@ bool Mader::initialized()
   return true;
 }
 
-// check wheter a dynTrajCompiled and a pwp_optimized are in collision in the interval [t_start, t_end]
-bool Mader::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_start, double t_end)
+// check wheter a mt::dynTrajCompiled and a pwp_optimized are in collision in the interval [t_start, t_end]
+bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start, double t_end)
 {
   Eigen::Vector3d n_i;
   double d_i;
@@ -595,7 +595,7 @@ bool Mader::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_opt
   return false;
 }
 // Checks that I have not received new trajectories that affect me while doing the optimization
-bool Mader::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
+bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
 {
   started_check_ = true;
 
@@ -624,8 +624,8 @@ bool Mader::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
   return result;
 }
 
-bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
-                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run, PieceWisePol& pwp_out)
+bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
+                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out)
 {
   MyTimer replanCB_t(true);
 
@@ -795,7 +795,7 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
   mtx_trajs_.unlock();
 
-  ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
+  mt::ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
   edges_obstacles_out = vectorGCALPol2edges(hulls);
 
@@ -833,7 +833,7 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   // std::cout << blue << "Average improvement so far" << std::setprecision(5) << av_improvement_nlopt_ << reset
   //          << std::endl;
 
-  PieceWisePol pwp_now;
+  mt::PieceWisePol pwp_now;
   solver_->getSolution(pwp_now);
 
   MyTimer check_t(true);

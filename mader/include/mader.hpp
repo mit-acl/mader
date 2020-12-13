@@ -41,9 +41,9 @@ using namespace termcolor;
 class Mader
 {
 public:
-  Mader(parameters par);
-  bool replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
-              std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run, PieceWisePol& pwp_out);
+  Mader(mt::parameters par);
+  bool replan(mt::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
+              std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out);
   void updateState(state data);
 
   bool getNextGoal(state& next_goal);
@@ -53,33 +53,33 @@ public:
   void resetInitialization();
 
   bool IsTranslating();
-  void updateTrajObstacles(dynTraj traj);
+  void updateTrajObstacles(mt::dynTraj traj);
 
 private:
   state M_;
-  committedTrajectory plan_;
+  mt::committedTrajectory plan_;
 
   double previous_yaw_ = 0.0;
 
-  void dynTraj2dynTrajCompiled(const dynTraj& traj, dynTrajCompiled& traj_compiled);
+  void dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled& traj_compiled);
 
   bool initializedStateAndTermGoal();
 
-  bool safetyCheckAfterOpt(PieceWisePol pwp_optimized);
+  bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized);
 
-  bool trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_optimized, double t_start, double t_end);
+  bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start, double t_end);
 
   void removeTrajsThatWillNotAffectMe(const state& A, double t_start, double t_end);
 
   /*  vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves);
-    ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls);*/
+    mt::ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls);*/
   ConvexHullsOfCurves convexHullsOfCurves(double t_start, double t_end);
-  ConvexHullsOfCurve convexHullsOfCurve(dynTrajCompiled& traj, double t_start, double t_end);
-  CGAL_Polyhedron_3 convexHullOfInterval(dynTrajCompiled& traj, double t_start, double t_end);
+  ConvexHullsOfCurve convexHullsOfCurve(mt::dynTrajCompiled& traj, double t_start, double t_end);
+  CGAL_Polyhedron_3 convexHullOfInterval(mt::dynTrajCompiled& traj, double t_start, double t_end);
 
-  std::vector<Eigen::Vector3d> vertexesOfInterval(PieceWisePol& pwp, double t_start, double t_end,
+  std::vector<Eigen::Vector3d> vertexesOfInterval(mt::PieceWisePol& pwp, double t_start, double t_end,
                                                   const Eigen::Vector3d& delta_inflation);
-  std::vector<Eigen::Vector3d> vertexesOfInterval(dynTrajCompiled& traj, double t_start, double t_end);
+  std::vector<Eigen::Vector3d> vertexesOfInterval(mt::dynTrajCompiled& traj, double t_start, double t_end);
   void yaw(double diff, state& next_goal);
 
   void getDesiredYaw(state& next_goal);
@@ -95,12 +95,12 @@ private:
 
   void print_status();
 
-  parameters par_;
+  mt::parameters par_;
 
   double t_;  // variable where the expressions of the trajs of the dyn obs are evaluated
 
   std::mutex mtx_trajs_;
-  std::vector<dynTrajCompiled> trajs_;
+  std::vector<mt::dynTrajCompiled> trajs_;
 
   bool state_initialized_ = false;
   bool planner_initialized_ = false;
@@ -138,7 +138,7 @@ private:
   int solutions_found_ = 0;
   int total_replannings_ = 0;
 
-  PieceWisePol pwp_prev_;
+  mt::PieceWisePol pwp_prev_;
 
   bool exists_previous_pwp_ = false;
 

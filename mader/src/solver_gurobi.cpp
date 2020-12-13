@@ -33,7 +33,7 @@ SolverGurobi::SolverGurobi(par_solver &par)
   num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
 
   ///////////////////////////////////////
-  basisConverter basis_converter;
+  mt::basisConverter basis_converter;
 
   a_star_bias_ = par.a_star_bias;
   // basis used for collision
@@ -396,7 +396,7 @@ bool SolverGurobi::getIntersectionWithPlane(const Eigen::Vector3d &P1, const Eig
 //   return p0 - rayVector * (diff.dot(planeNormal)) / (rayVector.dot(planeNormal));
 // }
 
-void SolverGurobi::setHulls(ConvexHullsOfCurves_Std &hulls)
+void SolverGurobi::setHulls(mt::ConvexHullsOfCurves_Std &hulls)
 
 {
   hulls_.clear();
@@ -679,7 +679,7 @@ bool SolverGurobi::optimize()
   return true;
 }
 
-void SolverGurobi::getSolution(PieceWisePol &solution)
+void SolverGurobi::getSolution(mt::PieceWisePol &solution)
 {
   solution = solution_;
 }

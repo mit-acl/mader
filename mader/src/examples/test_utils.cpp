@@ -1,6 +1,6 @@
 #include "utils.hpp"
 #include "exprtk.hpp"
-/*Eigen::Vector3d eval(PieceWisePol piecewisepol, double t)
+/*Eigen::Vector3d eval(mt::PieceWisePol piecewisepol, double t)
 {
   Eigen::Vector3d result;
 
@@ -36,7 +36,7 @@
 }*/
 int main()
 {
-  PieceWisePol piecewisepol;
+  mt::PieceWisePol piecewisepol;
   piecewisepol.times.push_back(0.0);
   piecewisepol.times.push_back(1.0);
   piecewisepol.times.push_back(2.0);
@@ -111,7 +111,7 @@ int main()
 
   // Test composing to pwp
 
-  PieceWisePol piecewisepolB;
+  mt::PieceWisePol piecewisepolB;
   piecewisepolB.times.push_back(2.5);
   piecewisepolB.times.push_back(3.5);
   piecewisepolB.times.push_back(4.5);
@@ -137,7 +137,7 @@ int main()
 
   for (t = 0; t < 5; t = t + 0.4)
   {
-    PieceWisePol piecewisepolAB = composePieceWisePol(t, -0.1, piecewisepol, piecewisepolB);
+    mt::PieceWisePol piecewisepolAB = composePieceWisePol(t, -0.1, piecewisepol, piecewisepolB);
     std::cout << "==================" << std::endl;
     std::cout << "t= " << t << std::endl;
     std::cout << "==================" << std::endl;

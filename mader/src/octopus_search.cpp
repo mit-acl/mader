@@ -30,7 +30,7 @@ OctopusSearch::OctopusSearch(std::string basis, int num_pol, int deg_pol, double
   N_ = M_ - p_ - 1;
   num_pol_ = num_pol;
 
-  basisConverter basis_converter;
+  mt::basisConverter basis_converter;
 
   if (basis == "MINVO")
   {
@@ -77,7 +77,7 @@ OctopusSearch::OctopusSearch(std::string basis, int num_pol, int deg_pol, double
   // Mbs2basis_inverse_ = Mbs2basis_.inverse();
 }
 
-void OctopusSearch::setUp(double t_min, double t_max, const ConvexHullsOfCurves_Std& hulls)
+void OctopusSearch::setUp(double t_min, double t_max, const mt::ConvexHullsOfCurves_Std& hulls)
 {
   num_of_segments_ = (M_ - 2 * p_);
 
@@ -122,13 +122,13 @@ void OctopusSearch::setVisual(bool visual)
   visual_ = visual;
 }
 
-void OctopusSearch::getBestTrajFound(trajectory& best_traj_found, PieceWisePol& pwp, double dc)
+void OctopusSearch::getBestTrajFound(mt::trajectory& best_traj_found, mt::PieceWisePol& pwp, double dc)
 {
-  trajectory traj;
+  mt::trajectory traj;
   CPs2TrajAndPwp(result_, best_traj_found, pwp, N_, p_, num_pol_, knots_, dc);
 }
 
-void OctopusSearch::getEdgesConvexHulls(mader_types::Edges& edges_convex_hulls)
+void OctopusSearch::getEdgesConvexHulls(mt::Edges& edges_convex_hulls)
 {
   Eigen::Matrix<double, 3, 4> last4Cps;
   Eigen::Matrix<double, 3, 4> last4Cps_new_basis;
@@ -146,7 +146,7 @@ void OctopusSearch::getEdgesConvexHulls(mader_types::Edges& edges_convex_hulls)
 
     for (int j = 0; j < 4; j++)
     {  // For every point in the convex hull
-      mader_types::Edge edge;
+      mt::Edge edge;
       edge.first = last4Cps_new_basis.col(j);
       for (int i = 0; i < 4; i++)
       {  // generate an edge from that point j to the other points i!=j
@@ -164,7 +164,7 @@ void OctopusSearch::getEdgesConvexHulls(mader_types::Edges& edges_convex_hulls)
   }
 }
 
-void OctopusSearch::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
+void OctopusSearch::getAllTrajsFound(std::vector<mt::trajectory>& all_trajs_found)
 {
   all_trajs_found.clear();
 
@@ -185,8 +185,8 @@ void OctopusSearch::getAllTrajsFound(std::vector<trajectory>& all_trajs_found)
 
     std::reverse(std::begin(cps), std::end(cps));  // cps=[q0 q1 q2 q3 q4 ...]
 
-    trajectory traj;
-    PieceWisePol pwp;
+    mt::trajectory traj;
+    mt::PieceWisePol pwp;
     CPs2TrajAndPwp(cps, traj, pwp, N_, p_, num_pol_, knots_, 0.01);  // Last number is the resolution
 
     all_trajs_found.push_back(traj);

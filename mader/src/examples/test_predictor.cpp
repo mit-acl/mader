@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   // positions.push_back(Eigen::Vector3d(-1.28940191662426, -0.817790982093464, 0.495090256572718));
   // positions.push_back(Eigen::Vector3d(-0.0338476351997402, -0.566472456216861, 0.0248364124030608));
 
-  PieceWisePol pwp = pred.predictPwp(times, positions);
+  mt::PieceWisePol pwp = pred.predictPwp(times, positions);
 
   std::cout << green << "pwp obtained is " << reset << std::endl;
   pwp.print();

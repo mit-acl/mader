@@ -46,7 +46,7 @@ void Predictor::trajCB(const mader_msgs::DynTraj& msg)
     return;
   }
 
-  dynTraj traj;
+  mt::dynTraj traj;
   traj.function.push_back(msg.function[0]);
   traj.function.push_back(msg.function[1]);
   traj.function.push_back(msg.function[2]);
@@ -55,7 +55,7 @@ void Predictor::trajCB(const mader_msgs::DynTraj& msg)
   traj.is_agent = msg.is_agent;
   traj.time_received = ros::Time::now().toSec();
 
-  dynTrajCompiled traj_compiled;
+  mt::dynTrajCompiled traj_compiled;
 
   for (auto function_i : traj.function)
   {
@@ -98,11 +98,11 @@ void Predictor::trajCB(const mader_msgs::DynTraj& msg)
     std::cout << std::setprecision(15) << times_i << reset << std::endl;
   }
 
-  PieceWisePol pwp_predicted_traj = predictPwp(times, last_positions);
+  mt::PieceWisePol pwp_predicted_traj = predictPwp(times, last_positions);
 
   std::cout << "At the end of the past traj = " << pwp_predicted_traj.eval(times.back());
 
-  // pwp2PwpMsg(PieceWisePol pwp, const std::vector<double>& bbox, const int& id,
+  // pwp2PwpMsg(mt::PieceWisePol pwp, const std::vector<double>& bbox, const int& id,
   // const bool& is_agent)
   bool is_agent = true;
   mader_msgs::PieceWisePolTraj pwp_msg = pwp2PwpMsg(pwp_predicted_traj, traj_compiled.bbox, traj_compiled.id, is_agent);
@@ -127,7 +127,7 @@ void Predictor::stateCB(const snapstack_msgs::State& msg)
   state_.setAccel(0.0, 0.0, 0.0);
 }
 
-void Predictor::sample(const dynTrajCompiled& traj_compiled, std::vector<double>& times,
+void Predictor::sample(const mt::dynTrajCompiled& traj_compiled, std::vector<double>& times,
                        std::vector<Eigen::Vector3d>& last_positions)
 {
   // sample last N positions
@@ -153,11 +153,11 @@ void Predictor::sample(const dynTrajCompiled& traj_compiled, std::vector<double>
     times.push_back(t_);
   }
 }
-PieceWisePol Predictor::predictPwp(std::vector<double>& times, std::vector<Eigen::Vector3d>& last_positions)
+mt::PieceWisePol Predictor::predictPwp(std::vector<double>& times, std::vector<Eigen::Vector3d>& last_positions)
 {
   Eigen::Spline3d spline = findInterpolatingBsplineNormalized(times, last_positions);
 
-  // And now take the last polynomial of the spline and create a PieceWisePol with only it
+  // And now take the last polynomial of the spline and create a mt::PieceWisePol with only it
 
   Eigen::RowVectorXd knots = spline.knots();
   Eigen::MatrixXd control_points = spline.ctrls();
@@ -174,7 +174,7 @@ PieceWisePol Predictor::predictPwp(std::vector<double>& times, std::vector<Eigen
                            4);  // The columns of V contain the control points of the last interval
 
   // now create the pwp that contains only the last interval of the trajectory
-  PieceWisePol pwp_predicted_traj;
+  mt::PieceWisePol pwp_predicted_traj;
 
   double t0 = times.back();
 
@@ -256,7 +256,7 @@ PieceWisePol Predictor::predictPwp(std::vector<double>& times, std::vector<Eigen
 // if ((last_positions[-2] - last_positions.back()).norm() < 1e-6)
 // {
 //   // this is a static obstacle
-//   PieceWisePol pwp_predicted_traj;
+//   mt::PieceWisePol pwp_predicted_traj;
 //   pwp_predicted_traj.times.push_back(pwp.times.back());                    // From the end of the fitted
 //   trajectory pwp_predicted_traj.times.push_back(std::numeric_limits<double>::max());  // to t -> Infinity
 

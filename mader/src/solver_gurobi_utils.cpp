@@ -93,7 +93,7 @@ void SolverGurobi::saturateQ(std::vector<Eigen::Vector3d> &q)
 //   std::cout << "_______________________" << std::endl;
 // }
 
-void SolverGurobi::findCentroidHull(const Polyhedron_Std &hull, Eigen::Vector3d &centroid)
+void SolverGurobi::findCentroidHull(const mt::Polyhedron_Std &hull, Eigen::Vector3d &centroid)
 {
   centroid = Eigen::Vector3d::Zero();
 

@@ -8,9 +8,9 @@
 
 #include "bspline_utils.hpp"
 
-// Given the control points, this function returns the associated traj and PieceWisePol
+// Given the control points, this function returns the associated traj and mt::PieceWisePol
 // Note that if q.size()!=(N+1), then only some of the knots are used
-void CPs2TrajAndPwp(std::vector<Eigen::Vector3d> &q, std::vector<state> &traj, PieceWisePol &solution, int N, int p,
+void CPs2TrajAndPwp(std::vector<Eigen::Vector3d> &q, std::vector<state> &traj, mt::PieceWisePol &solution, int N, int p,
                     int num_pol, Eigen::RowVectorXd &knots, double dc)
 {
   // std::cout << "q.size()= " << q.size() << std::endl;
