@@ -567,7 +567,8 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
   knots_ = knots;
   //////////////////
 
-  weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
+  // weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
+  weight_modified_ = weight_;
 
   // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
   // See also eq. 15 of the paper "Robust and Efficent quadrotor..."

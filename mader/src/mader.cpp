@@ -991,7 +991,7 @@ void Mader::getDesiredYaw(mt::state& next_goal)
 
 bool Mader::getNextGoal(mt::state& next_goal)
 {
-  if (initializedStateAndTermGoal() == false || (drone_status_ == DroneStatus::GOAL_REACHED && plan_.size() == 1))
+  if (initializedStateAndTermGoal() == false)  // || (drone_status_ == DroneStatus::GOAL_REACHED && plan_.size() == 1))
   {
     // std::cout << "Not publishing new goal!!" << std::endl;
     return false;
