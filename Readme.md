@@ -7,7 +7,7 @@ Single-Agent               |  Multi-Agent           |
 
 ## Citation
 
-When using MADER, please cite this paper ([pdf](https://arxiv.org/abs/2010.11061), [video](https://www.youtube.com/watch?v=aoSoiZDfxGE))::
+When using MADER, please cite this paper ([pdf](https://arxiv.org/abs/2010.11061), [video](https://www.youtube.com/watch?v=aoSoiZDfxGE)):
 
 ```bibtex
 @article{tordesillas2020mader,
@@ -26,8 +26,8 @@ MADER has been tested with
 
 The backend optimizer can be either Gurobi (recommended, default) or NLOPT: 
 
-* To use the `Gurobi`, install the [Gurobi Optimizer](https://www.gurobi.com/products/gurobi-optimizer/). You can test your installation typing `gurobi.sh` in the terminal. Have a look at [this section](#issues-when-installing-gurobi) if you have any issues.
-* To use `NLOPT`, set `USE_GUROBI` to `OFF` in the [CMakeList.txt](https://github.com/mit-acl/mader/blob/master/mader/CMakeLists.txt) and uncomment [these lines](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh#L19-L24) of the bash script. 
+* To use the [`Gurobi`](https://www.gurobi.com/), install the [Gurobi Optimizer](https://www.gurobi.com/products/gurobi-optimizer/). You can test your installation typing `gurobi.sh` in the terminal. Have a look at [this section](#issues-when-installing-gurobi) if you have any issues.
+* To use [`NLOPT`](https://nlopt.readthedocs.io/en/latest/), set `USE_GUROBI` to `OFF` in the [CMakeList.txt](https://github.com/mit-acl/mader/blob/master/mader/CMakeLists.txt). 
 
 Then simply run this commands:
 
@@ -35,10 +35,11 @@ Then simply run this commands:
 cd ~/ && mkdir ws && cd ws && mkdir src && cd src
 git clone https://github.com/mit-acl/mader.git
 cd ..
-bash mader/install_and_compile.sh
+bash mader/install_and_compile.sh      #If you are going to use Gurobi
+#bash mader/install_and_compile.sh -n  #If you are going to use NLOPT
 ```
 
-The [bash script](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh) will install [NLopt v2.6.2](https://nlopt.readthedocs.io/en/latest/), [CGAL v4.12.4](https://www.cgal.org/), [GLPK](https://www.gnu.org/software/glpk/) and other ROS packages (check the script for details). It will also download the repo and compile it. This bash script assumes that you already have ROS installed in your machine. 
+The [bash script](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh) will install [NLopt v2.6.2](https://nlopt.readthedocs.io/en/latest/) (only if executed with the `-n` option), [CGAL v4.12.4](https://www.cgal.org/), [GLPK](https://www.gnu.org/software/glpk/) and other ROS packages (check the script for details). It will also download the repo and compile it. This bash script assumes that you already have ROS installed in your machine. 
 
 ### Running Simulations
 
