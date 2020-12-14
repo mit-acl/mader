@@ -9,7 +9,7 @@
 	<node ns="$(arg quad)" name="mader_commands" pkg="mader" type="mader_commands.py" output="screen"/>
 
 	<!-- Start Perfect tracker -->
-	<include file="$(find acl_sim)/launch/perfect_tracker_and_sim.launch">
+	<include file="$(find mader)/launch/perfect_tracker_and_sim.launch">
   		<arg name="quad" value="$(arg quad)"/>
   		<arg name="gazebo" value="false"/>
         <arg name="x" value="$(arg x)"/>
