@@ -7,7 +7,7 @@ Single-Agent               |  Multi-Agent           |
 
 ## Citation
 
-When using MADER, please cite [this paper](https://www.google.com/):
+When using MADER, please cite this paper ([pdf](https://arxiv.org/abs/2010.11061), [video](https://www.youtube.com/watch?v=aoSoiZDfxGE))::
 
 ```bibtex
 @article{tordesillas2020mader,
@@ -22,9 +22,14 @@ When using MADER, please cite [this paper](https://www.google.com/):
 
 MADER has been tested with 
 * Ubuntu 16.04/ROS Kinetic
-* Ubuntu 18.04/ROS Melodic 
+* Ubuntu 18.04/ROS Melodic
 
-To download the repo, install all the dependencies and compile simply run these commands:
+The backend optimizer can be either Gurobi (recommended, default) or NLOPT: 
+
+* To use the `Gurobi`, install the [Gurobi Optimizer](https://www.gurobi.com/products/gurobi-optimizer/). You can test your installation typing `gurobi.sh` in the terminal. Have a look at [this section](#issues-when-installing-gurobi) if you have any issues.
+* To use `NLOPT`, set `USE_GUROBI` to `OFF` in the [CMakeList.txt](https://github.com/mit-acl/mader/blob/master/mader/CMakeLists.txt) and uncomment [these lines](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh#L19-L24) of the bash script. 
+
+Then simply run this commands:
 
 ```bash
 cd ~/ && mkdir ws && cd ws && mkdir src && cd src
@@ -33,7 +38,7 @@ cd ..
 bash mader/install_and_compile.sh
 ```
 
-The [bash script](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh) will install [NLopt v2.6.2](https://nlopt.readthedocs.io/en/latest/), [CGAL v4.12.4](https://www.cgal.org/), [GLPK](https://www.gnu.org/software/glpk/) and other ROS packages (check the script for details). This bash script assumes that you already have ROS installed in your machine. 
+The [bash script](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh) will install [NLopt v2.6.2](https://nlopt.readthedocs.io/en/latest/), [CGAL v4.12.4](https://www.cgal.org/), [GLPK](https://www.gnu.org/software/glpk/) and other ROS packages (check the script for details). It will also download the repo and compile it. This bash script assumes that you already have ROS installed in your machine. 
 
 ### Running Simulations
 
@@ -79,6 +84,26 @@ And you should obtain this:
 
 (note that the octopus search has some randomness in it, so you may obtain a different result each time you run it).
 
-## Credits:
-This package uses some C++ classes from the [DecompROS](https://github.com/sikang/DecompROS) repo (included in the `thirdparty` folder), so credit to it as well. 
+## Issues when installing Gurobi:
 
+If you find the error:
+```
+“gurobi_continuous.cpp:(.text.startup+0x74): undefined reference to
+`GRBModel::set(GRB_StringAttr, std::__cxx11::basic_string<char,
+std::char_traits<char>, std::allocator<char> > const&)'”
+```
+The solution is:
+
+```bash
+cd /opt/gurobi800/linux64/src/build  #Note that the name of the folder gurobi800 changes according to the Gurobi version
+sudo make
+sudo cp libgurobi_c++.a ../../lib/
+```
+
+## Credits:
+This package uses some C++ classes from the [DecompROS](https://github.com/sikang/DecompROS) repo (included in the `thirdparty` folder).
+
+
+---------
+
+> **Approval for release**: This code was approved for release by The Boeing Company in December 2020. 
