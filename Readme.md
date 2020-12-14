@@ -53,6 +53,8 @@ To run many single-agent simulations in different random environments, you can g
 
 #### Multi-agent
 
+> **Note**: For a high number of agents, the performance of MADER improves with the number of CPUs available in your computer. 
+
 Change these parameters in `mader.yaml`:
 
 ```yaml
