@@ -71,12 +71,11 @@ bool SolverGurobi::generateAStarGuess()
     // https://github.com/mit-acl/separator/tree/06c0ddc6e2f11dbfc5b6083c2ea31b23fd4fa9d1
 
     // At this point the blue planes have the the equation n'x+d == -1
-    // The free space is on the side n'x+d <= -1
+    // The free space is on the side n'x+d <= -1 (and also on the side n'x+d <= +1)
     // and these blue planes does NOT have to be close to the vertexes of the obstacle
 
     /////////////////////////////////////
-    //// This section moves the planes to put them as close as possible to the obstacles, but
-    //// doing so provokes numerical issues in Gurobi. TODO: find out why (maybe ||n|| too big?)
+    //// This section moves the planes to put them as close as possible to the obstacles
     ////
     //// See 2nd figure of https://github.com/mit-acl/separator
     // for (int i = 0; i <= (N_ - 3); i++)  // i  is the interval (\equiv segment)
