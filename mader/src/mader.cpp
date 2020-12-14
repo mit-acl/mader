@@ -709,6 +709,8 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   mtx_plan_.lock();
 
+  mu::saturate(deltaT_, par_.lower_bound_runtime_snlopt / par_.dc, par_.upper_bound_runtime_snlopt / par_.dc);
+
   k_index_end = std::max((int)(plan_.size() - deltaT_), 0);
 
   if (plan_.size() < 5)
