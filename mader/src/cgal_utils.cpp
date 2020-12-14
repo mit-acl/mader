@@ -10,19 +10,8 @@
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/Triangulation_3.h>
 
-struct Plane_equation
-{
-  template <class Facet>
-  typename Facet::Plane_3 operator()(Facet& f)
-  {
-    typename Facet::Halfedge_handle h = f.halfedge();
-    typedef typename Facet::Plane_3 Plane;
-    return Plane(h->vertex()->point(), h->next()->vertex()->point(), h->next()->next()->vertex()->point());
-  }
-};
-
 // Convert several polyhedra to a vector that contains all the edges of all these polyhedra
-mt::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls)
+mt::Edges cu::vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls)
 {
   // See example here:
   // http://cgal-discuss.949826.n4.nabble.com/Take-the-triangles-of-a-polyhedron-td4460275.html
@@ -62,7 +51,7 @@ mt::Edges vectorGCALPol2edges(const ConvexHullsOfCurves& convexHulls)
   return all_edges;
 }
 
-mt::ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls)
+mt::ConvexHullsOfCurves_Std cu::vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls)
 {
   mt::ConvexHullsOfCurves_Std convexHulls_of_curves_std;
 
@@ -99,7 +88,7 @@ mt::ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& co
   return convexHulls_of_curves_std;
 }
 
-vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves)
+vec_E<Polyhedron<3>> cu::vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves)
 {
   vec_E<Polyhedron<3>> vector_of_polyhedron_jps;
 
@@ -123,7 +112,7 @@ vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hull
   return vector_of_polyhedron_jps;
 }
 
-CGAL_Polyhedron_3 convexHullOfPoints(const std::vector<Point_3>& points)
+CGAL_Polyhedron_3 cu::convexHullOfPoints(const std::vector<Point_3>& points)
 {
   // generate 3 points randomly on a sphere of radius 1.0
   // and copy them to a vector
@@ -153,7 +142,8 @@ CGAL_Polyhedron_3 convexHullOfPoints(const std::vector<Point_3>& points)
 
   CGAL_Polyhedron_3 poly = *CGAL::object_cast<CGAL_Polyhedron_3>(&ch_object);
 
-  std::transform(poly.facets_begin(), poly.facets_end(), poly.planes_begin(), Plane_equation());  // Compute the planes
+  std::transform(poly.facets_begin(), poly.facets_end(), poly.planes_begin(),
+                 cu::Plane_equation());  // Compute the planes
 
   return poly;
 

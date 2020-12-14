@@ -50,7 +50,7 @@ ConvexHullsOfCurve createStaticObstacle(double x, double y, double z, int num_po
   points.push_back(Point_3(x + bbox_x / 2.0, y - bbox_y / 2.0, z + bbox_z / 2.0));
   points.push_back(Point_3(x + bbox_x / 2.0, y - bbox_y / 2.0, z - bbox_z / 2.0));
 
-  CGAL_Polyhedron_3 hull_interval = convexHullOfPoints(points);
+  CGAL_Polyhedron_3 hull_interval = cu::convexHullOfPoints(points);
 
   for (int i = 0; i < num_pol; i++)
   {
@@ -159,7 +159,7 @@ ConvexHullsOfCurve createDynamicObstacle(std::vector<visualization_msgs::MarkerA
 
     ma_vector.push_back(ma);
 
-    CGAL_Polyhedron_3 hull_interval = convexHullOfPoints(points_interval);
+    CGAL_Polyhedron_3 hull_interval = cu::convexHullOfPoints(points_interval);
     hulls_curve.push_back(hull_interval);
   }
   return hulls_curve;
@@ -269,8 +269,8 @@ int main(int argc, char** argv)
 
   std::cout << "hulls_curves.size()= " << hulls_curves.size() << std::endl;
 
-  mt::ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
-  // vec_E<Polyhedron<3>> jps_poly = vectorGCALPol2vectorJPSPol(hulls_curves);
+  mt::ConvexHullsOfCurves_Std hulls_std = cu::vectorGCALPol2vectorStdEigen(hulls_curves);
+  // vec_E<Polyhedron<3>> jps_poly = cu::vectorGCALPol2vectorJPSPol(hulls_curves);
 
   for (int i = 0; i < num_pol; i++)
   {
@@ -281,7 +281,7 @@ int main(int argc, char** argv)
     tmp.push_back(tmp2);
 
     // convert the obstacles polyhedron arrays
-    decomp_ros_msgs::PolyhedronArray poly_msg = DecompROS::polyhedron_array_to_ros(vectorGCALPol2vectorJPSPol(tmp));
+    decomp_ros_msgs::PolyhedronArray poly_msg = DecompROS::polyhedron_array_to_ros(cu::vectorGCALPol2vectorJPSPol(tmp));
     poly_msg.header.frame_id = "world";
     jps_poly_pubs[i].publish(poly_msg);
   }

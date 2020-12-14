@@ -37,7 +37,7 @@ ConvexHullsOfCurve createStaticObstacle(double x, double y, double z, int num_po
   points.push_back(Point_3(x + bbox_x / 2.0, y - bbox_y / 2.0, z + bbox_z / 2.0));
   points.push_back(Point_3(x + bbox_x / 2.0, y - bbox_y / 2.0, z - bbox_z / 2.0));
 
-  CGAL_Polyhedron_3 hull_interval = convexHullOfPoints(points);
+  CGAL_Polyhedron_3 hull_interval = cu::convexHullOfPoints(points);
 
   for (int i = 0; i < num_pol; i++)
   {
@@ -57,7 +57,7 @@ int main()
   ConvexHullsOfCurve hulls_curve = createStaticObstacle(0.0, 0.0, bbox_z / 2.0, num_pol, bbox_x, bbox_y, bbox_z);
   ConvexHullsOfCurves hulls_curves;
   hulls_curves.push_back(hulls_curve);
-  mt::ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
+  mt::ConvexHullsOfCurves_Std hulls_std = cu::vectorGCALPol2vectorStdEigen(hulls_curves);
 
   ms::par_solver parameters;
   parameters.v_max = 20 * Eigen::Vector3d::Ones();

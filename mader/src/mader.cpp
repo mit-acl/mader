@@ -371,7 +371,7 @@ CGAL_Polyhedron_3 Mader::convexHullOfInterval(mt::dynTrajCompiled& traj, double 
     points_cgal.push_back(Point_3(point_i.x(), point_i.y(), point_i.z()));
   }
 
-  return convexHullOfPoints(points_cgal);
+  return cu::convexHullOfPoints(points_cgal);
 }
 
 // trajs_ is already locked when calling this function
@@ -810,9 +810,9 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
   mtx_trajs_.unlock();
 
-  mt::ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls);
-  // poly_safe_out = vectorGCALPol2vectorJPSPol(hulls);
-  edges_obstacles_out = vectorGCALPol2edges(hulls);
+  mt::ConvexHullsOfCurves_Std hulls_std = cu::vectorGCALPol2vectorStdEigen(hulls);
+  // poly_safe_out = cu::vectorGCALPol2vectorJPSPol(hulls);
+  edges_obstacles_out = cu::vectorGCALPol2edges(hulls);
 
   solver_->setHulls(hulls_std);
 
