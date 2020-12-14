@@ -10,8 +10,8 @@
 
 // Given the control points, this function returns the associated traj and mt::PieceWisePol
 // Note that if q.size()!=(N+1), then only some of the knots are used
-void CPs2TrajAndPwp(std::vector<Eigen::Vector3d> &q, std::vector<state> &traj, mt::PieceWisePol &solution, int N, int p,
-                    int num_pol, Eigen::RowVectorXd &knots, double dc)
+void CPs2TrajAndPwp(std::vector<Eigen::Vector3d> &q, std::vector<mt::state> &traj, mt::PieceWisePol &solution, int N,
+                    int p, int num_pol, Eigen::RowVectorXd &knots, double dc)
 {
   // std::cout << "q.size()= " << q.size() << std::endl;
   // std::cout << "N= " << N << std::endl;
@@ -116,7 +116,7 @@ void CPs2TrajAndPwp(std::vector<Eigen::Vector3d> &q, std::vector<state> &traj, m
     // std::cout << "t= " << t << std::endl;
     Eigen::MatrixXd derivatives = spline.derivatives(t, 4);  // Compute all the derivatives up to order 4
 
-    state state_i;
+    mt::state state_i;
 
     state_i.setPos(derivatives.col(0));  // First column
     state_i.setVel(derivatives.col(1));

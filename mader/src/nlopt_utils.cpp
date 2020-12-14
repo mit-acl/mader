@@ -50,11 +50,11 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   double runtime = 1.0;    //(not use this criterion)  //[seconds]
   double v_max = 10;
   double a_max = 60;
-  state initial;
+  mt::state initial;
   initial.pos = Eigen::Vector3d(-4.0, 1.0, -2.0);
   initial.vel = Eigen::Vector3d(1.2, 3.5, 1.2);
   initial.vel = Eigen::Vector3d(-1.3, 0.6, 1.5);
-  state final;
+  mt::state final;
   final.pos = Eigen::Vector3d(4.0, 2.0, 3.0);
   double dist_to_use_straight_guess = 1.0;
   double a_star_fraction_voxel_size = 0.0;

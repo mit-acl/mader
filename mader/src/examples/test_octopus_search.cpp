@@ -1,3 +1,11 @@
+/* ----------------------------------------------------------------------------
+ * Copyright 2020, Jesus Tordesillas Torres, Aerospace Controls Laboratory
+ * Massachusetts Institute of Technology
+ * All Rights Reserved
+ * Authors: Jesus Tordesillas, et al.
+ * See LICENSE file for the license information
+ * -------------------------------------------------------------------------- */
+
 #include <Eigen/Dense>
 #include "octopus_search.hpp"
 #include "mader_types.hpp"
@@ -62,7 +70,7 @@ visualization_msgs::Marker getMarker(Eigen::Vector3d& center, double bbox_x, dou
   m.ns = "marker_dyn_obs";
   m.action = visualization_msgs::Marker::ADD;
   m.id = id;
-  m.color = getColorJet(t, t_min, t_final);
+  m.color = mu::getColorJet(t, t_min, t_final);
   m.scale.x = bbox_x;
   m.scale.y = bbox_y;  // rviz complains if not
   m.scale.z = bbox_z;  // rviz complains if not
@@ -89,7 +97,7 @@ visualization_msgs::Marker getMarker(Eigen::Vector3d& center, double bbox_x, dou
   //   m.ns = ns;
   //   m.action = visualization_msgs::Marker::ADD;
   //   m.id = j;
-  //   m.color = getColorJet(t, t_min, t_final);
+  //   m.color = mu::getColorJet(t, t_min, t_final);
   //   m.scale.x = bbox_x;
   //   m.scale.y = bbox_y;  // rviz complains if not
   //   m.scale.z = bbox_z;  // rviz complains if not
@@ -343,8 +351,8 @@ int main(int argc, char** argv)
   visualization_msgs::MarkerArray marker_array_all_trajs;
   for (auto traj : all_trajs_found)
   {
-    visualization_msgs::MarkerArray marker_array_traj =
-        trajectory2ColoredMarkerArray(traj, v_max.maxCoeff(), increm, "traj" + std::to_string(j), scale, "time", 0, 1);
+    visualization_msgs::MarkerArray marker_array_traj = mu::trajectory2ColoredMarkerArray(
+        traj, v_max.maxCoeff(), increm, "traj" + std::to_string(j), scale, "time", 0, 1);
     // std::cout << "size of marker_array_traj= " << marker_array_traj.markers.size() << std::endl;
     for (auto marker : marker_array_traj.markers)
     {
@@ -356,8 +364,8 @@ int main(int argc, char** argv)
   //---> the best trajectory found
   scale = 0.1;
   visualization_msgs::MarkerArray marker_array_best_traj;
-  marker_array_best_traj = trajectory2ColoredMarkerArray(best_traj_found, v_max.maxCoeff(), increm_best,
-                                                         "traj" + std::to_string(j), scale, "time", 0, 1);
+  marker_array_best_traj = mu::trajectory2ColoredMarkerArray(best_traj_found, v_max.maxCoeff(), increm_best,
+                                                             "traj" + std::to_string(j), scale, "time", 0, 1);
 
   double entries_per_interval = marker_array_best_traj.markers.size() / num_pol;
   for (int i = 0; i < num_pol; i++)
@@ -377,7 +385,7 @@ int main(int argc, char** argv)
   // Get the edges of the convex hulls and publish them
   mt::Edges edges_convex_hulls;
   myAStarSolver.getEdgesConvexHulls(edges_convex_hulls);
-  convex_hulls_pub.publish(edges2Marker(edges_convex_hulls, color(RED_NORMAL)));
+  convex_hulls_pub.publish(mu::edges2Marker(edges_convex_hulls, mu::color(mu::red_normal)));
 
   // publish the trajectories
   trajectories_found_pub.publish(marker_array_all_trajs);

@@ -13,15 +13,16 @@
 #include "termcolor.hpp"
 #include "octopus_search.hpp"
 #include "bspline_utils.hpp"
+#include "utils.hpp"
 using namespace termcolor;
 
 typedef MADER_timers::Timer MyTimer;
 
-template <typename T>
-int sgn(T val)
-{
-  return (T(0) < val) - (val < T(0));
-}
+// template <typename T>
+// int mu::sgn(T val)
+// {
+//   return (T(0) < val) - (val < T(0));
+// }
 
 OctopusSearch::OctopusSearch(std::string basis, int num_pol, int deg_pol, double alpha_shrink)
 {
@@ -354,8 +355,8 @@ bool OctopusSearch::computeAxisForNextInterval(const int i, const Eigen::Vector3
     {
       double g1 = viM1(axis);
       double tmp = -(M_interv_next(1, j) / M_interv_next(2, j)) + (M_interv_next(1, i) / M_interv_next(2, i));
-      double qli = (-sgn(M_interv_next(2, i)) * v_max_.x() - g1 * M_interv_next(0, i)) / M_interv_next(2, i);
-      double quj = (sgn(M_interv_next(2, j)) * v_max_.x() - g1 * M_interv_next(0, j)) / M_interv_next(2, j);
+      double qli = (-mu::sgn(M_interv_next(2, i)) * v_max_.x() - g1 * M_interv_next(0, i)) / M_interv_next(2, i);
+      double quj = (mu::sgn(M_interv_next(2, j)) * v_max_.x() - g1 * M_interv_next(0, j)) / M_interv_next(2, j);
       double bound = (qli - quj) / tmp;
       if (tmp >= 0)
       {
@@ -572,7 +573,7 @@ bool OctopusSearch::computeUpperAndLowerConstraints(const int i, const Eigen::Ve
     // std::cout << red << "x: " << constraint_xL << " --> " << constraint_xU << " || "
     //           << "y: " << constraint_yL << " --> " << constraint_yU << " || "
     //           << "z: " << constraint_zL << " --> " << constraint_zU << reset << std::endl;
-    std::cout << bold << red << "Interval is zero" << reset << std::endl;
+    std::cout << "Interval is zero" << std::endl;
     return false;
   }
   else

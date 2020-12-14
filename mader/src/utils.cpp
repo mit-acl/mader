@@ -9,8 +9,8 @@
 
 #include "termcolor.hpp"
 
-visualization_msgs::MarkerArray pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, double t_init, double t_final, int samples,
-                                                       std::string ns)
+visualization_msgs::MarkerArray mu::pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, double t_init, double t_final,
+                                                           int samples, std::string ns)
 {
   visualization_msgs::MarkerArray marker_array;
 
@@ -26,7 +26,7 @@ visualization_msgs::MarkerArray pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, do
 
   double deltaT = (t_final - t_init) / (1.0 * samples);
 
-  geometry_msgs::Point p_last = eigen2point(pwp.eval(t_init));
+  geometry_msgs::Point p_last = mu::eigen2point(pwp.eval(t_init));
 
   int j = 7 * 9000;  // TODO
 
@@ -39,7 +39,7 @@ visualization_msgs::MarkerArray pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, do
     m.ns = ns;
     m.action = visualization_msgs::Marker::ADD;
     m.id = j;
-    m.color = color(RED_NORMAL);
+    m.color = mu::color(mu::red_normal);
     m.scale.x = 0.1;
     m.scale.y = 0.0000001;  // rviz complains if not
     m.scale.z = 0.0000001;  // rviz complains if not
@@ -49,7 +49,7 @@ visualization_msgs::MarkerArray pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, do
     // std::cout << "t= " << std::setprecision(15) << t << std::endl;
     // std::cout << "is " << pwp.eval(t).transpose() << std::endl;
 
-    geometry_msgs::Point p = eigen2point(pwp.eval(t));
+    geometry_msgs::Point p = mu::eigen2point(pwp.eval(t));
 
     m.points.push_back(p_last);
     m.points.push_back(p);
@@ -67,8 +67,8 @@ visualization_msgs::MarkerArray pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, do
 //     q((t-t0)/(tf-t0))=p(t) \forall t \in [t0,tf]
 // t0 and tf do not have to be \in [0,1]. If t0<0, we'll be doing extrapolation in the past, and if
 // tf>1, we will be doing extrapolation in the future
-void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix<double, 4, 1>& coeff_new, double t0,
-                     double tf)
+void mu::rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix<double, 4, 1>& coeff_new,
+                         double t0, double tf)
 {
   // if (t0 < 0 || t0 > 1 || tf < 0 || tf > 1)
   // {
@@ -90,13 +90,13 @@ void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix
 
   std::cout << "delta= " << delta << std::endl;
 
- // if (isnan(delta))
- // {
- //   std::cout << "tf= " << tf << std::endl;
- //   std::cout << "t0= " << tf << std::endl;
- //   std::cout << "delta is NAN" << std::endl;
- //   abort();
- // }
+  // if (isnan(delta))
+  // {
+  //   std::cout << "tf= " << tf << std::endl;
+  //   std::cout << "t0= " << tf << std::endl;
+  //   std::cout << "delta is NAN" << std::endl;
+  //   abort();
+  // }
 
   std::cout << "a= " << a << std::endl;
   std::cout << "b= " << b << std::endl;
@@ -112,13 +112,13 @@ void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix
   coeff_new(3) = d + c * t0 + b * t0_2 + a * t0_3;
 }
 
-mader_msgs::PieceWisePolTraj pwp2PwpMsg(const mt::PieceWisePol& pwp)
+mader_msgs::PieceWisePolTraj mu::pwp2PwpMsg(const mt::PieceWisePol& pwp)
 {
   mader_msgs::PieceWisePolTraj pwp_msg;
 
   for (int i = 0; i < pwp.times.size(); i++)
   {
-    // std::cout << termcolor::red << "in pwp2PwpMsg, pushing back" << std::setprecision(20) << pwp.times[i]
+    // std::cout << termcolor::red << "in mu::pwp2PwpMsg, pushing back" << std::setprecision(20) << pwp.times[i]
     //           << termcolor::reset << std::endl;
     pwp_msg.times.push_back(pwp.times[i]);
   }
@@ -159,7 +159,7 @@ mader_msgs::PieceWisePolTraj pwp2PwpMsg(const mt::PieceWisePol& pwp)
   return pwp_msg;
 }
 
-mt::PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg)
+mt::PieceWisePol mu::pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg)
 {
   mt::PieceWisePol pwp;
 
@@ -195,7 +195,7 @@ mt::PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg)
   return pwp;
 }
 
-visualization_msgs::Marker edges2Marker(const mt::Edges& edges, std_msgs::ColorRGBA color_marker)
+visualization_msgs::Marker mu::edges2Marker(const mt::Edges& edges, std_msgs::ColorRGBA color_marker)
 {
   visualization_msgs::Marker marker;
 
@@ -211,14 +211,14 @@ visualization_msgs::Marker edges2Marker(const mt::Edges& edges, std_msgs::ColorR
   marker.id = 0;
   marker.type = marker.LINE_LIST;
   marker.action = marker.ADD;
-  marker.pose = identityGeometryMsgsPose();
+  marker.pose = mu::identityGeometryMsgsPose();
 
   marker.points.clear();
 
   for (auto edge : edges)
   {
-    marker.points.push_back(eigen2point(edge.first));
-    marker.points.push_back(eigen2point(edge.second));
+    marker.points.push_back(mu::eigen2point(edge.first));
+    marker.points.push_back(mu::eigen2point(edge.second));
   }
 
   marker.scale.x = 0.03;
@@ -229,7 +229,7 @@ visualization_msgs::Marker edges2Marker(const mt::Edges& edges, std_msgs::ColorR
   return marker;
 }
 
-mt::PieceWisePol createPwpFromStaticPosition(const state& current_state)
+mt::PieceWisePol mu::createPwpFromStaticPosition(const mt::state& current_state)
 {
   mt::PieceWisePol pwp;
   pwp.times = { ros::Time::now().toSec(), ros::Time::now().toSec() + 1e10 };
@@ -250,7 +250,7 @@ mt::PieceWisePol createPwpFromStaticPosition(const state& current_state)
 }
 
 // returns a mt::PieceWisePol, taking the polynomials of p1 and p2 that should satisfy p1>t, p2>t
-mt::PieceWisePol composePieceWisePol(const double t, const double dc, mt::PieceWisePol& p1, mt::PieceWisePol& p2)
+mt::PieceWisePol mu::composePieceWisePol(const double t, const double dc, mt::PieceWisePol& p1, mt::PieceWisePol& p2)
 {
   // if t is in between p1 and p2, force p2[0] to be t
   if (t > p1.times.back() && t < p2.times.front())  // && fabs(t - p2.times.front()) <= dc) TODO Sometimes fabs(t -
@@ -336,7 +336,7 @@ mt::PieceWisePol composePieceWisePol(const double t, const double dc, mt::PieceW
   return p;
 }
 
-std::vector<std::string> pieceWisePol2String(const mt::PieceWisePol& piecewisepol)
+std::vector<std::string> mu::pieceWisePol2String(const mt::PieceWisePol& piecewisepol)
 {
   // Define strings
   std::string s_x = "0.0";
@@ -399,23 +399,7 @@ std::vector<std::string> pieceWisePol2String(const mt::PieceWisePol& piecewisepo
   return s;
 }
 
-void printStateDeque(std::deque<state>& data)
-{
-  for (int i = 0; i < data.size(); i++)
-  {
-    data[i].printHorizontal();
-  }
-}
-
-void printStateVector(std::vector<state>& data)
-{
-  for (int i = 0; i < data.size(); i++)
-  {
-    data[i].printHorizontal();
-  }
-}
-
-geometry_msgs::Pose identityGeometryMsgsPose()
+geometry_msgs::Pose mu::identityGeometryMsgsPose()
 {
   geometry_msgs::Pose pose;
   pose.position.x = 0;
@@ -428,7 +412,7 @@ geometry_msgs::Pose identityGeometryMsgsPose()
   return pose;
 }
 
-std_msgs::ColorRGBA getColorJet(double v, double vmin, double vmax)
+std_msgs::ColorRGBA mu::getColorJet(double v, double vmin, double vmax)
 {
   std_msgs::ColorRGBA c;
   c.r = 1;
@@ -468,7 +452,7 @@ std_msgs::ColorRGBA getColorJet(double v, double vmin, double vmax)
   return (c);
 }
 
-std_msgs::ColorRGBA color(int id)
+std_msgs::ColorRGBA mu::color(int id)
 {
   std_msgs::ColorRGBA red;
   red.r = 1;
@@ -533,40 +517,40 @@ std_msgs::ColorRGBA color(int id)
 
   switch (id)
   {
-    case RED_NORMAL:
+    case mu::red_normal:
       return red;
       break;
-    case RED_TRANS:
+    case mu::red_trans:
       return red_trans;
       break;
-    case RED_TRANS_TRANS:
+    case mu::red_trans_trans:
       return red_trans_trans;
       break;
-    case BLUE_NORMAL:
+    case mu::blue_normal:
       return blue;
       break;
-    case BLUE_TRANS:
+    case mu::blue_trans:
       return blue_trans;
       break;
-    case BLUE_TRANS_TRANS:
+    case mu::blue_trans_trans:
       return blue_trans_trans;
       break;
-    case BLUE_LIGHT:
+    case mu::blue_light:
       return blue_light;
       break;
-    case GREEN_NORMAL:
+    case mu::green_normal:
       return green;
       break;
-    case YELLOW_NORMAL:
+    case mu::yellow_normal:
       return yellow;
       break;
-    case ORANGE_TRANS:
+    case mu::orange_trans:
       return orange_trans;
       break;
-    case BLACK_TRANS:
+    case mu::black_trans:
       return black_trans;
       break;
-    case TEAL_NORMAL:
+    case mu::teal_normal:
       return teal_normal;
       break;
     default:
@@ -580,7 +564,7 @@ std_msgs::ColorRGBA color(int id)
 // C2 is the corner with highest x,y,z
 // center is the center of the sphere
 // r is the radius of the sphere
-bool boxIntersectsSphere(Eigen::Vector3d center, double r, Eigen::Vector3d c1, Eigen::Vector3d c2)
+bool mu::boxIntersectsSphere(Eigen::Vector3d center, double r, Eigen::Vector3d c1, Eigen::Vector3d c2)
 {
   // https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
   //(Section Sphere vs AABB)
@@ -598,31 +582,31 @@ bool boxIntersectsSphere(Eigen::Vector3d center, double r, Eigen::Vector3d c1, E
 }
 
 //## From Wikipedia - http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-void quaternion2Euler(tf2::Quaternion q, double& roll, double& pitch, double& yaw)
+void mu::quaternion2Euler(tf2::Quaternion q, double& roll, double& pitch, double& yaw)
 {
   tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
 }
 
-void quaternion2Euler(Eigen::Quaterniond q, double& roll, double& pitch, double& yaw)
+void mu::quaternion2Euler(Eigen::Quaterniond q, double& roll, double& pitch, double& yaw)
 {
   tf2::Quaternion tf_q(q.x(), q.y(), q.z(), q.w());
-  quaternion2Euler(tf_q, roll, pitch, yaw);
+  mu::quaternion2Euler(tf_q, roll, pitch, yaw);
 }
 
-void quaternion2Euler(geometry_msgs::Quaternion q, double& roll, double& pitch, double& yaw)
+void mu::quaternion2Euler(geometry_msgs::Quaternion q, double& roll, double& pitch, double& yaw)
 {
   tf2::Quaternion tf_q(q.x, q.y, q.z, q.w);
-  quaternion2Euler(tf_q, roll, pitch, yaw);
+  mu::quaternion2Euler(tf_q, roll, pitch, yaw);
 }
 
-void saturate(Eigen::Vector3d& tmp, const Eigen::Vector3d& min, const Eigen::Vector3d& max)
+void mu::saturate(Eigen::Vector3d& tmp, const Eigen::Vector3d& min, const Eigen::Vector3d& max)
 {
-  saturate(tmp(0), min(0), max(0));
-  saturate(tmp(1), min(1), max(1));
-  saturate(tmp(2), min(2), max(2));
+  mu::saturate(tmp(0), min(0), max(0));
+  mu::saturate(tmp(1), min(1), max(1));
+  mu::saturate(tmp(2), min(2), max(2));
 }
 
-void saturate(int& var, const int min, const int max)
+void mu::saturate(int& var, const int min, const int max)
 {
   if (var < min)
   {
@@ -635,7 +619,7 @@ void saturate(int& var, const int min, const int max)
 }
 
 // TODO: Make a template here
-void saturate(double& var, const double min, const double max)
+void mu::saturate(double& var, const double min, const double max)
 {
   if (var < min)
   {
@@ -647,7 +631,7 @@ void saturate(double& var, const double min, const double max)
   }
 }
 
-visualization_msgs::Marker getMarkerSphere(double scale, int my_color)
+visualization_msgs::Marker mu::getMarkerSphere(double scale, int my_color)
 {
   visualization_msgs::Marker marker;
 
@@ -657,20 +641,12 @@ visualization_msgs::Marker getMarkerSphere(double scale, int my_color)
   marker.scale.x = scale;
   marker.scale.y = scale;
   marker.scale.z = scale;
-  marker.color = color(my_color);
+  marker.color = mu::color(my_color);
 
   return marker;
 }
 
-double angleBetVectors(const Eigen::Vector3d& a, const Eigen::Vector3d& b)
-{
-  double tmp = a.dot(b) / (a.norm() * b.norm());
-
-  saturate(tmp, -1, 1);
-  return acos(tmp);
-}
-
-void angle_wrap(double& diff)
+void mu::angle_wrap(double& diff)
 {
   diff = fmod(diff + M_PI, 2 * M_PI);
   if (diff < 0)
@@ -678,7 +654,7 @@ void angle_wrap(double& diff)
   diff -= M_PI;
 }
 
-geometry_msgs::Point pointOrigin()
+geometry_msgs::Point mu::pointOrigin()
 {
   geometry_msgs::Point tmp;
   tmp.x = 0;
@@ -687,14 +663,14 @@ geometry_msgs::Point pointOrigin()
   return tmp;
 }
 
-Eigen::Vector3d vec2eigen(geometry_msgs::Vector3 vector)
+Eigen::Vector3d mu::vec2eigen(geometry_msgs::Vector3 vector)
 {
   Eigen::Vector3d tmp;
   tmp << vector.x, vector.y, vector.z;
   return tmp;
 }
 
-geometry_msgs::Vector3 eigen2rosvector(Eigen::Vector3d vector)
+geometry_msgs::Vector3 mu::eigen2rosvector(Eigen::Vector3d vector)
 {
   geometry_msgs::Vector3 tmp;
   tmp.x = vector(0, 0);
@@ -703,7 +679,7 @@ geometry_msgs::Vector3 eigen2rosvector(Eigen::Vector3d vector)
   return tmp;
 }
 
-geometry_msgs::Point eigen2point(Eigen::Vector3d vector)
+geometry_msgs::Point mu::eigen2point(Eigen::Vector3d vector)
 {
   geometry_msgs::Point tmp;
   tmp.x = vector[0];
@@ -712,7 +688,7 @@ geometry_msgs::Point eigen2point(Eigen::Vector3d vector)
   return tmp;
 }
 
-geometry_msgs::Vector3 vectorNull()
+geometry_msgs::Vector3 mu::vectorNull()
 {
   geometry_msgs::Vector3 tmp;
   tmp.x = 0;
@@ -721,7 +697,7 @@ geometry_msgs::Vector3 vectorNull()
   return tmp;
 }
 
-geometry_msgs::Vector3 vectorUniform(double a)
+geometry_msgs::Vector3 mu::vectorUniform(double a)
 {
   geometry_msgs::Vector3 tmp;
   tmp.x = a;
@@ -732,7 +708,7 @@ geometry_msgs::Vector3 vectorUniform(double a)
 
 // given 2 points (A inside and B outside the sphere) it computes the intersection of the lines between
 // that 2 points and the sphere
-Eigen::Vector3d getIntersectionWithSphere(Eigen::Vector3d& A, Eigen::Vector3d& B, double r, Eigen::Vector3d& center)
+Eigen::Vector3d mu::getIntersectionWithSphere(Eigen::Vector3d& A, Eigen::Vector3d& B, double r, Eigen::Vector3d& center)
 {
   // http://www.ambrsoft.com/TrigoCalc/Sphere/SpherLineIntersection_.htm
 
@@ -798,8 +774,9 @@ Eigen::Vector3d getIntersectionWithSphere(Eigen::Vector3d& A, Eigen::Vector3d& B
 // it returns its first intersection with a sphere of radius=r and center=center
 // the center is added as the first point of the path to ensure that the first element of the path is inside the sphere
 // (to avoid issues with the first point of JPS2)
-Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& path, double r, Eigen::Vector3d& center,
-                                               int* last_index_inside_sphere, bool* noPointsOutsideSphere)
+Eigen::Vector3d mu::getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& path, double r,
+                                                   Eigen::Vector3d& center, int* last_index_inside_sphere,
+                                                   bool* noPointsOutsideSphere)
 {
   if (noPointsOutsideSphere != NULL)
   {  // this argument has been provided
@@ -837,7 +814,7 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
         *noPointsOutsideSphere = true;
       }
 
-      intersection = getIntersectionWithSphere(A, B, r, center);
+      intersection = mu::getIntersectionWithSphere(A, B, r, center);
 
       if (last_index_inside_sphere != NULL)
       {
@@ -857,7 +834,7 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
       A = path[index - 1];
       B = path[index];
 
-      intersection = getIntersectionWithSphere(A, B, r, center);
+      intersection = mu::getIntersectionWithSphere(A, B, r, center);
       // printf("index-1=%d\n", index - 1);
       if (last_index_inside_sphere != NULL)
       {
@@ -868,9 +845,9 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
   return intersection;
 }
 
-visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const mt::trajectory& data, double max_value, int increm,
-                                                              std::string ns, double scale, std::string color_type,
-                                                              int id_agent, int n_agents)
+visualization_msgs::MarkerArray mu::trajectory2ColoredMarkerArray(const mt::trajectory& data, double max_value,
+                                                                  int increm, std::string ns, double scale,
+                                                                  std::string color_type, int id_agent, int n_agents)
 {
   visualization_msgs::MarkerArray marker_array;
 
@@ -898,15 +875,15 @@ visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const mt::trajecto
     m.id = j;
     if (color_type == "vel")  // TODO: "vel" is hand-coded
     {
-      m.color = getColorJet(vel, 0, max_value);  // note that par_.v_max is per axis!
+      m.color = mu::getColorJet(vel, 0, max_value);  // note that par_.v_max is per axis!
     }
     else if (color_type == "time")  // TODO: "time" is hand-coded
     {
-      m.color = getColorJet(i, 0, data.size());  // note that par_.v_max is per axis!
+      m.color = mu::getColorJet(i, 0, data.size());  // note that par_.v_max is per axis!
     }
     else
     {
-      m.color = getColorJet(id_agent, 0, n_agents);  // note that par_.v_max is per axis!
+      m.color = mu::getColorJet(id_agent, 0, n_agents);  // note that par_.v_max is per axis!
     }
     m.scale.x = scale;
     m.scale.y = 0.0000001;  // rviz complains if not

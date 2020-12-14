@@ -24,129 +24,95 @@ typedef MADER_timers::Timer MyTimer;
 // this object is created in the mader_ros_node
 MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3) : nh1_(nh1), nh2_(nh2), nh3_(nh3)
 {
-  safeGetParam(nh1_, "use_ff", par_.use_ff);
-  safeGetParam(nh1_, "visual", par_.visual);
-  safeGetParam(nh1_, "color_type", par_.color_type);
-  safeGetParam(nh1_, "n_agents", par_.n_agents);
+  mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
+  mu::safeGetParam(nh1_, "visual", par_.visual);
+  mu::safeGetParam(nh1_, "color_type", par_.color_type);
+  mu::safeGetParam(nh1_, "n_agents", par_.n_agents);
 
-  safeGetParam(nh1_, "dc", par_.dc);
-  safeGetParam(nh1_, "goal_radius", par_.goal_radius);
-  safeGetParam(nh1_, "drone_radius", par_.drone_radius);
+  mu::safeGetParam(nh1_, "dc", par_.dc);
+  mu::safeGetParam(nh1_, "goal_radius", par_.goal_radius);
+  mu::safeGetParam(nh1_, "drone_radius", par_.drone_radius);
 
-  safeGetParam(nh1_, "Ra", par_.Ra);
+  mu::safeGetParam(nh1_, "Ra", par_.Ra);
 
-  safeGetParam(nh1_, "w_max", par_.w_max);
-  safeGetParam(nh1_, "alpha_filter_dyaw", par_.alpha_filter_dyaw);
+  mu::safeGetParam(nh1_, "w_max", par_.w_max);
+  mu::safeGetParam(nh1_, "alpha_filter_dyaw", par_.alpha_filter_dyaw);
 
-  safeGetParam(nh1_, "x_min", par_.x_min);
-  safeGetParam(nh1_, "x_max", par_.x_max);
+  mu::safeGetParam(nh1_, "x_min", par_.x_min);
+  mu::safeGetParam(nh1_, "x_max", par_.x_max);
 
-  safeGetParam(nh1_, "y_min", par_.y_min);
-  safeGetParam(nh1_, "y_max", par_.y_max);
+  mu::safeGetParam(nh1_, "y_min", par_.y_min);
+  mu::safeGetParam(nh1_, "y_max", par_.y_max);
 
-  safeGetParam(nh1_, "z_ground", par_.z_ground);
-  safeGetParam(nh1_, "z_max", par_.z_max);
+  mu::safeGetParam(nh1_, "z_ground", par_.z_ground);
+  mu::safeGetParam(nh1_, "z_max", par_.z_max);
 
   std::vector<double> v_max_tmp;
   std::vector<double> a_max_tmp;
 
-  safeGetParam(nh1_, "v_max", v_max_tmp);
-  safeGetParam(nh1_, "a_max", a_max_tmp);
+  mu::safeGetParam(nh1_, "v_max", v_max_tmp);
+  mu::safeGetParam(nh1_, "a_max", a_max_tmp);
 
   par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
   par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
 
-  safeGetParam(nh1_, "factor_v_max", par_.factor_v_max);
+  mu::safeGetParam(nh1_, "factor_v_max", par_.factor_v_max);
 
-  safeGetParam(nh1_, "factor_alpha", par_.factor_alpha);
+  mu::safeGetParam(nh1_, "factor_alpha", par_.factor_alpha);
 
-  safeGetParam(nh1_, "num_pol", par_.num_pol);
-  safeGetParam(nh1_, "deg_pol", par_.deg_pol);
-  safeGetParam(nh1_, "weight", par_.weight);
-  safeGetParam(nh1_, "epsilon_tol_constraints", par_.epsilon_tol_constraints);
-  safeGetParam(nh1_, "xtol_rel", par_.xtol_rel);
-  safeGetParam(nh1_, "ftol_rel", par_.ftol_rel);
-  safeGetParam(nh1_, "solver", par_.solver);
+  mu::safeGetParam(nh1_, "num_pol", par_.num_pol);
+  mu::safeGetParam(nh1_, "deg_pol", par_.deg_pol);
+  mu::safeGetParam(nh1_, "weight", par_.weight);
+  mu::safeGetParam(nh1_, "epsilon_tol_constraints", par_.epsilon_tol_constraints);
+  mu::safeGetParam(nh1_, "xtol_rel", par_.xtol_rel);
+  mu::safeGetParam(nh1_, "ftol_rel", par_.ftol_rel);
+  mu::safeGetParam(nh1_, "solver", par_.solver);
 
-  safeGetParam(nh1_, "upper_bound_runtime_snlopt", par_.upper_bound_runtime_snlopt);
-  safeGetParam(nh1_, "lower_bound_runtime_snlopt", par_.lower_bound_runtime_snlopt);
-  safeGetParam(nh1_, "kappa", par_.kappa);
-  safeGetParam(nh1_, "mu", par_.mu);
+  mu::safeGetParam(nh1_, "upper_bound_runtime_snlopt", par_.upper_bound_runtime_snlopt);
+  mu::safeGetParam(nh1_, "lower_bound_runtime_snlopt", par_.lower_bound_runtime_snlopt);
+  mu::safeGetParam(nh1_, "kappa", par_.kappa);
+  mu::safeGetParam(nh1_, "mu", par_.mu);
 
-  safeGetParam(nh1_, "a_star_samp_x", par_.a_star_samp_x);
-  safeGetParam(nh1_, "a_star_samp_y", par_.a_star_samp_y);
-  safeGetParam(nh1_, "a_star_samp_z", par_.a_star_samp_z);
-  safeGetParam(nh1_, "a_star_fraction_voxel_size", par_.a_star_fraction_voxel_size);
-  safeGetParam(nh1_, "allow_infeasible_guess", par_.allow_infeasible_guess);
+  mu::safeGetParam(nh1_, "a_star_samp_x", par_.a_star_samp_x);
+  mu::safeGetParam(nh1_, "a_star_samp_y", par_.a_star_samp_y);
+  mu::safeGetParam(nh1_, "a_star_samp_z", par_.a_star_samp_z);
+  mu::safeGetParam(nh1_, "a_star_fraction_voxel_size", par_.a_star_fraction_voxel_size);
+  mu::safeGetParam(nh1_, "allow_infeasible_guess", par_.allow_infeasible_guess);
 
-  safeGetParam(nh1_, "a_star_bias", par_.a_star_bias);
+  mu::safeGetParam(nh1_, "a_star_bias", par_.a_star_bias);
 
-  safeGetParam(nh1_, "basis", par_.basis);
+  mu::safeGetParam(nh1_, "basis", par_.basis);
 
-  safeGetParam(nh1_, "res_plot_traj", par_.res_plot_traj);
+  mu::safeGetParam(nh1_, "res_plot_traj", par_.res_plot_traj);
 
-  safeGetParam(nh1_, "alpha", par_.alpha);
-  safeGetParam(nh1_, "beta", par_.beta);
-  safeGetParam(nh1_, "gamma", par_.gamma);
+  mu::safeGetParam(nh1_, "alpha", par_.alpha);
+  mu::safeGetParam(nh1_, "beta", par_.beta);
+  mu::safeGetParam(nh1_, "gamma", par_.gamma);
 
-  safeGetParam(nh1_, "alpha_shrink", par_.alpha_shrink);
+  mu::safeGetParam(nh1_, "alpha_shrink", par_.alpha_shrink);
 
-  safeGetParam(nh1_, "fov_horiz_deg", par_.fov_horiz_deg);
-  safeGetParam(nh1_, "fov_vert_deg", par_.fov_vert_deg);
-  safeGetParam(nh1_, "fov_depth", par_.fov_depth);
+  mu::safeGetParam(nh1_, "fov_horiz_deg", par_.fov_horiz_deg);
+  mu::safeGetParam(nh1_, "fov_vert_deg", par_.fov_vert_deg);
+  mu::safeGetParam(nh1_, "fov_depth", par_.fov_depth);
 
   std::cout << "Parameters obtained" << std::endl;
 
-  if (par_.gamma <= 0)
-  {
-    std::cout << bold << red << "gamma should be >0" << std::endl;
-    abort();
-  }
+  // CHECK parameters
+  std::cout << bold << "Parameters obtained, checking them..." << reset << std::endl;
 
-  if (par_.beta < 0 || par_.alpha < 0)
-  {
-    std::cout << bold << red << "par_.beta < 0 || par_.alpha < 0 don't make sense" << std::endl;
-    abort();
-  }
+  assert((par_.gamma <= 0) && "par_.gamma <= 0 must hold");
+  assert((par_.beta < 0 || par_.alpha < 0) && " ");
+  assert((par_.a_max.z() >= 9.81) && "par_.a_max.z() >= 9.81, the drone will flip");
+  assert((par_.factor_v_max > 1.0 || par_.factor_v_max < 0.0) && "Needed: 0<=factor_v_max<=1");
+  assert((par_.kappa < 0 || par_.mu < 0) && "Needed: kappa and mu > 0");
+  assert(((par_.kappa + par_.mu) > 1) && "Needed: (par_.kappa + par_.mu) <= 1");
+  assert((par_.a_star_fraction_voxel_size < 0.0 || par_.a_star_fraction_voxel_size > 1.0) && "Needed: (par_.kappa + "
+                                                                                             "par_.mu) <= 1");
 
-  if (par_.epsilon_tol_constraints > 0.02)
-  {
-    std::cout << bold << red
-              << "The tolerance on the constraints is too big. Note that we are saturating v0 and a0 in snlopt.cpp --> "
-                 "there will be jumps in accel/vel"
-              << std::endl;
-    abort();
-  }
-
-  if (par_.a_max.z() >= 9.81)
-  {
-    std::cout << bold << red << "par_.a_max.z() >= 9.81, the drone will flip" << std::endl;
-    abort();
-  }
-
-  if (par_.factor_v_max > 1.0 || par_.factor_v_max < 0.0)
-  {
-    std::cout << bold << red << "Needed: 0<=factor_v_max<=1  " << reset << std::endl;
-    abort();
-  }
-
-  if (par_.kappa < 0 || par_.mu < 0)
-  {
-    std::cout << bold << red << "Needed: kappa and mu > 0" << reset << std::endl;
-    abort();
-  }
-
-  if ((par_.kappa + par_.mu) > 1)
-  {
-    std::cout << bold << red << "Needed: (par_.kappa + par_.mu) <= 1" << reset << std::endl;
-    abort();
-  }
-
-  if (par_.a_star_fraction_voxel_size < 0.0 || par_.a_star_fraction_voxel_size > 1.0)
-  {
-    std::cout << bold << red << "Needed: 0<=a_star_fraction_voxel_size<=1  " << reset << std::endl;
-    abort();
-  }
+  assert((par_.epsilon_tol_constraints > 0.02) && "The tolerance on the constraints is too big -->  there will be "
+                                                  "jumps in accel/vel");
+  std::cout << bold << "Parameters checked" << reset << std::endl;
+  /////////////////////
 
   mader_ptr_ = std::unique_ptr<Mader>(new Mader(par_));
 
@@ -188,9 +154,9 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   visual_tools_->enableBatchPublishing();
 
   // Markers
-  setpoint_ = getMarkerSphere(0.35, ORANGE_TRANS);
-  E_ = getMarkerSphere(0.35, RED_NORMAL);
-  A_ = getMarkerSphere(0.35, RED_NORMAL);
+  setpoint_ = mu::getMarkerSphere(0.35, mu::orange_trans);
+  E_ = mu::getMarkerSphere(0.35, mu::red_normal);
+  A_ = mu::getMarkerSphere(0.35, mu::red_normal);
 
   // If you want another thread for the replanCB: replanCBTimer_ = nh_.createTimer(ros::Duration(par_.dc),
   // &MaderRos::replanCB, this);
@@ -226,7 +192,7 @@ MaderRos::~MaderRos()
 
 void MaderRos::pubObstacles(mt::Edges edges_obstacles)
 {
-  pub_obstacles_.publish(edges2Marker(edges_obstacles, color(RED_NORMAL)));
+  pub_obstacles_.publish(mu::edges2Marker(edges_obstacles, mu::color(mu::red_normal)));
 
   return;
 }
@@ -280,7 +246,7 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   if (msg.is_agent)
   {
-    tmp.pwp = pwpMsg2Pwp(msg.pwp);
+    tmp.pwp = mu::pwpMsg2Pwp(msg.pwp);
   }
 
   tmp.time_received = ros::Time::now().toSec();
@@ -292,7 +258,7 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 // composition of pwp
 void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
 {
-  std::vector<std::string> s;  // pieceWisePol2String(pwp); The rest of the agents will use the pwp field, not the
+  std::vector<std::string> s;  // mu::pieceWisePol2String(pwp); The rest of the agents will use the pwp field, not the
                                // string
   s.push_back("");
   s.push_back("");
@@ -310,7 +276,7 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
 
   msg.is_agent = true;
 
-  msg.pwp = pwp2PwpMsg(pwp);
+  msg.pwp = mu::pwp2PwpMsg(pwp);
 
   // std::cout<<"msg.pwp.times[0]= "<<msg.pwp.times[0]
 
@@ -322,7 +288,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
   if (ros::ok() && published_initial_position_ == true)
   {
     mt::Edges edges_obstacles;
-    std::vector<state> X_safe;
+    std::vector<mt::state> X_safe;
 
     std::vector<Hyperplane3D> planes;
     mt::PieceWisePol pwp;
@@ -378,8 +344,8 @@ void MaderRos::publishText()
   text.text = "Num of LPs run= " + std::to_string(num_of_LPs_run_) + "\n" +  ///////////////////
               "Num of QCQPs run= " + std::to_string(num_of_QCQPs_run_);
 
-  text.fg_color = color(TEAL_NORMAL);
-  text.bg_color = color(BLACK_TRANS);
+  text.fg_color = mu::color(mu::teal_normal);
+  text.bg_color = mu::color(mu::black_trans);
 
   pub_text_.publish(text);
 }
@@ -429,13 +395,13 @@ void MaderRos::publishPoly(const vec_E<Polyhedron<3>>& poly)
 
 void MaderRos::stateCB(const snapstack_msgs::State& msg)
 {
-  state state_tmp;
+  mt::state state_tmp;
   state_tmp.setPos(msg.pos.x, msg.pos.y, msg.pos.z);
   state_tmp.setVel(msg.vel.x, msg.vel.y, msg.vel.z);
   state_tmp.setAccel(0.0, 0.0, 0.0);
   // std::cout << bold << red << "MSG_QUAT= " << msg.quat << reset << std::endl;
   double roll, pitch, yaw;
-  quaternion2Euler(msg.quat, roll, pitch, yaw);
+  mu::quaternion2Euler(msg.quat, roll, pitch, yaw);
   state_tmp.setYaw(yaw);
   state_ = state_tmp;
   // std::cout << bold << red << "STATE_YAW= " << state_.yaw << reset << std::endl;
@@ -446,7 +412,7 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
 
   if (published_initial_position_ == false)
   {
-    pwp_last_ = createPwpFromStaticPosition(state_);
+    pwp_last_ = mu::createPwpFromStaticPosition(state_);
     publishOwnTraj(pwp_last_);
     published_initial_position_ = true;
   }
@@ -481,15 +447,15 @@ void MaderRos::modeCB(const mader_msgs::Mode& msg)
 
 void MaderRos::pubCB(const ros::TimerEvent& e)
 {
-  state next_goal;
+  mt::state next_goal;
   if (mader_ptr_->getNextGoal(next_goal))
   {
     snapstack_msgs::Goal quadGoal;
 
-    quadGoal.p = eigen2rosvector(next_goal.pos);
-    quadGoal.v = eigen2rosvector(next_goal.vel);
-    quadGoal.a = eigen2rosvector(next_goal.accel);
-    quadGoal.j = eigen2rosvector(next_goal.jerk);
+    quadGoal.p = mu::eigen2rosvector(next_goal.pos);
+    quadGoal.v = mu::eigen2rosvector(next_goal.vel);
+    quadGoal.a = mu::eigen2rosvector(next_goal.accel);
+    quadGoal.j = mu::eigen2rosvector(next_goal.jerk);
     quadGoal.dyaw = next_goal.dyaw;
     quadGoal.yaw = next_goal.yaw;
     quadGoal.header.stamp = ros::Time::now();
@@ -532,7 +498,7 @@ void MaderRos::clearMarkerArray(visualization_msgs::MarkerArray* tmp, ros::Publi
   (*tmp).markers.clear();
 }
 
-void MaderRos::pubTraj(const std::vector<state>& data)
+void MaderRos::pubTraj(const std::vector<mt::state>& data)
 {
   // Trajectory
   nav_msgs::Path traj;
@@ -561,16 +527,16 @@ void MaderRos::pubTraj(const std::vector<state>& data)
 
   double scale = 0.15;
 
-  traj_safe_colored_ = trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale,
-                                                     par_.color_type, id_, par_.n_agents);
+  traj_safe_colored_ = mu::trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale,
+                                                         par_.color_type, id_, par_.n_agents);
   pub_traj_safe_colored_.publish(traj_safe_colored_);
 }
 
 void MaderRos::pubActualTraj()
 {
-  static geometry_msgs::Point p_last = pointOrigin();
+  static geometry_msgs::Point p_last = mu::pointOrigin();
 
-  state current_state;
+  mt::state current_state;
   mader_ptr_->getState(current_state);
   Eigen::Vector3d act_pos = current_state.pos;
 
@@ -580,15 +546,15 @@ void MaderRos::pubActualTraj()
   m.id = actual_trajID_;  // % 3000;  // Start the id again after ___ points published (if not RVIZ goes very slow)
   m.ns = "ActualTraj_" + name_drone_;
   actual_trajID_++;
-  // m.color = getColorJet(current_state.vel.norm(), 0, par_.v_max.maxCoeff());  // color(RED_NORMAL);
+  // m.color = mu::getColorJet(current_state.vel.norm(), 0, par_.v_max.maxCoeff());  // mu::color(mu::red_normal);
 
   if (par_.color_type == "vel")
   {
-    m.color = getColorJet(current_state.vel.norm(), 0, par_.v_max.maxCoeff());  // note that par_.v_max is per axis!
+    m.color = mu::getColorJet(current_state.vel.norm(), 0, par_.v_max.maxCoeff());  // note that par_.v_max is per axis!
   }
   else
   {
-    m.color = getColorJet(id_, 0, par_.n_agents);  // note that par_.v_max is per axis!
+    m.color = mu::getColorJet(id_, 0, par_.n_agents);  // note that par_.v_max is per axis!
   }
 
   m.scale.x = 0.15;
@@ -598,14 +564,14 @@ void MaderRos::pubActualTraj()
   m.header.frame_id = world_name_;
 
   // pose is actually not used in the marker, but if not RVIZ complains about the quaternion
-  m.pose.position = pointOrigin();
+  m.pose.position = mu::pointOrigin();
   m.pose.orientation.x = 0.0;
   m.pose.orientation.y = 0.0;
   m.pose.orientation.z = 0.0;
   m.pose.orientation.w = 1.0;
 
   geometry_msgs::Point p;
-  p = eigen2point(act_pos);
+  p = mu::eigen2point(act_pos);
   m.points.push_back(p_last);
   m.points.push_back(p);
   p_last = p;
@@ -643,17 +609,17 @@ void MaderRos::clearMarkerColoredTraj()
   pub_actual_traj_.publish(m);
 }
 
-void MaderRos::pubState(const state& data, const ros::Publisher pub)
+void MaderRos::pubState(const mt::state& data, const ros::Publisher pub)
 {
   geometry_msgs::PointStamped p;
   p.header.frame_id = world_name_;
-  p.point = eigen2point(data.pos);
+  p.point = mu::eigen2point(data.pos);
   pub.publish(p);
 }
 
 void MaderRos::terminalGoalCB(const geometry_msgs::PoseStamped& msg)
 {
-  state G_term;
+  mt::state G_term;
   double z;
   if (fabs(msg.pose.position.z) < 1e-5)  // This happens when you click in RVIZ (msg.z is 0.0)
   {
@@ -666,7 +632,7 @@ void MaderRos::terminalGoalCB(const geometry_msgs::PoseStamped& msg)
   G_term.setPos(msg.pose.position.x, msg.pose.position.y, z);
   mader_ptr_->setTerminalGoal(G_term);
 
-  state G;  // projected goal
+  mt::state G;  // projected goal
   mader_ptr_->getG(G);
 
   pubState(G_term, pub_point_G_term_);
@@ -684,16 +650,16 @@ void MaderRos::publishFOV()
   marker_fov.id = 0;
   marker_fov.type = marker_fov.LINE_LIST;
   marker_fov.action = marker_fov.ADD;
-  marker_fov.pose = identityGeometryMsgsPose();
+  marker_fov.pose = mu::identityGeometryMsgsPose();
 
   double delta_y = par_.fov_depth * fabs(tan((par_.fov_horiz_deg * M_PI / 180) / 2.0));
   double delta_z = par_.fov_depth * fabs(tan((par_.fov_vert_deg * M_PI / 180) / 2.0));
 
-  geometry_msgs::Point v0 = eigen2point(Eigen::Vector3d(0.0, 0.0, 0.0));
-  geometry_msgs::Point v1 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, -delta_z));
-  geometry_msgs::Point v2 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, -delta_z));
-  geometry_msgs::Point v3 = eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, delta_z));
-  geometry_msgs::Point v4 = eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, delta_z));
+  geometry_msgs::Point v0 = mu::eigen2point(Eigen::Vector3d(0.0, 0.0, 0.0));
+  geometry_msgs::Point v1 = mu::eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, -delta_z));
+  geometry_msgs::Point v2 = mu::eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, -delta_z));
+  geometry_msgs::Point v3 = mu::eigen2point(Eigen::Vector3d(par_.fov_depth, -delta_y, delta_z));
+  geometry_msgs::Point v4 = mu::eigen2point(Eigen::Vector3d(par_.fov_depth, delta_y, delta_z));
 
   marker_fov.points.clear();
 

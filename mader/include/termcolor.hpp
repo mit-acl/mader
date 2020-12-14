@@ -56,7 +56,7 @@ inline bool is_atty(const std::ostream& stream);
 #if defined(TERMCOLOR_OS_WINDOWS)
 inline void win_change_attributes(std::ostream& stream, int foreground, int background = -1);
 #endif
-}
+}  // namespace _internal
 
 inline std::ostream& colorize(std::ostream& stream)
 {

@@ -1,3 +1,11 @@
+/* ----------------------------------------------------------------------------
+ * Copyright 2020, Jesus Tordesillas Torres, Aerospace Controls Laboratory
+ * Massachusetts Institute of Technology
+ * All Rights Reserved
+ * Authors: Jesus Tordesillas, et al.
+ * See LICENSE file for the license information
+ * -------------------------------------------------------------------------- */
+
 #include "utils.hpp"
 #include "exprtk.hpp"
 /*Eigen::Vector3d eval(mt::PieceWisePol piecewisepol, double t)
@@ -61,7 +69,7 @@ int main()
   piecewisepol.coeff_y.push_back(coeffs);
   piecewisepol.coeff_z.push_back(coeffs);
 
-  std::vector<std::string> s = pieceWisePol2String(piecewisepol);
+  std::vector<std::string> s = mu::pieceWisePol2String(piecewisepol);
 
   // std::cout << "The string is " << std::endl;
   // std::cout << s << std::endl;
@@ -137,7 +145,7 @@ int main()
 
   for (t = 0; t < 5; t = t + 0.4)
   {
-    mt::PieceWisePol piecewisepolAB = composePieceWisePol(t, -0.1, piecewisepol, piecewisepolB);
+    mt::PieceWisePol piecewisepolAB = mu::composePieceWisePol(t, -0.1, piecewisepol, piecewisepolB);
     std::cout << "==================" << std::endl;
     std::cout << "t= " << t << std::endl;
     std::cout << "==================" << std::endl;

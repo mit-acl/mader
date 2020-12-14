@@ -165,8 +165,9 @@ void Mader::updateTrajObstacles(mt::dynTraj traj)
 
   mtx_trajs_.lock();
 
-  std::vector<mt::dynTrajCompiled>::iterator obs_ptr = std::find_if(
-      trajs_.begin(), trajs_.end(), [=](const mt::dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
+  std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
+      std::find_if(trajs_.begin(), trajs_.end(),
+                   [=](const mt::dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
 
   bool exists_in_local_map = (obs_ptr != std::end(trajs_));
 
@@ -255,8 +256,8 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
   int index_first_interval = low - pwp.times.begin() - 1;  // index of the interval [1,2]
   int index_last_interval = up - pwp.times.begin() - 1;    // index of the interval [5,6]
 
-  saturate(index_first_interval, 0, (int)(pwp.coeff_x.size() - 1));
-  saturate(index_last_interval, 0, (int)(pwp.coeff_x.size() - 1));
+  mu::saturate(index_first_interval, 0, (int)(pwp.coeff_x.size() - 1));
+  mu::saturate(index_last_interval, 0, (int)(pwp.coeff_x.size() - 1));
 
   Eigen::Matrix<double, 3, 4> P;
   Eigen::Matrix<double, 3, 4> V;
@@ -362,7 +363,7 @@ CGAL_Polyhedron_3 Mader::convexHullOfInterval(mt::dynTrajCompiled& traj, double 
 }
 
 // trajs_ is already locked when calling this function
-void Mader::removeTrajsThatWillNotAffectMe(const state& A, double t_start, double t_end)
+void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, double t_end)
 {
   std::vector<int> ids_to_remove;
 
@@ -393,7 +394,7 @@ void Mader::removeTrajsThatWillNotAffectMe(const state& A, double t_start, doubl
 
       Eigen::Vector3d c1 = center_obs - positive_half_diagonal;
       Eigen::Vector3d c2 = center_obs + positive_half_diagonal;
-      traj_affects_me = boxIntersectsSphere(A.pos, par_.Ra, c1, c2);
+      traj_affects_me = mu::boxIntersectsSphere(A.pos, par_.Ra, c1, c2);
     }
     else
     {                                                            // DYNAMIC OBSTACLES/AGENTS
@@ -468,7 +469,7 @@ ConvexHullsOfCurves Mader::convexHullsOfCurves(double t_start, double t_end)
   return result;
 }
 
-void Mader::setTerminalGoal(state& term_goal)
+void Mader::setTerminalGoal(mt::state& term_goal)
 {
   mtx_G_term.lock();
   mtx_G.lock();
@@ -497,25 +498,25 @@ void Mader::setTerminalGoal(state& term_goal)
   mtx_planner_status_.unlock();
 }
 
-void Mader::getG(state& G)
+void Mader::getG(mt::state& G)
 {
   G = G_;
 }
 
-void Mader::getState(state& data)
+void Mader::getState(mt::state& data)
 {
   mtx_state.lock();
   data = state_;
   mtx_state.unlock();
 }
 
-void Mader::updateState(state data)
+void Mader::updateState(mt::state data)
 {
   state_ = data;
 
   if (state_initialized_ == false)
   {
-    state tmp;
+    mt::state tmp;
     tmp.pos = data.pos;
     tmp.yaw = data.yaw;
     plan_.push_back(tmp);
@@ -558,7 +559,8 @@ bool Mader::initialized()
 }
 
 // check wheter a mt::dynTrajCompiled and a pwp_optimized are in collision in the interval [t_start, t_end]
-bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start, double t_end)
+bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
+                                      double t_end)
 {
   Eigen::Vector3d n_i;
   double d_i;
@@ -624,8 +626,9 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
   return result;
 }
 
-bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
-                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out)
+bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
+                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
+                   mt::PieceWisePol& pwp_out)
 {
   MyTimer replanCB_t(true);
 
@@ -643,11 +646,11 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<state>& X_safe_ou
   mtx_G.lock();
   mtx_G_term.lock();
 
-  state state_local = state_;
+  mt::state state_local = state_;
 
-  state G_term = G_term_;  // Local copy of the terminal terminal goal
+  mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
 
-  state G = G_term;
+  mt::state G = G_term;
 
   mtx_G.unlock();
   mtx_G_term.unlock();
@@ -684,10 +687,10 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<state>& X_safe_ou
   std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
 
   //////////////////////////////////////////////////////////////////////////
-  ///////////////////////// Select state A /////////////////////////////////
+  ///////////////////////// Select mt::state A /////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
 
-  state A;
+  mt::state A;
   int k_index_end, k_index;
 
   // If k_index_end=0, then A = plan_.back() = plan_[plan_.size() - 1]
@@ -721,7 +724,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<state>& X_safe_ou
     runtime_snlopt = par_.upper_bound_runtime_snlopt;  // I'm stopped at the end of the trajectory --> take my
                                                        // time to replan
   }
-  saturate(runtime_snlopt, par_.lower_bound_runtime_snlopt, par_.upper_bound_runtime_snlopt);
+  mu::saturate(runtime_snlopt, par_.lower_bound_runtime_snlopt, par_.upper_bound_runtime_snlopt);
 
   // std::cout << green << "Runtime snlopt= " << runtime_snlopt << reset << std::endl;
 
@@ -740,19 +743,19 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<state>& X_safe_ou
   double ra = std::min((distA2TermGoal - 0.001), par_.Ra);  // radius of the sphere S
   bool noPointsOutsideS;
   int li1;  // last index inside the sphere of global_plan
-  state E;
+  mt::state E;
   // std::cout << bold << std::setprecision(3) << "A.pos= " << A.pos.transpose() << reset << std::endl;
   // std::cout << "A= " << A.pos.transpose() << std::endl;
   // std::cout << "G= " << G.pos.transpose() << std::endl;
   // std::cout << "ra= " << ra << std::endl;
-  E.pos = getFirstIntersectionWithSphere(global_plan, ra, global_plan[0], &li1, &noPointsOutsideS);
+  E.pos = mu::getFirstIntersectionWithSphere(global_plan, ra, global_plan[0], &li1, &noPointsOutsideS);
   if (noPointsOutsideS == true)  // if G is inside the sphere
   {
     E.pos = G.pos;
   }
 
-  state initial = A;
-  state final = E;
+  mt::state initial = A;
+  mt::state final = E;
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Solve optimization! ////////////////////////////
@@ -886,7 +889,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<state>& X_safe_ou
 
   if (exists_previous_pwp_ == true)
   {
-    pwp_out = composePieceWisePol(time_now, par_.dc, pwp_prev_, pwp_now);
+    pwp_out = mu::composePieceWisePol(time_now, par_.dc, pwp_prev_, pwp_now);
     pwp_prev_ = pwp_out;
   }
   else
@@ -903,7 +906,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<state>& X_safe_ou
   //////////////////////////////////////////////////////////
 
   // Check if we have planned until G_term
-  state F = plan_.back();  // Final point of the safe path (\equiv final point of the comitted path)
+  mt::state F = plan_.back();  // Final point of the safe path (\equiv final point of the comitted path)
   double dist = (G_term_.pos - F.pos).norm();
 
   if (dist < par_.goal_radius)
@@ -932,9 +935,9 @@ void Mader::resetInitialization()
   terminal_goal_initialized_ = false;
 }
 
-void Mader::yaw(double diff, state& next_goal)
+void Mader::yaw(double diff, mt::state& next_goal)
 {
-  saturate(diff, -par_.dc * par_.w_max, par_.dc * par_.w_max);
+  mu::saturate(diff, -par_.dc * par_.w_max, par_.dc * par_.w_max);
   double dyaw_not_filtered;
 
   dyaw_not_filtered = copysign(1, diff) * par_.w_max;
@@ -944,7 +947,7 @@ void Mader::yaw(double diff, state& next_goal)
   next_goal.yaw = previous_yaw_ + dyaw_filtered_ * par_.dc;
 }
 
-void Mader::getDesiredYaw(state& next_goal)
+void Mader::getDesiredYaw(mt::state& next_goal)
 {
   double diff = 0.0;
   double desired_yaw = 0.0;
@@ -966,7 +969,7 @@ void Mader::getDesiredYaw(state& next_goal)
       return;
   }
 
-  angle_wrap(diff);
+  mu::angle_wrap(diff);
   if (fabs(diff) < 0.04 && drone_status_ == DroneStatus::YAWING)
   {
     changeDroneStatus(DroneStatus::TRAVELING);
@@ -974,7 +977,7 @@ void Mader::getDesiredYaw(state& next_goal)
   yaw(diff, next_goal);
 }
 
-bool Mader::getNextGoal(state& next_goal)
+bool Mader::getNextGoal(mt::state& next_goal)
 {
   if (initializedStateAndTermGoal() == false || (drone_status_ == DroneStatus::GOAL_REACHED && plan_.size() == 1))
   {

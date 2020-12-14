@@ -15,6 +15,13 @@
 #include "termcolor.hpp"
 #include <Eigen/Dense>
 
+namespace mt  // mader_types
+{
+typedef Eigen::Matrix<double, 3, Eigen::Dynamic> Polyhedron_Std;
+typedef std::vector<mt::Polyhedron_Std> ConvexHullsOfCurve_Std;
+typedef std::vector<mt::ConvexHullsOfCurve_Std> ConvexHullsOfCurves_Std;
+typedef std::pair<Eigen::Vector3d, Eigen::Vector3d> Edge;
+typedef std::vector<Edge> Edges;
 
 struct state
 {
@@ -107,19 +114,7 @@ struct state
   }
 };
 
-
-namespace mt //mader_types
-{
-
-typedef Eigen::Matrix<double, 3, Eigen::Dynamic> Polyhedron_Std;
-typedef std::vector<mt::Polyhedron_Std> ConvexHullsOfCurve_Std;
-typedef std::vector<mt::ConvexHullsOfCurve_Std> ConvexHullsOfCurves_Std;
-typedef std::pair<Eigen::Vector3d, Eigen::Vector3d> Edge;
-typedef std::vector<Edge> Edges;
-
-
-
-// TODO: move this to a class (so that no one can modify these matrices)
+// TODO: move this struct to a class (so that no one can modify these matrices)
 struct basisConverter
 {
   Eigen::Matrix<double, 4, 4> A_pos_mv_rest;
@@ -531,7 +526,6 @@ struct PieceWisePol
   }
 };
 
-
 struct dynTraj
 {
   std::vector<std::string> function;
@@ -637,11 +631,11 @@ struct parameters
   double gamma = 0.5;
 };
 
-typedef std::vector<state> trajectory;
+typedef std::vector<mt::state> trajectory;
 
 struct committedTrajectory
 {
-  std::deque<state> content;
+  std::deque<mt::state> content;
 
   void print()
   {
@@ -657,22 +651,22 @@ struct committedTrajectory
     return content.size();
   }
 
-  void push_back(state tmp)
+  void push_back(mt::state tmp)
   {
     content.push_back(tmp);
   }
 
-  void erase(std::deque<state>::iterator a, std::deque<state>::iterator b)
+  void erase(std::deque<mt::state>::iterator a, std::deque<mt::state>::iterator b)
   {
     content.erase(a, b);
   }
 
-  state front()
+  mt::state front()
   {
     return content.front();
   }
 
-  state back()
+  mt::state back()
   {
     return content.back();
   }
@@ -682,29 +676,27 @@ struct committedTrajectory
     content.pop_front();
   }
 
-  std::deque<state>::iterator end()
+  std::deque<mt::state>::iterator end()
   {
     return content.end();
   }
 
-  std::deque<state>::iterator begin()
+  std::deque<mt::state>::iterator begin()
   {
     return content.begin();
   }
 
-  state get(int i)
+  mt::state get(int i)
   {
     return content[i];
   }
 
-  std::vector<state> toStdVector()
+  std::vector<mt::state> toStdVector()
   {
-    std::vector<state> my_vector;
+    std::vector<mt::state> my_vector;
     std::copy(content.begin(), content.end(), std::back_inserter(my_vector));
     return my_vector;
   }
 };
 
 }  // namespace mt
-
-

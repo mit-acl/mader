@@ -653,7 +653,7 @@ void SolverGurobi::initializeNumOfConstraints()
 }
 
 // Note that t_final will be updated in case the saturation in deltaT_ has had effect
-bool SolverGurobi::setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init,
+bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt::state final_state, double t_init,
                                                      double &t_final)
 {
   ///////////////////////////
@@ -667,10 +667,10 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(state initial_state, state 
 
   // here we saturate the value to ensure it is within the limits
   // the reason for this is the epsilon_tol_constraints (in the previous iteration, it may be slightly unfeasible)
-  saturate(v0, -v_max_, v_max_);
-  saturate(a0, -a_max_, a_max_);
-  saturate(vf, -v_max_, v_max_);
-  saturate(af, -a_max_, a_max_);
+  mu::saturate(v0, -v_max_, v_max_);
+  mu::saturate(a0, -a_max_, a_max_);
+  mu::saturate(vf, -v_max_, v_max_);
+  mu::saturate(af, -a_max_, a_max_);
 
   initial_state_ = initial_state;
   final_state_ = final_state;
@@ -695,8 +695,8 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(state initial_state, state 
     double upper_bound, lower_bound;
     if (fabs(a0(axis)) > 1e-7)
     {
-      upper_bound = ((p_ - 1) * (sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
-      lower_bound = ((p_ - 1) * (-sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
+      upper_bound = ((p_ - 1) * (mu::sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
+      lower_bound = ((p_ - 1) * (-mu::sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
 
       // std::cout << "axis= " << axis << std::endl;
       // std::cout << "lower_bound= " << lower_bound << std::endl;
@@ -716,7 +716,7 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(state initial_state, state 
         return false;
       }
 
-      saturate(deltaT_, std::max(0.0, lower_bound), upper_bound);
+      mu::saturate(deltaT_, std::max(0.0, lower_bound), upper_bound);
     }
     else
     {
@@ -731,9 +731,9 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(state initial_state, state 
   // // note that if any element of a0 is ==0.0, then its corresponding element in bound1 (or bound2) is +-infinity, but
   // // valid  for the saturation below
 
-  // saturate(deltaT_, std::min(bound1.x(), bound2.x()), std::max(bound1.x(), bound2.x()));
-  // saturate(deltaT_, std::min(bound1.y(), bound2.y()), std::max(bound1.y(), bound2.y()));
-  // saturate(deltaT_, std::min(bound1.z(), bound2.z()), std::max(bound1.z(), bound2.z()));
+  // mu::saturate(deltaT_, std::min(bound1.x(), bound2.x()), std::max(bound1.x(), bound2.x()));
+  // mu::saturate(deltaT_, std::min(bound1.y(), bound2.y()), std::max(bound1.y(), bound2.y()));
+  // mu::saturate(deltaT_, std::min(bound1.z(), bound2.z()), std::max(bound1.z(), bound2.z()));
 
   // std::cout << "std::min(bound1.x(), bound2.x()= " << std::min(bound1.x(), bound2.x()) << std::endl;
   // std::cout << "std::max(bound1.x(), bound2.x()= " << std::max(bound1.x(), bound2.x()) << std::endl;

@@ -25,32 +25,20 @@
 
 #include "ros/ros.h"
 
-#define RED_NORMAL 1
-#define RED_TRANS 2
-#define RED_TRANS_TRANS 3
-#define GREEN_NORMAL 4
-#define BLUE_NORMAL 5
-#define BLUE_TRANS 6
-#define BLUE_TRANS_TRANS 7
-#define BLUE_LIGHT 8
-#define YELLOW_NORMAL 9
-#define ORANGE_TRANS 10
-#define BLACK_TRANS 11
-#define TEAL_NORMAL 12
-
-#define STATE 0
-#define INPUT 1
-
-#define POS 0
-#define VEL 1
-#define ACCEL 2
-#define JERK 3
-
-#define WHOLE_TRAJ 0
-#define RESCUE_PATH 1
-
-#define OCCUPIED_SPACE 1
-#define UNKOWN_AND_OCCUPIED_SPACE 2
+namespace mu
+{
+static constexpr int red_normal = 1;  // mc \equiv mader colors
+static constexpr int red_trans = 2;
+static constexpr int red_trans_trans = 3;
+static constexpr int green_normal = 4;
+static constexpr int blue_normal = 5;
+static constexpr int blue_trans = 6;
+static constexpr int blue_trans_trans = 7;
+static constexpr int blue_light = 8;
+static constexpr int yellow_normal = 9;
+static constexpr int orange_trans = 10;
+static constexpr int black_trans = 11;
+static constexpr int teal_normal = 12;
 
 template <typename T>
 bool safeGetParam(ros::NodeHandle& nh, std::string const& param_name, T& param_value)
@@ -63,13 +51,13 @@ bool safeGetParam(ros::NodeHandle& nh, std::string const& param_name, T& param_v
   return true;
 }
 
-visualization_msgs::MarkerArray pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, double t_init, double t_final, int samples,
-                                                       std::string ns);
+visualization_msgs::MarkerArray pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, double t_init, double t_final,
+                                                       int samples, std::string ns);
 
 void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix<double, 4, 1>& coeff_new, double t0,
                      double tf);
 
-mt::PieceWisePol createPwpFromStaticPosition(const state& current_state);
+mt::PieceWisePol createPwpFromStaticPosition(const mt::state& current_state);
 
 mt::PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg);
 mader_msgs::PieceWisePolTraj pwp2PwpMsg(const mt::PieceWisePol& pwp);
@@ -82,11 +70,7 @@ mt::PieceWisePol composePieceWisePol(const double t, const double dc, mt::PieceW
 
 bool boxIntersectsSphere(Eigen::Vector3d center, double r, Eigen::Vector3d c1, Eigen::Vector3d c2);
 
-void printStateDeque(std::deque<state>& data);
-
 std::vector<std::string> pieceWisePol2String(const mt::PieceWisePol& piecewisepol);
-
-void printStateVector(std::vector<state>& data);
 
 std_msgs::ColorRGBA getColorJet(double v, double vmin, double vmax);
 
@@ -105,8 +89,6 @@ void saturate(double& var, const double min, const double max);
 void saturate(Eigen::Vector3d& tmp, const Eigen::Vector3d& min, const Eigen::Vector3d& max);
 
 visualization_msgs::Marker getMarkerSphere(double scale, int my_color);
-
-double angleBetVectors(const Eigen::Vector3d& a, const Eigen::Vector3d& b);
 
 void angle_wrap(double& diff);
 
@@ -141,6 +123,12 @@ Eigen::Vector3d getFirstIntersectionWithSphere(std::vector<Eigen::Vector3d>& pat
                                                int* last_index_inside_sphere = NULL,
                                                bool* noPointsOutsideSphere = NULL);
 
+visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const mt::trajectory& data, double max_value, int increm,
+                                                              std::string ns, double scale, std::string color_type,
+                                                              int id_agent, int n_agents);
+
+}  // namespace mu
+
 // Overload to be able to print a std::vector
 template <typename T>
 std::ostream& operator<<(std::ostream& out, const std::vector<T>& v)
@@ -153,9 +141,5 @@ std::ostream& operator<<(std::ostream& out, const std::vector<T>& v)
   }
   return out;
 }
-
-visualization_msgs::MarkerArray trajectory2ColoredMarkerArray(const mt::trajectory& data, double max_value, int increm,
-                                                              std::string ns, double scale, std::string color_type,
-                                                              int id_agent, int n_agents);
 
 #endif

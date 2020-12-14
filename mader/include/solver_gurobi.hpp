@@ -35,7 +35,8 @@ public:
 
   // setters
   void setMaxRuntimeKappaAndMu(double runtime, double kappa, double mu);
-  bool setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init, double &t_final);
+  bool setInitStateFinalStateInitTFinalT(mt::state initial_state, mt::state final_state, double t_init,
+                                         double &t_final);
   void setHulls(mt::ConvexHullsOfCurves_Std &hulls);
 
   mt::trajectory traj_solution_;
@@ -148,8 +149,8 @@ private:
   double weight_ = 10000;
   double weight_modified_ = 10000;
 
-  state initial_state_;
-  state final_state_;
+  mt::state initial_state_;
+  mt::state final_state_;
 
   Eigen::Vector3d q0_, q1_, q2_, qNm2_, qNm1_, qN_;
 

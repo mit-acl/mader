@@ -58,7 +58,7 @@ add_library(utils STATIC src/utils.cpp)
 target_include_directories (utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(utils PUBLIC ${catkin_LIBRARIES})
 
-add_library(octopus_search STATIC src/octopus_search.cpp src/bspline_utils.cpp) 
+add_library(octopus_search STATIC src/octopus_search.cpp src/bspline_utils.cpp src/utils.cpp) 
 target_include_directories (octopus_search PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(octopus_search PUBLIC ${catkin_LIBRARIES}) 
 

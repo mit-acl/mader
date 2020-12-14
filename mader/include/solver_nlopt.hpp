@@ -33,7 +33,8 @@ public:
 
   // setters
   void setMaxRuntimeKappaAndMu(double runtime, double kappa, double mu);
-  bool setInitStateFinalStateInitTFinalT(state initial_state, state final_state, double t_init, double &t_final);
+  bool setInitStateFinalStateInitTFinalT(mt::state initial_state, mt::state final_state, double t_init,
+                                         double &t_final);
   void setHulls(mt::ConvexHullsOfCurves_Std &hulls);
 
   mt::trajectory traj_solution_;
@@ -223,8 +224,8 @@ private:
 
   // bool force_final_state_ = true;
 
-  state initial_state_;
-  state final_state_;
+  mt::state initial_state_;
+  mt::state final_state_;
 
   // double constraints_[10000];  // this number should be very big!! (hack, TODO)
 

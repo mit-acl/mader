@@ -42,21 +42,21 @@ class Mader
 {
 public:
   Mader(mt::parameters par);
-  bool replan(mt::Edges& edges_obstacles_out, std::vector<state>& X_safe_out,
-              std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out);
-  void updateState(state data);
+  bool replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out, std::vector<Hyperplane3D>& planes,
+              int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out);
+  void updateState(mt::state data);
 
-  bool getNextGoal(state& next_goal);
-  void getState(state& data);
-  void getG(state& G);
-  void setTerminalGoal(state& term_goal);
+  bool getNextGoal(mt::state& next_goal);
+  void getState(mt::state& data);
+  void getG(mt::state& G);
+  void setTerminalGoal(mt::state& term_goal);
   void resetInitialization();
 
   bool IsTranslating();
   void updateTrajObstacles(mt::dynTraj traj);
 
 private:
-  state M_;
+  mt::state M_;
   mt::committedTrajectory plan_;
 
   double previous_yaw_ = 0.0;
@@ -67,9 +67,10 @@ private:
 
   bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized);
 
-  bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start, double t_end);
+  bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
+                                 double t_end);
 
-  void removeTrajsThatWillNotAffectMe(const state& A, double t_start, double t_end);
+  void removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, double t_end);
 
   /*  vec_E<Polyhedron<3>> vectorGCALPol2vectorJPSPol(ConvexHullsOfCurves& convex_hulls_of_curves);
     mt::ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& convexHulls);*/
@@ -80,15 +81,16 @@ private:
   std::vector<Eigen::Vector3d> vertexesOfInterval(mt::PieceWisePol& pwp, double t_start, double t_end,
                                                   const Eigen::Vector3d& delta_inflation);
   std::vector<Eigen::Vector3d> vertexesOfInterval(mt::dynTrajCompiled& traj, double t_start, double t_end);
-  void yaw(double diff, state& next_goal);
+  void yaw(double diff, mt::state& next_goal);
 
-  void getDesiredYaw(state& next_goal);
+  void getDesiredYaw(mt::state& next_goal);
 
   void updateInitialCond(int i);
 
   void changeDroneStatus(int new_status);
 
-  bool appendToPlan(int k_end_whole, const std::vector<state>& whole, int k_safe, const std::vector<state>& safe);
+  bool appendToPlan(int k_end_whole, const std::vector<mt::state>& whole, int k_safe,
+                    const std::vector<mt::state>& safe);
 
   bool initialized();
   bool initializedAllExceptPlanner();
@@ -129,11 +131,11 @@ private:
   std::mutex mtx_G_term;
   std::mutex mtx_t_;
 
-  state stateA_;  // It's the initial condition for the solver
+  mt::state stateA_;  // It's the initial condition for the solver
 
-  state state_;
-  state G_;       // This goal is always inside of the map
-  state G_term_;  // This goal is the clicked goal
+  mt::state state_;
+  mt::state G_;       // This goal is always inside of the map
+  mt::state G_term_;  // This goal is the clicked goal
 
   int solutions_found_ = 0;
   int total_replannings_ = 0;

@@ -19,7 +19,7 @@ Predictor::Predictor(ros::NodeHandle nh) : nh_(nh)
   pub_predicted_traj_ = nh_.advertise<mader_msgs::PieceWisePolTraj>("/trajs", 1);
   pub_marker_predicted_traj_ = nh_.advertise<visualization_msgs::MarkerArray>("marker_predicted_traj", 1);
 
-  safeGetParam(nh_, "mader/Ra", R_local_map_);
+  mu::safeGetParam(nh_, "mader/Ra", R_local_map_);
 
   std::cout << bold << "R_local_map_ = " << R_local_map_ << reset << std::endl;
 
@@ -102,10 +102,11 @@ void Predictor::trajCB(const mader_msgs::DynTraj& msg)
 
   std::cout << "At the end of the past traj = " << pwp_predicted_traj.eval(times.back());
 
-  // pwp2PwpMsg(mt::PieceWisePol pwp, const std::vector<double>& bbox, const int& id,
+  // mu::pwp2PwpMsg(mt::PieceWisePol pwp, const std::vector<double>& bbox, const int& id,
   // const bool& is_agent)
   bool is_agent = true;
-  mader_msgs::PieceWisePolTraj pwp_msg = pwp2PwpMsg(pwp_predicted_traj, traj_compiled.bbox, traj_compiled.id, is_agent);
+  mader_msgs::PieceWisePolTraj pwp_msg =
+      mu::pwp2PwpMsg(pwp_predicted_traj, traj_compiled.bbox, traj_compiled.id, is_agent);
 
   std::cout << green << "going to publish\n" << reset;
   pwp_predicted_traj.print();
@@ -116,8 +117,8 @@ void Predictor::trajCB(const mader_msgs::DynTraj& msg)
 
   std::string ns = "predicted_traj_" + std::to_string(msg.id);
 
-  pub_marker_predicted_traj_.publish(
-      pwp2ColoredMarkerArray(pwp_predicted_traj, ros::Time::now().toSec(), ros::Time::now().toSec() + 1, samples, ns));
+  pub_marker_predicted_traj_.publish(mu::pwp2ColoredMarkerArray(pwp_predicted_traj, ros::Time::now().toSec(),
+                                                                ros::Time::now().toSec() + 1, samples, ns));
 }
 
 void Predictor::stateCB(const snapstack_msgs::State& msg)
@@ -220,12 +221,12 @@ mt::PieceWisePol Predictor::predictPwp(std::vector<double>& times, std::vector<E
 
   // double t_end=
 
-  rescaleCoeffPol(coeff_old_x, coeff_new_x, 1.0,
-                  (t1 - times[times.size() - 2]) / (times[times.size() - 1] - times[times.size() - 2]));
-  rescaleCoeffPol(coeff_old_y, coeff_new_y, 1.0,
-                  (t1 - times[times.size() - 2]) / (times[times.size() - 1] - times[times.size() - 2]));
-  rescaleCoeffPol(coeff_old_z, coeff_new_z, 1.0,
-                  (t1 - times[times.size() - 2]) / (times[times.size() - 1] - times[times.size() - 2]));
+  mu::rescaleCoeffPol(coeff_old_x, coeff_new_x, 1.0,
+                      (t1 - times[times.size() - 2]) / (times[times.size() - 1] - times[times.size() - 2]));
+  mu::rescaleCoeffPol(coeff_old_y, coeff_new_y, 1.0,
+                      (t1 - times[times.size() - 2]) / (times[times.size() - 1] - times[times.size() - 2]));
+  mu::rescaleCoeffPol(coeff_old_z, coeff_new_z, 1.0,
+                      (t1 - times[times.size() - 2]) / (times[times.size() - 1] - times[times.size() - 2]));
 
   // std::cout << "coeff_new_x= " << coeff_new_x.transpose() << std::endl;
   // std::cout << "coeff_new_y= " << coeff_new_y.transpose() << std::endl;

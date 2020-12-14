@@ -76,7 +76,8 @@ mt::ConvexHullsOfCurves_Std vectorGCALPol2vectorStdEigen(ConvexHullsOfCurves& co
     {
       CGAL_Polyhedron_3 poly = convexHulls[index_curve][i];
 
-      mt::Polyhedron_Std convexHull_std(3, poly.size_of_vertices());  // poly.size_of_vertices() is the number of vertexes
+      mt::Polyhedron_Std convexHull_std(3,
+                                        poly.size_of_vertices());  // poly.size_of_vertices() is the number of vertexes
       // std::vector<Eigen::Vector3d> convexHull_std;
       int j = 0;
       for (CGAL_Polyhedron_3::Vertex_iterator v = poly.vertices_begin(); v != poly.vertices_end(); ++v)

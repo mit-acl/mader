@@ -1,4 +1,10 @@
-// Jesus Tordesillas Torres, jtorde@mit.edu, January 2020
+/* ----------------------------------------------------------------------------
+ * Copyright 2020, Jesus Tordesillas Torres, Aerospace Controls Laboratory
+ * Massachusetts Institute of Technology
+ * All Rights Reserved
+ * Authors: Jesus Tordesillas, et al.
+ * See LICENSE file for the license information
+ * -------------------------------------------------------------------------- */
 
 #include <iostream>
 #include <vector>
@@ -78,10 +84,10 @@ int main()
 
   SolverNlopt snlopt(parameters);  // snlopt(a,g) a polynomials of degree 3
   snlopt.setMaxRuntimeKappaAndMu(0.2, 0.5, 0.5);
-  state initial_state;
+  mt::state initial_state;
   initial_state.pos = Eigen::Vector3d(-4.0, 0.0, 0.0);
 
-  state final_state;
+  mt::state final_state;
   final_state.pos = Eigen::Vector3d(4.0, 0.0, 0.0);
 
   double t_min = 0.0;
