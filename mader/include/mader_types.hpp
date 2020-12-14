@@ -589,7 +589,7 @@ struct parameters
   double y_min;
   double y_max;
 
-  double z_ground;
+  double z_min;
   double z_max;
 
   Eigen::Vector3d v_max;

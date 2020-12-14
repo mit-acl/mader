@@ -17,7 +17,10 @@
 #include "timer.hpp"
 #include "termcolor.hpp"
 
+#if USE_GUROBI_FLAG
+#else
 #include "nlopt_utils.hpp"
+#endif
 
 using namespace termcolor;
 
@@ -36,6 +39,8 @@ Mader::Mader(mt::parameters par) : par_(par)
   stateA_.setZero();
   mtx_initial_cond.unlock();
 
+#if USE_GUROBI_FLAG
+#else
   // Check that the gradients are right
   if (nlopt_utils::checkGradientsNlopt(par_.basis) == false)
   {
@@ -51,6 +56,7 @@ Mader::Mader(mt::parameters par) : par_(par)
     std::cout << bold << "Gradient check was " << green << " OK " << reset << std::endl;
     std::cout << "==============================================" << std::endl;
   }
+#endif
 
   changeDroneStatus(DroneStatus::GOAL_REACHED);
   resetInitialization();
@@ -63,7 +69,7 @@ Mader::Mader(mt::parameters par) : par_(par)
   par_for_solver.y_min = par_.y_min;
   par_for_solver.y_max = par_.y_max;
 
-  par_for_solver.z_min = par_.z_ground;
+  par_for_solver.z_min = par_.z_min;
   par_for_solver.z_max = par_.z_max;
 
   par_for_solver.Ra = par_.Ra;
@@ -110,8 +116,14 @@ Mader::Mader(mt::parameters par) : par_(par)
 
   A_rest_pos_basis_inverse_ = A_rest_pos_basis_.inverse();
 
+#if USE_GUROBI_FLAG
+  solver_ = std::unique_ptr<SolverGurobi>(new SolverGurobi(par_for_solver));
+#else
+  solver_ = std::unique_ptr<SolverNlopt>(new SolverNlopt(par_for_solver));
+#endif
+
   // solver_ = new SolverNlopt(par_for_solver);
-  solver_ = new SolverGurobi(par_for_solver);
+  // solver_ = new SolverGurobi(par_for_solver);
 
   separator_solver_ = new separator::Separator();
 }

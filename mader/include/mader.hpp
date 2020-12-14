@@ -16,8 +16,12 @@
 #include <mutex>
 
 #include "mader_types.hpp"
-#include "solver_nlopt.hpp"
+
+#if USE_GUROBI_FLAG
 #include "solver_gurobi.hpp"
+#else
+#include "solver_nlopt.hpp"
+#endif
 
 // status_ : YAWING-->TRAVELING-->GOAL_SEEN-->GOAL_REACHED-->YAWING-->TRAVELING-->...
 
@@ -150,10 +154,13 @@ private:
 
   double time_init_opt_;
 
-  double av_improvement_nlopt_ = 0.0;
+  // double av_improvement_nlopt_ = 0.0;
 
-  // SolverNlopt* solver_;  // pointer to the optimization solver
-  SolverGurobi* solver_;  // pointer to the optimization solver
+#if USE_GUROBI_FLAG
+  std::unique_ptr<SolverGurobi> solver_;  // pointer to the optimization solver
+#else
+  std::unique_ptr<SolverNlopt> solver_;  // pointer to the optimization solver
+#endif
 
   Eigen::Matrix<double, 4, 4> A_rest_pos_basis_;
   Eigen::Matrix<double, 4, 4> A_rest_pos_basis_inverse_;

@@ -44,7 +44,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "y_min", par_.y_min);
   mu::safeGetParam(nh1_, "y_max", par_.y_max);
 
-  mu::safeGetParam(nh1_, "z_ground", par_.z_ground);
+  mu::safeGetParam(nh1_, "z_min", par_.z_min);
   mu::safeGetParam(nh1_, "z_max", par_.z_max);
 
   std::vector<double> v_max_tmp;

@@ -29,7 +29,7 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   double y_min = -10.0;
   double y_max = 10.0;
 
-  double z_ground = -4.0;
+  double z_min = -4.0;
   double z_max = 4.0;
   double dc = 0.01;
   double Ra = 4.0;
@@ -68,7 +68,7 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   param.y_min = y_min;
   param.y_max = y_max;
 
-  param.z_min = z_ground;
+  param.z_min = z_min;
   param.z_max = z_max;
   param.v_max = Eigen::Vector3d(v_max, v_max, v_max);
   param.a_max = Eigen::Vector3d(a_max, a_max, a_max);
