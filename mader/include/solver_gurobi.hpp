@@ -27,7 +27,7 @@ typedef MADER_timers::Timer MyTimer;
 class SolverGurobi
 {
 public:
-  SolverGurobi(par_solver &par);
+  SolverGurobi(ms::par_solver &par);
 
   ~SolverGurobi();
 

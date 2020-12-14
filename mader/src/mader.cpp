@@ -55,7 +55,7 @@ Mader::Mader(mt::parameters par) : par_(par)
   changeDroneStatus(DroneStatus::GOAL_REACHED);
   resetInitialization();
 
-  par_solver par_for_solver;
+  ms::par_solver par_for_solver;
 
   par_for_solver.x_min = par_.x_min;
   par_for_solver.x_max = par_.x_max;

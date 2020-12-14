@@ -25,7 +25,7 @@ typedef MADER_timers::Timer MyTimer;
 class SolverNlopt
 {
 public:
-  SolverNlopt(par_solver &par);
+  SolverNlopt(ms::par_solver &par);
 
   ~SolverNlopt();
 

@@ -3,6 +3,8 @@
 
 #include <Eigen/Dense>
 
+namespace ms  // mader solver
+{
 struct par_solver
 {
   ///// Will not change between iterations
@@ -36,5 +38,6 @@ struct par_solver
 
   double alpha_shrink;
 };
+}  // namespace ms
 
 #endif

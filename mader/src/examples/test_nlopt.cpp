@@ -59,7 +59,7 @@ int main()
   hulls_curves.push_back(hulls_curve);
   mt::ConvexHullsOfCurves_Std hulls_std = vectorGCALPol2vectorStdEigen(hulls_curves);
 
-  par_solver parameters;
+  ms::par_solver parameters;
   parameters.v_max = 20 * Eigen::Vector3d::Ones();
   parameters.a_max = 20 * Eigen::Vector3d::Ones();
   parameters.dc = 0.01;

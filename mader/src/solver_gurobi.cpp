@@ -22,7 +22,7 @@
 
 using namespace termcolor;
 
-SolverGurobi::SolverGurobi(par_solver &par)
+SolverGurobi::SolverGurobi(ms::par_solver &par)
 {
   deg_pol_ = par.deg_pol;
   num_pol_ = par.num_pol;
