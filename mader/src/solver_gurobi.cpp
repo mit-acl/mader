@@ -174,7 +174,7 @@ void SolverGurobi::addConstraints()
       {
         GRBVector q_ipu = getColumn(Qmv, u);
         GRBLinExpr dot = n_[ip].x() * q_ipu[0] + n_[ip].y() * q_ipu[1] + n_[ip].z() * q_ipu[2];
-        m_.addConstr(dot + d_[ip] + 1 <= 0);
+        m_.addConstr(dot + d_[ip] - 1 <= 0);
       }
     }
 
