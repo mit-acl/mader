@@ -1,6 +1,10 @@
 #!/bin/bash
 # Author: Jesus Tordesillas Torres
 
+
+#Ask for the password
+sudo echo "-----------------------" 
+
 #INSTALL NLOPT v2.6.2
 ##########################################
 mkdir -p ~/installations/nlopt
