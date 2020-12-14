@@ -35,11 +35,11 @@ Then simply run this commands:
 cd ~/ && mkdir ws && cd ws && mkdir src && cd src
 git clone https://github.com/mit-acl/mader.git
 cd ..
+#bash bash mader/install_nlopt.sh      #ONLY if you are going to use NLOPT, it'll install NLopt v2.6.2
 bash mader/install_and_compile.sh      #If you are going to use Gurobi
-#bash mader/install_and_compile.sh -n  #If you are going to use NLOPT
 ```
 
-The [bash script](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh) will install [NLopt v2.6.2](https://nlopt.readthedocs.io/en/latest/) (only if executed with the `-n` option), [CGAL v4.12.4](https://www.cgal.org/), [GLPK](https://www.gnu.org/software/glpk/) and other ROS packages (check the script for details). It will also download the repo and compile it. This bash script assumes that you already have ROS installed in your machine. 
+The [bash script](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh) will install [CGAL v4.12.4](https://www.cgal.org/), [GLPK](https://www.gnu.org/software/glpk/) and other ROS packages (check the script for details). It will also download the repo and compile it. This bash script assumes that you already have ROS installed in your machine. 
 
 ### Running Simulations
 

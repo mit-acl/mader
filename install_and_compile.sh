@@ -7,20 +7,6 @@
 # ws --> src --> mader
 # This file should be called from the directory ws
 
-install_nlopt=false
-
-while getopts ":n" opt; do
-  case ${opt} in
-    n )
-      install_nlopt=true
-      ;;
-    \? )
-      echo "Invalid option: $OPTARG" 1>&2
-      exit
-      ;;
-  esac
-done
-
 source ~/.bashrc
 
 #Ask for the password
@@ -28,17 +14,6 @@ sudo echo "-----------------------"
 
 path_to_ws=$(pwd)
 
-if [ "$install_nlopt" = true ] ; then
-	echo "Installing NLOPT"
-	#INSTALL NLOPT v2.6.2
-	##########################################
-	mkdir -p ~/installations/nlopt
-	cd ~/installations/nlopt
-	wget https://github.com/stevengj/nlopt/archive/v2.6.2.tar.gz
-	tar -zxvf v2.6.2.tar.gz 
-	cd nlopt-2.6.2/
-	cmake . && make && sudo make install
-fi
 
 #INSTALL CGAL v4.14.2
 ##########################################
