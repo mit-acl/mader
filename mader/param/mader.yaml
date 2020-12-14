@@ -25,7 +25,6 @@ z_max: 1000000000.0   # [m] JPS is not allowed to give a solution that goes high
 # v_max: [2.5, 2.5, 2.5]   #[m/s]  
 # a_max: [30.0, 30.0, 9.6]   #[m/s2] 
 
-
 #For single-agent simulations
 v_max: [3.5, 3.5, 3.5]   #[m/s]  7.0
 a_max: [20.0, 20.0, 9.6]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
@@ -41,19 +40,10 @@ xtol_rel: 0.0000000000001 #negative value --> stopping criterion not used
 ftol_rel: 0.0000000001 #negative value --> stopping criterion not used
 solver: "LD_MMA"
 
-# LD_MMA: really good
-# LD_CCSAQ: really good
-# LN_NELDERMEAD: good
-# LD_LBFGS: good
-# LD_VAR2: good
-# LD_AUGLAG: good
-# LD_SLSQP: sometimes it calls the obj_function and the constraints functions very few times. This leads to MUCH higher comp times than max_runtime (\implies A is published by then)
-
-# Other ones:
-#  // work:  / LN_SBPLX //LN_PRAXIS  //LD_AUGLAG_EQ //
-#  // don't work: LN_BOBYQA //  //LN_NEWUOA //LN_NEWUOA_BOUND //LN_COBYLA //LD_CCSAQ
-#  // crash://LD_TNEWTON_PRECOND_RESTART //LD_TNEWTON_RESTART //LD_TNEWTON_PRECOND //LD_VAR1  //LD_LBFGS_NOCEDAL //
-# //COBYLA
+#Other possible solvers:
+# LD_MMA, LD_CCSAQ, LN_NELDERMEAD,  LD_LBFGS, LD_VAR2, LD_AUGLAG, LD_SLSQP, LN_SBPLX, LN_PRAXIS, ...
+# LD_AUGLAG_EQ, LN_BOBYQA, LN_NEWUOA, LN_NEWUOA_BOUND, LN_COBYLA, LD_CCSAQ, LD_TNEWTON_PRECOND_RESTART, ...
+# LD_TNEWTON_RESTART, LD_TNEWTON_PRECOND, LD_VAR1, LD_LBFGS_NOCEDAL, COBYLA
 
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
 upper_bound_runtime_snlopt: 0.35 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
@@ -70,14 +60,13 @@ allow_infeasible_guess: true  #whether allow infeasible guesses to be used for t
 
 a_star_bias: 1.0 #Bias (cost=g+bias*h) in the A* search 
 
-basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER This is the basis used only for collision checking
+basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER.  This is the basis used for collision checking
 
 res_plot_traj: 15.0  #Higher --> More resolution when plotting the trajectory 
 
 factor_v_max: 1.0 #\in [0,1]. Used to find the total duration of a given trajectory.
 
 alpha_shrink: 0.95 #\in [0,1] Only used for MINVO/Bezier
-
 
 alpha: 0.0 #[m] Error in position
 beta: 0.0 #[m] Deviation between the trajectory and the segment between two discretization points
