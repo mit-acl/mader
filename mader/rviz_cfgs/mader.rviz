@@ -172,208 +172,22 @@ Visualization Manager:
           Value: true
         4049:
           Value: true
-        4050:
-          Value: true
-        4051:
-          Value: true
-        4052:
-          Value: true
-        4053:
-          Value: true
-        4054:
-          Value: true
-        4055:
-          Value: true
-        4056:
-          Value: true
-        4057:
-          Value: true
-        4058:
-          Value: true
-        4059:
-          Value: true
-        4060:
-          Value: true
-        4061:
-          Value: true
-        4062:
-          Value: true
-        4063:
-          Value: true
-        4064:
-          Value: true
-        4065:
-          Value: true
-        4066:
-          Value: true
-        4067:
-          Value: true
-        4068:
-          Value: true
-        4069:
-          Value: true
-        4070:
-          Value: true
-        4071:
-          Value: true
-        4072:
-          Value: true
-        4073:
-          Value: true
-        4074:
-          Value: true
-        4075:
-          Value: true
-        4076:
-          Value: true
-        4077:
-          Value: true
-        4078:
-          Value: true
-        4079:
-          Value: true
-        4080:
-          Value: true
-        4081:
-          Value: true
-        4082:
-          Value: true
-        4083:
-          Value: true
-        4084:
-          Value: true
-        4085:
-          Value: true
-        4086:
-          Value: true
-        4087:
-          Value: true
-        4088:
-          Value: true
-        4089:
-          Value: true
-        4090:
-          Value: true
-        4091:
-          Value: true
-        4092:
-          Value: true
-        4093:
-          Value: true
-        4094:
-          Value: true
-        4095:
-          Value: true
-        4096:
-          Value: true
-        4097:
-          Value: true
-        4098:
-          Value: true
-        4099:
-          Value: true
-        4100:
-          Value: true
-        4101:
-          Value: true
-        4102:
-          Value: true
-        4103:
-          Value: true
-        4104:
-          Value: true
-        4105:
-          Value: true
-        4106:
-          Value: true
-        4107:
-          Value: true
-        4108:
-          Value: true
-        4109:
-          Value: true
-        4110:
-          Value: true
-        4111:
-          Value: true
-        4112:
-          Value: true
-        4113:
-          Value: true
-        4114:
-          Value: true
-        4115:
-          Value: true
-        4116:
-          Value: true
-        4117:
-          Value: true
-        4118:
-          Value: true
-        4119:
-          Value: true
-        4120:
-          Value: true
-        4121:
-          Value: true
-        4122:
-          Value: true
-        4123:
-          Value: true
-        4124:
-          Value: true
-        4125:
-          Value: true
-        4126:
-          Value: true
-        4127:
-          Value: true
-        4128:
-          Value: true
-        4129:
-          Value: true
-        4130:
-          Value: true
-        4131:
-          Value: true
-        4132:
-          Value: true
-        4133:
-          Value: true
-        4134:
-          Value: true
-        4135:
-          Value: true
-        4136:
-          Value: true
-        4137:
-          Value: true
-        4138:
-          Value: true
-        4139:
-          Value: true
-        4140:
-          Value: true
-        4141:
-          Value: true
-        4142:
-          Value: true
-        4143:
-          Value: true
-        4144:
-          Value: true
-        4145:
-          Value: true
-        4146:
-          Value: true
-        4147:
-          Value: true
-        4148:
-          Value: true
-        4149:
-          Value: true
         All Enabled: true
         SQ01s:
+          Value: true
+        SQ02s:
+          Value: true
+        SQ03s:
+          Value: true
+        SQ04s:
+          Value: true
+        SQ05s:
+          Value: true
+        SQ06s:
+          Value: true
+        SQ07s:
+          Value: true
+        SQ08s:
           Value: true
         vicon:
           Value: true
@@ -486,208 +300,22 @@ Visualization Manager:
             {}
           4049:
             {}
-          4050:
-            {}
-          4051:
-            {}
-          4052:
-            {}
-          4053:
-            {}
-          4054:
-            {}
-          4055:
-            {}
-          4056:
-            {}
-          4057:
-            {}
-          4058:
-            {}
-          4059:
-            {}
-          4060:
-            {}
-          4061:
-            {}
-          4062:
-            {}
-          4063:
-            {}
-          4064:
-            {}
-          4065:
-            {}
-          4066:
-            {}
-          4067:
-            {}
-          4068:
-            {}
-          4069:
-            {}
-          4070:
-            {}
-          4071:
-            {}
-          4072:
-            {}
-          4073:
-            {}
-          4074:
-            {}
-          4075:
-            {}
-          4076:
-            {}
-          4077:
-            {}
-          4078:
-            {}
-          4079:
-            {}
-          4080:
-            {}
-          4081:
-            {}
-          4082:
-            {}
-          4083:
-            {}
-          4084:
-            {}
-          4085:
-            {}
-          4086:
-            {}
-          4087:
-            {}
-          4088:
-            {}
-          4089:
-            {}
-          4090:
-            {}
-          4091:
-            {}
-          4092:
-            {}
-          4093:
-            {}
-          4094:
-            {}
-          4095:
-            {}
-          4096:
-            {}
-          4097:
-            {}
-          4098:
-            {}
-          4099:
-            {}
-          4100:
-            {}
-          4101:
-            {}
-          4102:
-            {}
-          4103:
-            {}
-          4104:
-            {}
-          4105:
-            {}
-          4106:
-            {}
-          4107:
-            {}
-          4108:
-            {}
-          4109:
-            {}
-          4110:
-            {}
-          4111:
-            {}
-          4112:
-            {}
-          4113:
-            {}
-          4114:
-            {}
-          4115:
-            {}
-          4116:
-            {}
-          4117:
-            {}
-          4118:
-            {}
-          4119:
-            {}
-          4120:
-            {}
-          4121:
-            {}
-          4122:
-            {}
-          4123:
-            {}
-          4124:
-            {}
-          4125:
-            {}
-          4126:
-            {}
-          4127:
-            {}
-          4128:
-            {}
-          4129:
-            {}
-          4130:
-            {}
-          4131:
-            {}
-          4132:
-            {}
-          4133:
-            {}
-          4134:
-            {}
-          4135:
-            {}
-          4136:
-            {}
-          4137:
-            {}
-          4138:
-            {}
-          4139:
-            {}
-          4140:
-            {}
-          4141:
-            {}
-          4142:
-            {}
-          4143:
-            {}
-          4144:
-            {}
-          4145:
-            {}
-          4146:
-            {}
-          4147:
-            {}
-          4148:
-            {}
-          4149:
-            {}
           vicon:
             SQ01s:
+              {}
+            SQ02s:
+              {}
+            SQ03s:
+              {}
+            SQ04s:
+              {}
+            SQ05s:
+              {}
+            SQ06s:
+              {}
+            SQ07s:
+              {}
+            SQ08s:
               {}
       Update Interval: 0
       Value: true
@@ -1500,25 +1128,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 90.15233612060547
+      Distance: 35.215736389160156
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 36.556640625
-        Y: -12.243379592895508
+        X: -2.6004838943481445
+        Y: -5.227055549621582
         Z: 6.783115168218501e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 0.4097972810268402
       Target Frame: <Fixed Frame>
       Value: ThirdPersonFollower (rviz)
-      Yaw: 4.719998359680176
+      Yaw: 3.7649950981140137
     Saved: ~
 Window Geometry:
   Displays:
