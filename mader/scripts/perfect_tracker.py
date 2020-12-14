@@ -2,20 +2,14 @@
 
 #Jesus Tordesillas Torres, December 2019
 
-import roslib
-import rospy
-import math
+import roslib, rospy, math, tf
 from snapstack_msgs.msg import Goal, State
 from geometry_msgs.msg import Pose
 from gazebo_msgs.msg import ModelState
 import numpy as np
 from numpy import linalg as LA
-
 from tf.transformations import quaternion_from_euler, euler_from_quaternion, quaternion_about_axis, quaternion_multiply
-
 from visualization_msgs.msg import Marker
-
-import tf
 
 
 

@@ -615,7 +615,7 @@ bool SolverGurobi::optimize()
   bool guess_is_feasible = generateAStarGuess();  // I obtain q_quess_, n_guess_, d_guess_
   if (guess_is_feasible == false)
   {
-    std::cout << "Planes haven't been found" << std::endl;
+    // std::cout << "Planes haven't been found" << std::endl;
     return false;
   }
   n_ = n_guess_;
