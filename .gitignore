@@ -1,0 +1,7 @@
+.rosinstall
+.rosinstall.bak
+*.asv
+*.lyx~
+*.lyx#
+*.bag
+*.m~
