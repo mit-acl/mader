@@ -62,6 +62,71 @@ visualization_msgs::MarkerArray mu::pwp2ColoredMarkerArray(mt::PieceWisePol& pwp
   return marker_array;
 }
 
+double mu::getMinTimeDoubleIntegrator1D(const double& p0, const double& v0, const double& pf, const double& vf,
+                                        const double& v_max, const double& a_max)
+{
+  // See also minimum_time.m
+  // %The notation of this function is based on the paper "Constrained time-optimal
+  // %control of double integrator system and its application in MPC"
+  // % https://iopscience.iop.org/article/10.1088/1742-6596/783/1/012024
+
+  double x1 = v0;
+  double x2 = p0;
+  double x1r = vf;
+  double x2r = pf;
+
+  double k1 = a_max;  // Note that the paper uses u\in[-1, 1].But setting k1 to a_max has the same effect k2 = 1.0;
+  double k2 = 1.0;
+
+  double x1_bar = v_max;
+
+  double B = (k2 / (2 * k1)) * sgn(-x1 + x1r) * (pow(x1, 2) - pow(x1r, 2)) + x2r;
+  double C = (k2 / (2 * k1)) * (pow(x1, 2) + pow(x1r, 2)) - (k2 / k1) * pow(x1_bar, 2) + x2r;
+  double D = (-k2 / (2 * k1)) * (pow(x1, 2) + pow(x1r, 2)) + (k2 / k1) * pow(x1_bar, 2) + x2r;
+
+  double time;
+
+  if ((x2 <= B) && (x2 >= C))
+  {
+    time = (-k2 * (x1 + x1r) +
+            2 * sqrt(pow(k2, 2) * pow(x1, 2) - k1 * k2 * ((k2 / (2 * k1)) * (pow(x1, 2) - pow(x1r, 2)) + x2 - x2r))) /
+           (k1 * k2);
+  }
+
+  else if ((x2 <= B) && (x2 < C))
+  {
+    time = (x1_bar - x1 - x1r) / k1 + (pow(x1, 2) + pow(x1r, 2)) / (2 * k1 * x1_bar) + (x2r - x2) / (k2 * x1_bar);
+  }
+
+  else if ((x2 > B) && (x2 <= D))
+  {
+    time = (k2 * (x1 + x1r) +
+            2 * sqrt(pow(k2, 2) * pow(x1, 2) + k1 * k2 * ((k2 / (2 * k1)) * (-pow(x1, 2) + pow(x1r, 2)) + x2 - x2r))) /
+           (k1 * k2);
+  }
+
+  else
+  {  // (x2 > B) && (x2 > D)
+
+    time = (x1_bar + x1 + x1r) / k1 + (pow(x1, 2) + pow(x1r, 2)) / (2 * k1 * x1_bar) + (-x2r + x2) / (k2 * x1_bar);
+  }
+
+  return time;
+}
+
+double mu::getMinTimeDoubleIntegrator3D(const Eigen::Vector3d& p0, const Eigen::Vector3d& v0, const Eigen::Vector3d& pf,
+                                        const Eigen::Vector3d& vf, const Eigen::Vector3d& v_max,
+                                        const Eigen::Vector3d& a_max)
+{
+  double min_x = getMinTimeDoubleIntegrator1D(p0.x(), v0.x(), pf.x(), vf.x(), v_max.x(), a_max.x());
+  double min_y = getMinTimeDoubleIntegrator1D(p0.y(), v0.y(), pf.y(), vf.y(), v_max.y(), a_max.y());
+  double min_z = getMinTimeDoubleIntegrator1D(p0.z(), v0.z(), pf.z(), vf.z(), v_max.z(), a_max.z());
+
+  double min_time = std::max({ min_x, min_y, min_z });  // Note that it's the maximum of all the axes
+
+  return min_time;
+}
+
 // coeff_old are the coeff [a b c d]' of a polynomial p(t) defined in [0,1]
 // coeff_new are the coeff [a b c d]' of a polynomial q(t) defined in [0,1] such that:
 //     q((t-t0)/(tf-t0))=p(t) \forall t \in [t0,tf]

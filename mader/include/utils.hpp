@@ -51,6 +51,13 @@ bool safeGetParam(ros::NodeHandle& nh, std::string const& param_name, T& param_v
   return true;
 }
 
+double getMinTimeDoubleIntegrator1D(const double& p0, const double& v0, const double& pf, const double& vf,
+                                    const double& v_max, const double& a_max);
+
+double getMinTimeDoubleIntegrator3D(const Eigen::Vector3d& p0, const Eigen::Vector3d& v0, const Eigen::Vector3d& pf,
+                                    const Eigen::Vector3d& vf, const Eigen::Vector3d& v_max,
+                                    const Eigen::Vector3d& a_max);
+
 visualization_msgs::MarkerArray pwp2ColoredMarkerArray(mt::PieceWisePol& pwp, double t_init, double t_final,
                                                        int samples, std::string ns);
 

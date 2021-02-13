@@ -622,7 +622,7 @@ struct parameters
 
   double res_plot_traj;
 
-  double factor_v_max = 0.6;
+  double factor_alloc = 1.2;
 
   double alpha_shrink = 1.0;
 

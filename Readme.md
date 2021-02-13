@@ -24,7 +24,7 @@ MADER has been tested with
 * Ubuntu 16.04/ROS Kinetic
 * Ubuntu 18.04/ROS Melodic
 
-The backend optimizer can be either Gurobi (recommended, default) or NLOPT: 
+The backend optimizer can be either Gurobi (recommended, used by default) or NLOPT: 
 
 * To use the [`Gurobi`](https://www.gurobi.com/), install the [Gurobi Optimizer](https://www.gurobi.com/products/gurobi-optimizer/). You can test your installation typing `gurobi.sh` in the terminal. Have a look at [this section](#issues-when-installing-gurobi) if you have any issues.
 * To use [`NLOPT`](https://nlopt.readthedocs.io/en/latest/), set `USE_GUROBI` to `OFF` in the [CMakeList.txt](https://github.com/mit-acl/mader/blob/master/mader/CMakeLists.txt). 
@@ -55,18 +55,7 @@ To run many single-agent simulations in different random environments, you can g
 
 > **Note**: For a high number of agents, the performance of MADER improves with the number of CPUs available in your computer. 
 
-Change these parameters in `mader.yaml`:
-
-```yaml
-drone_radius: 0.05
-v_max: [2.5, 2.5, 2.5]     
-a_max: [30.0, 30.0, 9.6]  
-num_pol: 3
-a_star_fraction_voxel_size: 0.0
-a_star_bias: 7.0
-```
-
-and then open four terminals and run these commands:
+Open four terminals and run these commands:
 
 ```
 roslaunch mader mader_general.launch type_of_environment:="dynamic_forest"
@@ -74,6 +63,9 @@ roslaunch mader many_drones.launch action:=start
 roslaunch mader many_drones.launch action:=mader
 roslaunch mader many_drones.launch action:=send_goal
 ```
+
+(if you want to modify the drone radius, you can do so in `mader.yaml`)
+
 
 #### Octopus Search
 You can run the octopus search with a dynamic obstacle by simply running

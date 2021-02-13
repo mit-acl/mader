@@ -56,7 +56,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
   par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
 
-  mu::safeGetParam(nh1_, "factor_v_max", par_.factor_v_max);
+  mu::safeGetParam(nh1_, "factor_alloc", par_.factor_alloc);
 
   mu::safeGetParam(nh1_, "factor_alpha", par_.factor_alpha);
 
@@ -103,7 +103,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   assert((par_.gamma <= 0) && "par_.gamma <= 0 must hold");
   assert((par_.beta < 0 || par_.alpha < 0) && " ");
   assert((par_.a_max.z() >= 9.81) && "par_.a_max.z() >= 9.81, the drone will flip");
-  assert((par_.factor_v_max > 1.0 || par_.factor_v_max < 0.0) && "Needed: 0<=factor_v_max<=1");
+  assert((par_.factor_alloc < 1.0) && "Needed: factor_alloc>1");
   assert((par_.kappa < 0 || par_.mu < 0) && "Needed: kappa and mu > 0");
   assert(((par_.kappa + par_.mu) > 1) && "Needed: (par_.kappa + par_.mu) <= 1");
   assert((par_.a_star_fraction_voxel_size < 0.0 || par_.a_star_fraction_voxel_size > 1.0) && "Needed: (par_.kappa + "

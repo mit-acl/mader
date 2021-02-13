@@ -782,16 +782,19 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   double t_start = k_index * par_.dc + time_now;
 
-  double factor_v_max_tmp = par_.factor_v_max;
+  // double factor_v_max_tmp = par_.factor_v_max;
 
   // when it's near the terminal goal --> use a small factor_v_max (if not it will oscillate)
-  if (distA2TermGoal < 1.5)  // TODO: Put this as a param
-  {
-    factor_v_max_tmp = 0.4;  // TODO: Put this as a param
-  }
+  // if (distA2TermGoal < 1.5)  // TODO: Put this as a param
+  // {
+  //   factor_v_max_tmp = 0.4;  // TODO: Put this as a param
+  // }
 
-  double t_final = t_start + (initial.pos - final.pos).array().abs().maxCoeff() /
-                                 (factor_v_max_tmp * par_.v_max.x());  // time to execute the optimized path
+  // double t_final = t_start + (initial.pos - final.pos).array().abs().maxCoeff() /
+  //                                (factor_v_max_tmp * par_.v_max.x());  // time to execute the optimized path
+
+  double time_allocated = mu::getMinTimeDoubleIntegrator3D(A.pos, A.vel, E.pos, E.vel, par_.v_max, par_.a_max);
+  double t_final = t_start + par_.factor_alloc * time_allocated;
 
   bool correctInitialCond =
       solver_->setInitStateFinalStateInitTFinalT(initial, final, t_start,
