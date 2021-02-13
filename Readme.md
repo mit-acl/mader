@@ -64,7 +64,7 @@ roslaunch mader many_drones.launch action:=mader
 roslaunch mader many_drones.launch action:=send_goal
 ```
 
-(if you want to modify the drone radius, you can do so in `mader.yaml`)
+(if you want to modify the drone radius, you can do so in `mader.yaml`). For the tables shown in the paper, the parameters (drone radius, max vel,...) used are also detailed in the corresponding section of the paper
 
 
 #### Octopus Search
