@@ -1,0 +1,7 @@
+*.so
+*.o
+*.lp
+*.log
+*.swp
+*.swo
+*.lyx#

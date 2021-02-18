@@ -1,0 +1,46 @@
+<launch>
+
+	<arg name="quad" default="SQ01s"/>
+  <arg name="gui" default="false"/>
+  <arg name="rviz" default="true"/>
+
+ <include file="$(find mader)/launch/mader_specific_and_general.launch">
+      <arg name="quad" value="$(arg quad)"/>
+      <arg name="gui" value="$(arg gui)"/>
+      <arg name="rviz" value="$(arg rviz)"/>
+  </include> 
+ 
+  <include file="$(find mader)/launch/mader.launch">
+      <arg name="quad" value="$(arg quad)"/>
+  </include> 
+
+
+<!-- Uncomment the part below to generate a camera from RViz -->
+<!-- More info at https://roboticsknowledgebase.com/wiki/tools/stream-rviz/ -->
+
+
+<!--   <group ns="camera1">
+  <node pkg="tf" type="static_transform_publisher" name="camera_broadcaster"
+      args="0.001 0 0 -1.57 0 -1.57 SQ01s camera1 10" />
+  <node name="camera_info" pkg="rostopic" type="rostopic"
+      args="pub camera_info sensor_msgs/CameraInfo
+     '{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: 'camera1'},
+      height: 480, width: 640, distortion_model: 'plumb_bob',
+      D: [0],
+      K: [500.0, 0.0, 320, 0.0, 500.0, 240.0, 0.0, 0.0, 1.0],
+      R: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+      P: [500.0, 0.0, 320, 0.0, 0.0, 500, 240, 0.0, 0.0, 0.0, 1.0, 0.0],
+      binning_x: 0, binning_y: 0,
+      roi: {x_offset: 0, y_offset: 0, height: 480, width: 640, do_rectify: false}}' -r 2"
+      output="screen"/>
+  </group>
+
+  <group ns="rviz1/camera1/image">
+  <rosparam param="disable_pub_plugins">
+    - 'image_transport/compressed'
+    - 'image_transport/compressedDepth'
+    - 'image_transport/theora'
+  </rosparam>
+  </group> -->
+
+</launch>

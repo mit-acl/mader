@@ -1,0 +1,25 @@
+<launch>
+	<arg name="gui" default="false"/>
+	<arg name="rviz" default="true"/>
+	<arg name="environment" default="true"/>
+	<arg name="type_of_environment" default="dynamic_corridor"/>  <!-- dynamic_corridor or dynamic_forest -->
+
+<!-- Start Behaviour Selector-->
+<node pkg="behavior_selector" type="behavior_selector_node.py" name="behavior_selector" output="screen" />
+
+
+<!-- Don't run this, for instance, for ssh connections -->
+<group if="$(arg rviz)">
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mader)/rviz_cfgs/mader.rviz"/>
+</group>
+
+<!-- Don't run this, for instance, for ssh connections -->
+<group if="$(arg gui)"> 
+	<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" args="--perspective-file $(find mader)/rqt_cfgs/demo_interface.perspective"/>
+</group>
+
+<group if="$(arg environment)">
+	<node name="$(arg type_of_environment)" pkg="mader" type="$(arg type_of_environment).py" output="screen" args="175"/>	<!--  args is not used in dynamic_forest (TODO)-->
+</group>s	
+
+</launch>

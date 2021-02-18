@@ -1,0 +1,16 @@
+[submodule "catkin_simple"]
+	path = submodules/catkin_simple
+	url = https://github.com/catkin/catkin_simple.git
+	branch = master
+[submodule "separator"]
+	path = submodules/separator
+	url = https://github.com/mit-acl/separator.git
+	branch = master
+[submodule "behavior_selector"]
+	path = submodules/behavior_selector
+	url = https://gitlab.com/mit-acl/fsw/behavior_selector.git
+	branch = master
+[submodule "snapstack_msgs"]
+	path = submodules/snapstack_msgs
+	url = https://gitlab.com/mit-acl/fsw/snap-stack/snapstack_msgs.git
+	branch = master
