@@ -7,7 +7,7 @@ Single-Agent               |  Multi-Agent           |
 
 ## Citation
 
-When using MADER, please cite this paper ([pdf](https://arxiv.org/abs/2010.11061), [video](https://www.youtube.com/watch?v=aoSoiZDfxGE)):
+When using MADER, please cite [MADER: Trajectory Planner in Multi-Agent and Dynamic Environments](https://arxiv.org/abs/2010.11061) ([pdf](https://arxiv.org/abs/2010.11061), [video](https://www.youtube.com/watch?v=aoSoiZDfxGE)):
 
 ```bibtex
 @article{tordesillas2020mader,
