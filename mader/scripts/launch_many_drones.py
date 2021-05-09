@@ -28,17 +28,17 @@ def create_session(session_name, commands):
         os.system('tmux split-window ; tmux select-layout tiled')
    
     for i in range(len(commands)):
-        os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m')
+        os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m') 
     print("Commands sent")
 
 
 def convertToStringCommand(action,quad,x,y,z,goal_x,goal_y,goal_z, yaw):
     if(action=="start"):
-        return "roslaunch mader mader_specific.launch gazebo:=false quad:="+quad+" x:="+str(x)+" y:="+str(y)+" z:="+str(z)+" yaw:="+str(yaw);
+        return "roslaunch mader mader_specific.launch gazebo:=false quad:="+quad+" x:="+str(x)+" y:="+str(y)+" z:="+str(z)+" yaw:="+str(yaw); #Kota comment: this line launches mader_specific.launch
     if(action=="send_goal"):
         return "rostopic pub /"+quad+"/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: 'world'}, pose: {position: {x: "+str(goal_x)+", y: "+str(goal_y)+", z: "+str(goal_z)+"}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}}}'"
     if(action=="mader"):
-        return "roslaunch mader mader.launch quad:="+quad #+ " >> "+quad+".txt"
+        return "roslaunch mader mader.launch quad:="+quad #+ " >> "+quad+".txt" #Kota comment: this line launches mader.launch with the argument of quad number
         # return "script -q -c 'roslaunch mader mader.launch quad:="+quad + "' "+quad+".txt"
         
 
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # formation="sphere", "square" "circle"
     formation="sphere"
     commands = []
-    num_of_agents=4; 
+    num_of_agents=8; 
     radius=10;
 
 
@@ -136,15 +136,16 @@ if __name__ == '__main__':
             goal_y_tmp="{:5.3f}".format(goal_y);
             goal_z_tmp="{:5.3f}".format(goal_z);
  
-            print ' "start": [',x_tmp,', ',y_tmp,', ',z_tmp,'], "goal": [',goal_x_tmp,', ',goal_y_tmp,', ',goal_z_tmp,']  '
+            print (' "start": [',x_tmp,', ',y_tmp,', ',z_tmp,'], "goal": [',goal_x_tmp,', ',goal_y_tmp,', ',goal_z_tmp,']  ')
 
 
     print("len(commands)= " , len(commands))
     session_name=sys.argv[1] + "_session"
     os.system("tmux kill-session -t" + session_name)
-    create_session(session_name, commands)
+    create_session(session_name, commands) #Kota commented out July 16, 2021
     if(sys.argv[1]!="send_goal"):
-        os.system("tmux attach") #comment if you don't want to visualize all the terminals
+        #os.system("tmux attach") #comment if you don't want to visualize all the terminals
+        time.sleep(1); #Kota added to make this "if statement" works even when i comment out the above line
     else: ##if send_goal, kill after some time
         time.sleep(num_of_agents); #The more agents, the more I've to wait to make sure the goal is sent correctly
         os.system("tmux kill-session -t" + session_name)

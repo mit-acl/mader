@@ -1,0 +1,8 @@
+<launch>
+
+	<node name="base_station_send_goal" pkg="mader" type="base_station_send_goal.py" output="screen" clear_params="true"/> 
+
+</launch>
+
+
+<!-- launch-prefix="xterm -e gdb -ex run args" -->
