@@ -51,22 +51,22 @@ class Behavior_Selector:
     #Called when buttom pressed in the interface
     def globalflightmodeCB(self,req):
         if(self.initialized==False):
-            print "Not initialized yet"
+            print ("Not initialized yet")
             return
 
         if req.mode == req.GO and self.mode.mode==self.mode.ON_GROUND:
-            print "Taking off"
+            print ("Taking off")
             self.takeOff()
-            print "Take off done"
+            print ("Take off done")
 
         if req.mode == req.KILL:
-            print "Killing"
+            print ("Killing")
             self.kill()
 
         if req.mode == req.LAND and self.mode.mode==self.mode.GO:
-            print "Landing"
+            print ("Landing")
             self.land()
-            print "Landing done"
+            print ("Landing done")
 
 
     def sendMode(self):
@@ -79,39 +79,46 @@ class Behavior_Selector:
         goal.p.x = self.pose.position.x;
         goal.p.y = self.pose.position.y;
         goal.p.z = self.pose.position.z;
-        goal.yaw = quat2yaw(self.pose.orientation)
+        goal.psi = quat2yaw(self.pose.orientation)
+
+        goal.power = True; #Kota added July 27
+
         #Note that self.pose.position is being updated in the parallel callback
 
         ######## Commented for simulations
-        # while(  abs(self.pose.position.z-self.alt_taken_off)>0.1  ): 
-        #     goal.pos.z = min(goal.pos.z+0.0035, self.alt_taken_off);
-        #     #rospy.sleep(0.004) 
-        #     self.sendGoal(goal)
-        ######## 
+        while(  abs(self.pose.position.z-self.alt_taken_off)>0.1  ):
+            goal.p.z = min(goal.p.z+0.0035, self.alt_taken_off);
+            #rospy.sleep(0.004) 
+            self.sendGoal(goal)
+        ########
+
         rospy.sleep(0.1) 
         self.mode.mode=self.mode.GO
         self.sendMode();
 
     def land(self):
         goal=Goal();
-        goal.pos.x = self.pose.position.x;
-        goal.pos.y = self.pose.position.y;
-        goal.pos.z = self.pose.position.z;
-        goal.yaw = quat2yaw(self.pose.orientation)
+        goal.p.x = self.pose.position.x;
+        goal.p.y = self.pose.position.y;
+        goal.p.z = self.pose.position.z;
+        goal.psi = quat2yaw(self.pose.orientation)
+
+        goal.power = True; #Kota added July 27
+
 
         #Note that self.pose.position is being updated in the parallel callback
         while(abs(self.pose.position.z-self.alt_ground)>0.1):
-            goal.pos.z = max(goal.pos.z-0.0035, self.alt_ground);
+            goal.p.z = max(goal.p.z-0.0035, self.alt_ground);
             self.sendGoal(goal)
         #Kill motors once we are on the ground
         self.kill()
 
     def kill(self):
         goal=Goal();
-        goal.pos.x = self.pose.position.x;
-        goal.pos.y = self.pose.position.y;
-        goal.pos.z = self.pose.position.z;
-        goal.cut_power=True
+        goal.p.x = self.pose.position.x;
+        goal.p.y = self.pose.position.y;
+        goal.p.z = self.pose.position.z;
+        goal.power=False;
         self.sendGoal(goal)
         self.mode.mode=self.mode.ON_GROUND
         self.sendMode()
@@ -143,4 +150,4 @@ def startNode():
 if __name__ == '__main__':
     rospy.init_node('behavior_selector')  
     startNode()
-    print "Behavior selector started" 
+    print ("Behavior selector started")

@@ -116,7 +116,7 @@ if __name__ == '__main__':
             rospy.logfatal("Need to specify namespace as vehicle name.")
             rospy.logfatal("This is typically accomplished in a launch file.")
         else:
-            print "Starting perfect tracker node for: " + ns
+            print ("Starting perfect tracker node for: " + ns)
             startNode()
     except rospy.ROSInterruptException:
         pass

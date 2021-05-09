@@ -25,7 +25,7 @@
 using namespace termcolor;
 
 // Uncomment the type of timer you want:
-// typedef ROSTimer MyTimer;
+// typedef ROSTimer MyTimer;getNextGoal
 // typedef ROSWallTimer MyTimer;
 typedef MADER_timers::Timer MyTimer;
 
