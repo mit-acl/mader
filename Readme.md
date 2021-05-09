@@ -1,8 +1,8 @@
 # MADER: Trajectory Planner in Multi-Agent and Dynamic Environments #
 
-
+```
 **Accepted for publication in the IEEE Transactions on Robotics (T-RO)**
----
+```
 
 Single-Agent               |  Multi-Agent           | 
 :-------------------------:|:-------------------------:|
