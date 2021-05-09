@@ -1,5 +1,7 @@
 # MADER: Trajectory Planner in Multi-Agent and Dynamic Environments #
 
+**News (May 2021): Accepted for publication in the IEEE Transactions on Robotics (T-RO)**
+
 Single-Agent               |  Multi-Agent           | 
 :-------------------------:|:-------------------------:|
 [![MADER: Trajectory Planner in Multi-Agent and Dynamic Environments](./mader/imgs/single_agent1.gif)](https://www.youtube.com/watch?v=aoSoiZDfxGE "MADER: Trajectory Planner in Multi-Agent and Dynamic Environments")      |  [![MADER: Trajectory Planner in Multi-Agent and Dynamic Environments](./mader/imgs/circle.gif)](https://www.youtube.com/watch?v=aoSoiZDfxGE "MADER: Trajectory Planner in Multi-Agent and Dynamic Environments") |  
@@ -13,8 +15,9 @@ When using MADER, please cite [MADER: Trajectory Planner in Multi-Agent and Dyna
 @article{tordesillas2020mader,
   title={{MADER}: Trajectory Planner in Multi-Agent and Dynamic Environments},
   author={Tordesillas, Jesus and How, Jonathan P},
-  journal={arXiv preprint arXiv:2010.11061},
-  year={2020}
+  journal={IEEE Transactions on Robotics},
+  year={2021},
+  publisher={IEEE}
 }
 ```
 
