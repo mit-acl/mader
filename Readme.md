@@ -1,6 +1,6 @@
 # MADER: Trajectory Planner in Multi-Agent and Dynamic Environments #
 
-`**News (May 2021): Accepted for publication in the IEEE Transactions on Robotics (T-RO)**`
+```**News (May 2021): Accepted for publication in the IEEE Transactions on Robotics (T-RO)**```
 
 Single-Agent               |  Multi-Agent           | 
 :-------------------------:|:-------------------------:|
