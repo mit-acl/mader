@@ -2,7 +2,7 @@
 	<arg name="gui" default="false"/>
 	<arg name="rviz" default="true"/>
 	<arg name="environment" default="true"/>
-	<arg name="type_of_environment" default="high_bay"/>  <!-- dynamic_corridor or dynamic_forest -->
+	<arg name="type_of_environment" default="high_bay"/>  <!-- dynamic_corridor or dynamic_forest or high_bay-->
 
 <!-- Start Behaviour Selector-->
 <node pkg="behavior_selector" type="behavior_selector_node.py" name="behavior_selector" output="screen" />
