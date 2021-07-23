@@ -151,6 +151,10 @@ private:
   Eigen::Matrix<double, 4, 4> A_rest_pos_basis_inverse_;
 
   separator::Separator* separator_solver_;
+
+  double ms_check_;
+  double ms_recheck_;
+  std::ofstream outfile;
 };
 
 #endif

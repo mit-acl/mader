@@ -652,6 +652,8 @@ bool Mader::trajsAndPwpAreInCollision(dynTrajCompiled traj, PieceWisePol pwp_opt
 // Checks that I have not received new trajectories that affect me while doing the optimization
 bool Mader::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
 {
+  MyTimer check_t(true);
+
   started_check_ = true;
 
   bool result = true;
@@ -670,16 +672,27 @@ bool Mader::safetyCheckAfterOpt(PieceWisePol pwp_optimized)
       }
     }
   }
+  ms_check_ = check_t.ElapsedMs();
+
+  MyTimer recheck_t(true);
 
   // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
   if (have_received_trajectories_while_checking_ == true)
   {
+    ms_recheck_ = recheck_t.ElapsedMs();
     ROS_ERROR_STREAM("Recvd traj while checking ");
 
     std::cout << "Received a trajectory while I was checking" << std::endl;
     result = false;
   }
+  else
+  {
+    ms_recheck_ = recheck_t.ElapsedMs();
+  }
   started_check_ = false;
+
+  outfile << "ms_check_ " << ms_check_ << "\n";
+  outfile << "ms_recheck_ " << ms_recheck_ << "\n";
 
   ROS_INFO_STREAM("Returning " << result);
   return result;
@@ -690,6 +703,11 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
                    std::vector<Hyperplane3D>& planes_guesses, int& num_of_LPs_run, int& num_of_QCQPs_run,
                    PieceWisePol& pwp_out)
 {
+  std::string nmspace = ros::this_node::getNamespace();
+  nmspace.erase(std::remove(nmspace.begin(), nmspace.end(), '/'), nmspace.end());
+  outfile.open("/home/jtorde/Desktop/ws_mader/" + nmspace + "data.txt",
+               std::ios::in | std::ios::out | std::ios::app);  // append instead of overwrite
+
   MyTimer replanCB_t(true);
 
   if (initializedStateAndTermGoal() == false)
@@ -1072,6 +1090,10 @@ bool Mader::replan(mader_types::Edges& edges_obstacles_out, std::vector<state>& 
   }
 
   mtx_offsets.lock();
+
+  outfile << "ms_replan_ " << replanCB_t.ElapsedMs() << "\n";
+
+  outfile.close();
 
   int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000));  // Number of states that
                                                                              // would have been needed for

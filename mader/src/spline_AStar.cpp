@@ -1802,7 +1802,7 @@ exitloop:
   else
   {
     std::cout << red << "This state should never occur" << reset << std::endl;
-    abort();
+    // abort();
     return false;
   }
 

@@ -10,6 +10,7 @@ class Timer
   typedef std::chrono::high_resolution_clock high_resolution_clock;
   typedef std::chrono::milliseconds milliseconds;
   typedef std::chrono::microseconds microseconds;
+  typedef std::chrono::nanoseconds nanoseconds;
   // typedef std::chrono::microseconds microseconds;
 
 public:
@@ -24,7 +25,7 @@ public:
   }
   double ElapsedMs() const
   {
-    return (std::chrono::duration_cast<milliseconds>(high_resolution_clock::now() - _start)).count();
+    return (std::chrono::duration_cast<nanoseconds>(high_resolution_clock::now() - _start)).count() / 1e6;
   }
 
   double ElapsedUs() const
