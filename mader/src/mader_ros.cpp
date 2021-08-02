@@ -435,8 +435,8 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   state_ = state_tmp;
   // std::cout << bold << red << "STATE_YAW= " << state_.yaw << reset << std::endl;
 
-  std::cout << "Updating state to" << std::endl;
-  state_tmp.print();
+  // std::cout << "Updating state to" << std::endl;
+  // state_tmp.print();
 
   mader_ptr_->updateState(state_tmp);
 
