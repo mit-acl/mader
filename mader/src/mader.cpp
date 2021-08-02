@@ -75,6 +75,7 @@ Mader::Mader(mt::parameters par) : par_(par)
   par_for_solver.Ra = par_.Ra;
   par_for_solver.v_max = par_.v_max;
   par_for_solver.a_max = par_.a_max;
+  par_for_solver.j_max = par_.j_max;
   par_for_solver.dc = par_.dc;
   par_for_solver.dist_to_use_straight_guess = par_.goal_radius;
   par_for_solver.a_star_samp_x = par_.a_star_samp_x;

@@ -49,12 +49,15 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   std::vector<double> v_max_tmp;
   std::vector<double> a_max_tmp;
+  std::vector<double> j_max_tmp;
 
   mu::safeGetParam(nh1_, "v_max", v_max_tmp);
   mu::safeGetParam(nh1_, "a_max", a_max_tmp);
+  mu::safeGetParam(nh1_, "j_max", j_max_tmp);
 
   par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
   par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
+  par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
 
   mu::safeGetParam(nh1_, "factor_alloc", par_.factor_alloc);
 

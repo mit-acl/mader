@@ -24,6 +24,9 @@ using namespace termcolor;
 
 SolverGurobi::SolverGurobi(ms::par_solver &par)
 {
+  par_ = par;
+  //
+
   deg_pol_ = par.deg_pol;
   num_pol_ = par.num_pol;
 
@@ -82,11 +85,6 @@ SolverGurobi::SolverGurobi(ms::par_solver &par)
   a_star_fraction_voxel_size_ = par.a_star_fraction_voxel_size;
 
   dc_ = par.dc;
-  v_max_ = par.v_max;
-  mv_max_ = -v_max_;
-
-  a_max_ = par.a_max;
-  ma_max_ = -a_max_;
 
   //  allow_infeasible_guess_ = par.allow_infeasible_guess;
 
@@ -217,8 +215,8 @@ void SolverGurobi::addConstraints()
        //|v_{i-2+j}| <= v_max ////// v_{i-2}, v_{i-1}, v_{i}
 
       GRBVector v_iM2Pj = getColumn(Qmv, j);
-      addVectorLessEqualConstraint(m_, v_iM2Pj, v_max_);      // v_max_
-      addVectorGreaterEqualConstraint(m_, v_iM2Pj, mv_max_);  // mv_max_
+      addVectorLessEqualConstraint(m_, v_iM2Pj, par_.v_max);
+      addVectorGreaterEqualConstraint(m_, v_iM2Pj, -par_.v_max);
     }
   }
 
@@ -236,8 +234,31 @@ void SolverGurobi::addConstraints()
     GRBVector v_iP1 = c2 * (q_exp_[i + 2] - q_exp_[i + 1]);
     GRBVector a_i = c3 * (v_iP1 - v_i);
 
-    addVectorLessEqualConstraint(m_, a_i, a_max_);      // v_max_
-    addVectorGreaterEqualConstraint(m_, a_i, ma_max_);  // mv_max_
+    addVectorLessEqualConstraint(m_, a_i, par_.a_max);
+    addVectorGreaterEqualConstraint(m_, a_i, -par_.a_max);
+  }
+
+  /////////////////////////////////////////////////
+  ////////////// JERK CONSTRAINTS    //////////////
+  /////////////////////////////////////////////////
+
+  Eigen::Matrix<double, 4, 1> tmp;
+  tmp << 6.0, 0.0, 0.0, 0.0;
+  tmp = tmp / (std::pow(deltaT_, 3));
+
+  for (int i = 0; i < num_of_segments_; i++)
+  {
+    Eigen::Matrix<double, -1, 1> A_i_times_tmp = A_pos_bs_[i] * tmp;  // TODO (this is 4x1)
+
+    GRBMatrix Q;
+    Q.push_back(GRBVector{ q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] });  // row0
+    Q.push_back(GRBVector{ q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] });  // row1
+    Q.push_back(GRBVector{ q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] });  // row2
+
+    GRBVector j_i = matrixMultiply(Q, eigenVector2std(A_i_times_tmp));
+
+    addVectorLessEqualConstraint(m_, j_i, par_.j_max);
+    addVectorGreaterEqualConstraint(m_, j_i, -par_.j_max);
   }
 }
 
@@ -464,10 +485,10 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
 
   // here we saturate the value to ensure it is within the limits
   // the reason for this is the epsilon_tol_constraints (in the previous iteration, it may be slightly unfeasible)
-  mu::saturate(v0, -v_max_, v_max_);
-  mu::saturate(a0, -a_max_, a_max_);
-  mu::saturate(vf, -v_max_, v_max_);
-  mu::saturate(af, -a_max_, a_max_);
+  mu::saturate(v0, -par_.v_max, par_.v_max);
+  mu::saturate(a0, -par_.a_max, par_.a_max);
+  mu::saturate(vf, -par_.v_max, par_.v_max);
+  mu::saturate(af, -par_.a_max, par_.a_max);
 
   initial_state_ = initial_state;
   final_state_ = final_state;
@@ -490,8 +511,8 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
     double upper_bound, lower_bound;
     if (fabs(a0(axis)) > 1e-7)
     {
-      upper_bound = ((p_ - 1) * (mu::sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
-      lower_bound = ((p_ - 1) * (-mu::sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
+      upper_bound = ((p_ - 1) * (mu::sgn(a0(axis)) * par_.v_max(axis) - v0(axis)) / (a0(axis)));
+      lower_bound = ((p_ - 1) * (-mu::sgn(a0(axis)) * par_.v_max(axis) - v0(axis)) / (a0(axis)));
 
       // std::cout << "axis= " << axis << std::endl;
       // std::cout << "lower_bound= " << lower_bound << std::endl;
@@ -663,7 +684,8 @@ bool SolverGurobi::optimize()
   {
     std::cout << red << "Gurobi failed to find a solution, using initial guess (which is feasible)" << reset
               << std::endl;
-    q = q_guess_;
+    // q = q_guess_;
+    return false;
   }
 
   CPs2TrajAndPwp(q, traj_solution_, solution_, N_, p_, num_pol_, knots_, dc_);

@@ -43,7 +43,7 @@ bool SolverGurobi::generateAStarGuess()
   octopusSolver_->setXYZMinMaxAndRa(x_min_, x_max_, y_min_, y_max_, z_min_, z_max_,
                                     Ra_);                 // limits for the search, in world frame
   octopusSolver_->setBBoxSearch(2000.0, 2000.0, 2000.0);  // limits for the search, centered on q2
-  octopusSolver_->setMaxValuesAndSamples(v_max_, a_max_, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
+  octopusSolver_->setMaxValuesAndSamples(par_.v_max, par_.a_max, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
                                          a_star_fraction_voxel_size_);
 
   octopusSolver_->setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_

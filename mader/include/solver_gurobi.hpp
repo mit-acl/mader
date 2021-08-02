@@ -141,10 +141,6 @@ private:
   double t_init_;
   double t_final_;
   double deltaT_;
-  Eigen::Vector3d v_max_;
-  Eigen::Vector3d mv_max_;
-  Eigen::Vector3d a_max_;
-  Eigen::Vector3d ma_max_;
 
   double weight_ = 10000;
   double weight_modified_ = 10000;
@@ -195,5 +191,7 @@ private:
   OctopusSearch *octopusSolver_;
 
   double Ra_ = 1e10;
+
+  ms::par_solver par_;
 };
 #endif
