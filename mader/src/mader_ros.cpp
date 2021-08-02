@@ -132,8 +132,9 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
 
   // Subscribers
-  sub_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
-  sub_mode_ = nh1_.subscribe("mode", 1, &MaderRos::modeCB, this);
+  sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
+  // sub_mode_ = nh1_.subscribe("mode", 1, &MaderRos::modeCB, this);
+  sub_whoplans_ = nh1_.subscribe("who_plans", 1, &MaderRos::whoPlansCB, this);
   sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);
   sub_traj_ = nh1_.subscribe("/trajs", 20, &MaderRos::trajCB, this);  // The number is the queue size
 
@@ -142,7 +143,11 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   replanCBTimer_ = nh3_.createTimer(ros::Duration(par_.dc), &MaderRos::replanCB, this);
 
   // For now stop all these subscribers/timers until we receive GO
-  // sub_state_.shutdown();
+  // // sub_state_.shutdown();
+  // pubCBTimer_.stop();
+  // replanCBTimer_.stop();
+  sub_state_.shutdown();
+  sub_term_goal_.shutdown();
   pubCBTimer_.stop();
   replanCBTimer_.stop();
 
@@ -173,11 +178,11 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   clearMarkerActualTraj();
 
   ////// to avoid having to click on the GUI (TODO)
-  mader_msgs::Mode tmp;
-  tmp.mode = 1;
-  modeCB(tmp);
-  // ros::Duration(1.0).sleep();  // TODO
-  // bool success_service_call = system("rosservice call /change_mode 'mode: 1'");
+  // mader_msgs::Mode tmp;
+  // tmp.mode = 1;
+  // modeCB(tmp);
+  //// ros::Duration(1.0).sleep();  // TODO
+  //// bool success_service_call = system("rosservice call /change_mode 'mode: 1'");
   ////
 
   ROS_INFO("Planner initialized");
@@ -393,6 +398,27 @@ void MaderRos::publishPoly(const vec_E<Polyhedron<3>>& poly)
   poly_safe_pub_.publish(poly_msg);
 }
 
+void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
+{
+  if (msg.value != msg.MADER)
+  {  // PANTHER does nothing
+    sub_state_.shutdown();
+    sub_term_goal_.shutdown();
+    pubCBTimer_.stop();
+    replanCBTimer_.stop();
+    mader_ptr_->resetInitialization();
+    std::cout << on_blue << "**************MADER STOPPED" << reset << std::endl;
+  }
+  else
+  {  // PANTHER is the one who plans now (this happens when the take-off is finished)
+    sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
+    sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
+    pubCBTimer_.start();
+    replanCBTimer_.start();
+    std::cout << on_blue << "**************MADER STARTED" << reset << std::endl;
+  }
+}
+
 void MaderRos::stateCB(const snapstack_msgs::State& msg)
 {
   mt::state state_tmp;
@@ -405,6 +431,10 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   state_tmp.setYaw(yaw);
   state_ = state_tmp;
   // std::cout << bold << red << "STATE_YAW= " << state_.yaw << reset << std::endl;
+
+  std::cout << "Updating state to" << std::endl;
+  state_tmp.print();
+
   mader_ptr_->updateState(state_tmp);
 
   W_T_B_ = Eigen::Translation3d(msg.pos.x, msg.pos.y, msg.pos.z) *
@@ -424,26 +454,26 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   // publishFOV();
 }
 
-void MaderRos::modeCB(const mader_msgs::Mode& msg)
-{
-  // mader_ptr_->changeMode(msg.mode);
+// void MaderRos::modeCB(const mader_msgs::Mode& msg)
+// {
+//   // mader_ptr_->changeMode(msg.mode);
 
-  if (msg.mode != msg.GO)
-  {  // MADER DOES NOTHING
-    // sub_state_.shutdown();
-    pubCBTimer_.stop();
-    replanCBTimer_.stop();
-    // std::cout << on_blue << "**************stopping replanCBTimer" << reset << std::endl;
-    mader_ptr_->resetInitialization();
-  }
-  else
-  {  // The mode changed to GO (the mode changes to go when takeoff is finished)
-    // sub_state_ = nh_.subscribe("state", 1, &MaderRos::stateCB, this);  // TODO duplicated from above
-    // std::cout << on_blue << "**************starting replanCBTimer" << reset << std::endl;
-    pubCBTimer_.start();
-    replanCBTimer_.start();
-  }
-}
+//   if (msg.mode != msg.GO)
+//   {  // MADER DOES NOTHING
+//     // sub_state_.shutdown();
+//     pubCBTimer_.stop();
+//     replanCBTimer_.stop();
+//     // std::cout << on_blue << "**************stopping replanCBTimer" << reset << std::endl;
+//     mader_ptr_->resetInitialization();
+//   }
+//   else
+//   {  // The mode changed to GO (the mode changes to go when takeoff is finished)
+//     // sub_state_ = nh_.subscribe("state", 1, &MaderRos::stateCB, this);  // TODO duplicated from above
+//     // std::cout << on_blue << "**************starting replanCBTimer" << reset << std::endl;
+//     pubCBTimer_.start();
+//     replanCBTimer_.start();
+//   }
+// }
 
 void MaderRos::pubCB(const ros::TimerEvent& e)
 {
@@ -452,23 +482,23 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
   {
     snapstack_msgs::Goal quadGoal;
 
-    quadGoal.p = mu::eigen2point(next_goal.pos); //Kota changed it from eigen2rosvector July 26, 2021
+    quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 
-    //printf("terminal goal x %f \n", next_goal.pos.x());
-    //printf("terminal goal y %f \n", next_goal.pos.y());
-    //printf("terminal goal z %f \n", next_goal.pos.z());
+    // printf("terminal goal x %f \n", next_goal.pos.x());
+    // printf("terminal goal y %f \n", next_goal.pos.y());
+    // printf("terminal goal z %f \n", next_goal.pos.z());
 
     quadGoal.v = mu::eigen2rosvector(next_goal.vel);
     quadGoal.a = mu::eigen2rosvector(next_goal.accel);
     quadGoal.j = mu::eigen2rosvector(next_goal.jerk);
-    //quadGoal.dyaw = next_goal.dyaw;
-    //quadGoal.yaw = next_goal.yaw;
+    // quadGoal.dyaw = next_goal.dyaw;
+    // quadGoal.yaw = next_goal.yaw;
     quadGoal.dpsi = next_goal.dyaw;
     quadGoal.psi = next_goal.yaw;
 
     quadGoal.header.stamp = ros::Time::now();
     quadGoal.header.frame_id = world_name_;
-    quadGoal.power = true; // kota added July 27, 2021
+    quadGoal.power = true;  // kota added July 27, 2021
 
     pub_goal_.publish(quadGoal);
 
