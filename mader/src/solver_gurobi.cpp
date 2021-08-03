@@ -616,6 +616,9 @@ bool SolverGurobi::optimize()
     return false;
   }
   bool guess_is_feasible = generateAStarGuess();  // I obtain q_quess_, n_guess_, d_guess_
+
+  // Note that guess_is_feasible does not take into account jerk constraints
+
   if (guess_is_feasible == false)
   {
     // std::cout << "Planes haven't been found" << std::endl;
@@ -669,6 +672,9 @@ bool SolverGurobi::optimize()
   {
     std::cout << red << "Gurobi failed to find a solution, returning" << reset << std::endl;
     // q = q_guess_;
+
+    // The guess is not guaranteed to be feasible due to jerk constraints--> cannot commit to the guess --> Returning
+
     return false;
   }
 
