@@ -21,10 +21,10 @@ from random import *
 # from pyquaternion import Quaternion
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
-def sendCommand(action,quad,x,y,z,vyaw):
+def sendCommand(action,quad,x,y,z,psi):
     if(action=="start"):
         #Kota comment: this line launches mader_specific.launch
-        os.system("roslaunch mader mader_specific.launch gazebo:=false quad:=" + quad + " x:=" + str(x) + " y:=" + str(y) + " z:=" + str(z) + " yaw:=" + str(yaw));
+        os.system("roslaunch mader mader_specific.launch gazebo:=false quad:=" + quad + " x:=" + str(x) + " y:=" + str(y) + " z:=" + str(z) + " psi:=" + str(psi));
     if(action=="mader"):
         #Kota comment: this line launches mader.launch with the argument of quad number
         os.system("roslaunch mader mader.launch quad:="+quad) 
@@ -38,9 +38,9 @@ if __name__ == '__main__':
     init_x = 4;
     init_y = 0;
     init_z = 1.0;
-    init_yaw = 0;
+    init_psi = 0;
     
-    sendCommand(sys.argv[1],quad,x,y,z,yaw);
+    sendCommand(sys.argv[1],quad,init_x,init_y,init_z,init_psi);
 
     x_tmp="{:5.3f}".format(x);
     y_tmp="{:5.3f}".format(y);
