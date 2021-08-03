@@ -40,15 +40,15 @@ bool SolverGurobi::generateAStarGuess()
 
   double goal_size = 0.05;  //[meters]
 
-  octopusSolver_->setXYZMinMaxAndRa(x_min_, x_max_, y_min_, y_max_, z_min_, z_max_,
-                                    Ra_);                 // limits for the search, in world frame
+  octopusSolver_->setXYZMinMaxAndRa(par_.x_min, par_.x_max, par_.y_min, par_.y_max, par_.z_min, par_.z_max,
+                                    par_.Ra);             // limits for the search, in world frame
   octopusSolver_->setBBoxSearch(2000.0, 2000.0, 2000.0);  // limits for the search, centered on q2
-  octopusSolver_->setMaxValuesAndSamples(par_.v_max, par_.a_max, a_star_samp_x_, a_star_samp_y_, a_star_samp_z_,
-                                         a_star_fraction_voxel_size_);
+  octopusSolver_->setMaxValuesAndSamples(par_.v_max, par_.a_max, par_.a_star_samp_x, par_.a_star_samp_y,
+                                         par_.a_star_samp_z, par_.a_star_fraction_voxel_size);
 
   octopusSolver_->setRunTime(kappa_ * max_runtime_);  // hack, should be kappa_ * max_runtime_
   octopusSolver_->setGoalSize(goal_size);
-  octopusSolver_->setBias(a_star_bias_);
+  octopusSolver_->setBias(par_.a_star_bias);
   octopusSolver_->setVisual(false);
 
   std::vector<Eigen::Vector3d> q;
@@ -143,7 +143,7 @@ void SolverGurobi::generateRandomQ(std::vector<Eigen::Vector3d>& q)
   generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
   std::uniform_real_distribution<double> dist_x(0, 1);  // TODO
   std::uniform_real_distribution<double> dist_y(0, 1);  // TODO
-  std::uniform_real_distribution<double> dist_z(z_min_, z_max_);
+  std::uniform_real_distribution<double> dist_z(par_.z_min, par_.z_max);
 
   for (int i = 0; i <= N_; i++)
   {

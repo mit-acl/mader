@@ -25,34 +25,29 @@ using namespace termcolor;
 SolverGurobi::SolverGurobi(ms::par_solver &par)
 {
   par_ = par;
-  //
 
-  deg_pol_ = par.deg_pol;
-  num_pol_ = par.num_pol;
-
-  p_ = deg_pol_;
-  M_ = num_pol_ + 2 * p_;
+  p_ = par_.deg_pol;
+  M_ = par_.num_pol + 2 * p_;
   N_ = M_ - p_ - 1;
-  num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
+  num_of_segments_ = (M_ - 2 * p_);  // this is the same as par_.num_pol
 
   ///////////////////////////////////////
   mt::basisConverter basis_converter;
 
-  a_star_bias_ = par.a_star_bias;
   // basis used for collision
-  if (par.basis == "MINVO")
+  if (par_.basis == "MINVO")
   {
     basis_ = MINVO;
     M_pos_bs2basis_ = basis_converter.getMinvoPosConverters(num_of_segments_);
     M_vel_bs2basis_ = basis_converter.getMinvoVelConverters(num_of_segments_);
   }
-  else if (par.basis == "BEZIER")
+  else if (par_.basis == "BEZIER")
   {
     basis_ = BEZIER;
     M_pos_bs2basis_ = basis_converter.getBezierPosConverters(num_of_segments_);
     M_vel_bs2basis_ = basis_converter.getBezierVelConverters(num_of_segments_);
   }
-  else if (par.basis == "B_SPLINE")
+  else if (par_.basis == "B_SPLINE")
   {
     basis_ = B_SPLINE;
     M_pos_bs2basis_ = basis_converter.getBSplinePosConverters(num_of_segments_);
@@ -60,38 +55,15 @@ SolverGurobi::SolverGurobi(ms::par_solver &par)
   }
   else
   {
-    std::cout << red << "Basis " << par.basis << " not implemented yet" << reset << std::endl;
+    std::cout << red << "Basis " << par_.basis << " not implemented yet" << reset << std::endl;
     std::cout << red << "============================================" << reset << std::endl;
     abort();
   }
 
   A_pos_bs_ = basis_converter.getABSpline(num_of_segments_);
 
-  ///////////////////////////////////////
-  ///////////////////////////////////////
-
-  x_min_ = par.x_min;
-  x_max_ = par.x_max;
-
-  y_min_ = par.y_min;
-  y_max_ = par.y_max;
-
-  z_min_ = par.z_min;
-  z_max_ = par.z_max;
-  Ra_ = par.Ra;
-  a_star_samp_x_ = par.a_star_samp_x;
-  a_star_samp_y_ = par.a_star_samp_y;
-  a_star_samp_z_ = par.a_star_samp_z;
-  a_star_fraction_voxel_size_ = par.a_star_fraction_voxel_size;
-
-  dc_ = par.dc;
-
-  //  allow_infeasible_guess_ = par.allow_infeasible_guess;
-
-  weight_ = par.weight;
-
   separator_solver_ = new separator::Separator();
-  octopusSolver_ = new OctopusSearch(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
+  octopusSolver_ = new OctopusSearch(par_.basis, par_.num_pol, par_.deg_pol, par_.alpha_shrink);
 }
 
 SolverGurobi::~SolverGurobi()
@@ -183,7 +155,7 @@ void SolverGurobi::addConstraints()
     {
       GRBVector q_ipu = getColumn(Qmv, u);
       GRBQuadExpr tmp = getNorm2(q_ipu - eigenVector2std(q0_));
-      m_.addQConstr(tmp <= Ra_ * Ra_);
+      m_.addQConstr(tmp <= par_.Ra * par_.Ra);
     }
   }
 
@@ -434,8 +406,8 @@ void SolverGurobi::setHulls(mt::ConvexHullsOfCurves_Std &hulls)
   k_max_ = k_min_ + (M_ - 2 * p_) * num_of_obst_ - 1;
 
   std::vector<std::string> coords = { "x", "y", "z" };
-  std::vector<double> mins = { x_min_, y_min_, z_min_ };
-  std::vector<double> maxs = { x_max_, y_max_, z_max_ };
+  std::vector<double> mins = { par_.x_min, par_.y_min, par_.z_min };
+  std::vector<double> maxs = { par_.x_max, par_.y_max, par_.z_max };
 
   // Create the variables: control points
   q_var_.clear();
@@ -588,8 +560,8 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
   knots_ = knots;
   //////////////////
 
-  // weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
-  weight_modified_ = weight_;
+  // weight_modified_ = par_.weight * (final_state_.pos - initial_state_.pos).norm();
+  weight_modified_ = par_.weight;
 
   // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
   // See also eq. 15 of the paper "Robust and Efficent quadrotor..."
@@ -623,15 +595,15 @@ bool SolverGurobi::optimize()
   traj_solution_.clear();
   // note that, for a v0 and a0 given, q2_ is not guaranteed to lie within the bounds. If that's the case --> keep
   // executing previous trajectory
-  if (q2_.x() > x_max_ || q2_.x() < x_min_ ||  //////////////
-      q2_.y() > y_max_ || q2_.y() < y_min_ ||  /////////////////
-      q2_.z() > z_max_ || q2_.z() < z_min_)
+  if (q2_.x() > par_.x_max || q2_.x() < par_.x_min ||  //////////////
+      q2_.y() > par_.y_max || q2_.y() < par_.y_min ||  /////////////////
+      q2_.z() > par_.z_max || q2_.z() < par_.z_min)
   {
     std::cout << bold << red << "q2_ is not in [min, max]" << reset << std::endl;
     std::cout << "q2_= " << q2_.transpose() << std::endl;
-    std::cout << "x_min_= " << x_min_ << ", x_max_=" << x_max_ << std::endl;
-    std::cout << "y_min_= " << y_min_ << ", y_max_=" << y_max_ << std::endl;
-    std::cout << "z_min_= " << z_min_ << ", z_max_=" << z_max_ << std::endl;
+    std::cout << "par_.x_min= " << par_.x_min << ", par_.x_max=" << par_.x_max << std::endl;
+    std::cout << "par_.y_min= " << par_.y_min << ", par_.y_max=" << par_.y_max << std::endl;
+    std::cout << "par_.z_min= " << par_.z_min << ", par_.z_max=" << par_.z_max << std::endl;
     return false;
   }
   bool guess_is_feasible = generateAStarGuess();  // I obtain q_quess_, n_guess_, d_guess_
@@ -688,8 +660,8 @@ bool SolverGurobi::optimize()
     return false;
   }
 
-  CPs2TrajAndPwp(q, traj_solution_, solution_, N_, p_, num_pol_, knots_, dc_);
-  // Force last position =final_state_ (which it's not guaranteed because of the discretization with dc_)
+  CPs2TrajAndPwp(q, traj_solution_, solution_, N_, p_, par_.num_pol, knots_, par_.dc);
+  // Force last position =final_state_ (which it's not guaranteed because of the discretization with dc)
   traj_solution_.back().vel = final_state_.vel;
   traj_solution_.back().accel = final_state_.accel;
   traj_solution_.back().jerk = Eigen::Vector3d::Zero();
