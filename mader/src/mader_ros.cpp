@@ -105,17 +105,17 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   // CHECK parameters
   std::cout << bold << "Parameters obtained, checking them..." << reset << std::endl;
 
-  assert((par_.gamma <= 0) && "par_.gamma <= 0 must hold");
-  assert((par_.beta < 0 || par_.alpha < 0) && " ");
-  assert((par_.a_max.z() >= 9.81) && "par_.a_max.z() >= 9.81, the drone will flip");
-  assert((par_.factor_alloc < 1.0) && "Needed: factor_alloc>1");
-  assert((par_.kappa < 0 || par_.mu < 0) && "Needed: kappa and mu > 0");
-  assert(((par_.kappa + par_.mu) > 1) && "Needed: (par_.kappa + par_.mu) <= 1");
-  assert((par_.a_star_fraction_voxel_size < 0.0 || par_.a_star_fraction_voxel_size > 1.0) && "Needed: (par_.kappa + "
-                                                                                             "par_.mu) <= 1");
+  verify((par_.gamma > 0), "Not satisfied: (par_.gamma > 0)");
+  verify((par_.beta >= 0 || par_.alpha >= 0), "Not satisfied: (par_.beta >= 0 || par_.alpha >= 0)");
+  // verify((par_.a_max.z() <= 9.81), "par_.a_max.z() >= 9.81, the drone will flip");
+  verify((par_.factor_alloc >= 1.0), "Not satisfied: (par_.factor_alloc >= 1.0)");
+  verify((par_.kappa > 0 || par_.mu > 0), "Not satisfied: (par_.kappa > 0 || par_.mu > 0)");
+  verify(((par_.kappa + par_.mu) <= 1), "Not satisfied: ((par_.kappa + par_.mu) <= 1)");
+  verify((par_.a_star_fraction_voxel_size >= 0.0 || par_.a_star_fraction_voxel_size <= 1.0), "a_star_fraction_voxel_"
+                                                                                             "size must be in [0,1]");
 
-  assert((par_.epsilon_tol_constraints > 0.02) && "The tolerance on the constraints is too big -->  there will be "
-                                                  "jumps in accel/vel");
+  verify((par_.epsilon_tol_constraints < 0.02), "The tolerance on the constraints is too big -->  there will be "
+                                                "jumps in accel/vel");
   std::cout << bold << "Parameters checked" << reset << std::endl;
   /////////////////////
 
@@ -754,4 +754,14 @@ void MaderRos::publishFOV()
   /// https://github.com/PickNikRobotics/rviz_visual_tools/blob/80212659be877f221cf23528b4e4887eaf0c08a4/src/rviz_visual_tools.cpp#L957
 
   return;
+}
+
+void MaderRos::verify(bool cond, std::string info_if_false)
+{
+  if (cond == false)
+  {
+    std::cout << termcolor::bold << termcolor::red << info_if_false << termcolor::reset << std::endl;
+    std::cout << termcolor::red << "Aborting" << termcolor::reset << std::endl;
+    abort();
+  }
 }
