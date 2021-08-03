@@ -115,8 +115,6 @@ private:
 
   int basis_ = B_SPLINE;
 
-  // int deg_pol_ = 3;
-  // int num_pol_ = 5;
   int p_ = 5;
   int i_min_;
   int i_max_;
@@ -164,6 +162,18 @@ private:
   double kappa_ = 0.2;  // kappa_*max_runtime_ is spent on the initial guess
   double mu_ = 0.5;     // mu_*max_runtime_ is spent on the optimization
 
+  int num_of_QCQPs_run_ = 0;
+
+  // transformation between the B-spline control points and other basis
+  std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2basis_;
+  std::vector<Eigen::Matrix<double, 3, 3>> M_vel_bs2basis_;
+  std::vector<Eigen::Matrix<double, 4, 4>> A_pos_bs_;
+
+  separator::Separator *separator_solver_;
+  OctopusSearch *octopusSolver_;
+
+  ms::par_solver par_;
+
   // double x_min_ = -std::numeric_limits<double>::max();
   // double x_max_ = std::numeric_limits<double>::max();
 
@@ -173,25 +183,15 @@ private:
   // double z_min_ = -std::numeric_limits<double>::max();
   // double z_max_ = std::numeric_limits<double>::max();
 
-  int num_of_QCQPs_run_ = 0;
+  // int deg_pol_ = 3;
+  // int num_pol_ = 5;
 
   // int a_star_samp_x_ = 7;
   // int a_star_samp_y_ = 7;
   // int a_star_samp_z_ = 7;
 
-  // transformation between the B-spline control points and other basis
-  std::vector<Eigen::Matrix<double, 4, 4>> M_pos_bs2basis_;
-  std::vector<Eigen::Matrix<double, 3, 3>> M_vel_bs2basis_;
-  std::vector<Eigen::Matrix<double, 4, 4>> A_pos_bs_;
-
   // double a_star_bias_ = 1.0;
   // double a_star_fraction_voxel_size_ = 0.5;
-
-  separator::Separator *separator_solver_;
-  OctopusSearch *octopusSolver_;
-
   // double Ra_ = 1e10;
-
-  ms::par_solver par_;
 };
 #endif
