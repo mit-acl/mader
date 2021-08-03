@@ -112,8 +112,10 @@ class Mader_Commands:
 
         goal.power= True; #Motors still on
         print ("self.pose.orientation= ", self.pose.orientation)
+
         goal.psi = quat2yaw(self.pose.orientation)
-        print ("goal.yaw= ", goal.yaw)
+
+        print ("goal.yaw= ", goal.psi)
 
 
 
