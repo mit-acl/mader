@@ -65,6 +65,8 @@ private:
 
   double previous_yaw_ = 0.0;
 
+  bool isReplanningNeeded();
+
   void dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled& traj_compiled);
 
   bool initializedStateAndTermGoal();
@@ -99,7 +101,7 @@ private:
   bool initialized();
   bool initializedAllExceptPlanner();
 
-  void print_status();
+  void printDroneStatus();
 
   mt::parameters par_;
 
