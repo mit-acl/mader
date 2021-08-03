@@ -18,6 +18,7 @@ struct par_solver
   double z_max = std::numeric_limits<double>::max();
   Eigen::Vector3d v_max;
   Eigen::Vector3d a_max;
+  Eigen::Vector3d j_max;
   double dc;
   double dist_to_use_straight_guess;
   int a_star_samp_x;
