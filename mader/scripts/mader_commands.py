@@ -117,8 +117,6 @@ class Mader_Commands:
 
         print ("goal.yaw= ", goal.psi)
 
-
-
         #Note that self.pose.position is being updated in the parallel callback
         while(abs(self.pose.position.z-self.alt_ground)>0.1):
             goal.p.z = max(goal.p.z-0.0035, self.alt_ground);
