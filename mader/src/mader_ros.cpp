@@ -49,14 +49,19 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   std::vector<double> v_max_tmp;
   std::vector<double> a_max_tmp;
+  std::vector<double> j_max_tmp;
 
   mu::safeGetParam(nh1_, "v_max", v_max_tmp);
   mu::safeGetParam(nh1_, "a_max", a_max_tmp);
+  mu::safeGetParam(nh1_, "j_max", j_max_tmp);
 
   par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
   par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
+  par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
 
   mu::safeGetParam(nh1_, "factor_alloc", par_.factor_alloc);
+  mu::safeGetParam(nh1_, "factor_alloc_close", par_.factor_alloc_close);
+  mu::safeGetParam(nh1_, "dist_factor_alloc_close", par_.dist_factor_alloc_close);
 
   mu::safeGetParam(nh1_, "factor_alpha", par_.factor_alpha);
 
@@ -100,17 +105,17 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   // CHECK parameters
   std::cout << bold << "Parameters obtained, checking them..." << reset << std::endl;
 
-  assert((par_.gamma <= 0) && "par_.gamma <= 0 must hold");
-  assert((par_.beta < 0 || par_.alpha < 0) && " ");
-  assert((par_.a_max.z() >= 9.81) && "par_.a_max.z() >= 9.81, the drone will flip");
-  assert((par_.factor_alloc < 1.0) && "Needed: factor_alloc>1");
-  assert((par_.kappa < 0 || par_.mu < 0) && "Needed: kappa and mu > 0");
-  assert(((par_.kappa + par_.mu) > 1) && "Needed: (par_.kappa + par_.mu) <= 1");
-  assert((par_.a_star_fraction_voxel_size < 0.0 || par_.a_star_fraction_voxel_size > 1.0) && "Needed: (par_.kappa + "
-                                                                                             "par_.mu) <= 1");
+  verify((par_.gamma > 0), "Not satisfied: (par_.gamma > 0)");
+  verify((par_.beta >= 0 || par_.alpha >= 0), "Not satisfied: (par_.beta >= 0 || par_.alpha >= 0)");
+  // verify((par_.a_max.z() <= 9.81), "par_.a_max.z() >= 9.81, the drone will flip");
+  verify((par_.factor_alloc >= 1.0), "Not satisfied: (par_.factor_alloc >= 1.0)");
+  verify((par_.kappa > 0 || par_.mu > 0), "Not satisfied: (par_.kappa > 0 || par_.mu > 0)");
+  verify(((par_.kappa + par_.mu) <= 1), "Not satisfied: ((par_.kappa + par_.mu) <= 1)");
+  verify((par_.a_star_fraction_voxel_size >= 0.0 || par_.a_star_fraction_voxel_size <= 1.0), "a_star_fraction_voxel_"
+                                                                                             "size must be in [0,1]");
 
-  assert((par_.epsilon_tol_constraints > 0.02) && "The tolerance on the constraints is too big -->  there will be "
-                                                  "jumps in accel/vel");
+  verify((par_.epsilon_tol_constraints < 0.02), "The tolerance on the constraints is too big -->  there will be "
+                                                "jumps in accel/vel");
   std::cout << bold << "Parameters checked" << reset << std::endl;
   /////////////////////
 
@@ -132,8 +137,9 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
 
   // Subscribers
-  sub_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
-  sub_mode_ = nh1_.subscribe("mode", 1, &MaderRos::modeCB, this);
+  sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
+  // sub_mode_ = nh1_.subscribe("mode", 1, &MaderRos::modeCB, this);
+  sub_whoplans_ = nh1_.subscribe("who_plans", 1, &MaderRos::whoPlansCB, this);
   sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);
   sub_traj_ = nh1_.subscribe("/trajs", 20, &MaderRos::trajCB, this);  // The number is the queue size
 
@@ -142,7 +148,11 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   replanCBTimer_ = nh3_.createTimer(ros::Duration(par_.dc), &MaderRos::replanCB, this);
 
   // For now stop all these subscribers/timers until we receive GO
-  // sub_state_.shutdown();
+  // // sub_state_.shutdown();
+  // pubCBTimer_.stop();
+  // replanCBTimer_.stop();
+  sub_state_.shutdown();
+  sub_term_goal_.shutdown();
   pubCBTimer_.stop();
   replanCBTimer_.stop();
 
@@ -173,11 +183,11 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   clearMarkerActualTraj();
 
   ////// to avoid having to click on the GUI (TODO)
-  mader_msgs::Mode tmp;
-  tmp.mode = 1;
-  modeCB(tmp);
-  // ros::Duration(1.0).sleep();  // TODO
-  // bool success_service_call = system("rosservice call /change_mode 'mode: 1'");
+  // mader_msgs::Mode tmp;
+  // tmp.mode = 1;
+  // modeCB(tmp);
+  //// ros::Duration(1.0).sleep();  // TODO
+  //// bool success_service_call = system("rosservice call /change_mode 'mode: 1'");
   ////
 
   ROS_INFO("Planner initialized");
@@ -393,6 +403,27 @@ void MaderRos::publishPoly(const vec_E<Polyhedron<3>>& poly)
   poly_safe_pub_.publish(poly_msg);
 }
 
+void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
+{
+  if (msg.value != msg.MADER)
+  {  // PANTHER does nothing
+    sub_state_.shutdown();
+    sub_term_goal_.shutdown();
+    pubCBTimer_.stop();
+    replanCBTimer_.stop();
+    mader_ptr_->resetInitialization();
+    std::cout << on_blue << "**************MADER STOPPED" << reset << std::endl;
+  }
+  else
+  {  // PANTHER is the one who plans now (this happens when the take-off is finished)
+    sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
+    sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
+    pubCBTimer_.start();
+    replanCBTimer_.start();
+    std::cout << on_blue << "**************MADER STARTED" << reset << std::endl;
+  }
+}
+
 void MaderRos::stateCB(const snapstack_msgs::State& msg)
 {
   mt::state state_tmp;
@@ -405,6 +436,10 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   state_tmp.setYaw(yaw);
   state_ = state_tmp;
   // std::cout << bold << red << "STATE_YAW= " << state_.yaw << reset << std::endl;
+
+  // std::cout << "Updating state to" << std::endl;
+  // state_tmp.print();
+
   mader_ptr_->updateState(state_tmp);
 
   W_T_B_ = Eigen::Translation3d(msg.pos.x, msg.pos.y, msg.pos.z) *
@@ -424,26 +459,26 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   // publishFOV();
 }
 
-void MaderRos::modeCB(const mader_msgs::Mode& msg)
-{
-  // mader_ptr_->changeMode(msg.mode);
+// void MaderRos::modeCB(const mader_msgs::Mode& msg)
+// {
+//   // mader_ptr_->changeMode(msg.mode);
 
-  if (msg.mode != msg.GO)
-  {  // MADER DOES NOTHING
-    // sub_state_.shutdown();
-    pubCBTimer_.stop();
-    replanCBTimer_.stop();
-    // std::cout << on_blue << "**************stopping replanCBTimer" << reset << std::endl;
-    mader_ptr_->resetInitialization();
-  }
-  else
-  {  // The mode changed to GO (the mode changes to go when takeoff is finished)
-    // sub_state_ = nh_.subscribe("state", 1, &MaderRos::stateCB, this);  // TODO duplicated from above
-    // std::cout << on_blue << "**************starting replanCBTimer" << reset << std::endl;
-    pubCBTimer_.start();
-    replanCBTimer_.start();
-  }
-}
+//   if (msg.mode != msg.GO)
+//   {  // MADER DOES NOTHING
+//     // sub_state_.shutdown();
+//     pubCBTimer_.stop();
+//     replanCBTimer_.stop();
+//     // std::cout << on_blue << "**************stopping replanCBTimer" << reset << std::endl;
+//     mader_ptr_->resetInitialization();
+//   }
+//   else
+//   {  // The mode changed to GO (the mode changes to go when takeoff is finished)
+//     // sub_state_ = nh_.subscribe("state", 1, &MaderRos::stateCB, this);  // TODO duplicated from above
+//     // std::cout << on_blue << "**************starting replanCBTimer" << reset << std::endl;
+//     pubCBTimer_.start();
+//     replanCBTimer_.start();
+//   }
+// }
 
 void MaderRos::pubCB(const ros::TimerEvent& e)
 {
@@ -452,23 +487,40 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
   {
     snapstack_msgs::Goal quadGoal;
 
+<<<<<<< HEAD
     quadGoal.p = mu::eigen2point(next_goal.pos); //Kota changed it from eigen2rosvector July 26, 2021
 
     //printf("terminal goal x %f \n", next_goal.pos.x());
     //printf("terminal goal y %f \n", next_goal.pos.y());
     //printf("terminal goal z %f \n", next_goal.pos.z());
+=======
+    quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
+
+    // printf("terminal goal x %f \n", next_goal.pos.x());
+    // printf("terminal goal y %f \n", next_goal.pos.y());
+    // printf("terminal goal z %f \n", next_goal.pos.z());
+>>>>>>> 5ad5df4a5bf4c31890018d05ea1726908ec25dc5
 
     quadGoal.v = mu::eigen2rosvector(next_goal.vel);
     quadGoal.a = mu::eigen2rosvector(next_goal.accel);
     quadGoal.j = mu::eigen2rosvector(next_goal.jerk);
+<<<<<<< HEAD
     //quadGoal.dyaw = next_goal.dyaw;
     //quadGoal.yaw = next_goal.yaw;
+=======
+    // quadGoal.dyaw = next_goal.dyaw;
+    // quadGoal.yaw = next_goal.yaw;
+>>>>>>> 5ad5df4a5bf4c31890018d05ea1726908ec25dc5
     quadGoal.dpsi = next_goal.dyaw;
     quadGoal.psi = next_goal.yaw;
 
     quadGoal.header.stamp = ros::Time::now();
     quadGoal.header.frame_id = world_name_;
+<<<<<<< HEAD
     quadGoal.power = true; // kota added July 27, 2021
+=======
+    quadGoal.power = true;  // kota added July 27, 2021
+>>>>>>> 5ad5df4a5bf4c31890018d05ea1726908ec25dc5
 
     pub_goal_.publish(quadGoal);
 
@@ -719,4 +771,14 @@ void MaderRos::publishFOV()
   /// https://github.com/PickNikRobotics/rviz_visual_tools/blob/80212659be877f221cf23528b4e4887eaf0c08a4/src/rviz_visual_tools.cpp#L957
 
   return;
+}
+
+void MaderRos::verify(bool cond, std::string info_if_false)
+{
+  if (cond == false)
+  {
+    std::cout << termcolor::bold << termcolor::red << info_if_false << termcolor::reset << std::endl;
+    std::cout << termcolor::red << "Aborting" << termcolor::reset << std::endl;
+    abort();
+  }
 }

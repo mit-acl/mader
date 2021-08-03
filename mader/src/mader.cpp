@@ -75,6 +75,7 @@ Mader::Mader(mt::parameters par) : par_(par)
   par_for_solver.Ra = par_.Ra;
   par_for_solver.v_max = par_.v_max;
   par_for_solver.a_max = par_.a_max;
+  par_for_solver.j_max = par_.j_max;
   par_for_solver.dc = par_.dc;
   par_for_solver.dist_to_use_straight_guess = par_.goal_radius;
   par_for_solver.a_star_samp_x = par_.a_star_samp_x;
@@ -638,38 +639,23 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
   return result;
 }
 
-bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
-                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
-                   mt::PieceWisePol& pwp_out)
+bool Mader::isReplanningNeeded()
 {
-  MyTimer replanCB_t(true);
-
   if (initializedStateAndTermGoal() == false)
   {
-    // std::cout << "Not Replanning" << std::endl;
     return false;
   }
 
   //////////////////////////////////////////////////////////////////////////
-  ///////////////////////// G <-- Project GTerm ////////////////////////////
-  //////////////////////////////////////////////////////////////////////////
-
-  mtx_state.lock();
-  mtx_G.lock();
   mtx_G_term.lock();
-
-  mt::state state_local = state_;
 
   mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
 
-  mt::state G = G_term;
-
-  mtx_G.unlock();
   mtx_G_term.unlock();
-  mtx_state.unlock();
 
   // Check if we have reached the goal
-  double dist_to_goal = (G_term.pos - state_local.pos).norm();
+  double dist_to_goal = (G_term.pos - plan_.front().pos).norm();
+  // std::cout << "dist_to_goal= " << dist_to_goal << std::endl;
   if (dist_to_goal < par_.goal_radius)
   {
     changeDroneStatus(DroneStatus::GOAL_REACHED);
@@ -679,6 +665,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   // Check if we have seen the goal in the last replan
   mtx_plan_.lock();
   double dist_last_plan_to_goal = (G_term.pos - plan_.back().pos).norm();
+  // std::cout << "dist_last_plan_to_goal= " << dist_last_plan_to_goal << std::endl;
   mtx_plan_.unlock();
   if (dist_last_plan_to_goal < par_.goal_radius && drone_status_ == DroneStatus::TRAVELING)
   {
@@ -692,15 +679,32 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
       (drone_status_ == DroneStatus::GOAL_SEEN))
   {
     // std::cout << "No replanning needed because" << std::endl;
-    // print_status();
+    // printDroneStatus();
     return false;
   }
+  return true;
+}
+
+bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
+                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
+                   mt::PieceWisePol& pwp_out)
+{
+  if (isReplanningNeeded() == false)
+  {
+    return false;
+  }
+
+  MyTimer replanCB_t(true);
 
   std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Select mt::state A /////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
+
+  mtx_G_term.lock();
+  mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
+  mtx_G_term.unlock();
 
   mt::state A;
   int k_index_end, k_index;
@@ -742,34 +746,21 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   // std::cout << green << "Runtime snlopt= " << runtime_snlopt << reset << std::endl;
 
-  /////////////////////////////////////////////////////////////////////////
-  ///////////////////////// Global plan = Straight line  ///////////////////
+  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Get point G ////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////
 
-  std::vector<Eigen::Vector3d> global_plan;
-  global_plan.push_back(A.pos);
-  global_plan.push_back(G.pos);
-
-  //////////////////////////////////////////////////////////////////////////
-  ///////////////////////// Get point E ////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////
-  double distA2TermGoal = (A.pos - G_term.pos).norm();
+  double distA2TermGoal = (G_term.pos - A.pos).norm();
   double ra = std::min((distA2TermGoal - 0.001), par_.Ra);  // radius of the sphere S
-  bool noPointsOutsideS;
-  int li1;  // last index inside the sphere of global_plan
-  mt::state E;
-  // std::cout << bold << std::setprecision(3) << "A.pos= " << A.pos.transpose() << reset << std::endl;
-  // std::cout << "A= " << A.pos.transpose() << std::endl;
-  // std::cout << "G= " << G.pos.transpose() << std::endl;
-  // std::cout << "ra= " << ra << std::endl;
-  E.pos = mu::getFirstIntersectionWithSphere(global_plan, ra, global_plan[0], &li1, &noPointsOutsideS);
-  if (noPointsOutsideS == true)  // if G is inside the sphere
-  {
-    E.pos = G.pos;
-  }
+  mt::state G;
+  G.pos = A.pos + ra * (G_term.pos - A.pos).normalized();
 
   mt::state initial = A;
-  mt::state final = E;
+  mt::state final = G;
+
+  mtx_G.lock();
+  G_ = G;
+  mtx_G.unlock();
 
   //////////////////////////////////////////////////////////////////////////
   ///////////////////////// Solve optimization! ////////////////////////////
@@ -782,19 +773,14 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   double t_start = k_index * par_.dc + time_now;
 
-  // double factor_v_max_tmp = par_.factor_v_max;
+  double factor_alloc = (distA2TermGoal > par_.dist_factor_alloc_close) ? par_.factor_alloc : par_.factor_alloc_close;
 
-  // when it's near the terminal goal --> use a small factor_v_max (if not it will oscillate)
-  // if (distA2TermGoal < 1.5)  // TODO: Put this as a param
-  // {
-  //   factor_v_max_tmp = 0.4;  // TODO: Put this as a param
-  // }
+  double time_allocated = factor_alloc * mu::getMinTimeDoubleIntegrator3D(initial.pos, initial.vel, final.pos,
+                                                                          final.vel, par_.v_max, par_.a_max);
 
-  // double t_final = t_start + (initial.pos - final.pos).array().abs().maxCoeff() /
-  //                                (factor_v_max_tmp * par_.v_max.x());  // time to execute the optimized path
+  std::cout << "time_allocated= " << time_allocated << std::endl;
 
-  double time_allocated = mu::getMinTimeDoubleIntegrator3D(A.pos, A.vel, E.pos, E.vel, par_.v_max, par_.a_max);
-  double t_final = t_start + par_.factor_alloc * time_allocated;
+  double t_final = t_start + time_allocated;
 
   bool correctInitialCond =
       solver_->setInitStateFinalStateInitTFinalT(initial, final, t_start,
@@ -1068,7 +1054,7 @@ void Mader::changeDroneStatus(int new_status)
   drone_status_ = new_status;
 }
 
-void Mader::print_status()
+void Mader::printDroneStatus()
 {
   switch (drone_status_)
   {
