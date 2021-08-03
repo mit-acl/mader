@@ -4,7 +4,7 @@ color_type: "vel" #"vel" or "plain"
 n_agents: 16 #only used for the color in the trajectory
 
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
-goal_radius: 0.05    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
+goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
 drone_radius: 0.05  #(m) Used for collision checking
 
 #w_max: 5.0           # [rd/s] Maximum angular velocity. 0.4 for Hardware
@@ -68,6 +68,8 @@ basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER.  This is the basis used for collis
 res_plot_traj: 15.0  #Higher --> More resolution when plotting the trajectory 
 
 factor_alloc: 1.0 #>=1. Used to find the total duration of a given trajectory.
+factor_alloc_close: 1.5 #>=1. Used to find the total duration of a given trajectory.
+dist_factor_alloc_close: 2.0 #>=1. When dist to goal is < than this, the factor_alloc_close is used (instead of factor_alloc)
 
 alpha_shrink: 0.95 #\in [0,1] Only used for MINVO/Bezier
 

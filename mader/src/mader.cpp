@@ -794,8 +794,13 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   // double t_final = t_start + (initial.pos - final.pos).array().abs().maxCoeff() /
   //                                (factor_v_max_tmp * par_.v_max.x());  // time to execute the optimized path
 
+  double factor_alloc = (distA2TermGoal > par_.dist_factor_alloc_close) ? par_.factor_alloc : par_.factor_alloc_close;
+
   double time_allocated = mu::getMinTimeDoubleIntegrator3D(A.pos, A.vel, E.pos, E.vel, par_.v_max, par_.a_max);
-  double t_final = t_start + par_.factor_alloc * time_allocated;
+
+  std::cout << "time_allocated= " << time_allocated << std::endl;
+
+  double t_final = t_start + factor_alloc * time_allocated;
 
   bool correctInitialCond =
       solver_->setInitStateFinalStateInitTFinalT(initial, final, t_start,

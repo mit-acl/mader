@@ -60,6 +60,8 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
 
   mu::safeGetParam(nh1_, "factor_alloc", par_.factor_alloc);
+  mu::safeGetParam(nh1_, "factor_alloc_close", par_.factor_alloc_close);
+  mu::safeGetParam(nh1_, "dist_factor_alloc_close", par_.dist_factor_alloc_close);
 
   mu::safeGetParam(nh1_, "factor_alpha", par_.factor_alpha);
 

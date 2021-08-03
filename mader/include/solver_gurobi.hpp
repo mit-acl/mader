@@ -174,6 +174,10 @@ private:
 
   ms::par_solver par_;
 
+  GRBQuadExpr control_cost_ = 0.0;
+  GRBQuadExpr terminal_cost_ = 0.0;
+  GRBQuadExpr cost_ = 0.0;
+
   // double x_min_ = -std::numeric_limits<double>::max();
   // double x_max_ = std::numeric_limits<double>::max();
 

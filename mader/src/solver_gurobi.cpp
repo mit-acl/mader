@@ -72,7 +72,9 @@ SolverGurobi::~SolverGurobi()
 
 void SolverGurobi::addObjective()
 {
-  GRBQuadExpr cost = 0.0;
+  control_cost_ = 0.0;
+  terminal_cost_ = 0.0;
+  cost_ = 0.0;
 
   Eigen::Matrix<double, 4, 1> tmp;
   tmp << 6.0, 0.0, 0.0, 0.0;
@@ -86,24 +88,31 @@ void SolverGurobi::addObjective()
     Q.push_back(GRBVector{ q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] });  // row1
     Q.push_back(GRBVector{ q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] });  // row2
 
-    cost += getNorm2(matrixMultiply(Q, eigenVector2std(A_i_times_tmp)));
+    control_cost_ += getNorm2(matrixMultiply(Q, eigenVector2std(A_i_times_tmp)));
   }
 
-  cost += weight_modified_ * getNorm2(q_exp_[N_] - eigenVector2std(final_state_.pos));
+  terminal_cost_ = getNorm2(q_exp_[N_] - eigenVector2std(final_state_.pos));
 
-  m_.setObjective(cost, GRB_MINIMIZE);
+  cost_ = control_cost_ + weight_modified_ * terminal_cost_;
+
+  m_.setObjective(cost_, GRB_MINIMIZE);
 }
 
 void SolverGurobi::addConstraints()
 {
   // double epsilon = 1.0;  // See http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
 
+  /////////////////////////////////////////////////
+  /////////// INITIAL CONDITIONS    ///////////////
+  /////////////////////////////////////////////////
   addVectorEqConstraint(m_, q_exp_[0], q0_);
   addVectorEqConstraint(m_, q_exp_[1], q1_);
   addVectorEqConstraint(m_, q_exp_[2], q2_);
 
+  /////////////////////////////////////////////////
+  /////////// FINAL CONDITIONS    /////////////////
+  /////////////////////////////////////////////////
   Eigen::Vector3d zeros = Eigen::Vector3d::Zero();
-
   // Final velocity and acceleration are zero \equiv q_exp_[N_]=q_exp_[N_-1]=q_exp_[N_-2]
   addVectorEqConstraint(m_, q_exp_[N_] - q_exp_[N_ - 1], zeros);
   addVectorEqConstraint(m_, q_exp_[N_ - 1] - q_exp_[N_ - 2], zeros);
@@ -651,11 +660,14 @@ bool SolverGurobi::optimize()
     {
       q.push_back(Eigen::Vector3d(tmp[0].getValue(), tmp[1].getValue(), tmp[2].getValue()));
     }
+
+    std::cout << "Control_cost_=" << control_cost_.getValue() << std::endl;
+    std::cout << "Terminal cost=" << terminal_cost_.getValue() << std::endl;
+    std::cout << "Cost=" << cost_.getValue() << std::endl;
   }
   else
   {
-    std::cout << red << "Gurobi failed to find a solution, using initial guess (which is feasible)" << reset
-              << std::endl;
+    std::cout << red << "Gurobi failed to find a solution, returning" << reset << std::endl;
     // q = q_guess_;
     return false;
   }
