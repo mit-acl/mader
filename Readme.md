@@ -37,7 +37,7 @@ The backend optimizer can be either Gurobi (recommended, used by default) or NLO
 Then simply run this commands:
 
 ```bash
-cd ~/ && mkdir ws && cd ws && mkdir src && cd src
+mkdir -p ws/src && cd ws/src
 git clone https://github.com/mit-acl/mader.git
 cd ..
 #bash bash mader/install_nlopt.sh      #ONLY if you are going to use NLOPT, it'll install NLopt v2.6.2
