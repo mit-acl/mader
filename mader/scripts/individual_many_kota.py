@@ -42,14 +42,15 @@ if __name__ == '__main__':
     
     sendCommand(sys.argv[1],quad,init_x,init_y,init_z,init_psi);
 
-    x_tmp="{:5.3f}".format(x);
-    y_tmp="{:5.3f}".format(y);
-    z_tmp="{:5.3f}".format(z);
 
-    goal_x_tmp="{:5.3f}".format(goal_x);
-    goal_y_tmp="{:5.3f}".format(goal_y);
-    goal_z_tmp="{:5.3f}".format(goal_z);
+    x_tmp="{:5.3f}".format(init_x);
+    y_tmp="{:5.3f}".format(init_y);
+    z_tmp="{:5.3f}".format(init_z);
+
+#    goal_x_tmp="{:5.3f}".format(goal_x);
+#    goal_y_tmp="{:5.3f}".format(goal_y);
+#    goal_z_tmp="{:5.3f}".format(goal_z);
  
-    print (' "start": [',x_tmp,', ',y_tmp,', ',z_tmp,'], "goal": [',goal_x_tmp,', ',goal_y_tmp,', ',goal_z_tmp,']  ')
+#    print (' "start": [',x_tmp,', ',y_tmp,', ',z_tmp,'], "goal": [',goal_x_tmp,', ',goal_y_tmp,', ',goal_z_tmp,']  ')
 
     time.sleep(1);
