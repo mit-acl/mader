@@ -31,22 +31,17 @@ def create_session(session_name, commands):
         os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m') 
     print("Commands sent")
 
-
-#def convertToStringCommand(quad,x,y,z,goal_x,goal_y,goal_z, yaw):
-#    return "rostopic pub /"+quad+"/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: 'world'}, pose: {position: {x: "+str(goal_x)+", y: "+str(goal_y)+", z: "+str(goal_z)+"}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}}}'"
-
 def convertToStringCommand(quad,goal_x,goal_y,goal_z):
     return "rostopic pub /"+quad+"/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: 'world'}, pose: {position: {x: "+str(goal_x)+", y: "+str(goal_y)+", z: "+str(goal_z)+"}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}}}'"
-
-
 
 if __name__ == '__main__':
 
     commands = [];
-    num_of_agents = 2;
+    num_of_agents = 6;
     sys_arg = "send_global_goals";
 
-    # set quad number, initial positions, and goals (for now, manually)
+    # set quad name and goals (for now, manually)
+    
     # agent1 (NUC1)
     quad="SQ01s";
     goal_x = -4;
@@ -63,17 +58,38 @@ if __name__ == '__main__':
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
 
-    #x_tmp="{:5.3f}".format(x);
-    #y_tmp="{:5.3f}".format(y);
-    #z_tmp="{:5.3f}".format(z);
+    # agent3 (NUC3)
+    quad="SQ03s";
+    goal_x = -4;
+    goal_y = -4;
+    goal_z = 1.0;
 
-    #goal_x_tmp="{:5.3f}".format(goal_x);
-    #goal_y_tmp="{:5.3f}".format(goal_y);
-    #goal_z_tmp="{:5.3f}".format(goal_z);
- 
-    #print (' "start": [',x_tmp,', ',y_tmp,', ',z_tmp,'], "goal": [',goal_x_tmp,', ',goal_y_tmp,', ',goal_z_tmp,']  ')
+    commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
 
-    #print("len(commands)= " , len(commands))
+    # agent4 (NUC4)
+    quad="SQ04s";
+    goal_x = 4;
+    goal_y = 4;
+    goal_z = 4;
+
+    commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
+
+    # agent5 (NUC5)
+    quad="SQ05s";
+    goal_x = -4;
+    goal_y = -4;
+    goal_z = 1.0;
+
+    commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
+
+    # agent6 (NUC6)
+    quad="SQ06s";
+    goal_x = 4;
+    goal_y = 4;
+    goal_z = 4;
+
+    commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
+    
     session_name = sys_arg + "_session"
     os.system("tmux kill-session -t" + session_name)
     create_session(session_name, commands) #Kota commented out July 16, 2021
