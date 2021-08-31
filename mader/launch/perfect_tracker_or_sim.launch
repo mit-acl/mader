@@ -1,12 +1,13 @@
 <launch>
-	<arg name="quad" default="SQ01s"/>
 	
     <!-- Arguments -->
     <!--<arg name="joy" default="false"/>-->
+    <arg name="quad" default="SQ01s"/>
+    <arg name="num" default="01"/>
     <arg name="gazebo" default="true"/>
     <arg name="x" default="0" />
     <arg name="y" default="0" />
-    <arg name="z" default="0" />
+    <arg name="z" default="0.8" />
     <arg name="yaw" default="0.0" />
     <arg name="perfect_tracker" default="false"/>
 
@@ -45,10 +46,10 @@
 
     <group unless="$(arg perfect_tracker)">
         <include file="$(find snap_sim)/launch/sim.launch">
+            <arg name="num" value="$(arg num)"/>
             <arg name="x" value="$(arg x)"/>
             <arg name="y" value="$(arg y)"/>
             <arg name="z" value="$(arg z)"/>
-            <arg name="yaw" value="$(arg yaw)"/>
         </include>
     </group> 
 

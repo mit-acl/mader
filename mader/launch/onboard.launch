@@ -1,10 +1,11 @@
 <launch>
 
 	<arg name="quad"/>
+	<arg name="num"/> <!-- use this for snap_sim (if quad is SQ01s then num is 01) -->
 
 	<arg name="x"/>
 	<arg name="y"/>
-	<arg name="z" default="1.8" />
+	<arg name="z" default="0.8" />
 	<arg name="yaw" default="0.0" />
 
 	<arg name="goal_topic" default="goal"/>
@@ -12,9 +13,10 @@
 	<!-- Start mader commands -->
 	<node ns="$(arg quad)" name="mader_commands" pkg="mader" type="mader_commands.py" output="screen"/>
 
-	<!-- Start Perfect tracker -->
+	<!-- Start Perfect tracker or snap_sim-->
 	<include file="$(find mader)/launch/perfect_tracker_or_sim.launch">
   		<arg name="quad" value="$(arg quad)"/>
+  		<arg name="num" value="$(arg num)"/>
   		<arg name="gazebo" value="false"/>
         <arg name="x" value="$(arg x)"/>
         <arg name="y" value="$(arg y)"/>
