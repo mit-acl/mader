@@ -8,7 +8,7 @@
     <arg name="y" default="0" />
     <arg name="z" default="0" />
     <arg name="yaw" default="0.0" />
-    <arg name="perfect_tracker" default="false">
+    <arg name="perfect_tracker" default="false"/>
 
     <!-- Spawn vehicle in Gazebo -->
     <group if="$(arg gazebo)">
