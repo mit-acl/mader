@@ -20,6 +20,6 @@
 
 <group if="$(arg environment)">
 	<node name="$(arg type_of_environment)" pkg="mader" type="$(arg type_of_environment).py" output="screen" args="175"/>	<!--  args is not used in dynamic_forest (TODO)-->
-</group>s	
+</group>
 
 </launch>

@@ -8,7 +8,7 @@
     <arg name="y" default="0" />
     <arg name="z" default="0" />
     <arg name="yaw" default="0.0" />
-    <!-- <arg name="perfect_tracker" default="true"> -->
+    <arg name="perfect_tracker" default="false">
 
     <!-- Spawn vehicle in Gazebo -->
     <group if="$(arg gazebo)">
@@ -33,8 +33,8 @@
     <!-- The namespace is needed only for the multi-agent simulations. If not, each agent kills the node of the other one-->
     <node ns="$(arg quad)" pkg="tf" type="static_transform_publisher" name="vicon2world" args="0 0 0 0 0 0 /world /vicon 100" />
 
-    <!-- Start Perfect Tracker -->
-    <!--
+    <!-- Start Perfect Tracker or snap_sim (more realistic) tracker -->
+
     <group if="$(arg perfect_tracker)">
     	<node ns="$(arg quad)" name="perfect_tracker" pkg="mader" type="perfect_tracker.py" output="screen">
             <param name="x" value="$(arg x)"/>
@@ -49,9 +49,4 @@
          </include>
     </group> 
 
-    
-    -->
-
-    <include file="$(find snap_sim)/launch/sim.launch">
-         </include>
 </launch>
