@@ -27,7 +27,6 @@
         <node pkg="tf" type="static_transform_publisher" name="camera2body" args="0 0 0 -1.57 0 -1.57 $(arg quad) $(arg quad)/camera 100" />
 
     </group>
-
        
     <!-- Vicon to world tf -->
     <!-- The namespace is needed only for the multi-agent simulations. If not, each agent kills the node of the other one-->
