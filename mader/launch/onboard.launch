@@ -1,8 +1,27 @@
 <launch>
 
 	<arg name="quad" default="SQ01s"/>
+	<arg name="x" default="0" />
+	<arg name="y" default="0" />
+	<arg name="z" default="1.0" />
+	<arg name="yaw" default="0.0" />
 	<arg name="goal_topic" default="goal"/>
 
+	<!-- Start mader commands -->
+	<node ns="$(arg quad)" name="mader_commands" pkg="mader" type="mader_commands.py" output="screen"/>
+
+	<!-- Start Perfect tracker -->
+	<include file="$(find mader)/launch/perfect_tracker_or_sim.launch">
+  		<arg name="quad" value="$(arg quad)"/>
+  		<arg name="gazebo" value="false"/>
+        <arg name="x" value="$(arg x)"/>
+        <arg name="y" value="$(arg y)"/>
+        <arg name="z" value="$(arg z)"/>
+        <arg name="yaw" default="$(arg yaw)"/>
+        <arg name="perfect_tracker" default="false"/>
+ 	 </include> 
+
+ 	<!-- mader -->
 	<node ns="$(arg quad)" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" > 
     <rosparam file="$(find mader)/param/mader.yaml" command="load"/>
         <!-- Subscriptions -->
@@ -17,6 +36,7 @@
 
 	</node>
 
+	<!-- rosconsole_overlay -->
 	<node ns="$(arg quad)" pkg="jsk_rviz_plugins"
         type="rosconsole_overlay_text.py"
         respawn="false"
@@ -27,7 +47,5 @@
 
   	</node>
 
+
 </launch>
-
-
-<!-- launch-prefix="xterm -e gdb -ex run args" -->
