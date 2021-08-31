@@ -45,7 +45,11 @@
 
     <group unless="$(arg perfect_tracker)">
         <include file="$(find snap_sim)/launch/sim.launch">
-         </include>
+            <param name="x" value="$(arg x)"/>
+            <param name="y" value="$(arg y)"/>
+            <param name="z" value="$(arg z)"/>
+            <param name="yaw" value="$(arg yaw)"/>
+        </include>
     </group> 
 
 </launch>
