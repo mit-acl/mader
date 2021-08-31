@@ -4,7 +4,7 @@
 
 	<arg name="x"/>
 	<arg name="y"/>
-	<arg name="z"/>
+	<arg name="z" default="1.8" />
 	<arg name="yaw" default="0.0" />
 
 	<arg name="goal_topic" default="goal"/>
