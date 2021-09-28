@@ -94,6 +94,8 @@ SolverGurobi::SolverGurobi(ms::par_solver &par)
 
   separator_solver_ = new separator::Separator();
   octopusSolver_ = new OctopusSearch(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
+
+  use_linear_collision_constraints_ = par.use_linear_collision_constraints;
 }
 
 SolverGurobi::~SolverGurobi()
@@ -126,7 +128,7 @@ void SolverGurobi::addObjective()
 
 void SolverGurobi::addConstraints()
 {
-  // double epsilon = 1.0;  // See http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
+  double epsilon = 1.0;  // See http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
 
   addVectorEqConstraint(m_, q_exp_[0], q0_);
   addVectorEqConstraint(m_, q_exp_[1], q1_);
@@ -156,27 +158,55 @@ void SolverGurobi::addConstraints()
     /////// Plane constraints
     /////////////////////////////////////////////////
 
-    for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+    if (use_linear_collision_constraints_)
     {
-      int ip = obst_index * num_of_segments_ + i;  // index plane
-
-      // impose that all the vertexes of the obstacle are on one side of the plane
-      // for (int j = 0; j < hulls_[obst_index][i].cols(); j++)  // Eigen::Vector3d vertex : hulls_[obst_index][i]
-      // {
-      //   Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
-      //   m_.addConstr((-(n_[ip].dot(vertex) + d_[ip] - epsilon)) <= 0, "plane" + std::to_string(j));
-      //   // constraints[r] = -(n[ip].dot(vertex) + d[ip] - epsilon);  // f<=0
-      // }
-
-      // and the control points on the other side
-
-      for (int u = 0; u <= 3; u++)
+      for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
       {
-        GRBVector q_ipu = getColumn(Qmv, u);
-        GRBLinExpr dot = n_[ip].x() * q_ipu[0] + n_[ip].y() * q_ipu[1] + n_[ip].z() * q_ipu[2];
-        m_.addConstr(dot + d_[ip] - 1 <= 0);
-      }
+        int ip = obst_index * num_of_segments_ + i;  // index plane
+
+        // impose that all the vertexes of the obstacle are on one side of the plane
+        // for (int j = 0; j < hulls_[obst_index][i].cols(); j++)  // Eigen::Vector3d vertex : hulls_[obst_index][i]
+        // {
+        //   Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
+        //   m_.addConstr((-(n_[ip].dot(vertex) + d_[ip] - epsilon)) <= 0, "plane" + std::to_string(j));
+        //   // constraints[r] = -(n[ip].dot(vertex) + d[ip] - epsilon);  // f<=0
+        // }
+
+        // and the control points on the other side
+
+        for (int u = 0; u <= 3; u++)
+        {
+          GRBVector q_ipu = getColumn(Qmv, u);
+          GRBLinExpr dot = n_[ip].x() * q_ipu[0] + n_[ip].y() * q_ipu[1] + n_[ip].z() * q_ipu[2];
+          m_.addConstr(dot + d_[ip] - 1 <= 0);
+        }
+      }      
     }
+    else
+    {
+      for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+      {
+        int ip = obst_index * num_of_segments_ + i;  // index plane
+
+        // impose that all the vertexes of the obstacle are on one side of the plane
+        for (int j = 0; j < hulls_[obst_index][i].cols(); j++)  // Eigen::Vector3d vertex : hulls_[obst_index][i]
+        {
+          Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
+          m_.addConstr(n_exp_[ip][0] * vertex(0) + n_exp_[ip][1] * vertex(1) + 
+                         n_exp_[ip][2] * vertex(2) + d_exp_[ip] - epsilon >= 0);
+        }
+
+        // and the control points on the other side
+
+        for (int u = 0; u <= 3; u++)
+        {
+          GRBVector q_ipu = getColumn(Qmv, u);
+          GRBQuadExpr dot = n_exp_[ip][0] * q_ipu[0] + n_exp_[ip][1] * q_ipu[1] + n_exp_[ip][2] * q_ipu[2];
+          m_.addQConstr(dot + d_exp_[ip] + epsilon <= 0);
+        }
+      }      
+    }
+
 
     /////// Sphere constraints
     ///////////////////////////////////////////////
@@ -445,6 +475,30 @@ void SolverGurobi::setHulls(mt::ConvexHullsOfCurves_Std &hulls)
   int num_of_cpoints = N_ + 1;
 
   num_of_normals_ = num_of_segments_ * num_of_obst_;
+
+  d_exp_.clear();
+  n_exp_.clear();
+
+  if (!use_linear_collision_constraints_)
+  {
+    for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+    {
+      for (int seg_index = 0; seg_index < num_of_segments_; seg_index++)
+      {
+        std::vector<GRBLinExpr> n_seg;
+        n_seg.push_back(GRBLinExpr(m_.addVar(-GRB_INFINITY, GRB_INFINITY, 0, GRB_CONTINUOUS, 
+                                             "nx_" + std::to_string(obst_index) + std::to_string(seg_index))));
+        n_seg.push_back(GRBLinExpr(m_.addVar(-GRB_INFINITY, GRB_INFINITY, 0, GRB_CONTINUOUS, 
+                                             "ny_" + std::to_string(obst_index) + std::to_string(seg_index))));
+        n_seg.push_back(GRBLinExpr(m_.addVar(-GRB_INFINITY, GRB_INFINITY, 0, GRB_CONTINUOUS, 
+                                             "nz_" + std::to_string(obst_index) + std::to_string(seg_index))));    
+        n_exp_.push_back(n_seg);
+
+        d_exp_.push_back(GRBLinExpr(m_.addVar(-GRB_INFINITY, GRB_INFINITY, 0, GRB_CONTINUOUS, 
+                                             "d_" + std::to_string(obst_index) + std::to_string(seg_index))));        
+      }
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////
@@ -626,12 +680,26 @@ bool SolverGurobi::optimize()
   m_.set("OutputFlag", std::to_string(0));  // verbose (1) or not (0)
   // See https://www.gurobi.com/documentation/9.0/refman/cpp_parameter_examples.html
   m_.set("TimeLimit", std::to_string(mu_ * max_runtime_));
+
+  if (!use_linear_collision_constraints_)
+  {
+    m_.set("NonConvex", std::to_string(2));
+  } 
+
+
   addObjective();
   addConstraints();
   m_.update();  // needed due to the lazy evaluation
   // m_.write("/home/jtorde/Desktop/ws/src/mader/model.lp");
   std::cout << "Starting optimization, allowing time = " << mu_ * max_runtime_ * 1000 << " ms" << std::endl;
+  // opt_timer_.Reset();
+
   m_.optimize();
+
+  total_runs_++;
+  // std::cout<<bold<<white<<"time optimization for gurobi is "<< opt_timer_.ElapsedMs()<<" ms"<<std::endl;
+  // time_total_ms_ += opt_timer_.ElapsedMs();
+  // std::cout<<bold<<white<<"average time taken for gurobi is "<< time_total_ms_/total_runs_ <<" ms"<<std::endl;
 
   int optimstatus = m_.get(GRB_IntAttr_Status);
 
@@ -640,6 +708,7 @@ bool SolverGurobi::optimize()
   int number_of_stored_solutions = m_.get(GRB_IntAttr_SolCount);
 
   std::vector<Eigen::Vector3d> q;
+  
 
   //        optimstatus == GRB_SUBOPTIMAL //Don't include this one (sometimes it generates very long/suboptimal
   //        trajectories)
@@ -652,12 +721,29 @@ bool SolverGurobi::optimize()
       number_of_stored_solutions > 0)
 
   {
+    solutions_found_++;    
     std::cout << green << "Gurobi found a solution" << reset << std::endl;
     // copy the solution
     for (auto tmp : q_exp_)
     {
       q.push_back(Eigen::Vector3d(tmp[0].getValue(), tmp[1].getValue(), tmp[2].getValue()));
     }
+
+    if (!use_linear_collision_constraints_)
+    {
+      n_.clear();
+      d_.clear();
+
+      for (auto tmp : n_exp_)
+      {
+        n_.push_back(Eigen::Vector3d(tmp[0].getValue(), tmp[1].getValue(), tmp[2].getValue()));
+      }
+      for (auto tmp : d_exp_)
+      {
+        d_.push_back(tmp.getValue());
+      }      
+    }
+
   }
   else
   {
@@ -676,7 +762,8 @@ bool SolverGurobi::optimize()
 
   // Uncomment the following line if you wanna visualize the planes
   // fillPlanesFromNDQ(n_, d_, q);  // TODO: move this outside the SolverGurobi class
-
+  // std::cout << on_cyan << bold << "GUROBI Solved so far" << solutions_found_ << "/" << total_runs_ << reset
+  //           << std::endl;
   return true;
 }
 

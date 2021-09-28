@@ -92,6 +92,7 @@ Mader::Mader(mt::parameters par) : par_(par)
   par_for_solver.a_star_bias = par_.a_star_bias;
   par_for_solver.allow_infeasible_guess = par_.allow_infeasible_guess;
   par_for_solver.alpha_shrink = par_.alpha_shrink;
+  par_for_solver.use_linear_collision_constraints = par_.use_linear_collision_constraints;
 
   mt::basisConverter basis_converter;
 
