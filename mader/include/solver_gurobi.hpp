@@ -195,5 +195,13 @@ private:
   OctopusSearch *octopusSolver_;
 
   double Ra_ = 1e10;
+
+  bool use_linear_collision_constraints_ = true;
+
+  std::vector<GRBLinExpr> d_exp_;      // the scalar parameter of the plane
+  std::vector<std::vector<GRBLinExpr>> n_exp_;  // Each n_exp_[i] has 3 elements (x,y,z)  
+  int solutions_found_ = 0;
+  int total_runs_ = 0;  
+  double time_total_ms_ = 0.0;
 };
 #endif

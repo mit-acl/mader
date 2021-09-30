@@ -629,6 +629,8 @@ struct parameters
   double alpha = 0.0;
   double beta = 0.0;
   double gamma = 0.5;
+
+  bool use_linear_collision_constraints;
 };
 
 typedef std::vector<mt::state> trajectory;

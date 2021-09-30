@@ -37,6 +37,7 @@ struct par_solver
   double Ra;
 
   double alpha_shrink;
+  bool use_linear_collision_constraints;
 };
 }  // namespace ms
 

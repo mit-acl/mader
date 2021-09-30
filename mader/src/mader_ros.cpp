@@ -94,6 +94,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "fov_horiz_deg", par_.fov_horiz_deg);
   mu::safeGetParam(nh1_, "fov_vert_deg", par_.fov_vert_deg);
   mu::safeGetParam(nh1_, "fov_depth", par_.fov_depth);
+  mu::safeGetParam(nh1_, "use_linear_collision_constraints", par_.use_linear_collision_constraints);
 
   std::cout << "Parameters obtained" << std::endl;
 
