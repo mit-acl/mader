@@ -135,25 +135,49 @@ void SolverGurobi::addConstraints()
     /////// Plane constraints
     /////////////////////////////////////////////////
 
-    for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+    // See last figure of https://github.com/mit-acl/separator
+    // Blue plane is given by  n_'q + d +1  ==0
+    // Green plane is given by n_'q + d     ==0
+    // Red plane is given by   n_'q + d -1  ==0
+    // All of the separate the control points (in teal) and the obstacle (in red)
+
+    if (par_.planes_are_optimized_gurobi == false)
     {
-      int ip = obst_index * num_of_segments_ + i;  // index plane
-
-      // impose that all the vertexes of the obstacle are on one side of the plane
-      // for (int j = 0; j < hulls_[obst_index][i].cols(); j++)  // Eigen::Vector3d vertex : hulls_[obst_index][i]
-      // {
-      //   Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
-      //   m_.addConstr((-(n_[ip].dot(vertex) + d_[ip] - epsilon)) <= 0, "plane" + std::to_string(j));
-      //   // constraints[r] = -(n[ip].dot(vertex) + d[ip] - epsilon);  // f<=0
-      // }
-
-      // and the control points on the other side
-
-      for (int u = 0; u <= 3; u++)
+      for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
       {
-        GRBVector q_ipu = getColumn(Qmv, u);
-        GRBLinExpr dot = n_[ip].x() * q_ipu[0] + n_[ip].y() * q_ipu[1] + n_[ip].z() * q_ipu[2];
-        m_.addConstr(dot + d_[ip] - 1 <= 0);
+        int ip = obst_index * num_of_segments_ + i;  // index plane
+
+        // Impose that the control points are on one side of the plane
+        for (int u = 0; u <= 3; u++)
+        {
+          GRBVector q_ipu = getColumn(Qmv, u);
+          GRBLinExpr dot = n_[ip].x() * q_ipu[0] + n_[ip].y() * q_ipu[1] + n_[ip].z() * q_ipu[2];
+
+          m_.addConstr(dot + d_[ip] - 1 <= 0);  // Red plane
+        }
+      }
+    }
+    else
+    {
+      for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+      {
+        int ip = obst_index * num_of_segments_ + i;  // index plane
+
+        // Impose that all the vertexes of the obstacle are on one side of the plane
+        for (int j = 0; j < hulls_[obst_index][i].cols(); j++)  // Eigen::Vector3d vertex : hulls_[obst_index][i]
+        {
+          Eigen::Vector3d vertex = hulls_[obst_index][i].col(j);
+          GRBLinExpr dot = n_exp_[ip][0] * vertex(0) + n_exp_[ip][1] * vertex(1) + n_exp_[ip][2] * vertex(2);
+          m_.addConstr(dot + d_exp_[ip] - 1 >= 0);  // Red plane
+        }
+
+        // Impose that the control points are on the other side of the plane
+        for (int u = 0; u <= 3; u++)
+        {
+          GRBVector q_ipu = getColumn(Qmv, u);
+          GRBQuadExpr dot = n_exp_[ip][0] * q_ipu[0] + n_exp_[ip][1] * q_ipu[1] + n_exp_[ip][2] * q_ipu[2];
+          m_.addQConstr(dot + d_exp_[ip] + 1 <= 0);  // Blue plane
+        }
       }
     }
 
@@ -447,6 +471,31 @@ void SolverGurobi::setHulls(mt::ConvexHullsOfCurves_Std &hulls)
   int num_of_cpoints = N_ + 1;
 
   num_of_normals_ = num_of_segments_ * num_of_obst_;
+
+  d_exp_.clear();
+  n_exp_.clear();
+
+  if (par_.planes_are_optimized_gurobi)
+  {
+    // Create the plane variables
+    for (int obst_index = 0; obst_index < num_of_obst_; obst_index++)
+    {
+      for (int seg_index = 0; seg_index < num_of_segments_; seg_index++)
+      {
+        std::vector<GRBVar> n_seg;
+        n_seg.push_back(m_.addVar(-GRB_INFINITY, GRB_INFINITY, 0, GRB_CONTINUOUS,
+                                  "n" + std::to_string(obst_index) + std::to_string(seg_index) + "_x"));
+        n_seg.push_back(m_.addVar(-GRB_INFINITY, GRB_INFINITY, 0, GRB_CONTINUOUS,
+                                  "n" + std::to_string(obst_index) + std::to_string(seg_index) + "_y"));
+        n_seg.push_back(m_.addVar(-GRB_INFINITY, GRB_INFINITY, 0, GRB_CONTINUOUS,
+                                  "n" + std::to_string(obst_index) + std::to_string(seg_index) + "_z"));
+        n_exp_.push_back(n_seg);
+
+        d_exp_.push_back(m_.addVar(-GRB_INFINITY, GRB_INFINITY, 0, GRB_CONTINUOUS,
+                                   "d" + std::to_string(obst_index) + std::to_string(seg_index)));
+      }
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////
@@ -631,12 +680,42 @@ bool SolverGurobi::optimize()
   m_.set("OutputFlag", std::to_string(0));  // verbose (1) or not (0)
   // See https://www.gurobi.com/documentation/9.0/refman/cpp_parameter_examples.html
   m_.set("TimeLimit", std::to_string(mu_ * max_runtime_));
+
+  if (par_.planes_are_optimized_gurobi)
+  {
+    m_.set("NonConvex", std::to_string(2));
+
+    // Use initial guesses
+    for (int i = 0; i < n_exp_.size(); i++)
+    {
+      n_exp_[i][0].set(GRB_DoubleAttr_Start, n_guess_[i].x());
+      n_exp_[i][1].set(GRB_DoubleAttr_Start, n_guess_[i].y());
+      n_exp_[i][2].set(GRB_DoubleAttr_Start, n_guess_[i].z());
+
+      d_exp_[i].set(GRB_DoubleAttr_Start, d_guess_[i]);
+    }
+
+    for (int i = 0; i < q_exp_.size(); i++)
+    {
+      q_var_[i][0].set(GRB_DoubleAttr_Start, q_guess_[i].x());
+      q_var_[i][1].set(GRB_DoubleAttr_Start, q_guess_[i].y());
+      q_var_[i][2].set(GRB_DoubleAttr_Start, q_guess_[i].z());
+    }
+  }
+
   addObjective();
   addConstraints();
   m_.update();  // needed due to the lazy evaluation
   // m_.write("/home/jtorde/Desktop/ws/src/mader/model.lp");
   std::cout << "Starting optimization, allowing time = " << mu_ * max_runtime_ * 1000 << " ms" << std::endl;
+  // opt_timer_.Reset();
+
   m_.optimize();
+
+  total_runs_++;
+  // std::cout<<bold<<white<<"time optimization for gurobi is "<< opt_timer_.ElapsedMs()<<" ms"<<std::endl;
+  // time_total_ms_ += opt_timer_.ElapsedMs();
+  // std::cout<<bold<<white<<"average time taken for gurobi is "<< time_total_ms_/total_runs_ <<" ms"<<std::endl;
 
   int optimstatus = m_.get(GRB_IntAttr_Status);
 
@@ -657,6 +736,7 @@ bool SolverGurobi::optimize()
       number_of_stored_solutions > 0)
 
   {
+    solutions_found_++;
     std::cout << green << "Gurobi found a solution" << reset << std::endl;
     // copy the solution
     for (auto tmp : q_exp_)
@@ -667,6 +747,22 @@ bool SolverGurobi::optimize()
     std::cout << "Control_cost_=" << control_cost_.getValue() << std::endl;
     std::cout << "Terminal cost=" << terminal_cost_.getValue() << std::endl;
     std::cout << "Cost=" << cost_.getValue() << std::endl;
+
+    // Optional: Store the solution obtained of the planes
+    // if (par_.planes_are_optimized_gurobi)
+    // {
+    //   n_.clear();
+    //   d_.clear();
+
+    //   for (auto tmp : n_exp_)
+    //   {
+    //     n_.push_back(Eigen::Vector3d(tmp[0].getValue(), tmp[1].getValue(), tmp[2].getValue()));
+    //   }
+    //   for (auto tmp : d_exp_)
+    //   {
+    //     d_.push_back(tmp.getValue());
+    //   }
+    // }
   }
   else
   {
@@ -688,7 +784,8 @@ bool SolverGurobi::optimize()
 
   // Uncomment the following line if you wanna visualize the planes
   // fillPlanesFromNDQ(n_, d_, q);  // TODO: move this outside the SolverGurobi class
-
+  // std::cout << on_cyan << bold << "GUROBI Solved so far" << solutions_found_ << "/" << total_runs_ << reset
+  //           << std::endl;
   return true;
 }
 

@@ -632,6 +632,8 @@ struct parameters
   double alpha = 0.0;
   double beta = 0.0;
   double gamma = 0.5;
+
+  bool planes_are_optimized_gurobi;
 };
 
 typedef std::vector<mt::state> trajectory;

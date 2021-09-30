@@ -38,6 +38,7 @@ struct par_solver
   double Ra;
 
   double alpha_shrink;
+  bool planes_are_optimized_gurobi;
 };
 }  // namespace ms
 

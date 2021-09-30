@@ -99,6 +99,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "fov_horiz_deg", par_.fov_horiz_deg);
   mu::safeGetParam(nh1_, "fov_vert_deg", par_.fov_vert_deg);
   mu::safeGetParam(nh1_, "fov_depth", par_.fov_depth);
+  mu::safeGetParam(nh1_, "planes_are_optimized_gurobi", par_.planes_are_optimized_gurobi);
 
   std::cout << "Parameters obtained" << std::endl;
 
@@ -487,11 +488,11 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
   {
     snapstack_msgs::Goal quadGoal;
 
-    quadGoal.p = mu::eigen2point(next_goal.pos); //Kota changed it from eigen2rosvector July 26, 2021
+    quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 
-    //printf("terminal goal x %f \n", next_goal.pos.x());
-    //printf("terminal goal y %f \n", next_goal.pos.y());
-    //printf("terminal goal z %f \n", next_goal.pos.z());
+    // printf("terminal goal x %f \n", next_goal.pos.x());
+    // printf("terminal goal y %f \n", next_goal.pos.y());
+    // printf("terminal goal z %f \n", next_goal.pos.z());
 
     quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 
@@ -503,9 +504,8 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
     quadGoal.a = mu::eigen2rosvector(next_goal.accel);
     quadGoal.j = mu::eigen2rosvector(next_goal.jerk);
 
-
-    //quadGoal.dyaw = next_goal.dyaw;
-    //quadGoal.yaw = next_goal.yaw;
+    // quadGoal.dyaw = next_goal.dyaw;
+    // quadGoal.yaw = next_goal.yaw;
 
     // quadGoal.dyaw = next_goal.dyaw;
     // quadGoal.yaw = next_goal.yaw;

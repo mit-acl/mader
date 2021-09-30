@@ -93,6 +93,7 @@ Mader::Mader(mt::parameters par) : par_(par)
   par_for_solver.a_star_bias = par_.a_star_bias;
   par_for_solver.allow_infeasible_guess = par_.allow_infeasible_guess;
   par_for_solver.alpha_shrink = par_.alpha_shrink;
+  par_for_solver.planes_are_optimized_gurobi = par_.planes_are_optimized_gurobi;
 
   mt::basisConverter basis_converter;
 

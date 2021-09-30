@@ -77,6 +77,7 @@ alpha: 0.0 #[m] Error in position
 beta: 0.0 #[m] Deviation between the trajectory and the segment between two discretization points
 gamma: 0.1 #[seconds] >0 Time step between discretization points
 
+planes_are_optimized_gurobi: false
 
 ##### Not used right now in the MADER algorithm
 fov_horiz_deg: 100 #[deg] \in (0,180] ,  angle between two faces of the tetrahedron 

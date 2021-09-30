@@ -100,12 +100,6 @@ private:
   GRBEnv *env_ = new GRBEnv();
   GRBModel m_ = GRBModel(*env_);
 
-  std::vector<std::vector<GRBVar>> q_var_;      // Each q_var_[i] has 3 elements (x,y,z)
-  std::vector<std::vector<GRBLinExpr>> q_exp_;  // Each q_exp_[i] has 3 elements (x,y,z)
-
-  std::vector<Eigen::Vector3d> n_;  // Each n_[i] has 3 elements (nx,ny,nz)
-  std::vector<double> d_;           // d_[i] has 1 element
-
   void findCentroidHull(const mt::Polyhedron_Std &hull, Eigen::Vector3d &centroid);
 
   // void printIndexesConstraints();
@@ -178,24 +172,19 @@ private:
   GRBQuadExpr terminal_cost_ = 0.0;
   GRBQuadExpr cost_ = 0.0;
 
-  // double x_min_ = -std::numeric_limits<double>::max();
-  // double x_max_ = std::numeric_limits<double>::max();
+  std::vector<std::vector<GRBVar>> q_var_;      // Each q_var_[i] has 3 elements (x,y,z)
+  std::vector<std::vector<GRBLinExpr>> q_exp_;  // Each q_exp_[i] has 3 elements (x,y,z)
 
-  // double y_min_ = -std::numeric_limits<double>::max();
-  // double y_max_ = std::numeric_limits<double>::max();
+  // These are used when the planes are not decision variables
+  std::vector<Eigen::Vector3d> n_;  // Each n_[i] has 3 elements (nx,ny,nz)
+  std::vector<double> d_;           // d_[i] has 1 element (the scalar parameter of the plane)
 
-  // double z_min_ = -std::numeric_limits<double>::max();
-  // double z_max_ = std::numeric_limits<double>::max();
+  // These are used when the planes are not decision variables
+  std::vector<GRBVar> d_exp_;               // d_[i] has 1 element (the scalar parameter of the plane)
+  std::vector<std::vector<GRBVar>> n_exp_;  // Each n_exp_[i] has 3 elements (x,y,z)
 
-  // int deg_pol_ = 3;
-  // int num_pol_ = 5;
-
-  // int a_star_samp_x_ = 7;
-  // int a_star_samp_y_ = 7;
-  // int a_star_samp_z_ = 7;
-
-  // double a_star_bias_ = 1.0;
-  // double a_star_fraction_voxel_size_ = 0.5;
-  // double Ra_ = 1e10;
+  int solutions_found_ = 0;
+  int total_runs_ = 0;
+  double time_total_ms_ = 0.0;
 };
 #endif
