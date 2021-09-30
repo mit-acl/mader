@@ -49,7 +49,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  Mode.msg
+  WhoPlans.msg
   DynTraj.msg
   PieceWisePolTraj.msg
   CoeffPoly3.msg

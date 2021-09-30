@@ -136,7 +136,7 @@ if __name__ == '__main__':
             goal_y_tmp="{:5.3f}".format(goal_y);
             goal_z_tmp="{:5.3f}".format(goal_z);
  
-            print ' "start": [',x_tmp,', ',y_tmp,', ',z_tmp,'], "goal": [',goal_x_tmp,', ',goal_y_tmp,', ',goal_z_tmp,']  '
+            print (' "start": [',x_tmp,', ',y_tmp,', ',z_tmp,'], "goal": [',goal_x_tmp,', ',goal_y_tmp,', ',goal_z_tmp,']  ')
 
 
     print("len(commands)= " , len(commands))

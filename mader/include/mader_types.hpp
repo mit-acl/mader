@@ -594,6 +594,7 @@ struct parameters
 
   Eigen::Vector3d v_max;
   Eigen::Vector3d a_max;
+  Eigen::Vector3d j_max;
 
   double factor_alpha;
 
@@ -622,7 +623,9 @@ struct parameters
 
   double res_plot_traj;
 
-  double factor_alloc = 1.2;
+  double factor_alloc = 1.0;
+  double factor_alloc_close = 1.0;
+  double dist_factor_alloc_close = 1.0;
 
   double alpha_shrink = 1.0;
 

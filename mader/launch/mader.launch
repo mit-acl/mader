@@ -8,6 +8,7 @@
     <rosparam file="$(find mader)/param/mader.yaml" command="load"/>
         <!-- Subscriptions -->
 		<remap from="~state" to="state"/>
+		<remap from="~who_plans" to="who_plans"/>
 		<remap from="~term_goal" to="term_goal" />
 
 		<!-- Publications -->

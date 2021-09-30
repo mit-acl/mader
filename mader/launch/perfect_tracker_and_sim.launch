@@ -1,6 +1,6 @@
 <launch>
-	<arg name="quad" default="SQ01s"/>
-	
+    <arg name="quad" default="SQ01s"/>
+    
     <!-- Arguments -->
     <!--<arg name="joy" default="false"/>-->
     <arg name="gazebo" default="true"/>
@@ -35,7 +35,7 @@
     <node ns="$(arg quad)" pkg="tf" type="static_transform_publisher" name="vicon2world" args="0 0 0 0 0 0 /world /vicon 100" />
 
     <!-- Start Perfect Tracker -->
-	<node ns="$(arg quad)" name="perfect_tracker" pkg="mader" type="perfect_tracker.py" output="screen">
+    <node ns="$(arg quad)" name="perfect_tracker" pkg="mader" type="perfect_controller.py" output="screen">
         <param name="x" value="$(arg x)"/>
         <param name="y" value="$(arg y)"/>
         <param name="z" value="$(arg z)"/>

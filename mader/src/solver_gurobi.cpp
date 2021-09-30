@@ -24,32 +24,30 @@ using namespace termcolor;
 
 SolverGurobi::SolverGurobi(ms::par_solver &par)
 {
-  deg_pol_ = par.deg_pol;
-  num_pol_ = par.num_pol;
+  par_ = par;
 
-  p_ = deg_pol_;
-  M_ = num_pol_ + 2 * p_;
+  p_ = par_.deg_pol;
+  M_ = par_.num_pol + 2 * p_;
   N_ = M_ - p_ - 1;
-  num_of_segments_ = (M_ - 2 * p_);  // this is the same as num_pol_
+  num_of_segments_ = (M_ - 2 * p_);  // this is the same as par_.num_pol
 
   ///////////////////////////////////////
   mt::basisConverter basis_converter;
 
-  a_star_bias_ = par.a_star_bias;
   // basis used for collision
-  if (par.basis == "MINVO")
+  if (par_.basis == "MINVO")
   {
     basis_ = MINVO;
     M_pos_bs2basis_ = basis_converter.getMinvoPosConverters(num_of_segments_);
     M_vel_bs2basis_ = basis_converter.getMinvoVelConverters(num_of_segments_);
   }
-  else if (par.basis == "BEZIER")
+  else if (par_.basis == "BEZIER")
   {
     basis_ = BEZIER;
     M_pos_bs2basis_ = basis_converter.getBezierPosConverters(num_of_segments_);
     M_vel_bs2basis_ = basis_converter.getBezierVelConverters(num_of_segments_);
   }
-  else if (par.basis == "B_SPLINE")
+  else if (par_.basis == "B_SPLINE")
   {
     basis_ = B_SPLINE;
     M_pos_bs2basis_ = basis_converter.getBSplinePosConverters(num_of_segments_);
@@ -57,43 +55,15 @@ SolverGurobi::SolverGurobi(ms::par_solver &par)
   }
   else
   {
-    std::cout << red << "Basis " << par.basis << " not implemented yet" << reset << std::endl;
+    std::cout << red << "Basis " << par_.basis << " not implemented yet" << reset << std::endl;
     std::cout << red << "============================================" << reset << std::endl;
     abort();
   }
 
   A_pos_bs_ = basis_converter.getABSpline(num_of_segments_);
 
-  ///////////////////////////////////////
-  ///////////////////////////////////////
-
-  x_min_ = par.x_min;
-  x_max_ = par.x_max;
-
-  y_min_ = par.y_min;
-  y_max_ = par.y_max;
-
-  z_min_ = par.z_min;
-  z_max_ = par.z_max;
-  Ra_ = par.Ra;
-  a_star_samp_x_ = par.a_star_samp_x;
-  a_star_samp_y_ = par.a_star_samp_y;
-  a_star_samp_z_ = par.a_star_samp_z;
-  a_star_fraction_voxel_size_ = par.a_star_fraction_voxel_size;
-
-  dc_ = par.dc;
-  v_max_ = par.v_max;
-  mv_max_ = -v_max_;
-
-  a_max_ = par.a_max;
-  ma_max_ = -a_max_;
-
-  //  allow_infeasible_guess_ = par.allow_infeasible_guess;
-
-  weight_ = par.weight;
-
   separator_solver_ = new separator::Separator();
-  octopusSolver_ = new OctopusSearch(par.basis, num_pol_, deg_pol_, par.alpha_shrink);
+  octopusSolver_ = new OctopusSearch(par_.basis, par_.num_pol, par_.deg_pol, par_.alpha_shrink);
 }
 
 SolverGurobi::~SolverGurobi()
@@ -102,7 +72,9 @@ SolverGurobi::~SolverGurobi()
 
 void SolverGurobi::addObjective()
 {
-  GRBQuadExpr cost = 0.0;
+  control_cost_ = 0.0;
+  terminal_cost_ = 0.0;
+  cost_ = 0.0;
 
   Eigen::Matrix<double, 4, 1> tmp;
   tmp << 6.0, 0.0, 0.0, 0.0;
@@ -116,24 +88,31 @@ void SolverGurobi::addObjective()
     Q.push_back(GRBVector{ q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] });  // row1
     Q.push_back(GRBVector{ q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] });  // row2
 
-    cost += getNorm2(matrixMultiply(Q, eigenVector2std(A_i_times_tmp)));
+    control_cost_ += getNorm2(matrixMultiply(Q, eigenVector2std(A_i_times_tmp)));
   }
 
-  cost += weight_modified_ * getNorm2(q_exp_[N_] - eigenVector2std(final_state_.pos));
+  terminal_cost_ = getNorm2(q_exp_[N_] - eigenVector2std(final_state_.pos));
 
-  m_.setObjective(cost, GRB_MINIMIZE);
+  cost_ = control_cost_ + weight_modified_ * terminal_cost_;
+
+  m_.setObjective(cost_, GRB_MINIMIZE);
 }
 
 void SolverGurobi::addConstraints()
 {
   // double epsilon = 1.0;  // See http://www.joyofdata.de/blog/testing-linear-separability-linear-programming-r-glpk/
 
+  /////////////////////////////////////////////////
+  /////////// INITIAL CONDITIONS    ///////////////
+  /////////////////////////////////////////////////
   addVectorEqConstraint(m_, q_exp_[0], q0_);
   addVectorEqConstraint(m_, q_exp_[1], q1_);
   addVectorEqConstraint(m_, q_exp_[2], q2_);
 
+  /////////////////////////////////////////////////
+  /////////// FINAL CONDITIONS    /////////////////
+  /////////////////////////////////////////////////
   Eigen::Vector3d zeros = Eigen::Vector3d::Zero();
-
   // Final velocity and acceleration are zero \equiv q_exp_[N_]=q_exp_[N_-1]=q_exp_[N_-2]
   addVectorEqConstraint(m_, q_exp_[N_] - q_exp_[N_ - 1], zeros);
   addVectorEqConstraint(m_, q_exp_[N_ - 1] - q_exp_[N_ - 2], zeros);
@@ -185,7 +164,7 @@ void SolverGurobi::addConstraints()
     {
       GRBVector q_ipu = getColumn(Qmv, u);
       GRBQuadExpr tmp = getNorm2(q_ipu - eigenVector2std(q0_));
-      m_.addQConstr(tmp <= Ra_ * Ra_);
+      m_.addQConstr(tmp <= par_.Ra * par_.Ra);
     }
   }
 
@@ -217,8 +196,8 @@ void SolverGurobi::addConstraints()
        //|v_{i-2+j}| <= v_max ////// v_{i-2}, v_{i-1}, v_{i}
 
       GRBVector v_iM2Pj = getColumn(Qmv, j);
-      addVectorLessEqualConstraint(m_, v_iM2Pj, v_max_);      // v_max_
-      addVectorGreaterEqualConstraint(m_, v_iM2Pj, mv_max_);  // mv_max_
+      addVectorLessEqualConstraint(m_, v_iM2Pj, par_.v_max);
+      addVectorGreaterEqualConstraint(m_, v_iM2Pj, -par_.v_max);
     }
   }
 
@@ -236,8 +215,31 @@ void SolverGurobi::addConstraints()
     GRBVector v_iP1 = c2 * (q_exp_[i + 2] - q_exp_[i + 1]);
     GRBVector a_i = c3 * (v_iP1 - v_i);
 
-    addVectorLessEqualConstraint(m_, a_i, a_max_);      // v_max_
-    addVectorGreaterEqualConstraint(m_, a_i, ma_max_);  // mv_max_
+    addVectorLessEqualConstraint(m_, a_i, par_.a_max);
+    addVectorGreaterEqualConstraint(m_, a_i, -par_.a_max);
+  }
+
+  /////////////////////////////////////////////////
+  ////////////// JERK CONSTRAINTS    //////////////
+  /////////////////////////////////////////////////
+
+  Eigen::Matrix<double, 4, 1> tmp;
+  tmp << 6.0, 0.0, 0.0, 0.0;
+  tmp = tmp / (std::pow(deltaT_, 3));
+
+  for (int i = 0; i < num_of_segments_; i++)
+  {
+    Eigen::Matrix<double, -1, 1> A_i_times_tmp = A_pos_bs_[i] * tmp;  // TODO (this is 4x1)
+
+    GRBMatrix Q;
+    Q.push_back(GRBVector{ q_exp_[i][0], q_exp_[i + 1][0], q_exp_[i + 2][0], q_exp_[i + 3][0] });  // row0
+    Q.push_back(GRBVector{ q_exp_[i][1], q_exp_[i + 1][1], q_exp_[i + 2][1], q_exp_[i + 3][1] });  // row1
+    Q.push_back(GRBVector{ q_exp_[i][2], q_exp_[i + 1][2], q_exp_[i + 2][2], q_exp_[i + 3][2] });  // row2
+
+    GRBVector j_i = matrixMultiply(Q, eigenVector2std(A_i_times_tmp));
+
+    addVectorLessEqualConstraint(m_, j_i, par_.j_max);
+    addVectorGreaterEqualConstraint(m_, j_i, -par_.j_max);
   }
 }
 
@@ -413,8 +415,8 @@ void SolverGurobi::setHulls(mt::ConvexHullsOfCurves_Std &hulls)
   k_max_ = k_min_ + (M_ - 2 * p_) * num_of_obst_ - 1;
 
   std::vector<std::string> coords = { "x", "y", "z" };
-  std::vector<double> mins = { x_min_, y_min_, z_min_ };
-  std::vector<double> maxs = { x_max_, y_max_, z_max_ };
+  std::vector<double> mins = { par_.x_min, par_.y_min, par_.z_min };
+  std::vector<double> maxs = { par_.x_max, par_.y_max, par_.z_max };
 
   // Create the variables: control points
   q_var_.clear();
@@ -464,10 +466,10 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
 
   // here we saturate the value to ensure it is within the limits
   // the reason for this is the epsilon_tol_constraints (in the previous iteration, it may be slightly unfeasible)
-  mu::saturate(v0, -v_max_, v_max_);
-  mu::saturate(a0, -a_max_, a_max_);
-  mu::saturate(vf, -v_max_, v_max_);
-  mu::saturate(af, -a_max_, a_max_);
+  mu::saturate(v0, -par_.v_max, par_.v_max);
+  mu::saturate(a0, -par_.a_max, par_.a_max);
+  mu::saturate(vf, -par_.v_max, par_.v_max);
+  mu::saturate(af, -par_.a_max, par_.a_max);
 
   initial_state_ = initial_state;
   final_state_ = final_state;
@@ -490,8 +492,8 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
     double upper_bound, lower_bound;
     if (fabs(a0(axis)) > 1e-7)
     {
-      upper_bound = ((p_ - 1) * (mu::sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
-      lower_bound = ((p_ - 1) * (-mu::sgn(a0(axis)) * v_max_(axis) - v0(axis)) / (a0(axis)));
+      upper_bound = ((p_ - 1) * (mu::sgn(a0(axis)) * par_.v_max(axis) - v0(axis)) / (a0(axis)));
+      lower_bound = ((p_ - 1) * (-mu::sgn(a0(axis)) * par_.v_max(axis) - v0(axis)) / (a0(axis)));
 
       // std::cout << "axis= " << axis << std::endl;
       // std::cout << "lower_bound= " << lower_bound << std::endl;
@@ -567,8 +569,8 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
   knots_ = knots;
   //////////////////
 
-  // weight_modified_ = weight_ * (final_state_.pos - initial_state_.pos).norm();
-  weight_modified_ = weight_;
+  // weight_modified_ = par_.weight * (final_state_.pos - initial_state_.pos).norm();
+  weight_modified_ = par_.weight;
 
   // See https://pages.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/B-spline/bspline-derv.html
   // See also eq. 15 of the paper "Robust and Efficent quadrotor..."
@@ -602,18 +604,21 @@ bool SolverGurobi::optimize()
   traj_solution_.clear();
   // note that, for a v0 and a0 given, q2_ is not guaranteed to lie within the bounds. If that's the case --> keep
   // executing previous trajectory
-  if (q2_.x() > x_max_ || q2_.x() < x_min_ ||  //////////////
-      q2_.y() > y_max_ || q2_.y() < y_min_ ||  /////////////////
-      q2_.z() > z_max_ || q2_.z() < z_min_)
+  if (q2_.x() > par_.x_max || q2_.x() < par_.x_min ||  //////////////
+      q2_.y() > par_.y_max || q2_.y() < par_.y_min ||  /////////////////
+      q2_.z() > par_.z_max || q2_.z() < par_.z_min)
   {
     std::cout << bold << red << "q2_ is not in [min, max]" << reset << std::endl;
     std::cout << "q2_= " << q2_.transpose() << std::endl;
-    std::cout << "x_min_= " << x_min_ << ", x_max_=" << x_max_ << std::endl;
-    std::cout << "y_min_= " << y_min_ << ", y_max_=" << y_max_ << std::endl;
-    std::cout << "z_min_= " << z_min_ << ", z_max_=" << z_max_ << std::endl;
+    std::cout << "par_.x_min= " << par_.x_min << ", par_.x_max=" << par_.x_max << std::endl;
+    std::cout << "par_.y_min= " << par_.y_min << ", par_.y_max=" << par_.y_max << std::endl;
+    std::cout << "par_.z_min= " << par_.z_min << ", par_.z_max=" << par_.z_max << std::endl;
     return false;
   }
   bool guess_is_feasible = generateAStarGuess();  // I obtain q_quess_, n_guess_, d_guess_
+
+  // Note that guess_is_feasible does not take into account jerk constraints
+
   if (guess_is_feasible == false)
   {
     // std::cout << "Planes haven't been found" << std::endl;
@@ -658,16 +663,23 @@ bool SolverGurobi::optimize()
     {
       q.push_back(Eigen::Vector3d(tmp[0].getValue(), tmp[1].getValue(), tmp[2].getValue()));
     }
+
+    std::cout << "Control_cost_=" << control_cost_.getValue() << std::endl;
+    std::cout << "Terminal cost=" << terminal_cost_.getValue() << std::endl;
+    std::cout << "Cost=" << cost_.getValue() << std::endl;
   }
   else
   {
-    std::cout << red << "Gurobi failed to find a solution, using initial guess (which is feasible)" << reset
-              << std::endl;
-    q = q_guess_;
+    std::cout << red << "Gurobi failed to find a solution, returning" << reset << std::endl;
+    // q = q_guess_;
+
+    // The guess is not guaranteed to be feasible due to jerk constraints--> cannot commit to the guess --> Returning
+
+    return false;
   }
 
-  CPs2TrajAndPwp(q, traj_solution_, solution_, N_, p_, num_pol_, knots_, dc_);
-  // Force last position =final_state_ (which it's not guaranteed because of the discretization with dc_)
+  CPs2TrajAndPwp(q, traj_solution_, solution_, N_, p_, par_.num_pol, knots_, par_.dc);
+  // Force last position =final_state_ (which it's not guaranteed because of the discretization with dc)
   traj_solution_.back().vel = final_state_.vel;
   traj_solution_.back().accel = final_state_.accel;
   traj_solution_.back().jerk = Eigen::Vector3d::Zero();

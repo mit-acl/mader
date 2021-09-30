@@ -573,7 +573,7 @@ bool OctopusSearch::computeUpperAndLowerConstraints(const int i, const Eigen::Ve
     // std::cout << red << "x: " << constraint_xL << " --> " << constraint_xU << " || "
     //           << "y: " << constraint_yL << " --> " << constraint_yU << " || "
     //           << "z: " << constraint_zL << " --> " << constraint_zU << reset << std::endl;
-    std::cout << "Interval is zero" << std::endl;
+    // std::cout << "Interval is zero" << std::endl;
     return false;
   }
   else

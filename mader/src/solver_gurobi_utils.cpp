@@ -64,8 +64,8 @@ void SolverGurobi::saturateQ(std::vector<Eigen::Vector3d> &q)
 {
   for (int i = 0; i < q.size(); i++)
   {
-    q[i].z() = std::max(q[i].z(), z_min_);  // Make sure it's within the limits
-    q[i].z() = std::min(q[i].z(), z_max_);  // Make sure it's within the limits
+    q[i].z() = std::max(q[i].z(), par_.z_min);  // Make sure it's within the limits
+    q[i].z() = std::min(q[i].z(), par_.z_max);  // Make sure it's within the limits
   }
 }
 
