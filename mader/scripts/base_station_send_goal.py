@@ -15,6 +15,7 @@ import os
 import sys
 import time
 from random import *
+import rospy
 # import numpy as np
 # from pyquaternion import Quaternion
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
@@ -28,7 +29,8 @@ def create_session(session_name, commands):
         os.system('tmux split-window ; tmux select-layout tiled')
    
     for i in range(len(commands)):
-        os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m') 
+        os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m')
+        rospy.sleep(0.5);
     print("Commands sent")
 
 def convertToStringCommand(quad,goal_x,goal_y,goal_z):
