@@ -406,7 +406,7 @@ void MaderRos::publishPoly(const vec_E<Polyhedron<3>>& poly)
 void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
 {
   if (msg.value != msg.MADER)
-  {  // PANTHER does nothing
+  {  // MADER does nothing
     sub_state_.shutdown();
     sub_term_goal_.shutdown();
     pubCBTimer_.stop();
@@ -415,7 +415,7 @@ void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
     std::cout << on_blue << "**************MADER STOPPED" << reset << std::endl;
   }
   else
-  {  // PANTHER is the one who plans now (this happens when the take-off is finished)
+  {  // MADER is the one who plans now (this happens when the take-off is finished)
     sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
     sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
     pubCBTimer_.start();
@@ -426,7 +426,7 @@ void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
 
 void MaderRos::stateCB(const snapstack_msgs::State& msg)
 {
-  mt::state state_tmp;
+  mt::state state_tmp; // this gets state from ROS
   state_tmp.setPos(msg.pos.x, msg.pos.y, msg.pos.z);
   state_tmp.setVel(msg.vel.x, msg.vel.y, msg.vel.z);
   state_tmp.setAccel(0.0, 0.0, 0.0);
@@ -437,10 +437,10 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   state_ = state_tmp;
   // std::cout << bold << red << "STATE_YAW= " << state_.yaw << reset << std::endl;
 
-  // std::cout << "Updating state to" << std::endl;
-  // state_tmp.print();
+  std::cout << "Updating state to" << std::endl;
+  state_tmp.print();
 
-  mader_ptr_->updateState(state_tmp);
+  mader_ptr_->updateState(state_tmp); // this updates state //mader_ptr_ is a pointer to mader object
 
   W_T_B_ = Eigen::Translation3d(msg.pos.x, msg.pos.y, msg.pos.z) *
            Eigen::Quaterniond(msg.quat.w, msg.quat.x, msg.quat.y, msg.quat.z);
@@ -491,7 +491,7 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
 
     //printf("terminal goal x %f \n", next_goal.pos.x());
     //printf("terminal goal y %f \n", next_goal.pos.y());
-    //printf("terminal goal z %f \n", next_goal.pos.z());
+    printf("terminal goal z %f \n", next_goal.pos.z());
 
     quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 
@@ -502,7 +502,6 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
     quadGoal.v = mu::eigen2rosvector(next_goal.vel);
     quadGoal.a = mu::eigen2rosvector(next_goal.accel);
     quadGoal.j = mu::eigen2rosvector(next_goal.jerk);
-
 
     //quadGoal.dyaw = next_goal.dyaw;
     //quadGoal.yaw = next_goal.yaw;

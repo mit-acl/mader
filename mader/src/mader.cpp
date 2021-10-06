@@ -527,16 +527,36 @@ void Mader::updateState(mt::state data)
 {
   state_ = data;
 
-  if (state_initialized_ == false)
+  if (!state_initialized_)
   {
     mt::state tmp;
     tmp.pos = data.pos;
     tmp.yaw = data.yaw;
-    plan_.push_back(tmp);
+    plan_.erase(plan_.begin(), plan_.end());
+    plan_.push_back(tmp); // plan_ should be empty
+    std::cout << "in updateState function ";
+    plan_.print();
     previous_yaw_ = tmp.yaw;
   }
 
-  state_initialized_ = true;
+  if (drone_status_ == DroneStatus::YAWING)
+  {
+    state_initialized_ = true;
+  }
+  
+  //state_initialized_ = true;
+
+  //mt::state tmp;
+  //tmp.pos = data.pos;
+  //tmp.yaw = data.yaw;
+  //plan_.pop_front();
+  //plan_.push_back(tmp); // plan_ should be empty
+  //std::cout << "plan size " << plan_.size() << std::endl;
+  //std::cout << "in updateState function ";
+  //plan_.print();
+  //previous_yaw_ = tmp.yaw;
+  
+  //state_.print();
 }
 
 bool Mader::initializedAllExceptPlanner()
@@ -780,6 +800,9 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   std::cout << "time_allocated= " << time_allocated << std::endl;
 
+  std::cout << "initial is " << initial.pos.transpose() << std::endl;
+  std::cout<<"Pos of A is"<<A.pos.transpose()<<std::endl;
+
   double t_final = t_start + time_allocated;
 
   bool correctInitialCond =
@@ -813,7 +836,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   std::cout << "[FA] Calling NL" << std::endl;
 
-  bool result = solver_->optimize();
+  bool result = solver_->optimize(); // calling the solver
 
   num_of_LPs_run = solver_->getNumOfLPsRun();
   num_of_QCQPs_run = solver_->getNumOfQCQPsRun();
@@ -884,7 +907,8 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     }
     // std::cout << "after, plan_size=" << plan_.size() << std::endl;
   }
-
+  
+  //plan_.print();
   mtx_plan_.unlock();
 
   ////////////////////
