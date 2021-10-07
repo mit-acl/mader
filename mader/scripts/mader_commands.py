@@ -34,7 +34,7 @@ class Mader_Commands:
         
 
         # self.alt_taken_off = 2.5; #Altitude when hovering after taking off
-        self.alt_ground = 0; #Altitude of the ground
+        self.alt_ground = 0.9; #Altitude of the ground
         self.initialized=False;
 
     #In rospy, the callbacks are all of them in separate threads
