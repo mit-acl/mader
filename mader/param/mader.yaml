@@ -8,7 +8,7 @@ goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GO
 drone_radius: 0.25  #(m) Used for collision checking
 
 #w_max: 5.0           # [rd/s] Maximum angular velocity. 0.4 for Hardware
-w_max: 0.4
+w_max: 0.05
 
 alpha_filter_dyaw: 0 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
 
