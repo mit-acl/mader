@@ -1,0 +1,9 @@
+<!-- this launch file takes care of sending goals to each 6 drone --> 
+
+<launch>
+
+	<arg name="action" default="home"/>
+
+	<node name="base_station_send_goal" pkg="mader" type="hw_base_station_send_goal.py" output="screen" clear_params="true"/>
+
+</launch>

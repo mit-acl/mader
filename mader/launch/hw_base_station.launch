@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Kota Konodo August 5, 2021-->
+<!-- made referring to mader_general_kota.launch -->
+
+<launch>
+
+<!-- Start Behavior Selector-->
+<node pkg="behavior_selector" type="behavior_selector_node.py" name="behavior_selector" output="screen" />
+
+<!-- Start rqt -->
+<node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" args="--perspective-file $(find mader)/rqt_cfgs/demo_interface.perspective"/>	
+
+</launch>
