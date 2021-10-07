@@ -1,0 +1,37 @@
+<launch>
+
+	<arg name="quad"/>
+
+	<arg name="goal_topic" default="goal"/>
+
+	<!-- Start mader commands -->
+	<node ns="$(arg quad)" name="mader_commands" pkg="mader" type="mader_commands.py" output="screen"/>
+
+ 	<!-- mader -->
+	<node ns="$(arg quad)" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" > 
+    <rosparam file="$(find mader)/param/mader.yaml" command="load"/>
+        <!-- Subscriptions -->
+		<remap from="~state" to="state"/>
+		<remap from="~who_plans" to="who_plans"/>
+		<remap from="~term_goal" to="term_goal" />
+
+		<!-- Publications -->
+		<remap from="~traj" to="traj"/>
+		<remap from="~goal" to="$(arg goal_topic)" />
+		<remap from="~setpoint" to="setpoint" />
+
+	</node>
+
+	<!-- rosconsole_overlay -->
+	<node ns="$(arg quad)" pkg="jsk_rviz_plugins"
+        type="rosconsole_overlay_text.py"
+        respawn="false"
+        name="rosconsole_overlay_text">
+
+        <param name="nodes" value="/$(arg quad)/mader" /> <!--Names of the nodes whose ros output is going to pipe to RViz -->
+        <param name="reverse_lines" value="false" /> <!--Names of the nodes whose ros output is going to pipe to RViz -->
+
+  	</node>
+
+
+</launch>
