@@ -49,15 +49,15 @@ if __name__ == '__main__':
     # set quad number, initial positions, and goals (for now, manually)
     # agent1 (NUC1)
     quad="HX15";
-    goal_x = 4.0;
-    goal_y = -3.0;
+    goal_x = 3.84;
+    goal_y = -2.96;
     goal_z = 1.8;
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
 
     # agent2 (NUC2)
     quad="HX16";
-    goal_x = 0.0;
+    goal_x = 0.18;
     goal_y = -3.0;
     goal_z = 1.8;
 
@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
     # agent3 (NUC3)
     quad="HX17";
-    goal_x = -4.0;
+    goal_x = -3.9;
     goal_y = -3.0;
     goal_z = 1.8;
 
@@ -73,24 +73,24 @@ if __name__ == '__main__':
 
     # agent4 (NUC4)
     quad="HX18";
-    goal_x = 4.0;
-    goal_y = 3.0;
+    goal_x = 3.8;
+    goal_y = 3.38;
     goal_z = 1.8;
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
 
     # agent5 (NUC5)
     quad="HX19";
-    goal_x = 0.0;
-    goal_y = 3.0;
+    goal_x = -0.12;
+    goal_y = 3.12;
     goal_z = 1.8;
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
 
     # agent6 (NUC6)
     quad="HX20";
-    goal_x = -4.0;
-    goal_y = 3.0;
+    goal_x = -3.95;
+    goal_y = 3.16;
     goal_z = 1.8;
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
