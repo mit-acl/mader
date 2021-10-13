@@ -15,6 +15,7 @@ import os
 import sys
 import time
 from random import *
+import rospy
 # import numpy as np
 # from pyquaternion import Quaternion
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
