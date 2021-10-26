@@ -988,16 +988,10 @@ void Mader::yaw(double diff, mt::state& next_goal)
 
 void Mader::getDesiredYaw(mt::state& next_goal)
 {
-  
-  // for now the desired yaw is 0
+
   next_goal.dyaw = 0.0;
-  next_goal.yaw = 0.0;
-
+  next_goal.yaw = previous_yaw_;
   /*
-  double diff = 0.0;
-  double desired_yaw = 0.0;
-
-  
   switch (drone_status_)
   {
     case DroneStatus::YAWING:
@@ -1042,7 +1036,7 @@ bool Mader::getNextGoal(mt::state& next_goal)
   {
     plan_.pop_front();
   }
-  getDesiredYaw(next_goal);
+  getDesiredYaw(next_goal); // we don't need to control yaw
 
   previous_yaw_ = next_goal.yaw;
 

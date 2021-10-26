@@ -511,14 +511,8 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
     quadGoal.a = mu::eigen2rosvector(next_goal.accel);
     quadGoal.j = mu::eigen2rosvector(next_goal.jerk);
 
-    //quadGoal.dyaw = next_goal.dyaw;
-    //quadGoal.yaw = next_goal.yaw;
-
-    // quadGoal.dyaw = next_goal.dyaw;
-    // quadGoal.yaw = next_goal.yaw;
-
-    quadGoal.dpsi = next_goal.dyaw;
-    quadGoal.psi = next_goal.yaw;
+    //quadGoal.dpsi = next_goal.dyaw; // no need to control dyaw
+    //quadGoal.psi = next_goal.yaw; // no need to contol yaw
 
     quadGoal.header.stamp = ros::Time::now();
     quadGoal.header.frame_id = world_name_;

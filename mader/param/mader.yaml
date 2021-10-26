@@ -9,7 +9,7 @@ drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced
 drone_bbox: [0.5, 0.5, 1.0] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
 #w_max: 0.4           # [rd/s] Maximum angular velocity. 0.4 for Hardware
-w_max: 0.01
+w_max: 0.00
 
 alpha_filter_dyaw: 0.9 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
 
