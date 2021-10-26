@@ -30,7 +30,7 @@ def create_session(session_name, commands):
    
     for i in range(len(commands)):
         os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m') 
-        #rospy.sleep(0.5);
+        rospy.sleep(0.5);
     print("Commands sent")
 
 
