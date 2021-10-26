@@ -494,7 +494,9 @@ void Mader::setTerminalGoal(mt::state& term_goal)
   G_.pos = G_term_.pos;
   if (drone_status_ == DroneStatus::GOAL_REACHED)
   {
-    changeDroneStatus(DroneStatus::YAWING);
+    //changeDroneStatus(DroneStatus::YAWING);
+    changeDroneStatus(DroneStatus::TRAVELING); //skip yawing
+
   }
   if (drone_status_ == DroneStatus::GOAL_SEEN)
   {
@@ -539,11 +541,17 @@ void Mader::updateState(mt::state data)
     previous_yaw_ = tmp.yaw;
   }
 
+  if (drone_status_ == DroneStatus::TRAVELING)
+  {
+    state_initialized_ = true;
+  }
+
+  /* skip yawing process
   if (drone_status_ == DroneStatus::YAWING)
   {
     state_initialized_ = true;
   }
-  
+  */
   //state_initialized_ = true;
 
   //mt::state tmp;
@@ -976,9 +984,16 @@ void Mader::yaw(double diff, mt::state& next_goal)
 
 void Mader::getDesiredYaw(mt::state& next_goal)
 {
+  
+  // for now the desired yaw is 0
+  next_goal.dyaw = 0.0;
+  next_goal.yaw = 0.0;
+
+  /*
   double diff = 0.0;
   double desired_yaw = 0.0;
 
+  
   switch (drone_status_)
   {
     case DroneStatus::YAWING:
@@ -1002,6 +1017,7 @@ void Mader::getDesiredYaw(mt::state& next_goal)
     changeDroneStatus(DroneStatus::TRAVELING);
   }
   yaw(diff, next_goal);
+  */
 }
 
 bool Mader::getNextGoal(mt::state& next_goal)
