@@ -319,9 +319,11 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
   if (traj.is_agent == false)
   {
     std::vector<Eigen::Vector3d> points;
-    delta = traj.bbox / 2.0 + (par_.drone_radius + par_.beta + par_.alpha) *
-                                  Eigen::Vector3d::Ones();  // every side of the box will be increased by 2*delta
+    //delta = traj.bbox / 2.0 + (par_.drone_radius + par_.beta + par_.alpha) *
+    //                              Eigen::Vector3d::Ones();  // every side of the box will be increased by 2*delta
                                                             //(+delta on one end, -delta on the other)
+    delta = traj.bbox / 2.0 +  par_.drone_bbox / 2.0  + (par_.beta + par_.alpha)*Eigen::Vector3d::Ones();
+
     // Will always have a sample at the beginning of the interval, and another at the end.
     for (double t = t_start;                           /////////////
          (t < t_end) ||                                /////////////
@@ -352,7 +354,9 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
   else
   {  // is an agent --> use the pwp field
 
-    delta = traj.bbox / 2.0 + (par_.drone_radius) * Eigen::Vector3d::Ones();
+    //delta = traj.bbox / 2.0 + (par_.drone_radius) * Eigen::Vector3d::Ones();
+    delta = traj.bbox / 2.0 + par_.drone_bbox / 2.0; //instad of using drone_radius
+
     // std::cout << "****traj.bbox = " << traj.bbox << std::endl;
     // std::cout << "****par_.drone_radius = " << par_.drone_radius << std::endl;
     // std::cout << "****Inflation by delta= " << delta.transpose() << std::endl;

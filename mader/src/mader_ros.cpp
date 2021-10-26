@@ -32,6 +32,11 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "dc", par_.dc);
   mu::safeGetParam(nh1_, "goal_radius", par_.goal_radius);
   mu::safeGetParam(nh1_, "drone_radius", par_.drone_radius);
+  
+  // since drone_bbox is a vector, you need a workaround like this
+  std::vector<double> drone_bbox_tmp;
+  mu::safeGetParam(nh1_, "drone_bbox", drone_bbox_tmp);
+  par_.drone_bbox << drone_bbox_tmp[0], drone_bbox_tmp[1], drone_bbox_tmp[2];
 
   mu::safeGetParam(nh1_, "Ra", par_.Ra);
 
@@ -276,9 +281,12 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
 
   mader_msgs::DynTraj msg;
   msg.function = s;
-  msg.bbox.push_back(2 * par_.drone_radius);
-  msg.bbox.push_back(2 * par_.drone_radius);
-  msg.bbox.push_back(2 * par_.drone_radius);
+  msg.bbox.push_back(par_.drone_bbox[0]);
+  msg.bbox.push_back(par_.drone_bbox[1]);
+  msg.bbox.push_back(par_.drone_bbox[2]);
+  //msg.bbox.push_back(2 * par_.drone_radius);
+  //msg.bbox.push_back(2 * par_.drone_radius);
+  //msg.bbox.push_back(2 * par_.drone_radius);
   msg.pos.x = state_.pos.x();
   msg.pos.y = state_.pos.y();
   msg.pos.z = state_.pos.z();

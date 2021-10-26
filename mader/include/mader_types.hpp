@@ -569,6 +569,7 @@ struct parameters
   double dc;
   double goal_radius;
   double drone_radius;
+  Eigen::Vector3d drone_bbox;
 
   double Ra;
 
