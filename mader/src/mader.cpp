@@ -31,7 +31,8 @@ typedef MADER_timers::Timer MyTimer;
 
 Mader::Mader(mt::parameters par) : par_(par)
 {
-  drone_status_ == DroneStatus::YAWING;
+  //drone_status_ == DroneStatus::YAWING;
+  drone_status_ == DroneStatus::TRAVELING;
   G_.pos << 0, 0, 0;
   G_term_.pos << 0, 0, 0;
 
@@ -990,7 +991,7 @@ void Mader::getDesiredYaw(mt::state& next_goal)
 {
 
   next_goal.dyaw = 0.0;
-  next_goal.yaw = previous_yaw_;
+  next_goal.yaw = state_.yaw;
   /*
   switch (drone_status_)
   {
