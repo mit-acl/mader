@@ -25,8 +25,8 @@ Ra: 4.0           # [m] Radius of my planning sphere (planning horizon). Should 
 #z_max: 1000000000.0   # [m] JPS is not allowed to give a solution that goes higher than this height
 
 # highbay
-x_min: -4.2  # [m] don't forget the .0
-x_max: 4.2  # [m] don't forget the .0
+x_min: -4.5  # [m] don't forget the .0
+x_max: 4.5  # [m] don't forget the .0
 
 y_min: -3.5  # [m] don't forget the .0
 y_max: 3.5   # [m] don't forget the .0
