@@ -993,7 +993,7 @@ void Mader::getDesiredYaw(mt::state& next_goal)
 
   next_goal.dyaw = 0.0;
   //next_goal.yaw = initial_yaw_;
-  nex_goal.yaw = state_.yaw;
+  next_goal.yaw = state_.yaw;
   /*
   switch (drone_status_)
   {
