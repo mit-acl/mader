@@ -543,7 +543,8 @@ void Mader::updateState(mt::state data)
     plan_.push_back(tmp); // plan_ should be empty
     std::cout << "in updateState function ";
     plan_.print();
-    previous_yaw_ = tmp.yaw;
+    //previous_yaw_ = tmp.yaw;
+    initial_yaw_ = tmp.yaw;
   }
 
   if (drone_status_ == DroneStatus::TRAVELING)
@@ -991,7 +992,7 @@ void Mader::getDesiredYaw(mt::state& next_goal)
 {
 
   next_goal.dyaw = 0.0;
-  next_goal.yaw = state_.yaw;
+  next_goal.yaw = initial_yaw_;
   /*
   switch (drone_status_)
   {
@@ -1039,7 +1040,7 @@ bool Mader::getNextGoal(mt::state& next_goal)
   }
   getDesiredYaw(next_goal); // we don't need to control yaw
 
-  previous_yaw_ = next_goal.yaw;
+  //previous_yaw_ = next_goal.yaw;
 
   mtx_goals.unlock();
   mtx_plan_.unlock();

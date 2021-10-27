@@ -64,6 +64,7 @@ private:
   mt::committedTrajectory plan_;
 
   double previous_yaw_ = 0.0;
+  double initial_yaw_ = 0.0;
 
   bool isReplanningNeeded();
 
