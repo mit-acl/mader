@@ -48,7 +48,7 @@ if __name__ == '__main__':
     quad="SQ01s";
     goal_x = 4.0;
     goal_y = -3.0;
-    goal_z = 1.0;
+    goal_z = 1.5*random();
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
 
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     quad="SQ02s";
     goal_x = 0.0;
     goal_y = -3.0;
-    goal_z = 1.0;
+    goal_z = 1.5*random();
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     quad="SQ03s";
     goal_x = -4.0;
     goal_y = -3.0;
-    goal_z = 1.0;
+    goal_z = 1.5*random();
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     quad="SQ04s";
     goal_x = 4.0;
     goal_y = 3.0;
-    goal_z = 1.0;
+    goal_z = 1.5*random();
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     quad="SQ05s";
     goal_x = 0.0;
     goal_y = 3.0;
-    goal_z = 1.0;
+    goal_z = 1.5*random();
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     quad="SQ06s";
     goal_x = -4.0;
     goal_y = 3.0;
-    goal_z = 1.0;
+    goal_z = 1.5*random();
 
     commands.append(convertToStringCommand(quad,goal_x,goal_y,goal_z));
     
