@@ -16,6 +16,7 @@ from snapstack_msgs.msg import QuadFlightMode
 #from behavior_selector.srv import MissionModeChange
 import math
 import sys
+import random
 
 def quat2yaw(q):
     yaw = math.atan2(2 * (q.w * q.z + q.x * q.y),
@@ -85,7 +86,8 @@ class Mader_Commands:
 
         goal.power= True; #Turn on the motors
         #Note that self.pose.position is being updated in the parallel callback
-        alt_taken_off = self.pose.position.z + 1.0; #Altitude when hovering after taking off
+        #alt_taken_off = self.pose.position.z + 1.0; #Altitude when hovering after taking off
+        alt_taken_off = self.pose.position.z + 0.5 + 1.5 * random.random(); #Altitude when hovering after taking off
 
 
         #Note that self.pose.position is being updated in the parallel callback
