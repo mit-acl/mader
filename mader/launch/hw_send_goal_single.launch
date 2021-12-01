@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- this launch file takes care of sending goals to single drone --> 
+
+<launch>
+
+	<arg name="quad"/>
+
+	<node name="send_goal_single" pkg="mader" type="send_goal_single.py" output="screen" clear_params="true"/>
+
+</launch>
