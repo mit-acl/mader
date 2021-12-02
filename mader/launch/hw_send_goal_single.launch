@@ -6,5 +6,6 @@
 	<arg name="quad"/>
 
 	<node name="send_goal_single" pkg="mader" type="send_goal_single.py" output="screen" clear_params="true"/>
+		<param name="quad" value="$(arg quad)" />
 
 </launch>
