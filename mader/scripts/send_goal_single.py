@@ -35,7 +35,7 @@ if __name__ == '__main__':
     num_of_agents = 1;
     sys_arg = "send_global_goals";
 
-    quad=rospy.get_param('~quad')
+    quad=rospy.get_param('quad')
     goal_x = -3.5+7*random()
     goal_y = -3.5+7*random()
     goal_z = 1+1.5*random()
