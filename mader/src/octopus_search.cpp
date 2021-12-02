@@ -967,7 +967,7 @@ void OctopusSearch::expandAndAddToQueue(Node& current, double constraint_xL, dou
 
     neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
 
-    if ((fabs(vi.x() < 1e-5) && fabs(vi.y() < 1e-5) && fabs(vi.z() < 1e-5)) ||  // Not wanna use v=[0,0,0]
+    if (vi.norm() < 1e-5  ||  // Not wanna use v=[0,0,0]
         neighbor.qi.x() > x_max_ || neighbor.qi.x() < x_min_ ||                 /// Outside the limits
         neighbor.qi.y() > y_max_ || neighbor.qi.y() < y_min_ ||                 /// Outside the limits
         neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_ ||                 /// Outside the limits
