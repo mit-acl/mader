@@ -14,7 +14,7 @@
 	<!-- Start mader commands -->
 	<node ns="$(arg veh)$(arg num)s" name="mader_commands" pkg="mader" type="mader_commands.py" output="screen"/>
 
-	<!-- Start Perfect tracker or snap_sim-->
+	<!-- Start Perfect tracker or snap_sim
 	<include file="$(find mader)/launch/perfect_tracker_or_sim.launch">
   		<arg name="quad" value="$(arg veh)$(arg num)s"/>
   		<arg name="num" value="$(arg num)"/>
@@ -24,7 +24,8 @@
         <arg name="z" value="$(arg z)"/>
         <arg name="yaw" default="$(arg yaw)"/>
         <arg name="perfect_tracker" default="false"/>
- 	 </include> 
+ 	 </include>
+ 	-->
 
  	<!-- mader -->
 	<node ns="$(arg veh)$(arg num)s" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" > 
@@ -40,17 +41,5 @@
 		<remap from="~setpoint" to="setpoint" />
 
 	</node>
-
-	<!-- rosconsole_overlay -->
-	<node ns="$(arg veh)$(arg num)s" pkg="jsk_rviz_plugins"
-        type="rosconsole_overlay_text.py"
-        respawn="false"
-        name="rosconsole_overlay_text">
-
-        <param name="nodes" value="/$(arg veh)$(arg num)s/mader" /> <!--Names of the nodes whose ros output is going to pipe to RViz -->
-        <param name="reverse_lines" value="false" /> <!--Names of the nodes whose ros output is going to pipe to RViz -->
-
-  	</node>
-
 
 </launch>
