@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+	<arg name="quad"/>
+
+	<!-- Start random_goal -->
+	<node ns="$(arg quad)" name="random_goal" pkg="mader" type="random_goal.py" output="screen"/>
+
+</launch>
+
+
+
+
