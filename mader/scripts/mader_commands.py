@@ -57,8 +57,9 @@ class Mader_Commands:
 
         if req.mode == req.GO and self.whoplans.value==self.whoplans.OTHER:
             print ("Starting taking off")
-            self.takeOff()
+            self.takeOff(req)
             print ("Take off done")
+            self.whoplans.value=self.whoplans.MADER
 
         if req.mode == req.KILL:
             print ("Killing")
@@ -76,7 +77,7 @@ class Mader_Commands:
         self.pubWhoPlans.publish(self.whoplans)
 
 
-    def takeOff(self):
+    def takeOff(self, req):
         goal=Goal();
         goal.p.x = self.pose.position.x;
         goal.p.y = self.pose.position.y;
@@ -91,7 +92,6 @@ class Mader_Commands:
 
         #Note that self.pose.position is being updated in the parallel callback
         ######## Commented for simulations
-
         while(  abs(self.pose.position.z-alt_taken_off)>0.2  ):  
             goal.p.z = min(goal.p.z+0.0035, alt_taken_off);
             rospy.sleep(0.004) 
