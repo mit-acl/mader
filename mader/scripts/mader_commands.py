@@ -57,7 +57,7 @@ class Mader_Commands:
 
         if req.mode == req.GO and self.whoplans.value==self.whoplans.OTHER:
             print ("Starting taking off")
-            self.takeOff(req)
+            self.takeOff()
             print ("Take off done")
             self.whoplans.value=self.whoplans.MADER
 
@@ -76,8 +76,7 @@ class Mader_Commands:
         self.whoplans.header.stamp = rospy.get_rostime()
         self.pubWhoPlans.publish(self.whoplans)
 
-
-    def takeOff(self, req):
+    def takeOff(self):
         goal=Goal();
         goal.p.x = self.pose.position.x;
         goal.p.y = self.pose.position.y;
