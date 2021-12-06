@@ -33,7 +33,7 @@ class TermGoalSender:
 
         # set initial time and how long the demo is
         self.time_init = rospy.get_rostime()
-        self.total_secs = 30.0; # sec
+        self.total_secs = 60.0; # sec
 
     def timerCB(self, tmp):
         
@@ -45,7 +45,7 @@ class TermGoalSender:
         #print("dist=", dist)
 
         # check distance and if it's close enough publish new term_goal
-        dist_limit = 0.2
+        dist_limit = 0.3
         if (dist < dist_limit):
             self.sendGoal()
 
@@ -62,7 +62,7 @@ class TermGoalSender:
         y_min = -3.5
         y_max = 4.25
         z_min = 1.0
-        z_max = 4.0
+        z_max = 3.0
 
         # set random goals
         self.term_goal.pose.position.x = x_min + (x_max - x_min) * random()
@@ -78,7 +78,7 @@ class TermGoalSender:
         # set home goals
         self.term_goal.pose.position.x = self.init_pos[0]
         self.term_goal.pose.position.y = self.init_pos[1]
-        self.term_goal.pose.position.z = self.init_pos[2] + 1.0
+        self.term_goal.pose.position.z = 1.8
 
         self.pubTermGoal.publish(self.term_goal)  
 
