@@ -35,6 +35,9 @@ class TermGoalSender:
         self.time_init = rospy.get_rostime()
         self.total_secs = 60.0; # sec
 
+        # home yet?
+        self.is_home = False
+
     def timerCB(self, tmp):
         
         # term_goal in array form
@@ -47,11 +50,13 @@ class TermGoalSender:
         # check distance and if it's close enough publish new term_goal
         dist_limit = 0.3
         if (dist < dist_limit):
-            self.sendGoal()
+            if not self.is_home:
+                self.sendGoal()
 
         # check if we should go home
         duration = rospy.get_rostime() - self.time_init
         if (duration.to_sec() > self.total_secs):
+            self.is_home = True
             self.sendGoalHome()
 
     def sendGoal(self):
