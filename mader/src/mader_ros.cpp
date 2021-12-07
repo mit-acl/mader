@@ -311,7 +311,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       visual_tools_->deleteAllMarkers();
       visual_tools_->enableBatchPublishing();
 
-      pubObstacles(edges_obstacles);
+      if (edges_obstacles.size() > 0)
+      {
+        pubObstacles(edges_obstacles);
+      }
       pubTraj(X_safe);
       publishPlanes(planes);
       publishText();
