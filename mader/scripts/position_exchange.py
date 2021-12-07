@@ -66,8 +66,8 @@ class TermGoalSender:
 
         # set random goals
         self.term_goal.pose.position.x = self.sign * 4
-        self.term_goal.pose.position.y = self.sign * 3.5
-        self.term_goal.pose.position.z = 1.8
+        self.term_goal.pose.position.y = self.sign * -3.5
+        self.term_goal.pose.position.z = 1.0 + 2 * random()
 
         self.sign = self.sign * (-1)
 
