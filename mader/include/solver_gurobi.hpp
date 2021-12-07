@@ -13,7 +13,6 @@
 #include <Eigen/StdVector>
 
 #include <iomanip>  //set precision
-#include <nlopt.hpp>
 #include "mader_types.hpp"
 #include "utils.hpp"
 #include "timer.hpp"
@@ -129,8 +128,6 @@ private:
 
   int num_of_obst_;
   int num_of_segments_;
-
-  nlopt::algorithm solver_;
 
   std::vector<Hyperplane3D> planes_;
 
