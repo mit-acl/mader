@@ -2,9 +2,11 @@
 <launch>
 
 	<arg name="quad"/>
+	<arg name="mode"/>
 
 	<!-- Start random_goal -->
-	<node ns="$(arg quad)" name="position_exchange" pkg="mader" type="position_exchange.py" output="screen"/>
+	<node ns="$(arg quad)" name="position_exchange" pkg="mader" type="position_exchange.py" output="screen" clear_params="true"/>
+		<param name="mode" value="$(arg mode)"/>
 
 </launch>
 

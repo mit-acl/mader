@@ -32,7 +32,7 @@ y_min: -4.0  # [m] don't forget the .0
 y_max: 4.25   # [m] don't forget the .0
 
 #for simulation
-z_min: 1.0  # [m] points below this are considered ground
+z_min: 0.0  # [m] points below this are considered ground
 #for hw
 #z_min: 0.5  # [m] points below this are considered ground
 #z_min: 1.0  # [m] points below this are considered ground

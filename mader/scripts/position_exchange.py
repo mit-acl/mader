@@ -14,6 +14,9 @@ class TermGoalSender:
 
     def __init__(self):
 
+        # mode
+        self.mode = rospy.get_param('~/mode')
+
         # home yet?
         self.is_home = False
 
@@ -65,8 +68,19 @@ class TermGoalSender:
     def sendGoal(self):
 
         # set random goals
-        self.term_goal.pose.position.x = self.sign * 4
-        self.term_goal.pose.position.y = self.sign * -3.5
+        if self.mode == 1:
+            self.term_goal.pose.position.x = self.sign * -4
+            self.term_goal.pose.position.y = self.sign * 3.5
+        elif self.mode == 2:
+            self.term_goal.pose.position.x = self.sign * 4
+            self.term_goal.pose.position.y = self.sign * -3.5
+        elif self.mode == 3:
+            self.term_goal.pose.position.x = self.sign * -4
+            self.term_goal.pose.position.y = self.sign * -3.5
+        elif self.mode == 4:
+            self.term_goal.pose.position.x = self.sign * 4
+            self.term_goal.pose.position.y = self.sign * 3.5
+
         self.term_goal.pose.position.z = 1.0 + 2 * random()
 
         self.sign = self.sign * (-1)
