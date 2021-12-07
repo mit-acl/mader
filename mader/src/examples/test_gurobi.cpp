@@ -9,7 +9,6 @@
 #include <iostream>
 #include <vector>
 #include <iomanip>
-#include <nlopt.hpp>
 
 #include <Eigen/Dense>
 #include <random>
