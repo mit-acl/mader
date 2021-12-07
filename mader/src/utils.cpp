@@ -264,15 +264,16 @@ visualization_msgs::Marker mu::edges2Marker(const mt::Edges& edges, std_msgs::Co
 {
   visualization_msgs::Marker marker;
 
+  marker.header.frame_id = "world";
+  marker.header.stamp = ros::Time::now();
+  marker.ns = "markertacles";
+
   if (edges.size() == 0)  // there are no edges
   {
     // std::cout << "there are no edges" << std::endl;
     return marker;
   }
 
-  marker.header.frame_id = "world";
-  marker.header.stamp = ros::Time::now();
-  marker.ns = "markertacles";
   marker.id = 0;
   marker.type = marker.LINE_LIST;
   marker.action = marker.ADD;
