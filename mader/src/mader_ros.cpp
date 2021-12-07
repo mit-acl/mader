@@ -284,9 +284,9 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
   msg.bbox.push_back(par_.drone_bbox[0]);
   msg.bbox.push_back(par_.drone_bbox[1]);
   msg.bbox.push_back(par_.drone_bbox[2]);
-  //msg.bbox.push_back(2 * par_.drone_radius);
-  //msg.bbox.push_back(2 * par_.drone_radius);
-  //msg.bbox.push_back(2 * par_.drone_radius);
+  // msg.bbox.push_back(2 * par_.drone_radius);
+  // msg.bbox.push_back(2 * par_.drone_radius);
+  // msg.bbox.push_back(2 * par_.drone_radius);
   msg.pos.x = state_.pos.x();
   msg.pos.y = state_.pos.y();
   msg.pos.z = state_.pos.z();
@@ -319,7 +319,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       visual_tools_->deleteAllMarkers();
       visual_tools_->enableBatchPublishing();
 
-      pubObstacles(edges_obstacles);
+      if (edges_obstacles.size() > 0)
+            {
+              pubObstacles(edges_obstacles);
+            }
       pubTraj(X_safe);
       publishPlanes(planes);
       publishText();
@@ -446,7 +449,7 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   // std::cout << bold << red << "STATE_YAW= " << state_.yaw << reset << std::endl;
 
   std::cout << "Updating state to" << std::endl;
-  state_tmp.print();
+  //state_tmp.print();
 
   mader_ptr_->updateState(state_tmp); // this updates state //mader_ptr_ is a pointer to mader object
 
@@ -499,7 +502,7 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
 
     //printf("terminal goal x %f \n", next_goal.pos.x());
     //printf("terminal goal y %f \n", next_goal.pos.y());
-    printf("terminal goal z %f \n", next_goal.pos.z());
+    //printf("terminal goal z %f \n", next_goal.pos.z());
 
     quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 

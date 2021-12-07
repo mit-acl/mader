@@ -321,10 +321,10 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
   {
     std::vector<Eigen::Vector3d> points;
     //delta = traj.bbox / 2.0 + (par_.drone_radius + par_.beta + par_.alpha) *
-    //                              Eigen::Vector3d::Ones();  // every side of the box will be increased by 2*delta
+    //                            Eigen::Vector3d::Ones();  // every side of the box will be increased by 2*delta
                                                             //(+delta on one end, -delta on the other)
     delta = traj.bbox / 2.0 +  par_.drone_bbox / 2.0  + (par_.beta + par_.alpha)*Eigen::Vector3d::Ones();
-
+    
     // Will always have a sample at the beginning of the interval, and another at the end.
     for (double t = t_start;                           /////////////
          (t < t_end) ||                                /////////////
@@ -834,7 +834,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   mtx_trajs_.lock();
 
   time_init_opt_ = ros::Time::now().toSec();
-  removeTrajsThatWillNotAffectMe(A, t_start, t_final);
+  //removeTrajsThatWillNotAffectMe(A, t_start, t_final);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
   mtx_trajs_.unlock();
 
