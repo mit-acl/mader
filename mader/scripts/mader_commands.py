@@ -90,7 +90,7 @@ class Mader_Commands:
 
         goal.power= True; #Turn on the motors
         #Note that self.pose.position is being updated in the parallel callback
-        alt_taken_off = self.init_pos[2] + 1.0; #Altitude when hovering after taking off
+        alt_taken_off = 1.8; #Altitude when hovering after taking off
 
         #Note that self.pose.position is being updated in the parallel callback
         ######## Commented for simulations
@@ -99,11 +99,6 @@ class Mader_Commands:
             rospy.sleep(0.004) 
             rospy.loginfo_throttle(0.5, "Taking off..., error={}".format(self.pose.position.z-alt_taken_off) )
             self.sendGoal(goal)
-
-            # check if "E-STOP" is called while taking off
-            print("is_kill ", self.is_kill)
-            if self.is_kill is True:
-                break
         ######## 
 
         rospy.sleep(0.1) 
