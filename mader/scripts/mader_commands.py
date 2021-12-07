@@ -17,6 +17,7 @@ from snapstack_msgs.msg import QuadFlightMode
 import math
 import sys
 import random
+import numpy as np
 
 def quat2yaw(q):
     yaw = math.atan2(2 * (q.w * q.z + q.x * q.y),
@@ -26,6 +27,7 @@ def quat2yaw(q):
 class Mader_Commands:
 
     def __init__(self):
+
         self.whoplans=WhoPlans();
         self.pose = Pose();
         self.whoplans.value=self.whoplans.OTHER
@@ -33,27 +35,29 @@ class Mader_Commands:
         self.pubWhoPlans = rospy.Publisher("who_plans",WhoPlans,queue_size=1,latch=True) 
         #self.pubClickedPoint = rospy.Publisher("/move_base_simple/goal",PoseStamped,queue_size=1,latch=True)
 
-        # self.alt_taken_off = 2.5; #Altitude when hovering after taking off
-        self.alt_ground = 0.7; #Altitude of the ground
-        self.initialized=False;
+        self.initialized=False
+        self.is_kill = False
 
     #In rospy, the callbacks are all of them in separate threads
     def stateCB(self, data):
+
+        # get initial position
+        if not self.initialized:
+            self.init_pos = np.array([data.pos.x, data.pos.y, data.pos.z])
+            self.initialized = True
+
         self.pose.position.x = data.pos.x
         self.pose.position.y = data.pos.y
         self.pose.position.z = data.pos.z
         self.pose.orientation = data.quat
-
-        if(self.initialized==False):
-            #self.pubFirstTerminalGoal() Not needed
-            self.initialized=True
-            #self.takeOff() #hack to take off directly
 
     #Called when buttom pressed in the interface
     def globalflightmodeCB(self,req):
         if(self.initialized==False):
             print ("Not initialized yet. Is DRONE_NAME/state being published?")
             return
+
+        print("globalflightmodeCB is called")
 
         if req.mode == req.GO and self.whoplans.value==self.whoplans.OTHER:
             print ("Starting taking off")
@@ -77,6 +81,7 @@ class Mader_Commands:
         self.pubWhoPlans.publish(self.whoplans)
 
     def takeOff(self):
+        self.is_kill = False
         goal=Goal();
         goal.p.x = self.pose.position.x;
         goal.p.y = self.pose.position.y;
@@ -85,16 +90,20 @@ class Mader_Commands:
 
         goal.power= True; #Turn on the motors
         #Note that self.pose.position is being updated in the parallel callback
-        alt_taken_off = self.pose.position.z + 1.0; #Altitude when hovering after taking off
-
+        alt_taken_off = self.init_pos[2] + 1.0; #Altitude when hovering after taking off
 
         #Note that self.pose.position is being updated in the parallel callback
         ######## Commented for simulations
-        while(  abs(self.pose.position.z-alt_taken_off)>0.2  ):  
+        while( abs(self.pose.position.z-alt_taken_off)>0.1 ):  
             goal.p.z = min(goal.p.z+0.0035, alt_taken_off);
             rospy.sleep(0.004) 
             rospy.loginfo_throttle(0.5, "Taking off..., error={}".format(self.pose.position.z-alt_taken_off) )
             self.sendGoal(goal)
+
+            # check if "E-STOP" is called while taking off
+            print("is_kill ", self.is_kill)
+            if self.is_kill is True:
+                break
         ######## 
 
         rospy.sleep(0.1) 
@@ -102,6 +111,7 @@ class Mader_Commands:
         self.sendWhoPlans();
 
     def land(self):
+        self.is_kill = False
         self.whoplans.value=self.whoplans.OTHER
         self.sendWhoPlans();
         goal=Goal();
@@ -117,16 +127,16 @@ class Mader_Commands:
         print ("goal.yaw= ", goal.psi)
 
         #Note that self.pose.position is being updated in the parallel callback
-        while(abs(self.pose.position.z-self.alt_ground)>0.1):
-            goal.p.z = max(goal.p.z-0.0035, self.alt_ground);
-
+        while(abs(self.pose.position.z-self.init_pos[2])>0.1):
+            goal.p.z = max(goal.p.z-0.0035, self.init_pos[2]);
             rospy.sleep(0.01)
-
             self.sendGoal(goal)
+        
         #Kill motors once we are on the ground
         self.kill()
 
     def kill(self):
+        self.is_kill = True
         self.whoplans.value=self.whoplans.OTHER
         self.sendWhoPlans()
         goal=Goal();
