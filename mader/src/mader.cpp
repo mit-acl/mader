@@ -853,7 +853,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   mtx_trajs_.lock();
 
   time_init_opt_ = ros::Time::now().toSec();
-  removeTrajsThatWillNotAffectMe(A, t_start, t_final);
+  //removeTrajsThatWillNotAffectMe(A, t_start, t_final);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
   mtx_trajs_.unlock();
 
