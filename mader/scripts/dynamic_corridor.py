@@ -46,7 +46,7 @@ color_dynamic=ColorRGBA(r=1,g=0,b=0,a=1);
 class MovingCircle:
     def __init__(self):
         self.radius=1.0;
-        self.num_of_objects=3;
+        self.total_num_obs=3;
         self.scale=1.0;
         self.slower_min=1
         self.slower_max= 1.5
@@ -54,6 +54,7 @@ class MovingCircle:
 class MovingCorridor:
     def __init__(self, total_num_obs):
         print(total_num_obs)
+        self.total_num_obs=total_num_obs;
         self.num_of_dyn_objects=int(0.65*total_num_obs);
         self.num_of_stat_objects=total_num_obs-self.num_of_dyn_objects; #They are actually dynamic obstacles
         self.x_min= 2.0
@@ -137,7 +138,7 @@ class FakeSim:
             self.bboxes.append(bbox_i)
 
 
-        self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=1, latch=True)
+        self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=self.world.total_num_obs)#If queue_size=1, pubTraj will not be able to keep up (due to the loop in pubTF)#, latch=True
         self.pubShapes_static = rospy.Publisher('/shapes_static', Marker, queue_size=1, latch=True)
         self.pubShapes_static_mesh = rospy.Publisher('/shapes_static_mesh', MarkerArray, queue_size=1, latch=True)
         self.pubShapes_dynamic_mesh = rospy.Publisher('/shapes_dynamic_mesh', MarkerArray, queue_size=1, latch=True)

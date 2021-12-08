@@ -44,6 +44,7 @@ color_dynamic=ColorRGBA(r=1,g=0,b=0,a=1);
 class MovingForest:
     def __init__(self, total_num_obs):
         print(total_num_obs)
+        self.total_num_obs=total_num_obs;
         self.num_of_dyn_objects=int(0.5*total_num_obs) #int(0.65*total_num_obs);
         self.num_of_stat_objects=total_num_obs-self.num_of_dyn_objects; 
         self.x_min= -6
@@ -123,7 +124,7 @@ class FakeSim:
 
 
 
-        self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=1, latch=True)
+        self.pubTraj = rospy.Publisher('/trajs', DynTraj, queue_size=self.world.total_num_obs)#If queue_size=1, pubTraj will not be able to keep up (due to the loop in pubTF)#, latch=True
         self.pubShapes_static = rospy.Publisher('/shapes_static', Marker, queue_size=1, latch=True)
         self.pubShapes_static_mesh = rospy.Publisher('/shapes_static_mesh', MarkerArray, queue_size=1, latch=True)
         self.pubShapes_dynamic_mesh = rospy.Publisher('/shapes_dynamic_mesh', MarkerArray, queue_size=1, latch=True)
