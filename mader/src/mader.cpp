@@ -414,16 +414,35 @@ void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, d
       double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
       for (int i = 0; i < par_.num_pol; i++)                     // for each interval
       {
-        std::vector<Eigen::Vector3d> points =
+        std::vector<Eigen::Vector3d> pointsA =
             vertexesOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT);
+        // Now we check whether the sphere centered in A (and r=Ra) collides with the polyhedron whose vertexes are
+        // pointsA
 
-        for (auto point_i : points)  // for every vertex of each interval
+        // --> a): make sure that there are no points inside the sphere
+        for (auto point_i : pointsA)  // for every vertex of each interval
         {
           if ((point_i - A.pos).norm() <= par_.Ra)
           {
             traj_affects_me = true;
             goto exit;
           }
+        }
+
+        //(note that (a) is not sufficient. E.g. if the sphere is enclosed in the polyhedron )
+
+        // --> b): make sure that there is a plane that separates A from the polyhedron
+        std::vector<Eigen::Vector3d> pointsB;
+        pointsB.push_back(A.pos);
+        Eigen::Vector3d n_i;
+        double d_i;
+
+        bool solved = separator_solver_->solveModel(n_i, d_i, pointsA, pointsB);
+
+        if (separator_solver_->solveModel(n_i, d_i, pointsA, pointsB) == false)
+        {
+          traj_affects_me = true;
+          goto exit;
         }
       }
     }
