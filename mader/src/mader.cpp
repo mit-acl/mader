@@ -380,6 +380,18 @@ void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, d
 {
   std::vector<int> ids_to_remove;
 
+  std::vector<Eigen::Vector3d> pointsB;
+  Eigen::Vector3d delta = par_.Ra * Eigen::Vector3d::Ones();
+
+  pointsB.push_back(Eigen::Vector3d(A.pos.x() + delta.x(), A.pos.y() + delta.y(), A.pos.z() + delta.z()));
+  pointsB.push_back(Eigen::Vector3d(A.pos.x() + delta.x(), A.pos.y() - delta.y(), A.pos.z() - delta.z()));
+  pointsB.push_back(Eigen::Vector3d(A.pos.x() + delta.x(), A.pos.y() + delta.y(), A.pos.z() - delta.z()));
+  pointsB.push_back(Eigen::Vector3d(A.pos.x() + delta.x(), A.pos.y() - delta.y(), A.pos.z() + delta.z()));
+  pointsB.push_back(Eigen::Vector3d(A.pos.x() - delta.x(), A.pos.y() - delta.y(), A.pos.z() - delta.z()));
+  pointsB.push_back(Eigen::Vector3d(A.pos.x() - delta.x(), A.pos.y() + delta.y(), A.pos.z() + delta.z()));
+  pointsB.push_back(Eigen::Vector3d(A.pos.x() - delta.x(), A.pos.y() + delta.y(), A.pos.z() - delta.z()));
+  pointsB.push_back(Eigen::Vector3d(A.pos.x() - delta.x(), A.pos.y() - delta.y(), A.pos.z() + delta.z()));
+
   for (auto traj : trajs_)
   {
     bool traj_affects_me = false;
@@ -416,41 +428,18 @@ void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, d
       {
         std::vector<Eigen::Vector3d> pointsA =
             vertexesOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT);
-        // Now we check whether the sphere centered in A (and r=Ra) collides with the polyhedron whose vertexes are
-        // pointsA
+        // Now we check whether the bbox centered in A (and total_sizes=2*Ra) collides with the polyhedron whose
+        // vertexes are pointsA
 
-        // To do that, we solve a linear feasibility program to find a plane that separates the sphere and the
+        // To do that, we solve a linear feasibility program to find a plane that separates that box and the
         // polyhedron
 
-        // The notation below follows figure in the readme of https://github.com/mit-acl/separator
-
-        std::vector<Eigen::Vector3d> pointsB;
-        pointsB.push_back(A.pos);
         Eigen::Vector3d n;
         double d;
 
         bool solved = separator_solver_->solveModel(n, d, pointsA, pointsB);
 
-        // Now we move the plane found so that it touches one points in pointsA, but keeping the rest of the points on
-        // one side of the plane
-
-        // delta_min is the distance between the red plane and pointsA (see figure in figure in the readme of
-        // https://github.com/mit-acl/separator)
-        double delta_min = std::numeric_limits<double>::max();
-        for (auto point_i : pointsA)  // for every vertex of each interval
-        {
-          delta_min = std::min(delta_min, (n.transpose() * point_i + d - 1) / n.norm());
-        }
-
-        // here below the plane is given by n_new*x + d_new_augmented=0
-        // and it's in contact with one of the points in pointsB
-        Eigen::Vector3d n_new = n;
-        double d_new_augmented = d - n.norm() * delta_min - 1;
-
-        // Eq. 9 of https://mathworld.wolfram.com/Point-PlaneDistance.html
-        double dist2A = fabs((n_new.transpose() * A.pos + d_new_augmented) / (n_new.norm()));
-
-        if (dist2A <= par_.Ra)
+        if (solved == false)
         {
           traj_affects_me = true;
           goto exit;
