@@ -32,7 +32,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "dc", par_.dc);
   mu::safeGetParam(nh1_, "goal_radius", par_.goal_radius);
   mu::safeGetParam(nh1_, "drone_radius", par_.drone_radius);
-  
+
   // since drone_bbox is a vector, you need a workaround like this
   std::vector<double> drone_bbox_tmp;
   mu::safeGetParam(nh1_, "drone_bbox", drone_bbox_tmp);
@@ -320,9 +320,9 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       visual_tools_->enableBatchPublishing();
 
       if (edges_obstacles.size() > 0)
-            {
-              pubObstacles(edges_obstacles);
-            }
+      {
+        pubObstacles(edges_obstacles);
+      }
       pubTraj(X_safe);
       publishPlanes(planes);
       publishText();
@@ -437,7 +437,7 @@ void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
 
 void MaderRos::stateCB(const snapstack_msgs::State& msg)
 {
-  mt::state state_tmp; // this gets state from ROS
+  mt::state state_tmp;  // this gets state from ROS
   state_tmp.setPos(msg.pos.x, msg.pos.y, msg.pos.z);
   state_tmp.setVel(msg.vel.x, msg.vel.y, msg.vel.z);
   state_tmp.setAccel(0.0, 0.0, 0.0);
@@ -449,9 +449,9 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   // std::cout << bold << red << "STATE_YAW= " << state_.yaw << reset << std::endl;
 
   std::cout << "Updating state to" << std::endl;
-  //state_tmp.print();
+  // state_tmp.print();
 
-  mader_ptr_->updateState(state_tmp); // this updates state //mader_ptr_ is a pointer to mader object
+  mader_ptr_->updateState(state_tmp);  // this updates state //mader_ptr_ is a pointer to mader object
 
   W_T_B_ = Eigen::Translation3d(msg.pos.x, msg.pos.y, msg.pos.z) *
            Eigen::Quaterniond(msg.quat.w, msg.quat.x, msg.quat.y, msg.quat.z);
@@ -498,11 +498,11 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
   {
     snapstack_msgs::Goal quadGoal;
 
-    quadGoal.p = mu::eigen2point(next_goal.pos); //Kota changed it from eigen2rosvector July 26, 2021
+    quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 
-    //printf("terminal goal x %f \n", next_goal.pos.x());
-    //printf("terminal goal y %f \n", next_goal.pos.y());
-    //printf("terminal goal z %f \n", next_goal.pos.z());
+    // printf("terminal goal x %f \n", next_goal.pos.x());
+    // printf("terminal goal y %f \n", next_goal.pos.y());
+    // printf("terminal goal z %f \n", next_goal.pos.z());
 
     quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 
@@ -514,8 +514,8 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
     quadGoal.a = mu::eigen2rosvector(next_goal.accel);
     quadGoal.j = mu::eigen2rosvector(next_goal.jerk);
 
-    quadGoal.dpsi = next_goal.dyaw; // no need to control dyaw
-    quadGoal.psi = next_goal.yaw; // no need to contol yaw
+    quadGoal.dpsi = next_goal.dyaw;  // no need to control dyaw
+    quadGoal.psi = next_goal.yaw;    // no need to contol yaw
 
     quadGoal.header.stamp = ros::Time::now();
     quadGoal.header.frame_id = world_name_;

@@ -31,7 +31,7 @@ typedef MADER_timers::Timer MyTimer;
 
 Mader::Mader(mt::parameters par) : par_(par)
 {
-  //drone_status_ == DroneStatus::YAWING;
+  // drone_status_ == DroneStatus::YAWING;
   drone_status_ == DroneStatus::TRAVELING;
   G_.pos << 0, 0, 0;
   G_term_.pos << 0, 0, 0;
@@ -320,11 +320,11 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
   if (traj.is_agent == false)
   {
     std::vector<Eigen::Vector3d> points;
-    //delta = traj.bbox / 2.0 + (par_.drone_radius + par_.beta + par_.alpha) *
+    // delta = traj.bbox / 2.0 + (par_.drone_radius + par_.beta + par_.alpha) *
     //                            Eigen::Vector3d::Ones();  // every side of the box will be increased by 2*delta
-                                                            //(+delta on one end, -delta on the other)
-    delta = traj.bbox / 2.0 +  par_.drone_bbox / 2.0  + (par_.beta + par_.alpha)*Eigen::Vector3d::Ones();
-    
+    //(+delta on one end, -delta on the other)
+    delta = traj.bbox / 2.0 + par_.drone_bbox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
+
     // Will always have a sample at the beginning of the interval, and another at the end.
     for (double t = t_start;                           /////////////
          (t < t_end) ||                                /////////////
@@ -355,8 +355,8 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
   else
   {  // is an agent --> use the pwp field
 
-    //delta = traj.bbox / 2.0 + (par_.drone_radius) * Eigen::Vector3d::Ones();
-    delta = traj.bbox / 2.0 + par_.drone_bbox / 2.0; //instad of using drone_radius
+    // delta = traj.bbox / 2.0 + (par_.drone_radius) * Eigen::Vector3d::Ones();
+    delta = traj.bbox / 2.0 + par_.drone_bbox / 2.0;  // instad of using drone_radius
 
     // std::cout << "****traj.bbox = " << traj.bbox << std::endl;
     // std::cout << "****par_.drone_radius = " << par_.drone_radius << std::endl;
@@ -529,9 +529,8 @@ void Mader::setTerminalGoal(mt::state& term_goal)
   G_.pos = G_term_.pos;
   if (drone_status_ == DroneStatus::GOAL_REACHED)
   {
-    //changeDroneStatus(DroneStatus::YAWING);
-    changeDroneStatus(DroneStatus::TRAVELING); //skip yawing
-
+    // changeDroneStatus(DroneStatus::YAWING);
+    changeDroneStatus(DroneStatus::TRAVELING);  // skip yawing
   }
   if (drone_status_ == DroneStatus::GOAL_SEEN)
   {
@@ -570,10 +569,10 @@ void Mader::updateState(mt::state data)
     tmp.pos = data.pos;
     tmp.yaw = data.yaw;
     plan_.erase(plan_.begin(), plan_.end());
-    plan_.push_back(tmp); // plan_ should be empty
+    plan_.push_back(tmp);  // plan_ should be empty
     std::cout << "in updateState function ";
     plan_.print();
-    //previous_yaw_ = tmp.yaw;
+    // previous_yaw_ = tmp.yaw;
     initial_yaw_ = tmp.yaw;
   }
 
@@ -588,19 +587,19 @@ void Mader::updateState(mt::state data)
     state_initialized_ = true;
   }
   */
-  //state_initialized_ = true;
+  // state_initialized_ = true;
 
-  //mt::state tmp;
-  //tmp.pos = data.pos;
-  //tmp.yaw = data.yaw;
-  //plan_.pop_front();
-  //plan_.push_back(tmp); // plan_ should be empty
-  //std::cout << "plan size " << plan_.size() << std::endl;
-  //std::cout << "in updateState function ";
-  //plan_.print();
-  //previous_yaw_ = tmp.yaw;
-  
-  //state_.print();
+  // mt::state tmp;
+  // tmp.pos = data.pos;
+  // tmp.yaw = data.yaw;
+  // plan_.pop_front();
+  // plan_.push_back(tmp); // plan_ should be empty
+  // std::cout << "plan size " << plan_.size() << std::endl;
+  // std::cout << "in updateState function ";
+  // plan_.print();
+  // previous_yaw_ = tmp.yaw;
+
+  // state_.print();
 }
 
 bool Mader::initializedAllExceptPlanner()
@@ -845,7 +844,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   std::cout << "time_allocated= " << time_allocated << std::endl;
 
   std::cout << "initial is " << initial.pos.transpose() << std::endl;
-  std::cout<<"Pos of A is"<<A.pos.transpose()<<std::endl;
+  std::cout << "Pos of A is" << A.pos.transpose() << std::endl;
 
   double t_final = t_start + time_allocated;
 
@@ -880,7 +879,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   std::cout << "[FA] Calling NL" << std::endl;
 
-  bool result = solver_->optimize(); // calling the solver
+  bool result = solver_->optimize();  // calling the solver
 
   num_of_LPs_run = solver_->getNumOfLPsRun();
   num_of_QCQPs_run = solver_->getNumOfQCQPsRun();
@@ -951,8 +950,8 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     }
     // std::cout << "after, plan_size=" << plan_.size() << std::endl;
   }
-  
-  //plan_.print();
+
+  // plan_.print();
   mtx_plan_.unlock();
 
   ////////////////////
@@ -1020,10 +1019,9 @@ void Mader::yaw(double diff, mt::state& next_goal)
 
 void Mader::getDesiredYaw(mt::state& next_goal)
 {
-
   next_goal.dyaw = 0.0;
   next_goal.yaw = initial_yaw_;
-  //next_goal.yaw = state_.yaw;
+  // next_goal.yaw = state_.yaw;
   /*
   switch (drone_status_)
   {
@@ -1069,9 +1067,9 @@ bool Mader::getNextGoal(mt::state& next_goal)
   {
     plan_.pop_front();
   }
-  getDesiredYaw(next_goal); // we don't need to control yaw
+  getDesiredYaw(next_goal);  // we don't need to control yaw
 
-  //previous_yaw_ = next_goal.yaw;
+  // previous_yaw_ = next_goal.yaw;
 
   mtx_goals.unlock();
   mtx_plan_.unlock();
