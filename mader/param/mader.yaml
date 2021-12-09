@@ -39,9 +39,9 @@ z_min: 0.0  # [m] points below this are considered ground
 z_max: 5.0
 
 #For single-agent simulations
-v_max: [2.0, 2.0, 2.0]   #[m/s]  7.0
-a_max: [3.0, 3.0, 3.0]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
-j_max: [4.0, 4.0, 4.0]   #[m/s3]  #Right now it's only used for Gurobi, not for NLOPT
+v_max: [3.0, 3.0, 3.0]   #[m/s]  7.0
+a_max: [4.0, 4.0, 4.0]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
+j_max: [5.0, 5.0, 5.0]   #[m/s3]  #Right now it's only used for Gurobi, not for NLOPT
 
 factor_alpha: 1.5 #[-] DeltaT = factor_alpha*States_took_previous_replan
 
