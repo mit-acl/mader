@@ -122,7 +122,7 @@ class Mader_Commands:
         print ("goal.yaw= ", goal.psi)
 
         #Note that self.pose.position is being updated in the parallel callback
-        while(abs(self.pose.position.z-self.init_pos[2])>0.1):
+        while(abs(self.pose.position.z-self.init_pos[2])>0.05):
             goal.p.z = max(goal.p.z-0.0035, self.init_pos[2]);
             rospy.sleep(0.01)
             self.sendGoal(goal)
