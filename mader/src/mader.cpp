@@ -424,27 +424,38 @@ void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, d
         // Now we check whether the sphere centered in A (and r=Ra) collides with the polyhedron whose vertexes are
         // pointsA
 
-        // --> a): make sure that there are no points inside the sphere
-        for (auto point_i : pointsA)  // for every vertex of each interval
-        {
-          if ((point_i - A.pos).norm() <= par_.Ra)
-          {
-            traj_affects_me = true;
-            goto exit;
-          }
-        }
+        // To do that, we solve a linear feasibility program to find a plane that separates the sphere and the
+        // polyhedron
 
-        //(note that (a) is not sufficient. E.g. if the sphere is enclosed in the polyhedron )
+        // The notation below follows figure in the readme of https://github.com/mit-acl/separator
 
-        // --> b): make sure that there is a plane that separates A from the polyhedron
         std::vector<Eigen::Vector3d> pointsB;
         pointsB.push_back(A.pos);
-        Eigen::Vector3d n_i;
-        double d_i;
+        Eigen::Vector3d n;
+        double d;
 
-        bool solved = separator_solver_->solveModel(n_i, d_i, pointsA, pointsB);
+        bool solved = separator_solver_->solveModel(n, d, pointsA, pointsB);
 
-        if (separator_solver_->solveModel(n_i, d_i, pointsA, pointsB) == false)
+        // Now we move the plane found so that it touches one points in pointsA, but keeping the rest of the points on
+        // one side of the plane
+
+        // delta_min is the distance between the red plane and pointsA (see figure in figure in the readme of
+        // https://github.com/mit-acl/separator)
+        double delta_min = std::numeric_limits<double>::max();
+        for (auto point_i : pointsA)  // for every vertex of each interval
+        {
+          delta_min = std::min(delta_min, (n.transpose() * point_i + d - 1) / n.norm());
+        }
+
+        // here below the plane is given by n_new*x + d_new_augmented=0
+        // and it's in contact with one of the points in pointsB
+        Eigen::Vector3d n_new = n;
+        double d_new_augmented = d - n.norm() * delta_min - 1;
+
+        // Eq. 9 of https://mathworld.wolfram.com/Point-PlaneDistance.html
+        double dist2A = fabs((n_new.transpose() * A.pos + d_new_augmented) / (n_new.norm()));
+
+        if (dist2A <= par_.Ra)
         {
           traj_affects_me = true;
           goto exit;
@@ -853,7 +864,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   mtx_trajs_.lock();
 
   time_init_opt_ = ros::Time::now().toSec();
-  //removeTrajsThatWillNotAffectMe(A, t_start, t_final);
+  removeTrajsThatWillNotAffectMe(A, t_start, t_final);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
   mtx_trajs_.unlock();
 
