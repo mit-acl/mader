@@ -88,7 +88,7 @@ class TermGoalSender:
             self.term_goal.pose.position.y = self.sign * -3.5
 
 
-        self.term_goal.pose.position.z = 1.0 + 0.5 * random()
+        self.term_goal.pose.position.z = 1.0 + 1.0 * random()
 
         self.sign = self.sign * (-1)
 
