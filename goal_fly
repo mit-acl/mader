@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# this script creates multiple windows to send goals to drons
+# referred to fly script used for voxl setup, which is in /extras
+
+# session name
+SESSION=goal
+WINDOW=base_station
+
+# creates the session with a name and renames the window name
+cmd="new-session -d -s $SESSION ; rename-window $WINDOW"
+tmux -2 $cmd
+
+# window number
+w=1
+
+# split tmux into 1x6
+for i in {1..5}
+do
+	tmux split-window -h
+	tmux select-layout -t $SESSION:$w.$i even-horizontal
+	tmux select-pane -t $SESSION:$w.$i
+done
+
+# wait for .bashrc to load
+sleep 1
+
+# sync all the panes
+tmux send-keys -t $SESSION:$w.1 "C-b: setw synchronize-panes"
+
+# ssh each nuc
+tmux send-keys -t $SESSION:$w.1 "ssh nuc1@192.168.15.2" C-m
+tmux send-keys -t $SESSION:$w.2 "ssh nuc2@192.168.16.2" C-m
+tmux send-keys -t $SESSION:$w.3 "ssh nuc3@192.168.17.2" C-m
+tmux send-keys -t $SESSION:$w.4 "ssh nuc4@192.168.18.2" C-m
+tmux send-keys -t $SESSION:$w.5 "ssh nuc5@192.168.19.2" C-m
+tmux send-keys -t $SESSION:$w.6 "ssh nuc6@192.168.20.2" C-m
+
+# send goals (randomly generated or position exchange)
+if [ "$1" == "pos" ]; then
+	tmux send-keys -t $SESSION:$w.1 "roslaunch mader position_exchange.launch mode:=1 quad:=HX15"
+	tmux send-keys -t $SESSION:$w.2 "roslaunch mader position_exchange.launch mode:=2 quad:=HX16"
+	tmux send-keys -t $SESSION:$w.3 "roslaunch mader position_exchange.launch mode:=3 quad:=HX17"
+	tmux send-keys -t $SESSION:$w.4 "roslaunch mader position_exchange.launch mode:=4 quad:=HX18"
+	tmux send-keys -t $SESSION:$w.5 "roslaunch mader position_exchange.launch mode:=5 quad:=HX19"
+	tmux send-keys -t $SESSION:$w.6 "roslaunch mader position_exchange.launch mode:=6 quad:=HX20"	
+elif [ "$1" == "ran" ]; then
+	tmux send-keys -t $SESSION:$w.1 "roslaunch mader random_goal.launch quad:=HX15"
+	tmux send-keys -t $SESSION:$w.2 "roslaunch mader random_goal.launch quad:=HX16"
+	tmux send-keys -t $SESSION:$w.3 "roslaunch mader random_goal.launch quad:=HX17"
+	tmux send-keys -t $SESSION:$w.4 "roslaunch mader random_goal.launch quad:=HX18"
+	tmux send-keys -t $SESSION:$w.5 "roslaunch mader random_goal.launch quad:=HX19"
+	tmux send-keys -t $SESSION:$w.6 "roslaunch mader random_goal.launch quad:=HX20"
+fi
+
+tmux -2 attach-session -t $SESSION
