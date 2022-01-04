@@ -25,9 +25,6 @@ done
 # wait for .bashrc to load
 sleep 1
 
-# sync all the panes
-tmux send-keys -t $SESSION:$w.1 "C-b: setw synchronize-panes"
-
 # ssh each nuc
 tmux send-keys -t $SESSION:$w.1 "ssh nuc1@192.168.15.2" C-m
 tmux send-keys -t $SESSION:$w.2 "ssh nuc2@192.168.16.2" C-m
