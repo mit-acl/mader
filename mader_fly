@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# this script creates multiple windows for mader
+# referred to fly script used for voxl setup, which is in /extras
+
+# session name
+SESSION=mader
+WINDOW=base_station
+
+# creates the session with a name and renames the window name
+cmd="new-session -d -s $SESSION; rename-window $WINDOW"
+
+# window number
+w=0
+
+#split tmux into 
+cmd="$cmd ; split-window -h"
+cmd="$cmd ; split-window -h"
+cmd="$cmd ; split-window -h"
+cmd="$cmd ; split-window -h"
+cmd="$cmd ; split-window -h"
+cmd="$cmd ; split-window -h"
+cmd="$cmd ; select-pane -t $SESSION:$w.0"
+cmd="$cmd ; split-window -v"
+cmd="$cmd ; select-pane -t $SESSION:$w.1"
+cmd="$cmd ; split-window -v"
+cmd="$cmd ; select-pane -t $SESSION:$w.2"
+cmd="$cmd ; split-window -v"
+cmd="$cmd ; select-pane -t $SESSION:$w.3"
+cmd="$cmd ; split-window -v"
+cmd="$cmd ; select-pane -t $SESSION:$w.4"
+cmd="$cmd ; split-window -v"
+cmd="$cmd ; select-pane -t $SESSION:$w.5"
+cmd="$cmd ; split-window -v"
+
+# creates the tmux session
+tmux -2 $cmd
+
+# send commands to each pane
+# ssh each voxl 
+tmux send-keys -t $SESSION:$w.0 "ssh root@hx15.local"
+tmux send-keys -t $SESSION:$w.1 "ssh root@hx16.local"
+tmux send-keys -t $SESSION:$w.2 "ssh root@hx17.local"
+tmux send-keys -t $SESSION:$w.3 "ssh root@hx18.local"
+tmux send-keys -t $SESSION:$w.4 "ssh root@hx19.local"
+tmux send-keys -t $SESSION:$w.5 "ssh root@hx20.local"
+
+# ssh each nuc
+tmux send-keys -t $SESSION:$w.6 "ssh nuc1@192.168.15.2"
+tmux send-keys -t $SESSION:$w.7 "ssh nuc2@192.168.16.2"
+tmux send-keys -t $SESSION:$w.8 "ssh nuc3@192.168.17.2"
+tmux send-keys -t $SESSION:$w.9 "ssh nuc4@192.168.18.2"
+tmux send-keys -t $SESSION:$w.10 "ssh nuc5@192.168.19.2"
+tmux send-keys -t $SESSION:$w.11 "ssh nuc6@192.168.20.2"
+
+# run the nuc connection command
+tmux send-keys -t $SESSION:$w.0 "./nuc_connection.sh"
+tmux send-keys -t $SESSION:$w.1 "./nuc_connection.sh"
+tmux send-keys -t $SESSION:$w.2 "./nuc_connection.sh"
+tmux send-keys -t $SESSION:$w.3 "./nuc_connection.sh"
+tmux send-keys -t $SESSION:$w.4 "./nuc_connection.sh"
+tmux send-keys -t $SESSION:$w.5 "./nuc_connection.sh"
+
+# fly
+tmux send-keys -t $SESSION:$w.0 "fly"
+tmux send-keys -t $SESSION:$w.1 "fly"
+tmux send-keys -t $SESSION:$w.2 "fly"
+tmux send-keys -t $SESSION:$w.3 "fly"
+tmux send-keys -t $SESSION:$w.4 "fly"
+tmux send-keys -t $SESSION:$w.5 "fly"
+
+# run mader hw_onboard
+tmux send-keys -t $SESSION:$w.0 "roslaunch mader hw_onboard.launch quad:=HX15"
+tmux send-keys -t $SESSION:$w.1 "roslaunch mader hw_onboard.launch quad:=HX16"
+tmux send-keys -t $SESSION:$w.2 "roslaunch mader hw_onboard.launch quad:=HX17"
+tmux send-keys -t $SESSION:$w.3 "roslaunch mader hw_onboard.launch quad:=HX18"
+tmux send-keys -t $SESSION:$w.4 "roslaunch mader hw_onboard.launch quad:=HX19"
+tmux send-keys -t $SESSION:$w.5 "roslaunch mader hw_onboard.launch quad:=HX20"
+
+tmux -2 attach-session -t
+
