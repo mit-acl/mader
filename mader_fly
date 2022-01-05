@@ -44,10 +44,7 @@ tmux send-keys -t $SESSION:$w.10 "ssh root@hx20.local" C-m
 for i in 0 2 4 6 8 10 
 do
 	tmux send-keys -t $SESSION:$w.$i "./nuc_connection.sh" C-m
-done
-
-for i in 0 2 4 6 8 10
-do 
+	sleep 1
 	tmux send-keys -t $SESSION:$w.$i "fly" C-m
 done
 
