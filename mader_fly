@@ -12,7 +12,7 @@ cmd="new-session -d -s $SESSION ; rename-window $WINDOW"
 tmux -2 $cmd
 
 # window number
-w=1
+w=0
 
 #split tmux into 2x6
 for i in {1..5}
@@ -22,7 +22,7 @@ do
 	tmux select-pane -t $SESSION:$w.$i
 done
 
-for i in 1 3 5 7 9 11
+for i in 0 2 4 6 8 10
 do 
 	tmux select-pane -t $SESSION:$w.$i
 	tmux split-window -v
@@ -33,34 +33,38 @@ sleep 1
 
 # send commands to each pane
 # ssh each voxl 
-tmux send-keys -t $SESSION:$w.1 "ssh root@hx15.local" C-m
-tmux send-keys -t $SESSION:$w.3 "ssh root@hx16.local" C-m
-tmux send-keys -t $SESSION:$w.5 "ssh root@hx17.local" C-m
-tmux send-keys -t $SESSION:$w.7 "ssh root@hx18.local" C-m
-tmux send-keys -t $SESSION:$w.9 "ssh root@hx19.local" C-m
-tmux send-keys -t $SESSION:$w.11 "ssh root@hx20.local" C-m
+tmux send-keys -t $SESSION:$w.0 "ssh root@hx15.local" C-m
+tmux send-keys -t $SESSION:$w.2 "ssh root@hx16.local" C-m
+tmux send-keys -t $SESSION:$w.4 "ssh root@hx17.local" C-m
+tmux send-keys -t $SESSION:$w.6 "ssh root@hx18.local" C-m
+tmux send-keys -t $SESSION:$w.8 "ssh root@hx19.local" C-m
+tmux send-keys -t $SESSION:$w.10 "ssh root@hx20.local" C-m
 
 # run the nuc connection command and fly command
-for i in 1 3 5 7 9 11
+for i in 0 2 4 6 8 10 
 do
 	tmux send-keys -t $SESSION:$w.$i "./nuc_connection.sh" C-m
+done
+
+for i in 0 2 4 6 8 10
+do 
 	tmux send-keys -t $SESSION:$w.$i "fly" C-m
 done
 
 # ssh each nuc
-tmux send-keys -t $SESSION:$w.2 "ssh nuc1@192.168.15.2" C-m
-tmux send-keys -t $SESSION:$w.4 "ssh nuc2@192.168.16.2" C-m
-tmux send-keys -t $SESSION:$w.6 "ssh nuc3@192.168.17.2" C-m
-tmux send-keys -t $SESSION:$w.8 "ssh nuc4@192.168.18.2" C-m
-tmux send-keys -t $SESSION:$w.10 "ssh nuc5@192.168.19.2" C-m
-tmux send-keys -t $SESSION:$w.12 "ssh nuc6@192.168.20.2" C-m
+tmux send-keys -t $SESSION:$w.1 "ssh nuc1@192.168.15.2" C-m
+tmux send-keys -t $SESSION:$w.3 "ssh nuc2@192.168.16.2" C-m
+tmux send-keys -t $SESSION:$w.5 "ssh nuc3@192.168.17.2" C-m
+tmux send-keys -t $SESSION:$w.7 "ssh nuc4@192.168.18.2" C-m
+tmux send-keys -t $SESSION:$w.9 "ssh nuc5@192.168.19.2" C-m
+tmux send-keys -t $SESSION:$w.11 "ssh nuc6@192.168.20.2" C-m
 
 # run mader hw_onboard
-tmux send-keys -t $SESSION:$w.2 "roslaunch mader hw_onboard.launch quad:=HX15" C-m
-tmux send-keys -t $SESSION:$w.4 "roslaunch mader hw_onboard.launch quad:=HX16" C-m
-tmux send-keys -t $SESSION:$w.6 "roslaunch mader hw_onboard.launch quad:=HX17" C-m
-tmux send-keys -t $SESSION:$w.8 "roslaunch mader hw_onboard.launch quad:=HX18" C-m
-tmux send-keys -t $SESSION:$w.10 "roslaunch mader hw_onboard.launch quad:=HX19" C-m
-tmux send-keys -t $SESSION:$w.12 "roslaunch mader hw_onboard.launch quad:=HX20" C-m
+tmux send-keys -t $SESSION:$w.1 "roslaunch mader hw_onboard.launch quad:=HX15" C-m
+tmux send-keys -t $SESSION:$w.3 "roslaunch mader hw_onboard.launch quad:=HX16" C-m
+tmux send-keys -t $SESSION:$w.5 "roslaunch mader hw_onboard.launch quad:=HX17" C-m
+tmux send-keys -t $SESSION:$w.7 "roslaunch mader hw_onboard.launch quad:=HX18" C-m
+tmux send-keys -t $SESSION:$w.9 "roslaunch mader hw_onboard.launch quad:=HX19" C-m
+tmux send-keys -t $SESSION:$w.11 "roslaunch mader hw_onboard.launch quad:=HX20" C-m
 
 tmux -2 attach-session -t $SESSION
