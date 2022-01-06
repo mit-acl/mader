@@ -47,7 +47,8 @@ if [ "$1" == "pos" ]; then
 	tmux send-keys -t $SESSION:$w.2 "roslaunch mader position_exchange.launch mode:=2 quad:=HX16"
 	tmux send-keys -t $SESSION:$w.3 "roslaunch mader position_exchange.launch mode:=3 quad:=HX17"
 	tmux send-keys -t $SESSION:$w.4 "roslaunch mader position_exchange.launch mode:=4 quad:=HX18"
-	tmux send-keys -t $SESSION:$w.5 "roslaunch mader position_exchange.launch mode:=5 quad:=HX19"
+	tmux send-keys -t $SESSION:$w.5 "roslauxchange.launch mode:=2 quad:=HX16"
+	tmux send-keys -t $SESSION:$w.3 "roslaunch mader position_exchange.launch mode:nch mader position_exchange.launch mode:=5 quad:=HX19"
 	tmux send-keys -t $SESSION:$w.6 "roslaunch mader position_exchange.launch mode:=6 quad:=HX20"
 elif [ "$1" == "ran" ]; then
 	tmux send-keys -t $SESSION:$w.1 "roslaunch mader random_goal.launch quad:=HX15"
