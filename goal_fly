@@ -16,6 +16,7 @@ w=0
 
 # split tmux into 8x2
 for i in {1..4}
+do
 	tmux split-window -v
 	tmux select-pane -t $SESSION:$w.$i
 	tmux split-window -h
