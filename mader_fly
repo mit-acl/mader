@@ -45,8 +45,8 @@ sleep 1
 # run the nuc connection command and fly command
 for i in 0 2 4 6 8 10 
 do
-	tmux send-keys -t $SESSION:$w.$i "./nuc_connection.sh" C-m
-	sleep 3
+	tmux send-keys -t $SESSION:$w.$i "./nuc_voxl_connection" C-m
+	sleep 1
 	tmux send-keys -t $SESSION:$w.$i "fly"
 done
 
