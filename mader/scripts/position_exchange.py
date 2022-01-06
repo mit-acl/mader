@@ -15,7 +15,7 @@ class TermGoalSender:
     def __init__(self):
 
         # mode
-        self.mode = rospy.get_param('~/mode')
+        self.mode = rospy.get_param('mode', 0) #default value is 0
 
         # home yet?
         self.is_home = False

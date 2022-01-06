@@ -75,8 +75,6 @@ Visualization Manager:
         All Enabled: true
         SQ01s:
           Value: true
-        SQ02s:
-          Value: true
         world:
           Value: true
       Marker Alpha: 1
@@ -88,8 +86,6 @@ Visualization Manager:
       Tree:
         world:
           SQ01s:
-            {}
-          SQ02s:
             {}
       Update Interval: 0
       Value: true
@@ -990,5 +986,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1747
-  X: 135
-  Y: 27
+  X: 1997
+  Y: 665
