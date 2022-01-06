@@ -40,6 +40,8 @@ tmux send-keys -t $SESSION:$w.6 "ssh root@hx18.local" C-m
 tmux send-keys -t $SESSION:$w.8 "ssh root@hx19.local" C-m
 tmux send-keys -t $SESSION:$w.10 "ssh root@hx20.local" C-m
 
+sleep 1
+
 # run the nuc connection command and fly command
 for i in 0 2 4 6 8 10 
 do
