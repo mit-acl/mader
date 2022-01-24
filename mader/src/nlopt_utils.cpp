@@ -43,12 +43,9 @@ bool nlopt_utils::checkGradientsNlopt(std::string basis)
   std::string solver = "LD_MMA";
   double kappa = 0.0;
   double mu = 1.0;
-  // int a_star_samp_x = 7;
-  // int a_star_samp_y = 7;
-  // int a_star_samp_z = 7;
-  int a_star_samp_x;
-  int a_star_samp_y;
-  int a_star_samp_z;
+  int a_star_samp_x = 7;
+  int a_star_samp_y = 7;
+  int a_star_samp_z = 7;
   double increment = 0.3;  // grid used to prune nodes that are on the same cell
   double runtime = 1.0;    //(not use this criterion)  //[seconds]
   double v_max = 10;
