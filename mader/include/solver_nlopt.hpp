@@ -274,9 +274,13 @@ private:
   int num_of_LPs_run_ = 0;
   int num_of_QCQPs_run_ = 0;
 
-  int a_star_samp_x_ = 7;
-  int a_star_samp_y_ = 7;
-  int a_star_samp_z_ = 7;
+  // int a_star_samp_x_ = 7;
+  // int a_star_samp_y_ = 7;
+  // int a_star_samp_z_ = 7;
+  
+  int a_star_samp_x_;
+  int a_star_samp_y_;
+  int a_star_samp_z_;
 
   double time_needed_;
   double dist_to_use_straight_guess_ = std::numeric_limits<double>::max();

@@ -350,6 +350,12 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
     // std::cout << "[Callback] Leaving replanCB" << std::endl;
   }
+
+
+  mt::state G;  // projected goal
+  mader_ptr_->getG(G);
+  pubState(G, pub_point_G_);
+
 }
 
 void MaderRos::publishText()
@@ -694,11 +700,7 @@ void MaderRos::terminalGoalCB(const geometry_msgs::PoseStamped& msg)
   G_term.setPos(msg.pose.position.x, msg.pose.position.y, z);
   mader_ptr_->setTerminalGoal(G_term);
 
-  mt::state G;  // projected goal
-  mader_ptr_->getG(G);
-
   pubState(G_term, pub_point_G_term_);
-  pubState(G, pub_point_G_);
 
   clearMarkerActualTraj();
 }

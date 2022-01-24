@@ -7,8 +7,11 @@ Panels:
         - /Global Options1
         - /Grid1
         - /TF1/Frames1
+        - /G1
+        - /G2
         - /Setpoint1
         - /Obstacles1
+        - /Obstacle1
         - /Console1
         - /Marker1
         - /Image1
@@ -75,6 +78,16 @@ Visualization Manager:
         All Enabled: true
         SQ01s:
           Value: true
+        SQ02s:
+          Value: true
+        SQ03s:
+          Value: true
+        SQ04s:
+          Value: true
+        SQ05s:
+          Value: true
+        SQ06s:
+          Value: true
         world:
           Value: true
       Marker Alpha: 1
@@ -87,52 +100,62 @@ Visualization Manager:
         world:
           SQ01s:
             {}
+          SQ02s:
+            {}
+          SQ03s:
+            {}
+          SQ04s:
+            {}
+          SQ05s:
+            {}
+          SQ06s:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
       Class: rviz/PointStamped
       Color: 0; 255; 0
-      Enabled: true
+      Enabled: false
       History Length: 1
       Name: GTerm
       Queue Size: 10
       Radius: 0.20000000298023224
       Topic: /SQ01s/mader/point_G
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/PointStamped
       Color: 0; 255; 0
-      Enabled: true
+      Enabled: false
       History Length: 1
       Name: GTerm
       Queue Size: 10
       Radius: 0.20000000298023224
       Topic: /SQ02s/mader/point_G_term
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/PointStamped
       Color: 0; 255; 0
-      Enabled: true
+      Enabled: false
       History Length: 1
       Name: GTerm
       Queue Size: 10
       Radius: 0.20000000298023224
       Topic: /SQ03s/mader/point_G_term
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/PointStamped
       Color: 0; 255; 0
-      Enabled: true
+      Enabled: false
       History Length: 1
       Name: GTerm
       Queue Size: 10
       Radius: 0.20000000298023224
       Topic: /SQ04s/mader/point_G_term
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/PointStamped
       Color: 204; 41; 204
@@ -141,7 +164,18 @@ Visualization Manager:
       Name: G
       Queue Size: 10
       Radius: 0.20000000298023224
-      Topic: /SQ01s/cvx/point_G
+      Topic: /SQ02s/mader/point_G
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 115; 210; 22
+      Enabled: true
+      History Length: 1
+      Name: G
+      Queue Size: 10
+      Radius: 0.20000000298023224
+      Topic: /SQ03s/mader/point_G
       Unreliable: false
       Value: true
     - Class: rviz/Marker
@@ -149,7 +183,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/setpoint
       Name: Setpoint
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -175,13 +209,21 @@ Visualization Manager:
       VsColor: 0; 255; 0
       VsScale: 1
     - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /SQ01s/mader/obstacles
+      Enabled: false
+      Marker Topic: /SQ03s/mader/obstacles
       Name: Obstacles
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ02s/mader/obstacles
+      Name: Obstacle
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /SQ01s/mader/fov
@@ -289,61 +331,61 @@ Visualization Manager:
       top: 0
       width: 128
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ01s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ02s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ03s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ04s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ05s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ06s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ07s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /SQ08s/mader/traj_safe_colored
@@ -481,77 +523,77 @@ Visualization Manager:
       frame: SQ08s
       line_width: 0.10000000149011612
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ01s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ02s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ03s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ04s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ05s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ06s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ07s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ08s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ06s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /SQ07s/mader/actual_traj
@@ -864,9 +906,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4797971546649933
+      Pitch: 1.354796290397644
       Target Frame: <Fixed Frame>
-      Yaw: 4.664995193481445
+      Yaw: 4.719993591308594
     Saved:
       - Class: rviz/ThirdPersonFollower
         Distance: 16.45623207092285
@@ -986,5 +1028,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1747
-  X: 1997
-  Y: 665
+  X: 2009
+  Y: 150

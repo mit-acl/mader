@@ -612,13 +612,13 @@ struct parameters
   double kappa;
   double mu;
 
-  int a_star_samp_x = 7;
-  int a_star_samp_y = 7;
-  int a_star_samp_z = 7;
-  double a_star_fraction_voxel_size = 0.5;
-  bool allow_infeasible_guess = false;
+  int a_star_samp_x;
+  int a_star_samp_y;
+  int a_star_samp_z;
+  double a_star_fraction_voxel_size;
+  bool allow_infeasible_guess;
 
-  double a_star_bias = 1.0;
+  double a_star_bias;
 
   std::string basis;
 

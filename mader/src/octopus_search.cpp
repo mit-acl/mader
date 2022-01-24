@@ -212,10 +212,17 @@ void OctopusSearch::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector
   v_max_ = v_max;
   a_max_ = a_max;
 
+
+  // check if num samples are correct
+  std::cout << "num sample x is: " << num_samples_x << std::endl;
+  std::cout << "num sample y is: " << num_samples_y << std::endl;
+  std::cout << "num sample z is: " << num_samples_z << std::endl;
+
   // ensure they are odd numbers (so that vx=0 is included in the samples)
   num_samples_x_ = (num_samples_x % 2 == 0) ? ceil(num_samples_x) : num_samples_x;
   num_samples_y_ = (num_samples_y % 2 == 0) ? ceil(num_samples_y) : num_samples_y;
   num_samples_z_ = (num_samples_z % 2 == 0) ? ceil(num_samples_z) : num_samples_z;
+
 
   for (int i = 0; i < num_samples_x; i++)
   {
