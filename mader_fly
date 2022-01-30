@@ -58,8 +58,11 @@ tmux send-keys -t $SESSION:$w.7 "ssh nuc4@192.168.18.2" C-m
 tmux send-keys -t $SESSION:$w.9 "ssh nuc5@192.168.19.2" C-m
 tmux send-keys -t $SESSION:$w.11 "ssh nuc6@192.168.20.2" C-m
 
-# run mader hw_onboard
-tmux send-keys -t $SESSION:$w.1 "roslaunch mader hw_onboard.launch quad:=HX15" C-m
+# run mader hw_onboard and save termial data into txt files
+
+tmux send-keys -t $SESSION:$w.1 "my_date=$(date '+%Y_%m_%d_%H_%M_%S') (roscd mader && git rev-parse HEAD && git diff --color && cd ~/Research/bags/ &&
+ roslaunch mader hw_onboard.launch quad:=HX15) 2>&1 | tee ~Research/bags/mader_${my_date}.txt" 
+
 tmux send-keys -t $SESSION:$w.3 "roslaunch mader hw_onboard.launch quad:=HX16" C-m
 tmux send-keys -t $SESSION:$w.5 "roslaunch mader hw_onboard.launch quad:=HX17" C-m
 tmux send-keys -t $SESSION:$w.7 "roslaunch mader hw_onboard.launch quad:=HX18" C-m
