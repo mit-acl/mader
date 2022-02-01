@@ -3,6 +3,9 @@
 # this script creates multiple windows for fly and mader
 # referred to fly script used for voxl setup, which is in /extras
 
+# if deleting old data?
+DELETE="$1"
+
 # session name
 SESSION=mader
 WINDOW=base_station
@@ -50,6 +53,19 @@ tmux send-keys -t $SESSION:$w.7 "ssh nuc4@192.168.18.2" C-m
 tmux send-keys -t $SESSION:$w.9 "ssh nuc5@192.168.19.2" C-m
 tmux send-keys -t $SESSION:$w.11 "ssh nuc6@192.168.20.2" C-m
 
+sleep 1
+
+# run mader hw_onboard and save termial data into txt files
+
+if [[ DELETE ]]; then
+	tmux send-keys -t $SESSION:$w.1 "cd /home/nuc1/Research/bags && rm *.txt" C-m
+	tmux send-keys -t $SESSION:$w.3 "cd /home/nuc2/Research/bags && rm *.txt" C-m
+	tmux send-keys -t $SESSION:$w.5 "cd /home/nuc3/Research/bags && rm *.txt" C-m
+	tmux send-keys -t $SESSION:$w.7 "cd /home/nuc4/Research/bags && rm *.txt" C-m
+	tmux send-keys -t $SESSION:$w.9 "cd /home/nuc5/Research/bags && rm *.txt" C-m
+	tmux send-keys -t $SESSION:$w.11 "cd /home/nuc6/Research/bags && rm *.txt" C-m
+fi
+
 # run mader hw_onboard and save termial data into txt files
 
 tmux send-keys -t $SESSION:$w.1 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc1/Research/bags/ && roslaunch mader hw_onboard.launch quad:=HX15) 2>&1 | tee ~/Research/bags/hx15_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m #by using /home/nuc1/ instead of ~/, we can stop record data on sikorsky when we are not using the vehicle.
@@ -62,6 +78,8 @@ tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff
 # run the nuc connection command and fly command (fly script record related rostopics so the below command should be sent at last)
 for i in 0 2 4 6 8 10 
 do
+	tmux send-keys -t $SESSION:$w.$i "cd /data/bags && rm *.bag && rm *.active" C-m
+	sleep 1
 	tmux send-keys -t $SESSION:$w.$i "./nuc_voxl_connection" C-m
 	sleep 1
 	tmux send-keys -t $SESSION:$w.$i "fly" C-m
