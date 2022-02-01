@@ -78,12 +78,12 @@ tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff
 # run the nuc connection command and fly command (fly script record related rostopics so the below command should be sent at last)
 for i in 0 2 4 6 8 10 
 do
+	tmux send-keys -t $SESSION:$w.$i "./nuc_voxl_connection" C-m
+	sleep 1
 	if [[ $ifDELETE == 'true' ]]; then
 		tmux send-keys -t $SESSION:$w.$i "cd /data/bags && rm *.bag && rm *.active" C-m
 		sleep 1
 	fi
-	tmux send-keys -t $SESSION:$w.$i "./nuc_voxl_connection" C-m
-	sleep 1
 	tmux send-keys -t $SESSION:$w.$i "fly" C-m
 done
 
