@@ -42,14 +42,6 @@ tmux send-keys -t $SESSION:$w.10 "ssh root@hx20.local" C-m
 
 sleep 1
 
-# run the nuc connection command and fly command
-for i in 0 2 4 6 8 10 
-do
-	tmux send-keys -t $SESSION:$w.$i "./nuc_voxl_connection" C-m
-	sleep 1
-	tmux send-keys -t $SESSION:$w.$i "fly" C-m
-done
-
 # ssh each nuc
 tmux send-keys -t $SESSION:$w.1 "ssh nuc1@192.168.15.2" C-m
 tmux send-keys -t $SESSION:$w.3 "ssh nuc2@192.168.16.2" C-m
@@ -66,5 +58,13 @@ tmux send-keys -t $SESSION:$w.5 "(roscd mader && git rev-parse HEAD && git diff 
 tmux send-keys -t $SESSION:$w.7 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc4/Research/bags/ && roslaunch mader hw_onboard.launch quad:=HX18) 2>&1 | tee ~/Research/bags/hx18_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 tmux send-keys -t $SESSION:$w.9 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc5/Research/bags/ && roslaunch mader hw_onboard.launch quad:=HX19) 2>&1 | tee ~/Research/bags/hx19_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc6/Research/bags/ && roslaunch mader hw_onboard.launch quad:=HX20) 2>&1 | tee ~/Research/bags/hx20_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+
+# run the nuc connection command and fly command (fly script record related rostopics so the below command should be sent at last)
+for i in 0 2 4 6 8 10 
+do
+	tmux send-keys -t $SESSION:$w.$i "./nuc_voxl_connection" C-m
+	sleep 1
+	tmux send-keys -t $SESSION:$w.$i "fly" C-m
+done
 
 tmux -2 attach-session -t $SESSION
