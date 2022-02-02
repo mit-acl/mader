@@ -6,14 +6,14 @@ n_agents: 16 #only used for the color in the trajectory
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
 drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced by drone_bbox
-drone_bbox: [1.0, 1.0, 2.0] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
+drone_bbox: [0.9, 0.9, 2.0] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
 #w_max: 0.4           # [rd/s] Maximum angular velocity. 0.4 for Hardware
 w_max: 0.0
 
 alpha_filter_dyaw: 0.99 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
 
-Ra: 8.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
+Ra: 10.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
 #x_min: -1000000000.0  # [m] don't forget the .0
 #x_max: 10000000000.0  # [m] don't forget the .0
