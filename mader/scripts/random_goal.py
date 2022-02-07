@@ -67,7 +67,7 @@ class TermGoalSender:
         y_min = -3.5
         y_max = 4.25
         z_min = 1.0
-        z_max = 2.0
+        z_max = 3.0
 
         # set random goals
         self.term_goal.pose.position.x = x_min + (x_max - x_min) * random()
