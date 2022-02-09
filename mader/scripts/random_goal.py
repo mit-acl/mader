@@ -62,11 +62,11 @@ class TermGoalSender:
     def sendGoal(self):
 
         # highbay boundary
-        x_min = -4.25
-        x_max = 4.5
-        y_min = -3.5
-        y_max = 4.25
-        z_min = 1.0
+        x_min = -4.1
+        x_max = 4.1
+        y_min = -4.1
+        y_max = 4.1
+        z_min = 0.9
         z_max = 3.0
 
         # set random goals
