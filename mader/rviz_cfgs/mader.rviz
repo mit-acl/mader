@@ -7,8 +7,6 @@ Panels:
         - /Global Options1
         - /Grid1
         - /TF1/Frames1
-        - /G1
-        - /G2
         - /Setpoint1
         - /Obstacles1
         - /Obstacle1
@@ -158,6 +156,17 @@ Visualization Manager:
       Value: false
     - Alpha: 1
       Class: rviz/PointStamped
+      Color: 252; 175; 62
+      Enabled: true
+      History Length: 1
+      Name: G
+      Queue Size: 10
+      Radius: 0.20000000298023224
+      Topic: /SQ01s/mader/point_G
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
       Color: 204; 41; 204
       Enabled: true
       History Length: 1
@@ -178,12 +187,45 @@ Visualization Manager:
       Topic: /SQ03s/mader/point_G
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 117; 80; 123
+      Enabled: true
+      History Length: 1
+      Name: G
+      Queue Size: 10
+      Radius: 0.20000000298023224
+      Topic: /SQ04s/mader/point_G
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 46; 52; 54
+      Enabled: true
+      History Length: 1
+      Name: G
+      Queue Size: 10
+      Radius: 0.20000000298023224
+      Topic: /SQ05s/mader/point_G
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 143; 89; 2
+      Enabled: true
+      History Length: 1
+      Name: G
+      Queue Size: 10
+      Radius: 0.20000000298023224
+      Topic: /SQ06s/mader/point_G
+      Unreliable: false
+      Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /SQ01s/setpoint
       Name: Setpoint
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1028,5 +1070,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1747
-  X: 2009
-  Y: 113
+  X: 160
+  Y: 652
