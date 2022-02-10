@@ -36,15 +36,15 @@ z_max: 3.5  # [m] don't forget the .0
 
 #For single-agent simulations
 v_max: [4.0, 4.0, 4.0]   #[m/s]  7.0
-a_max: [10.0, 10.0, 10.0]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
-j_max: [12.0, 12.0, 12.0]   #[m/s3]  #Right now it's only used for Gurobi, not for NLOPT
+a_max: [8.0, 8.0, 8.0]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
+j_max: [10.0, 10.0, 10.0]   #[m/s3]  #Right now it's only used for Gurobi, not for NLOPT
 
-factor_alpha: 1.05 #[-] DeltaT = factor_alpha*States_took_previous_replan
+factor_alpha: 1.5 #[-] DeltaT = factor_alpha*States_took_previous_replan
 
 #Parameters for NLOPT
 num_pol: 4
 deg_pol: 3 #Only 3 is supported right now
-weight: 50.0 #The .0 is needed #1000.0 was default 
+weight: 1.0 #The .0 is needed #1000.0 was default 
 epsilon_tol_constraints: 0.000001
 xtol_rel: 0.0000000000001 #negative value --> stopping criterion not used
 ftol_rel: 0.0000000001 #negative value --> stopping criterion not used
@@ -58,8 +58,8 @@ solver: "LD_MMA"
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
 upper_bound_runtime_snlopt: 0.35 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
 lower_bound_runtime_snlopt: 0.05 #[seconds] snlopt (init guess + solver) will never take less than this amount of seconds
-kappa: 0.3 #% of time spent to find initial guess
-mu: 0.3    #% of time spent to solve the optimization
+kappa: 0.4 #% of time spent to find initial guess
+mu: 0.4    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
 a_star_samp_x: 3
