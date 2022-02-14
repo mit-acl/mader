@@ -44,7 +44,7 @@ factor_alpha: 1.5 #[-] DeltaT = factor_alpha*States_took_previous_replan
 #Parameters for NLOPT
 num_pol: 4
 deg_pol: 3 #Only 3 is supported right now
-weight: 5.0 #The .0 is needed #1000.0 was default 
+weight: 10.0 #The .0 is needed #1000.0 was default 
 epsilon_tol_constraints: 0.000001
 xtol_rel: 0.0000000000001 #negative value --> stopping criterion not used
 ftol_rel: 0.0000000001 #negative value --> stopping criterion not used
@@ -62,13 +62,13 @@ kappa: 0.4 #% of time spent to find initial guess
 mu: 0.4    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
-a_star_samp_x: 4
-a_star_samp_y: 4
-a_star_samp_z: 4
+a_star_samp_x: 5
+a_star_samp_y: 5
+a_star_samp_z: 5
 a_star_fraction_voxel_size: 0.5 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
 allow_infeasible_guess: true  #whether allow infeasible guesses to be used for the optimization. If false, straight line guess will be used in the case of an infeasible guess
 
-a_star_bias: 1.0 #Bias (cost=g+bias*h) in the A* search #default is 1.0
+a_star_bias: 0.5 #Bias (cost=g+bias*h) in the A* search #default is 1.0
 
 basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER.  This is the basis used for collision checking
 
