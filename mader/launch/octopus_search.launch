@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <launch>
 
 	<node pkg="mader" type="test_octopus_search" name="test_octopus_search" output="screen" >
@@ -5,5 +7,4 @@
 	</node>
 
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mader)/rviz_cfgs/octopus_search.rviz"/>
-
 </launch>
