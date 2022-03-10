@@ -71,25 +71,25 @@ class TermGoalSender:
         # set random goals
         if self.mode == 6:
             self.term_goal.pose.position.x = self.sign * -3
-            self.term_goal.pose.position.y = self.sign * 3.5
+            self.term_goal.pose.position.y = self.sign * 3
         elif self.mode == 5:
             self.term_goal.pose.position.x = self.sign * 0
-            self.term_goal.pose.position.y = self.sign * 3.5
+            self.term_goal.pose.position.y = self.sign * 3
         elif self.mode == 4:
             self.term_goal.pose.position.x = self.sign * 3
-            self.term_goal.pose.position.y = self.sign * 3.5
+            self.term_goal.pose.position.y = self.sign * 3
         elif self.mode == 3:
             self.term_goal.pose.position.x = self.sign * -3
-            self.term_goal.pose.position.y = self.sign * -3.5
+            self.term_goal.pose.position.y = self.sign * -3
         elif self.mode == 2:
             self.term_goal.pose.position.x = self.sign * 0
-            self.term_goal.pose.position.y = self.sign * -3.5
+            self.term_goal.pose.position.y = self.sign * -3
         elif self.mode == 1:
             self.term_goal.pose.position.x = self.sign * 3
-            self.term_goal.pose.position.y = self.sign * -3.5
+            self.term_goal.pose.position.y = self.sign * -3
 
 
-        self.term_goal.pose.position.z = 1.0 + 1.0 * random()
+        self.term_goal.pose.position.z = 1.5 + 1.0 * random()
 
         self.sign = self.sign * (-1)
 
