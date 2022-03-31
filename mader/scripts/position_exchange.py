@@ -34,6 +34,14 @@ class TermGoalSender:
         # state_pos init ()
         self.state_pos=np.array([0.0, 0.0, 0.0])
 
+        self.wpidx = 0
+        self.wps = np.array([
+                            [-3.0, 3.0, 1.5],
+                            [3.0, -3.0, 1.9],
+                            [-3.0, -3.0, 2.2],
+                            [3.0, 3.0, 1.6],
+                            ])
+
         # every 0.01 sec timerCB is called back
         self.timer = rospy.Timer(rospy.Duration(0.01), self.timerCB)
 
@@ -44,13 +52,6 @@ class TermGoalSender:
         self.time_init = rospy.get_rostime()
         self.total_secs = 60.0; # sec
 
-        self.wpidx = 0
-        self.wps = np.array([
-                            [-3.0, 3.0, 1.5],
-                            [3.0, -3.0, 1.9],
-                            [-3.0, -3.0, 2.2],
-                            [3.0, 3.0, 1.6],
-                            ])
 
     def timerCB(self, tmp):
         
