@@ -44,6 +44,14 @@ class TermGoalSender:
         self.time_init = rospy.get_rostime()
         self.total_secs = 60.0; # sec
 
+        self.wpidx = 0
+        self.wps = np.array([
+                            [-3.0, 3.0, 1.5],
+                            [3.0, -3.0, 1.9],
+                            [-3.0, -3.0, 2.2],
+                            [3.0, 3.0, 1.6],
+                            ])
+
     def timerCB(self, tmp):
         
         # term_goal in array form
@@ -69,29 +77,34 @@ class TermGoalSender:
 
 
         # set random goals
-        if self.mode == 6:
-            self.term_goal.pose.position.x = self.sign * -3
-            self.term_goal.pose.position.y = self.sign * 3
-        elif self.mode == 5:
-            self.term_goal.pose.position.x = self.sign * 0
-            self.term_goal.pose.position.y = self.sign * 3
-        elif self.mode == 4:
-            self.term_goal.pose.position.x = self.sign * 3
-            self.term_goal.pose.position.y = self.sign * 3
-        elif self.mode == 3:
-            self.term_goal.pose.position.x = self.sign * -3
-            self.term_goal.pose.position.y = self.sign * -3
-        elif self.mode == 2:
-            self.term_goal.pose.position.x = self.sign * 0
-            self.term_goal.pose.position.y = self.sign * -3
-        elif self.mode == 1:
-            self.term_goal.pose.position.x = self.sign * 3
-            self.term_goal.pose.position.y = self.sign * -3
+        # if self.mode == 6:
+        #     self.term_goal.pose.position.x = self.sign * -3
+        #     self.term_goal.pose.position.y = self.sign * 3
+        # elif self.mode == 5:
+        #     self.term_goal.pose.position.x = self.sign * 0
+        #     self.term_goal.pose.position.y = self.sign * 3
+        # elif self.mode == 4:
+        #     self.term_goal.pose.position.x = self.sign * 3
+        #     self.term_goal.pose.position.y = self.sign * 3
+        # elif self.mode == 3:
+        #     self.term_goal.pose.position.x = self.sign * -3
+        #     self.term_goal.pose.position.y = self.sign * -3
+        # elif self.mode == 2:
+        #     self.term_goal.pose.position.x = self.sign * 0
+        #     self.term_goal.pose.position.y = self.sign * -3
+        # elif self.mode == 1:
+        #     self.term_goal.pose.position.x = self.sign * 3
+        #     self.term_goal.pose.position.y = self.sign * -3
+
+        self.term_goal.pose.position.x = self.wps[self.wpidx,0]
+        self.term_goal.pose.position.y = self.wps[self.wpidx,1]
+        self.term_goal.pose.position.z = self.wps[self.wpidx,2]
+        self.wpidx = (self.wpidx + 1) % len(self.wps)
 
 
-        self.term_goal.pose.position.z = 1.5 + 1.0 * random()
+        # self.term_goal.pose.position.z = 1.5 + 1.0 * random()
 
-        self.sign = self.sign * (-1)
+        # self.sign = self.sign * (-1)
 
         self.pubTermGoal.publish(self.term_goal)      
 
