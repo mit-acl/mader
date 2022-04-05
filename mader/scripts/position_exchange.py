@@ -102,9 +102,8 @@ class TermGoalSender:
             self.term_goal.pose.position.z = self.wps[self.wpidx,2]
             self.wpidx = (self.wpidx + 1) % len(self.wps)
 
-        # self.term_goal.pose.position.z = 1.5 + 1.0 * random()
-
-        # self.sign = self.sign * (-1)
+        self.term_goal.pose.position.z = 1.5 + 1.0 * random()
+        self.sign = self.sign * (-1)
 
         self.pubTermGoal.publish(self.term_goal)      
 
