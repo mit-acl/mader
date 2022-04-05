@@ -105,7 +105,7 @@ This package uses some C++ classes from the [DecompROS](https://github.com/sikan
 
 ## Hardware experiments procedure
 
-1. `./goal_send pos/ran` (argument pos: position exchange, ran: random waypoints)
+1. `./goal pos/ran` (argument pos: position exchange, ran: random waypoints)
 2. `./mader_fly`
 3. check if all the mader hw_onboard is running onboard
 4. check if vicon values are appropriate
