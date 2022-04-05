@@ -30,10 +30,13 @@ def main(argv):
 
     Time = range(time)
     fig=plt.figure()
+    size = len(argv)
+    png_name = argv[:size-4]+'.png'
     plt.plot(Time, data)
     plt.xlabel("time [s]")
     plt.ylabel("CPU usage %")
     plt.grid(color='black', alpha=0.2, linewidth=0.5)
+    plt.savefig(png_name)
     fig.suptitle("CPU usage")    
     plt.show()
 
