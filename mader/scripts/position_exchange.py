@@ -77,7 +77,7 @@ class TermGoalSender:
     def sendGoal(self):
 
 
-        set random goals
+        # set random goals
         if self.mode == 6:
             self.term_goal.pose.position.x = self.sign * -3
             self.term_goal.pose.position.y = self.sign * 3
