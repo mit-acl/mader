@@ -103,6 +103,16 @@ sudo cp libgurobi_c++.a ../../lib/
 ## Credits:
 This package uses some C++ classes from the [DecompROS](https://github.com/sikang/DecompROS) repo (included in the `thirdparty` folder).
 
+## Hardware experiments procedure
+
+1. `./goal_send pos/ran` (argument pos: position exchange, ran: random waypoints)
+2. `./mader_fly`
+3. check if all the mader hw_onboard is running onboard
+4. check if vicon values are appropriate
+5. in tmux windows opened by ./goal_send `setw synchronus-pane`
+6. arm drones
+7. (optional) video recording
+8. after flight, disarm drones and stop video recording
 
 ---------
 
