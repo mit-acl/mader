@@ -34,6 +34,7 @@ class TermGoalSender:
         # state_pos init ()
         self.state_pos=np.array([0.0, 0.0, 0.0])
 
+        # waypoints
         self.wpidx = 0
         self.wps = np.array([
                             [-3.0, 3.0, 1.5],
@@ -42,7 +43,11 @@ class TermGoalSender:
                             [3.0, 3.0, 1.6],
                             ])
 
+        # every 10 sec change goals
+        rospy.Timer(rospy.Duration(10.0), self.change_goal)
+
         # every 0.01 sec timerCB is called back
+        self.is_change_goal = True
         self.timer = rospy.Timer(rospy.Duration(0.01), self.timerCB)
 
         # send goal
@@ -52,6 +57,9 @@ class TermGoalSender:
         self.time_init = rospy.get_rostime()
         self.total_secs = 60.0; # sec
 
+    def change_goal(self, tmp):
+        self.is_change_goal = True
+        
 
     def timerCB(self, tmp):
         
@@ -68,6 +76,13 @@ class TermGoalSender:
             if not self.is_home:
                 self.sendGoal()
 
+        # every 10 seconds change the goal (to avoid stuck issue)
+        if (self.is_change_goal):
+            if not self.is_home:
+                self.is_change_goal = False
+                print("changed goal every 10 sec")
+                self.sendGoal()
+
         # check if we should go home
         duration = rospy.get_rostime() - self.time_init
         if (duration.to_sec() > self.total_secs):
@@ -75,7 +90,6 @@ class TermGoalSender:
             self.sendGoalHome()
 
     def sendGoal(self):
-
 
         # # set random goals (exact position exchange, this could lead to drones going to exact same locations)
         # if self.mode == 6:
@@ -102,7 +116,6 @@ class TermGoalSender:
         #     self.term_goal.pose.position.z = self.wps[self.wpidx,2]
         #     self.wpidx = (self.wpidx + 1) % len(self.wps)
 
-
         # set random goals ()
         if self.mode == 6:
             self.term_goal.pose.position.x = self.sign * -3
@@ -127,10 +140,6 @@ class TermGoalSender:
             self.term_goal.pose.position.y = self.wps[self.wpidx,1]
             self.term_goal.pose.position.z = self.wps[self.wpidx,2]
             self.wpidx = (self.wpidx + 1) % len(self.wps)
-
-
-
-
 
         self.term_goal.pose.position.z = 1.5 + 1.0 * random()
         self.sign = self.sign * (-1)
