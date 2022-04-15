@@ -633,6 +633,8 @@ struct parameters
   double alpha = 0.0;
   double beta = 0.0;
   double gamma = 0.5;
+
+  bool is_stuck = false;
 };
 
 typedef std::vector<mt::state> trajectory;

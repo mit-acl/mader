@@ -104,7 +104,8 @@ int main()
   my_solver.setHulls(hulls_std);
 
   std::cout << "Calling optimize" << std::endl;
-  bool converged = my_solver.optimize();
+  bool is_stuck;
+  bool converged = my_solver.optimize(is_stuck);
 
   // double time_needed = my_solver.getTimeNeeded();
   double delta = (t_max - t_min) / num_pol;

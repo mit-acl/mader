@@ -317,13 +317,26 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
 std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj, double t_start, double t_end)
 {
   Eigen::Vector3d delta = Eigen::Vector3d::Zero();
+  Eigen::Vector3d v(0.1, 0.1, 0.1);
+  Eigen::Vector3d drone_boundarybox;
   if (traj.is_agent == false)
   {
     std::vector<Eigen::Vector3d> points;
     // delta = traj.bbox / 2.0 + (par_.drone_radius + par_.beta + par_.alpha) *
     //                            Eigen::Vector3d::Ones();  // every side of the box will be increased by 2*delta
     //(+delta on one end, -delta on the other)
-    delta = traj.bbox / 2.0 + par_.drone_bbox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
+
+    if (par_.is_stuck){
+      drone_boundarybox = par_.drone_bbox - v; 
+    } else {
+      drone_boundarybox = par_.drone_bbox;
+    }
+
+    delta = traj.bbox / 2.0 + drone_boundarybox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
+    std::cout << "boundary box size" << std::endl;
+    std::cout << drone_boundarybox[0] << std::endl;
+    std::cout << drone_boundarybox[1] << std::endl;
+    std::cout << drone_boundarybox[2] << std::endl;
 
     // Will always have a sample at the beginning of the interval, and another at the end.
     for (double t = t_start;                           /////////////
@@ -356,7 +369,19 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
   {  // is an agent --> use the pwp field
 
     // delta = traj.bbox / 2.0 + (par_.drone_radius) * Eigen::Vector3d::Ones();
-    delta = traj.bbox / 2.0 + par_.drone_bbox / 2.0;  // instad of using drone_radius
+    // delta = traj.bbox / 2.0 + par_.drone_bbox / 2.0;  // instad of using drone_radius
+
+    if (par_.is_stuck){
+      drone_boundarybox = par_.drone_bbox - v; 
+    } else {
+      drone_boundarybox = par_.drone_bbox;
+    }
+
+    delta = traj.bbox / 2.0 + drone_boundarybox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
+    std::cout << "boundary box size" << std::endl;
+    std::cout << drone_boundarybox[0] << std::endl;
+    std::cout << drone_boundarybox[1] << std::endl;
+    std::cout << drone_boundarybox[2] << std::endl;
 
     // std::cout << "****traj.bbox = " << traj.bbox << std::endl;
     // std::cout << "****par_.drone_radius = " << par_.drone_radius << std::endl;
@@ -868,7 +893,16 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   std::cout << "[FA] Calling NL" << std::endl;
 
-  bool result = solver_->optimize();  // calling the solver
+  bool is_stuck;
+  bool result = solver_->optimize(is_stuck);  // calling the solver
+  
+  // check if drones are stuck or not
+  if (is_stuck){
+    par_.is_stuck = true;
+    return false; //abort mader
+  } else {
+    par_.is_stuck = false;
+  }
 
   num_of_LPs_run = solver_->getNumOfLPsRun();
   num_of_QCQPs_run = solver_->getNumOfQCQPsRun();

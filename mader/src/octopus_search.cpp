@@ -212,7 +212,6 @@ void OctopusSearch::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector
   v_max_ = v_max;
   a_max_ = a_max;
 
-
   // check if num samples are correct
   // std::cout << "num sample x is: " << num_samples_x << std::endl;
   // std::cout << "num sample y is: " << num_samples_y << std::endl;
@@ -749,8 +748,8 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
       if (solved == false)
       {
         ////////////////////////////// For debugging
-        // std::cout << red << "\nThis does NOT satisfy the LP:  obstacle= " << obst_index
-        //          << ", last index=" << index_interv + 3 << reset << std::endl;
+        std::cout << red << "\nThis does NOT satisfy the LP:  obstacle= " << obst_index
+                 << ", last index=" << index_interv + 3 << reset << std::endl;
 
         // std::cout << " (in basis_ form)" << std::endl;
 
@@ -861,7 +860,7 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
     // }
     if ((ai.array() > epsilon * a_max_.array()).any() || (ai.array() < -epsilon * a_max_.array()).any())
     {
-      // std::cout << red << "acceleration constraints are not satisfied" << reset << std::endl;
+      std::cout << red << "acceleration constraints are not satisfied" << reset << std::endl;
       // std::cout << "ai= " << ai.transpose() << std::endl;
       // std::cout << "i= " << i << std::endl;
       // std::cout << "N_=" << N_ << std::endl;
@@ -1035,7 +1034,7 @@ exit:
   return (!satisfies_LP);
 }
 
-bool OctopusSearch::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d)
+bool OctopusSearch::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d, bool & is_stuck)
 {
   /////////// reset some stuff
   // stores the closest node found
@@ -1241,6 +1240,8 @@ exitloop:
 
   bool have_a_solution = (complete_closest_result_so_far_ptr_ != NULL) || (closest_result_so_far_ptr_ != NULL);
 
+  is_stuck = false;
+
   if (status == GOAL_REACHED)
   {
     std::cout << "[A*] choosing current_ptr as solution" << std::endl;
@@ -1265,6 +1266,21 @@ exitloop:
     {
       std::cout << "[A*] choosing closest path as solution" << std::endl;
       best_node_ptr = closest_result_so_far_ptr_;
+
+      // check if drones are stuck
+      auto first_node = expanded_valid_nodes_.front();
+      auto last_node = expanded_valid_nodes_.back();
+      // std::cout << "first node" << std::endl;
+      // std::cout << first_node.qi << std::endl;
+      // std::cout << "last node" << std::endl;
+      // std::cout << last_node.qi << std::endl;
+
+      double e = 10e-5; //arbitrary threshold value
+      Eigen::Vector3d diff = first_node.qi - last_node.qi;
+      if (status == EMPTY_OPENLIST && diff.norm() < e){
+        is_stuck = true;
+        std::cout << "[A*] drones are stuck, make bbox smaller" << std::endl; 
+      }
     }
   }
   else

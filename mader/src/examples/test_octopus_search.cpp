@@ -324,7 +324,12 @@ int main(int argc, char** argv)
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
-  bool solved = myAStarSolver.run(q, n, d);
+  bool is_stuck;
+  bool solved = myAStarSolver.run(q, n, d, is_stuck);
+
+  if (is_stuck){
+    std::cout << "drones are stuck" << std::endl;
+  }
 
   // Recover all the trajectories found and the best trajectory
   std::vector<mt::trajectory> all_trajs_found;

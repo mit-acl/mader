@@ -76,7 +76,7 @@ public:
 
   void setBias(double bias);
 
-  bool run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d);
+  bool run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d, bool& is_stuck);
 
   void recoverPath(Node* node1_ptr);
 
