@@ -77,11 +77,11 @@ class TermGoalSender:
                 self.sendGoal()
 
         # every 10 seconds change the goal (to avoid stuck issue)
-        if (self.is_change_goal):
-            if not self.is_home:
-                self.is_change_goal = False
-                print("changed goal every 10 sec")
-                self.sendGoal()
+        # if (self.is_change_goal):
+        #     if not self.is_home:
+        #         self.is_change_goal = False
+        #         print("changed goal every 10 sec")
+        #         self.sendGoal()
 
         # check if we should go home
         duration = rospy.get_rostime() - self.time_init
