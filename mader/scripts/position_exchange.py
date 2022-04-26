@@ -91,7 +91,7 @@ class TermGoalSender:
 
     def sendGoal(self):
 
-        # # set random goals (exact position exchange, this could lead to drones going to exact same locations)
+        # set random goals (exact position exchange, this could lead to drones going to exact same locations)
         # if self.mode == 6:
         #     self.term_goal.pose.position.x = self.sign * -3
         #     self.term_goal.pose.position.y = self.sign * 3
