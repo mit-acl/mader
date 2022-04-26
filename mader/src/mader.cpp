@@ -317,8 +317,8 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
 std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj, double t_start, double t_end)
 {
   Eigen::Vector3d delta = Eigen::Vector3d::Zero();
-  Eigen::Vector3d v(0.1, 0.1, 0.1);
-  Eigen::Vector3d drone_boundarybox;
+  Eigen::Vector3d drone_boundarybox = par_.drone_bbox;
+  
   if (traj.is_agent == false)
   {
     std::vector<Eigen::Vector3d> points;
@@ -326,11 +326,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
     //                            Eigen::Vector3d::Ones();  // every side of the box will be increased by 2*delta
     //(+delta on one end, -delta on the other)
 
-    if (par_.is_stuck){
-      drone_boundarybox = par_.drone_bbox - v; 
-    } else {
-      drone_boundarybox = par_.drone_bbox;
-    }
+    changeBBox(drone_boundarybox);
 
     delta = traj.bbox / 2.0 + drone_boundarybox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
     std::cout << "boundary box size" << std::endl;
@@ -371,11 +367,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
     // delta = traj.bbox / 2.0 + (par_.drone_radius) * Eigen::Vector3d::Ones();
     // delta = traj.bbox / 2.0 + par_.drone_bbox / 2.0;  // instad of using drone_radius
 
-    if (par_.is_stuck){
-      drone_boundarybox = par_.drone_bbox - v; 
-    } else {
-      drone_boundarybox = par_.drone_bbox;
-    }
+    changeBBox(drone_boundarybox);
 
     delta = traj.bbox / 2.0 + drone_boundarybox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
     std::cout << "boundary box size" << std::endl;
@@ -389,6 +381,56 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
 
     return vertexesOfInterval(traj.pwp, t_start, t_end, delta);
   }
+}
+
+void Mader::changeBBox(Eigen::Vector3d& drone_boundarybox){
+
+  Eigen::Vector3d v(1e-5, 1e-5, 1e-5); // how much you make the box small?
+  Eigen::Vector3d bbox_min_possible(par_.drone_bbox[0]-0.01, par_.drone_bbox[1]-0.01, par_.drone_bbox[2]-0.01);
+  // double bbox_change_time = 1; //seconds, used for timer
+  double unstuck_dist = 1.0; //meters
+  Eigen::Vector3d dist(1e5, 1e5, 1e5); //random big numer, need to initialized before used 
+
+  if (par_.is_stuck || if_bbox_change_){
+
+      if (!if_bbox_change_){
+        // timer_bbox_.Reset(); // start timer
+        stuck_state_for_bbox_ = state_; // get the current position 
+        // measure the progress
+      }
+
+      dist = state_.pos - stuck_state_for_bbox_.pos;
+      // std::cout << "boundary box change" << std::endl;
+      // std::cout << "dist is " << dist << std::endl;
+      // std::cout << "state_ is " << state_.pos << std::endl;
+      // std::cout << "stuck_state_for_bbox_ is " << stuck_state_for_bbox_.pos << std::endl;
+
+      // if (timer_bbox_.ElapsedMs() < bbox_change_time * 1000){ //using timer
+      // if (!par_.is_stuck){ // TODO: measure the progress like position and if the drone moves certain distance, put the bbox size back 
+
+      if (dist.norm() < unstuck_dist){
+        drone_boundarybox = par_.drone_bbox - (stuck_count_for_bbox_ + 1) * v;
+        // std::cout << "drone_bbox[0] is " << drone_boundarybox[0] << std::endl;
+        // std::cout << "drone_bbox[1] is " << drone_boundarybox[1] << std::endl;
+        // std::cout << "drone_bbox[2] is " << drone_boundarybox[2] << std::endl;
+
+        for(int i = 0; i < 3; i++){
+          drone_boundarybox[i] = std::max(drone_boundarybox[i], bbox_min_possible[i]);
+        };
+        // std::cout << "using smaller bbox" << std::endl;
+        // std::cout << "stuck count is " << stuck_count_for_bbox_ << std::endl;
+        // std::cout << "par_.is_stuck is " << par_.is_stuck << std::endl;
+        stuck_count_for_bbox_ = stuck_count_for_bbox_ + 1;
+        if_bbox_change_ = true;         
+      } else {
+        stuck_count_for_bbox_ = 0;
+        if_bbox_change_ = false;
+      }
+    } else {
+      drone_boundarybox = par_.drone_bbox;
+      stuck_count_for_bbox_ = 0;
+    }
+
 }
 
 // See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
@@ -564,6 +606,60 @@ void Mader::setTerminalGoal(mt::state& term_goal)
 void Mader::getG(mt::state& G)
 {
   G = G_;
+}
+
+// in case drones are stuck we need a new G to detour
+void Mader::getDetourG()
+{
+  Eigen::Vector2d v = G_when_stuck_.pos.head(2) - stuck_state_.pos.head(2);
+  Eigen::Vector2d v2;
+  // v2 << v[1], -v[0]; // rotate a vector negative 90 deg
+  // v2 << -v[0], -v[1]; // rotate a vector 180 deg
+  v2 = RotationMatrix(v,-135 * M_PI / 180); // rotate a vector -135 deg
+  v2.normalize();
+
+  double v2_mag = 2.5 * par_.drone_bbox[0];
+  // G.pos.head(2) = G.pos.head(2) + v2_mag * v2; // for -90deg rotatoin
+  // G.pos.head(2) = stuck_state_.pos.head(2) + v2_mag * v2; // for 180 deg rotation
+  detoured_G_.pos.head(2) = stuck_state_.pos.head(2) + v2_mag * v2;
+  detoured_G_.pos[2] = G_when_stuck_.pos[2];
+
+  // if new G is outside of highbay boundary, the project new G to highbay boundary
+  if (detoured_G_.pos[0] > par_.x_max - par_.drone_bbox[0]) {
+    detoured_G_.pos[0] = par_.x_max - par_.drone_bbox[0];
+  }
+  if (detoured_G_.pos[0] < par_.x_min + par_.drone_bbox[0]) {
+    detoured_G_.pos[0] = par_.x_min + par_.drone_bbox[0];
+  } 
+
+  if (detoured_G_.pos[1] > par_.y_max - par_.drone_bbox[1]) {
+    detoured_G_.pos[1] = par_.y_max - par_.drone_bbox[1];
+  }
+  if (detoured_G_.pos[1] < par_.y_min + par_.drone_bbox[1]) {
+    detoured_G_.pos[1] = par_.y_min + par_.drone_bbox[1];
+  } 
+
+  //     
+  //      new G
+  //        ^
+  //        |            
+  //        |            
+  //     v2 | magnitude is v2_mag            
+  //        |            
+  //        |            
+  //        |            v          
+  //        G <----------------------- A (drone's current initial planning position)
+  // 
+  // 
+
+}
+
+Eigen::Vector2d Mader::RotationMatrix(Eigen::Vector2d& vec, const double& angle){
+  // angle is radian
+  Eigen::Vector2d vec2;
+  vec2[0] = cos(angle)*vec[0] - sin(angle)*vec[1];
+  vec2[1] = sin(angle)*vec[0] + cos(angle)*vec[1];
+  return vec2;  
 }
 
 void Mader::getState(mt::state& data)
@@ -830,7 +926,52 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   double distA2TermGoal = (G_term.pos - A.pos).norm();
   double ra = std::min((distA2TermGoal - 0.001), par_.Ra);  // radius of the sphere S
   mt::state G;
-  G.pos = A.pos + ra * (G_term.pos - A.pos).normalized();
+  G.pos = A.pos + ra * (G_term.pos - A.pos).normalized(); 
+  Eigen::Vector3d dist_prog(1e5, 1e5, 1e5);
+  Eigen::Vector3d dist_to_goal(1e5, 1e5, 1e5);
+  Eigen::Vector3d dist_from_state__to_goal(1e5, 1e5, 1e5);
+  double unstuck_dist = 2.0; //meters
+  double reached_goal_dist = 0.3;
+  double how_much_to_detoured_G = 0.5; //0.1 means 10%
+
+  // double detour_max_time = 5; //seconds, how long want to detour
+  
+  if (par_.is_stuck || if_detour_){
+    
+    if (par_.is_stuck && !if_detour_){
+      // timer_detour_.Reset();
+      stuck_state_ = state_;
+      A_when_stuck_ = A;
+      G_when_stuck_ = G;
+    }
+
+    dist_prog = state_.pos - stuck_state_.pos;
+    dist_to_goal = detoured_G_.pos - stuck_state_.pos;
+    dist_from_state__to_goal = detoured_G_.pos - state_.pos;
+
+    std::cout << "dist_prog is " << dist_prog << std::endl;
+    std::cout << "state_.pos is " << state_.pos << std::endl;
+    std::cout << "stuck_state_.pos is " << stuck_state_.pos << std::endl;
+
+    //if (timer_detour_.ElapsedMs() < detour_max_time * 1000){
+    if (dist_from_state__to_goal.norm() > reached_goal_dist &&
+     dist_prog.norm() < unstuck_dist && 
+     dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
+      getDetourG(); // if stuck, make a new G for detour
+      G = detoured_G_;
+      std::cout << "using detoured G" << std::endl;
+      stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
+      if_detour_ = true;
+      if (stuck_count_for_detour_ > 5000){
+        if_detour_ = false; // maybe the detour G is also causing stuck, so go back to the original one
+      }
+    } else {
+      stuck_count_for_detour_ = 0;
+      if_detour_ = false;
+      std::cout << "stop using detoured G" << std::endl;
+      std::cout << "dist_prog.norm() is " << dist_prog.norm() << std::endl;
+    } 
+  }
 
   mt::state initial = A;
   mt::state final = G;

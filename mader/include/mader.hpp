@@ -53,11 +53,13 @@ public:
   bool getNextGoal(mt::state& next_goal);
   void getState(mt::state& data);
   void getG(mt::state& G);
+  void getDetourG();
   void setTerminalGoal(mt::state& term_goal);
   void resetInitialization();
 
   bool IsTranslating();
   void updateTrajObstacles(mt::dynTraj traj);
+  Eigen::Vector2d RotationMatrix(Eigen::Vector2d& vec, const double& angle);
 
 private:
   mt::state M_;
@@ -89,6 +91,8 @@ private:
                                                   const Eigen::Vector3d& delta_inflation);
   std::vector<Eigen::Vector3d> vertexesOfInterval(mt::dynTrajCompiled& traj, double t_start, double t_end);
   void yaw(double diff, mt::state& next_goal);
+
+  void changeBBox(Eigen::Vector3d& drone_boundarybox);
 
   void getDesiredYaw(mt::state& next_goal);
 
@@ -141,8 +145,11 @@ private:
   mt::state stateA_;  // It's the initial condition for the solver
 
   mt::state state_;
+  mt::state stuck_state_;
+  mt::state stuck_state_for_bbox_;
   mt::state G_;       // This goal is always inside of the map
   mt::state G_term_;  // This goal is the clicked goal
+  mt::state detoured_G_;
 
   int solutions_found_ = 0;
   int total_replannings_ = 0;
@@ -156,6 +163,20 @@ private:
   bool have_received_trajectories_while_checking_ = false;
 
   double time_init_opt_;
+
+  bool if_detour_ = false;
+
+  MyTimer timer_detour_;
+
+  mt::state A_when_stuck_;
+  mt::state G_when_stuck_;
+
+  bool if_bbox_change_ = false;
+
+  MyTimer timer_bbox_;
+
+  int stuck_count_for_bbox_ = 0;
+  int stuck_count_for_detour_ = 0;
 
   // double av_improvement_nlopt_ = 0.0;
 

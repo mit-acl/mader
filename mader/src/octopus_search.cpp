@@ -1241,11 +1241,13 @@ exitloop:
   bool have_a_solution = (complete_closest_result_so_far_ptr_ != NULL) || (closest_result_so_far_ptr_ != NULL);
 
   is_stuck = false;
+  int how_many_failure_to_detect_stuck = 10;
 
   if (status == GOAL_REACHED)
   {
     std::cout << "[A*] choosing current_ptr as solution" << std::endl;
     best_node_ptr = current_ptr;
+    stuck_count_ = 0;
   }
   else if ((status == RUNTIME_REACHED || status == EMPTY_OPENLIST) && have_a_solution)
   {
@@ -1261,6 +1263,15 @@ exitloop:
       best_node_ptr = complete_closest_result_so_far_ptr_;
       std::cout << bold << blue << "complete_closest_dist_so_far_= " << complete_closest_dist_so_far_ << reset
                 << std::endl;
+      stuck_count_ = 0;
+
+      auto first_node = expanded_valid_nodes_.front();
+      auto last_node = expanded_valid_nodes_.back();
+      std::cout << "first node" << std::endl;
+      std::cout << first_node.qi << std::endl;
+      std::cout << "last node" << std::endl;
+      std::cout << last_node.qi << std::endl;
+
     }
     else
     {
@@ -1275,11 +1286,16 @@ exitloop:
       // std::cout << "last node" << std::endl;
       // std::cout << last_node.qi << std::endl;
 
-      double e = 10e-5; //arbitrary threshold value
+      double e = 1e-10; //arbitrary threshold value
       Eigen::Vector3d diff = first_node.qi - last_node.qi;
       if (status == EMPTY_OPENLIST && diff.norm() < e){
-        is_stuck = true;
+        stuck_count_ = stuck_count_ + 1;
+        if (stuck_count_ >= how_many_failure_to_detect_stuck){ 
+          is_stuck = true;
+        }
         std::cout << "[A*] drones are stuck, make bbox smaller" << std::endl; 
+      } else {
+        stuck_count_ = 0;
       }
     }
   }

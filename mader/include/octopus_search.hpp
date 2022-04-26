@@ -236,6 +236,8 @@ private:
   // SolverCvxgen cvxgen_solver_;
 
   double alpha_shrink_;
+
+  int stuck_count_ = 0;
 };
 
 #endif
