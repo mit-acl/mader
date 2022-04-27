@@ -1304,12 +1304,12 @@ exitloop:
 
   if (isFeasible == false && path_found_is_not_complete == false)
   {
-    std::cout << red << "This should never happen: All complete paths are guaranteed to be feasible" << reset
-              << std::endl;
+    // std::cout << red << "This should never happen: All complete paths are guaranteed to be feasible" << reset
+    //           << std::endl;
 
-    std::cout << red << "=====================================================" << std::endl;
+    // std::cout << red << "=====================================================" << std::endl;
 
-    abort();
+    // abort();
   }
 
   return isFeasible;
