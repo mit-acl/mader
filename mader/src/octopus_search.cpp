@@ -1241,7 +1241,7 @@ exitloop:
   bool have_a_solution = (complete_closest_result_so_far_ptr_ != NULL) || (closest_result_so_far_ptr_ != NULL);
 
   is_stuck = false;
-  int how_many_failure_to_detect_stuck = 10;
+  int how_many_failure_to_detect_stuck = 5;
 
   if (status == GOAL_REACHED)
   {
@@ -1271,24 +1271,24 @@ exitloop:
       std::cout << first_node.qi << std::endl;
       std::cout << "last node" << std::endl;
       std::cout << last_node.qi << std::endl;
-
     }
     else
     {
       std::cout << "[A*] choosing closest path as solution" << std::endl;
       best_node_ptr = closest_result_so_far_ptr_;
+    }
 
-      // check if drones are stuck
-      auto first_node = expanded_valid_nodes_.front();
-      auto last_node = expanded_valid_nodes_.back();
-      // std::cout << "first node" << std::endl;
-      // std::cout << first_node.qi << std::endl;
-      // std::cout << "last node" << std::endl;
-      // std::cout << last_node.qi << std::endl;
+    // check if drones are stuck
+    auto first_node = expanded_valid_nodes_.front();
+    auto last_node = expanded_valid_nodes_.back();
+    // std::cout << "first node" << std::endl;
+    // std::cout << first_node.qi << std::endl;
+    // std::cout << "last node" << std::endl;
+    // std::cout << last_node.qi << std::endl;
+    double e = 1e-10; //arbitrary threshold value
+    Eigen::Vector3d diff = first_node.qi - last_node.qi;
 
-      double e = 1e-10; //arbitrary threshold value
-      Eigen::Vector3d diff = first_node.qi - last_node.qi;
-      if (status == EMPTY_OPENLIST && diff.norm() < e){
+    if (status == EMPTY_OPENLIST){ // && diff.norm() < e){
         stuck_count_ = stuck_count_ + 1;
         if (stuck_count_ >= how_many_failure_to_detect_stuck){ 
           is_stuck = true;
@@ -1297,7 +1297,6 @@ exitloop:
       } else {
         stuck_count_ = 0;
       }
-    }
   }
   else
   {

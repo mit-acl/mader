@@ -54,6 +54,7 @@ public:
   void getState(mt::state& data);
   void getG(mt::state& G);
   void getDetourG();
+  void moveAback(mt::state& A);
   void setTerminalGoal(mt::state& term_goal);
   void resetInitialization();
 
@@ -177,6 +178,8 @@ private:
 
   int stuck_count_for_bbox_ = 0;
   int stuck_count_for_detour_ = 0;
+
+  bool if_A_moveback_ = false;
 
   // double av_improvement_nlopt_ = 0.0;
 

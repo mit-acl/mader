@@ -386,7 +386,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
 void Mader::changeBBox(Eigen::Vector3d& drone_boundarybox){
 
   Eigen::Vector3d v(1e-5, 1e-5, 1e-5); // how much you make the box small?
-  Eigen::Vector3d bbox_min_possible(par_.drone_bbox[0]-0.01, par_.drone_bbox[1]-0.01, par_.drone_bbox[2]-0.01);
+  Eigen::Vector3d bbox_min_possible(par_.drone_bbox[0]-0.02, par_.drone_bbox[1]-0.02, par_.drone_bbox[2]-0.02);
   // double bbox_change_time = 1; //seconds, used for timer
   double unstuck_dist = 1.0; //meters
   Eigen::Vector3d dist(1e5, 1e5, 1e5); //random big numer, need to initialized before used 
@@ -618,7 +618,7 @@ void Mader::getDetourG()
   v2 = RotationMatrix(v,-135 * M_PI / 180); // rotate a vector -135 deg
   v2.normalize();
 
-  double v2_mag = 2.5 * par_.drone_bbox[0];
+  double v2_mag = 4.0 * par_.drone_bbox[0];
   // G.pos.head(2) = G.pos.head(2) + v2_mag * v2; // for -90deg rotatoin
   // G.pos.head(2) = stuck_state_.pos.head(2) + v2_mag * v2; // for 180 deg rotation
   detoured_G_.pos.head(2) = stuck_state_.pos.head(2) + v2_mag * v2;
@@ -652,6 +652,12 @@ void Mader::getDetourG()
   // 
   // 
 
+}
+
+void Mader::moveAback(mt::state& A){
+  Eigen::Vector2d v = G_when_stuck_.pos.head(2) - stuck_state_.pos.head(2);
+  A.pos[0] = stuck_state_.pos[0] - 0.01 * v[0];
+  A.pos[1] = stuck_state_.pos[1] - 0.01 * v[1];
 }
 
 Eigen::Vector2d Mader::RotationMatrix(Eigen::Vector2d& vec, const double& angle){
@@ -930,9 +936,9 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   Eigen::Vector3d dist_prog(1e5, 1e5, 1e5);
   Eigen::Vector3d dist_to_goal(1e5, 1e5, 1e5);
   Eigen::Vector3d dist_from_state__to_goal(1e5, 1e5, 1e5);
-  double unstuck_dist = 2.0; //meters
+  double unstuck_dist = 3.0; //meters
   double reached_goal_dist = 0.3;
-  double how_much_to_detoured_G = 0.5; //0.1 means 10%
+  double how_much_to_detoured_G = 0.7; //0.1 means 10%
 
   // double detour_max_time = 5; //seconds, how long want to detour
   
@@ -958,16 +964,22 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
      dist_prog.norm() < unstuck_dist && 
      dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
       getDetourG(); // if stuck, make a new G for detour
+      if (!if_A_moveback_){
+        moveAback(A);
+        if_A_moveback_ = true;
+      }
       G = detoured_G_;
       std::cout << "using detoured G" << std::endl;
       stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
       if_detour_ = true;
-      if (stuck_count_for_detour_ > 5000){
+      if (stuck_count_for_detour_ > 100){
         if_detour_ = false; // maybe the detour G is also causing stuck, so go back to the original one
+        if_A_moveback_ = false;
       }
     } else {
       stuck_count_for_detour_ = 0;
       if_detour_ = false;
+      if_A_moveback_ = false;
       std::cout << "stop using detoured G" << std::endl;
       std::cout << "dist_prog.norm() is " << dist_prog.norm() << std::endl;
     } 
