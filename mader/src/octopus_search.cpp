@@ -1241,7 +1241,7 @@ exitloop:
   bool have_a_solution = (complete_closest_result_so_far_ptr_ != NULL) || (closest_result_so_far_ptr_ != NULL);
 
   is_stuck = false;
-  int how_many_failure_to_detect_stuck = 5;
+  int how_many_failure_to_detect_stuck = 7;
 
   if (status == GOAL_REACHED)
   {
@@ -1288,7 +1288,7 @@ exitloop:
     double e = 1e-10; //arbitrary threshold value
     Eigen::Vector3d diff = first_node.qi - last_node.qi;
 
-    if (status == EMPTY_OPENLIST){ // && diff.norm() < e){
+    if (status == EMPTY_OPENLIST && diff.norm() < e){
         stuck_count_ = stuck_count_ + 1;
         if (stuck_count_ >= how_many_failure_to_detect_stuck){ 
           is_stuck = true;

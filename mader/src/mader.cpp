@@ -609,7 +609,7 @@ void Mader::getG(mt::state& G)
 }
 
 // in case drones are stuck we need a new G to detour
-void Mader::getDetourG()
+void Mader::getDetourG(mt::state& G)
 {
   Eigen::Vector2d v = G_when_stuck_.pos.head(2) - stuck_state_.pos.head(2);
   Eigen::Vector2d v2;
@@ -639,6 +639,8 @@ void Mader::getDetourG()
     detoured_G_.pos[1] = par_.y_min + par_.drone_bbox[1];
   } 
 
+  G = detoured_G_;
+
   //     
   //      new G
   //        ^
@@ -654,10 +656,10 @@ void Mader::getDetourG()
 
 }
 
-void Mader::moveAback(mt::state& A){
-  Eigen::Vector2d v = G_when_stuck_.pos.head(2) - stuck_state_.pos.head(2);
-  A.pos[0] = stuck_state_.pos[0] - 0.01 * v[0];
-  A.pos[1] = stuck_state_.pos[1] - 0.01 * v[1];
+void Mader::moveAtowardG(mt::state& A, mt::state& G){
+  Eigen::Vector2d v = G.pos.head(2) - stuck_state_.pos.head(2);
+  A.pos[0] = stuck_state_.pos[0] - 0.05 * v[0];
+  A.pos[1] = stuck_state_.pos[1] - 0.05 * v[1];
 }
 
 Eigen::Vector2d Mader::RotationMatrix(Eigen::Vector2d& vec, const double& angle){
@@ -936,9 +938,10 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   Eigen::Vector3d dist_prog(1e5, 1e5, 1e5);
   Eigen::Vector3d dist_to_goal(1e5, 1e5, 1e5);
   Eigen::Vector3d dist_from_state__to_goal(1e5, 1e5, 1e5);
-  double unstuck_dist = 3.0; //meters
-  double reached_goal_dist = 0.3;
+  double unstuck_dist = 2.0; //meters
+  double reached_goal_dist = par_.drone_bbox[0]+0.1; // avoid the detoured goal is within others bbox and cannot move at all sitution.
   double how_much_to_detoured_G = 0.7; //0.1 means 10%
+  double vel_stuck_detect = 0.1; // m/s
 
   // double detour_max_time = 5; //seconds, how long want to detour
   
@@ -960,15 +963,15 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     std::cout << "stuck_state_.pos is " << stuck_state_.pos << std::endl;
 
     //if (timer_detour_.ElapsedMs() < detour_max_time * 1000){
-    if (dist_from_state__to_goal.norm() > reached_goal_dist &&
+    if (state_.vel.norm() < vel_stuck_detect &&
+     dist_from_state__to_goal.norm() > reached_goal_dist &&
      dist_prog.norm() < unstuck_dist && 
      dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
-      getDetourG(); // if stuck, make a new G for detour
+      getDetourG(G); // if stuck, make a new G for detour
       if (!if_A_moveback_){
-        moveAback(A);
+        moveAtowardG(A, G);
         if_A_moveback_ = true;
       }
-      G = detoured_G_;
       std::cout << "using detoured G" << std::endl;
       stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
       if_detour_ = true;

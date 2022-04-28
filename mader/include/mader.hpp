@@ -53,8 +53,8 @@ public:
   bool getNextGoal(mt::state& next_goal);
   void getState(mt::state& data);
   void getG(mt::state& G);
-  void getDetourG();
-  void moveAback(mt::state& A);
+  void getDetourG(mt::state& G);
+  void moveAtowardG(mt::state& A, mt::state&G);
   void setTerminalGoal(mt::state& term_goal);
   void resetInitialization();
 

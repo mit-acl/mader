@@ -28,18 +28,102 @@
  	-->
 
  	<!-- mader -->
-	<node ns="$(arg veh)$(arg num)s" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" > 
-    <rosparam file="$(find mader)/param/mader.yaml" command="load"/>
-        <!-- Subscriptions -->
-		<remap from="~state" to="state"/>
-		<remap from="~who_plans" to="who_plans"/>
-		<remap from="~term_goal" to="term_goal" />
+	<node ns="$(arg veh)$(arg num)s" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" >
+		<rosparam file="$(find mader)/param/mader1.yaml" command="load"/>
+	        <!-- Subscriptions -->
+			<remap from="~state" to="state"/>
+			<remap from="~who_plans" to="who_plans"/>
+			<remap from="~term_goal" to="term_goal" />
 
-		<!-- Publications -->
-		<remap from="~traj" to="traj"/>
-		<remap from="~goal" to="$(arg goal_topic)" />
-		<remap from="~setpoint" to="setpoint" />
-
+			<!-- Publications -->
+			<remap from="~traj" to="traj"/>
+			<remap from="~goal" to="$(arg goal_topic)" />
+			<remap from="~setpoint" to="setpoint" />
 	</node>
+
+	<group if="$(eval num == '01')">
+	    <node ns="$(arg veh)$(arg num)s" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" >
+			<rosparam file="$(find mader)/param/mader1.yaml" command="load"/>
+		        <!-- Subscriptions -->
+				<remap from="~state" to="state"/>
+				<remap from="~who_plans" to="who_plans"/>
+				<remap from="~term_goal" to="term_goal" />
+
+				<!-- Publications -->
+				<remap from="~traj" to="traj"/>
+				<remap from="~goal" to="$(arg goal_topic)" />
+				<remap from="~setpoint" to="setpoint" />
+		</node>
+	</group>
+	<group if="$(eval num == '02')">
+	    <node ns="$(arg veh)$(arg num)s" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" >
+			<rosparam file="$(find mader)/param/mader2.yaml" command="load"/>
+		        <!-- Subscriptions -->
+				<remap from="~state" to="state"/>
+				<remap from="~who_plans" to="who_plans"/>
+				<remap from="~term_goal" to="term_goal" />
+
+				<!-- Publications -->
+				<remap from="~traj" to="traj"/>
+				<remap from="~goal" to="$(arg goal_topic)" />
+				<remap from="~setpoint" to="setpoint" />
+		</node>
+	</group>
+	<group if="$(eval num == '03')">
+	    <node ns="$(arg veh)$(arg num)s" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" >
+			<rosparam file="$(find mader)/param/mader3.yaml" command="load"/>
+		        <!-- Subscriptions -->
+				<remap from="~state" to="state"/>
+				<remap from="~who_plans" to="who_plans"/>
+				<remap from="~term_goal" to="term_goal" />
+
+				<!-- Publications -->
+				<remap from="~traj" to="traj"/>
+				<remap from="~goal" to="$(arg goal_topic)" />
+				<remap from="~setpoint" to="setpoint" />
+		</node>
+	</group>
+	<group if="$(eval num == '04')">
+	    <node ns="$(arg veh)$(arg num)s" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" >
+			<rosparam file="$(find mader)/param/mader4.yaml" command="load"/>
+		        <!-- Subscriptions -->
+				<remap from="~state" to="state"/>
+				<remap from="~who_plans" to="who_plans"/>
+				<remap from="~term_goal" to="term_goal" />
+
+				<!-- Publications -->
+				<remap from="~traj" to="traj"/>
+				<remap from="~goal" to="$(arg goal_topic)" />
+				<remap from="~setpoint" to="setpoint" />
+		</node>
+	</group>
+	<group if="$(eval num == '05')">
+	    <node ns="$(arg veh)$(arg num)s" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" >
+			<rosparam file="$(find mader)/param/mader5.yaml" command="load"/>
+		        <!-- Subscriptions -->
+				<remap from="~state" to="state"/>
+				<remap from="~who_plans" to="who_plans"/>
+				<remap from="~term_goal" to="term_goal" />
+
+				<!-- Publications -->
+				<remap from="~traj" to="traj"/>
+				<remap from="~goal" to="$(arg goal_topic)" />
+				<remap from="~setpoint" to="setpoint" />
+		</node>
+	</group>
+	<group if="$(eval num == '06')">
+	    <node ns="$(arg veh)$(arg num)s" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" >
+			<rosparam file="$(find mader)/param/mader6.yaml" command="load"/>
+		        <!-- Subscriptions -->
+				<remap from="~state" to="state"/>
+				<remap from="~who_plans" to="who_plans"/>
+				<remap from="~term_goal" to="term_goal" />
+
+				<!-- Publications -->
+				<remap from="~traj" to="traj"/>
+				<remap from="~goal" to="$(arg goal_topic)" />
+				<remap from="~setpoint" to="setpoint" />
+			</node>
+	</group>
 
 </launch>
