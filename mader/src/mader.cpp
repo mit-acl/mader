@@ -326,13 +326,13 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
     //                            Eigen::Vector3d::Ones();  // every side of the box will be increased by 2*delta
     //(+delta on one end, -delta on the other)
 
-    changeBBox(drone_boundarybox);
+    //changeBBox(drone_boundarybox);
 
     delta = traj.bbox / 2.0 + drone_boundarybox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
-    std::cout << "boundary box size" << std::endl;
-    std::cout << drone_boundarybox[0] << std::endl;
-    std::cout << drone_boundarybox[1] << std::endl;
-    std::cout << drone_boundarybox[2] << std::endl;
+    // std::cout << "boundary box size" << std::endl;
+    // std::cout << drone_boundarybox[0] << std::endl;
+    // std::cout << drone_boundarybox[1] << std::endl;
+    // std::cout << drone_boundarybox[2] << std::endl;
 
     // Will always have a sample at the beginning of the interval, and another at the end.
     for (double t = t_start;                           /////////////
@@ -367,13 +367,13 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
     // delta = traj.bbox / 2.0 + (par_.drone_radius) * Eigen::Vector3d::Ones();
     // delta = traj.bbox / 2.0 + par_.drone_bbox / 2.0;  // instad of using drone_radius
 
-    changeBBox(drone_boundarybox);
+    //changeBBox(drone_boundarybox);
 
     delta = traj.bbox / 2.0 + drone_boundarybox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
-    std::cout << "boundary box size" << std::endl;
-    std::cout << drone_boundarybox[0] << std::endl;
-    std::cout << drone_boundarybox[1] << std::endl;
-    std::cout << drone_boundarybox[2] << std::endl;
+    // std::cout << "boundary box size" << std::endl;
+    // std::cout << drone_boundarybox[0] << std::endl;
+    // std::cout << drone_boundarybox[1] << std::endl;
+    // std::cout << drone_boundarybox[2] << std::endl;
 
     // std::cout << "****traj.bbox = " << traj.bbox << std::endl;
     // std::cout << "****par_.drone_radius = " << par_.drone_radius << std::endl;
@@ -658,8 +658,8 @@ void Mader::getDetourG(mt::state& G)
 
 void Mader::moveAtowardG(mt::state& A, mt::state& G){
   Eigen::Vector2d v = G.pos.head(2) - stuck_state_.pos.head(2);
-  A.pos[0] = stuck_state_.pos[0] - 0.05 * v[0];
-  A.pos[1] = stuck_state_.pos[1] - 0.05 * v[1];
+  A.pos[0] = stuck_state_.pos[0] + 0.1 * v[0];
+  A.pos[1] = stuck_state_.pos[1] + 0.1 * v[1];
 }
 
 Eigen::Vector2d Mader::RotationMatrix(Eigen::Vector2d& vec, const double& angle){
@@ -975,7 +975,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
       std::cout << "using detoured G" << std::endl;
       stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
       if_detour_ = true;
-      if (stuck_count_for_detour_ > 100){
+      if (stuck_count_for_detour_ > 10){
         if_detour_ = false; // maybe the detour G is also causing stuck, so go back to the original one
         if_A_moveback_ = false;
       }

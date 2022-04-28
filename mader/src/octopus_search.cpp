@@ -1241,7 +1241,7 @@ exitloop:
   bool have_a_solution = (complete_closest_result_so_far_ptr_ != NULL) || (closest_result_so_far_ptr_ != NULL);
 
   is_stuck = false;
-  int how_many_failure_to_detect_stuck = 7;
+  int how_many_failure_to_detect_stuck = 5;
 
   if (status == GOAL_REACHED)
   {
@@ -1265,12 +1265,12 @@ exitloop:
                 << std::endl;
       stuck_count_ = 0;
 
-      auto first_node = expanded_valid_nodes_.front();
-      auto last_node = expanded_valid_nodes_.back();
-      std::cout << "first node" << std::endl;
-      std::cout << first_node.qi << std::endl;
-      std::cout << "last node" << std::endl;
-      std::cout << last_node.qi << std::endl;
+      // auto first_node = expanded_valid_nodes_.front();
+      // auto last_node = expanded_valid_nodes_.back();
+      // std::cout << "first node" << std::endl;
+      // std::cout << first_node.qi << std::endl;
+      // std::cout << "last node" << std::endl;
+      // std::cout << last_node.qi << std::endl;
     }
     else
     {
@@ -1293,7 +1293,7 @@ exitloop:
         if (stuck_count_ >= how_many_failure_to_detect_stuck){ 
           is_stuck = true;
         }
-        std::cout << "[A*] drones are stuck, make bbox smaller" << std::endl; 
+        // std::cout << "[A*] drones are stuck, make bbox smaller" << std::endl; 
       } else {
         stuck_count_ = 0;
       }

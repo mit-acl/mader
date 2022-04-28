@@ -29,7 +29,7 @@
 
  	<!-- mader -->
 	<node ns="$(arg veh)$(arg num)s" name="mader" pkg="mader" type="mader_node" output="screen" clear_params="false" >
-		<rosparam file="$(find mader)/param/mader1.yaml" command="load"/>
+		<rosparam file="$(find mader)/param/mader.yaml" command="load"/>
 	        <!-- Subscriptions -->
 			<remap from="~state" to="state"/>
 			<remap from="~who_plans" to="who_plans"/>
