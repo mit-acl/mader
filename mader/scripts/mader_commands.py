@@ -105,7 +105,7 @@ class Mader_Commands:
         self.timer_take_off=rospy.Timer(rospy.Duration(0.004), self.timerTakeOffCB)
 
 
-    def timerTakeOffCB(self):
+    def timerTakeOffCB(self, event):
         print("In timerTakeOffCB")
 
         ######## Commented for simulations
