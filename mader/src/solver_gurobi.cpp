@@ -55,8 +55,8 @@ SolverGurobi::SolverGurobi(ms::par_solver &par)
   }
   else
   {
-    std::cout << red << "Basis " << par_.basis << " not implemented yet" << reset << std::endl;
-    std::cout << red << "============================================" << reset << std::endl;
+    // std::cout << red << "Basis " << par_.basis << " not implemented yet" << reset << std::endl;
+    // std::cout << red << "============================================" << reset << std::endl;
     abort();
   }
 
@@ -474,10 +474,10 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
   initial_state_ = initial_state;
   final_state_ = final_state;
 
-  std::cout << "initial_state= " << std::endl;
+  // std::cout << "initial_state= " << std::endl;
   initial_state.printHorizontal();
 
-  std::cout << "final_state= " << std::endl;
+  // std::cout << "final_state= " << std::endl;
   final_state.printHorizontal();
 
   //////////////////////////////
@@ -608,11 +608,11 @@ bool SolverGurobi::optimize(bool& is_stuck)
       q2_.y() > par_.y_max || q2_.y() < par_.y_min ||  /////////////////
       q2_.z() > par_.z_max || q2_.z() < par_.z_min)
   {
-    std::cout << bold << red << "q2_ is not in [min, max]" << reset << std::endl;
-    std::cout << "q2_= " << q2_.transpose() << std::endl;
-    std::cout << "par_.x_min= " << par_.x_min << ", par_.x_max=" << par_.x_max << std::endl;
-    std::cout << "par_.y_min= " << par_.y_min << ", par_.y_max=" << par_.y_max << std::endl;
-    std::cout << "par_.z_min= " << par_.z_min << ", par_.z_max=" << par_.z_max << std::endl;
+    // std::cout << bold << red << "q2_ is not in [min, max]" << reset << std::endl;
+    // std::cout << "q2_= " << q2_.transpose() << std::endl;
+    // std::cout << "par_.x_min= " << par_.x_min << ", par_.x_max=" << par_.x_max << std::endl;
+    // std::cout << "par_.y_min= " << par_.y_min << ", par_.y_max=" << par_.y_max << std::endl;
+    // std::cout << "par_.z_min= " << par_.z_min << ", par_.z_max=" << par_.z_max << std::endl;
     return false;
   }
   bool guess_is_feasible = generateAStarGuess(is_stuck);  // I obtain q_quess_, n_guess_, d_guess_
@@ -657,16 +657,16 @@ bool SolverGurobi::optimize(bool& is_stuck)
       number_of_stored_solutions > 0)
 
   {
-    std::cout << green << "Gurobi found a solution" << reset << std::endl;
+    // std::cout << green << "Gurobi found a solution" << reset << std::endl;
     // copy the solution
     for (auto tmp : q_exp_)
     {
       q.push_back(Eigen::Vector3d(tmp[0].getValue(), tmp[1].getValue(), tmp[2].getValue()));
     }
 
-    std::cout << "Control_cost_=" << control_cost_.getValue() << std::endl;
-    std::cout << "Terminal cost=" << terminal_cost_.getValue() << std::endl;
-    std::cout << "Cost=" << cost_.getValue() << std::endl;
+    // std::cout << "Control_cost_=" << control_cost_.getValue() << std::endl;
+    // std::cout << "Terminal cost=" << terminal_cost_.getValue() << std::endl;
+    // std::cout << "Cost=" << cost_.getValue() << std::endl;
   }
   else
   {

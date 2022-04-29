@@ -221,13 +221,13 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ01s/setpoint
       Name: Setpoint
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /SQ01s/cvx/actual_traj
@@ -1071,4 +1071,4 @@ Window Geometry:
     collapsed: false
   Width: 1747
   X: 160
-  Y: 652
+  Y: 615

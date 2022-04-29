@@ -111,8 +111,8 @@ Mader::Mader(mt::parameters par) : par_(par)
   }
   else
   {
-    std::cout << red << "Basis " << par.basis << " not implemented yet" << reset << std::endl;
-    std::cout << red << "============================================" << reset << std::endl;
+    // std::cout << red << "Basis " << par.basis << " not implemented yet" << reset << std::endl;
+    // std::cout << red << "============================================" << reset << std::endl;
     abort();
   }
 
@@ -688,8 +688,8 @@ void Mader::updateState(mt::state data)
     tmp.yaw = data.yaw;
     plan_.erase(plan_.begin(), plan_.end());
     plan_.push_back(tmp);  // plan_ should be empty
-    std::cout << "in updateState function ";
-    plan_.print();
+    // std::cout << "in updateState function ";
+    // plan_.print();
     // previous_yaw_ = tmp.yaw;
     initial_yaw_ = tmp.yaw;
   }
@@ -851,7 +851,7 @@ bool Mader::isReplanningNeeded()
   if (dist_last_plan_to_goal < par_.goal_radius && drone_status_ == DroneStatus::TRAVELING)
   {
     changeDroneStatus(DroneStatus::GOAL_SEEN);
-    std::cout << "Status changed to GOAL_SEEN!" << std::endl;
+    // std::cout << "Status changed to GOAL_SEEN!" << std::endl;
     exists_previous_pwp_ = false;
   }
 
@@ -958,9 +958,9 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     dist_to_goal = detoured_G_.pos - stuck_state_.pos;
     dist_from_state__to_goal = detoured_G_.pos - state_.pos;
 
-    std::cout << "dist_prog is " << dist_prog << std::endl;
-    std::cout << "state_.pos is " << state_.pos << std::endl;
-    std::cout << "stuck_state_.pos is " << stuck_state_.pos << std::endl;
+    // std::cout << "dist_prog is " << dist_prog << std::endl;
+    // std::cout << "state_.pos is " << state_.pos << std::endl;
+    // std::cout << "stuck_state_.pos is " << stuck_state_.pos << std::endl;
 
     //if (timer_detour_.ElapsedMs() < detour_max_time * 1000){
     if (state_.vel.norm() < vel_stuck_detect &&
@@ -972,7 +972,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
       //   moveAtowardG(A, G);
       //   if_A_moveback_ = true;
       // }
-      std::cout << "using detoured G" << std::endl;
+      // std::cout << "using detoured G" << std::endl;
       stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
       if_detour_ = true;
       if (stuck_count_for_detour_ > 10){
@@ -983,8 +983,8 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
       stuck_count_for_detour_ = 0;
       if_detour_ = false;
       if_A_moveback_ = false;
-      std::cout << "stop using detoured G" << std::endl;
-      std::cout << "dist_prog.norm() is " << dist_prog.norm() << std::endl;
+    //   std::cout << "stop using detoured G" << std::endl;
+    //   std::cout << "dist_prog.norm() is " << dist_prog.norm() << std::endl;
     } 
   }
 
@@ -1013,8 +1013,8 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   std::cout << "time_allocated= " << time_allocated << std::endl;
 
-  std::cout << "initial is " << initial.pos.transpose() << std::endl;
-  std::cout << "Pos of A is" << A.pos.transpose() << std::endl;
+  // std::cout << "initial is " << initial.pos.transpose() << std::endl;
+  // std::cout << "Pos of A is" << A.pos.transpose() << std::endl;
 
   double t_final = t_start + time_allocated;
 
@@ -1044,10 +1044,10 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   solver_->setHulls(hulls_std);
 
   //////////////////////
-  std::cout << on_cyan << bold << "Solved so far" << solutions_found_ << "/" << total_replannings_ << reset
-            << std::endl;
+  // std::cout << on_cyan << bold << "Solved so far" << solutions_found_ << "/" << total_replannings_ << reset
+  //           << std::endl;
 
-  std::cout << "[FA] Calling NL" << std::endl;
+  // std::cout << "[FA] Calling NL" << std::endl;
 
   bool is_stuck;
   bool result = solver_->optimize(is_stuck);  // calling the solver
@@ -1110,7 +1110,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   if ((plan_size - 1 - k_index_end) < 0)
   {
-    std::cout << bold << red << "Already published the point A" << reset << std::endl;
+    // std::cout << bold << red << "Already published the point A" << reset << std::endl;
     // std::cout << "plan_size= " << plan_size << std::endl;
     // std::cout << "k_index_end= " << k_index_end << std::endl;
     mtx_plan_.unlock();
@@ -1263,7 +1263,7 @@ void Mader::changeDroneStatus(int new_status)
     return;
   }
 
-  std::cout << "Changing DroneStatus from ";
+  // std::cout << "Changing DroneStatus from ";
   switch (drone_status_)
   {
     case DroneStatus::YAWING:
@@ -1297,7 +1297,7 @@ void Mader::changeDroneStatus(int new_status)
       break;
   }
 
-  std::cout << std::endl;
+  // std::cout << std::endl;
 
   drone_status_ = new_status;
 }

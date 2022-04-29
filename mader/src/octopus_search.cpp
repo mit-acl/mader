@@ -58,7 +58,7 @@ OctopusSearch::OctopusSearch(std::string basis, int num_pol, int deg_pol, double
   }
   else
   {
-    std::cout << bold << red << "Basis not implemented yet" << std::endl;
+    // std::cout << bold << red << "Basis not implemented yet" << std::endl;
     abort();
   }
 
@@ -660,10 +660,10 @@ void OctopusSearch::printPath(Node& node1)
   while (tmp.previous != NULL)
   {
     // std::cout << tmp.index << ", ";  // qi.transpose().x()
-    std::cout << tmp.previous->qi.transpose() << std::endl;
+    // std::cout << tmp.previous->qi.transpose() << std::endl;
     tmp = *tmp.previous;
   }
-  std::cout << std::endl;
+  // std::cout << std::endl;
 }
 
 void OctopusSearch::recoverPath(Node* result_ptr)
@@ -813,11 +813,11 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
 
     if (i == (N_ - 2))
     {
-      std::cout << "knots_= " << knots_ << std::endl;
-      std::cout << "knots_(i + 1 + 1 + 1)= " << knots_(i + 1 + 1 + 1) << std::endl;
-      std::cout << "knots_(i + 1 + p_ + 1 + 1)= " << knots_(i + 1 + p_ + 1 + 1) << std::endl;
-      std::cout << "i + 1 + 1 + 1= " << i + 1 + 1 + 1 << std::endl;
-      std::cout << "i + 1 + p_ + 1 + 1= " << i + 1 + p_ + 1 + 1 << std::endl;
+      // std::cout << "knots_= " << knots_ << std::endl;
+      // std::cout << "knots_(i + 1 + 1 + 1)= " << knots_(i + 1 + 1 + 1) << std::endl;
+      // std::cout << "knots_(i + 1 + p_ + 1 + 1)= " << knots_(i + 1 + p_ + 1 + 1) << std::endl;
+      // std::cout << "i + 1 + 1 + 1= " << i + 1 + 1 + 1 << std::endl;
+      // std::cout << "i + 1 + p_ + 1 + 1= " << i + 1 + p_ + 1 + 1 << std::endl;
     }
 
     ai = (p_ - 1) * (vip1 - vi) / (knots_(i + p_ + 1) - knots_(i + 2));
@@ -834,19 +834,19 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
     // Assumming here that all the elements of v_max_ are the same
     if (V_newbasis.maxCoeff() > epsilon * v_max_.x() || V_newbasis.minCoeff() < -epsilon * v_max_.x())
     {
-      std::cout << red << "velocity constraint for vi is not satisfied, i=" << i << reset << std::endl;
+      // std::cout << red << "velocity constraint for vi is not satisfied, i=" << i << reset << std::endl;
 
-      std::cout << "N_=" << N_ << std::endl;
+      // std::cout << "N_=" << N_ << std::endl;
 
-      std::cout << "qa= " << q[i].transpose() << std::endl;
-      std::cout << "qb= " << q[i + 1].transpose() << std::endl;
-      std::cout << "qc= " << q[i + 2].transpose() << std::endl;
-      std::cout << "qd= " << q[i + 3].transpose() << std::endl;
+      // std::cout << "qa= " << q[i].transpose() << std::endl;
+      // std::cout << "qb= " << q[i + 1].transpose() << std::endl;
+      // std::cout << "qc= " << q[i + 2].transpose() << std::endl;
+      // std::cout << "qd= " << q[i + 3].transpose() << std::endl;
 
-      std::cout << "Vbs= \n" << Vbs << std::endl;
-      std::cout << "V_newbasis= \n" << V_newbasis << std::endl;
-      std::cout << "v_max_= \n" << v_max_ << std::endl;
-      std::cout << "Using matrix \n" << M_vel_bs2basis_[i] << std::endl;
+      // std::cout << "Vbs= \n" << Vbs << std::endl;
+      // std::cout << "V_newbasis= \n" << V_newbasis << std::endl;
+      // std::cout << "v_max_= \n" << v_max_ << std::endl;
+      // std::cout << "Using matrix \n" << M_vel_bs2basis_[i] << std::endl;
       isFeasible = false;
     }
 
@@ -1261,8 +1261,8 @@ exitloop:
     {
       std::cout << "[A*] choosing closest complete path as solution" << std::endl;
       best_node_ptr = complete_closest_result_so_far_ptr_;
-      std::cout << bold << blue << "complete_closest_dist_so_far_= " << complete_closest_dist_so_far_ << reset
-                << std::endl;
+      // std::cout << bold << blue << "complete_closest_dist_so_far_= " << complete_closest_dist_so_far_ << reset
+      //           << std::endl;
       stuck_count_ = 0;
 
       // auto first_node = expanded_valid_nodes_.front();
@@ -1321,7 +1321,7 @@ exitloop:
       node_ptr->qi = best_node_ptr->qi;
       node_ptr->index = j;
 
-      std::cout << red << "Filled " << j << ", " << reset;
+      // std::cout << red << "Filled " << j << ", " << reset;
 
       // << node_ptr->qi.transpose() << std::endl;
       node_ptr->previous = best_node_ptr;
