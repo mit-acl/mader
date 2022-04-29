@@ -42,6 +42,9 @@ class Mader_Commands:
         self.initialized=False
         self.is_kill = False
 
+        self.takeoff_goal=Goal();
+
+
     #In rospy, the callbacks are all of them in separate threads
     def stateCB(self, data):
 
@@ -89,7 +92,6 @@ class Mader_Commands:
     def takeOff(self):
         print("In takeOff")
         self.is_kill = False
-        self.takeoff_goal=Goal();
         self.takeoff_goal.p.x = self.pose.position.x;
         self.takeoff_goal.p.y = self.pose.position.y;
         self.takeoff_goal.p.z = self.pose.position.z;
@@ -97,7 +99,6 @@ class Mader_Commands:
 
         self.takeoff_goal.power= True; #Turn on the motors
         #Note that self.pose.position is being updated in the parallel callback
-        alt_taken_off = 1.8; #Altitude when hovering after taking off
 
         #Note that self.pose.position is being updated in the parallel callback
 
@@ -109,7 +110,9 @@ class Mader_Commands:
         print("In timerTakeOffCB")
 
         ######## Commented for simulations
-        # while( abs(self.pose.position.z-alt_taken_off)>0.1 ):  
+        # while( abs(self.pose.position.z-alt_taken_off)>0.1 ): 
+        alt_taken_off = 1.8; #Altitude when hovering after taking off
+         
         self.takeoff_goal.p.z = min(self.takeoff_goal.p.z+0.0035, alt_taken_off);
         rospy.loginfo_throttle(0.5, "Taking off..., error={}".format(self.pose.position.z-alt_taken_off) )
         self.sendGoal(self.takeoff_goal)
