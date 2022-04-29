@@ -28,6 +28,11 @@ do
 	tmux split-window -h
 done
 
+for i in 0 2 4
+do
+	tmux resize-pane -t $SESSION:$w.$i -x 105
+done
+
 # wait for .bashrc to load
 sleep 1
 
