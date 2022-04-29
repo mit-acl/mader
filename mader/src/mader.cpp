@@ -968,10 +968,10 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
      dist_prog.norm() < unstuck_dist && 
      dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
       getDetourG(G); // if stuck, make a new G for detour
-      if (!if_A_moveback_){
-        moveAtowardG(A, G);
-        if_A_moveback_ = true;
-      }
+      // if (!if_A_moveback_){
+      //   moveAtowardG(A, G);
+      //   if_A_moveback_ = true;
+      // }
       std::cout << "using detoured G" << std::endl;
       stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
       if_detour_ = true;
