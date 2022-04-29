@@ -33,6 +33,8 @@ class Mader_Commands:
         self.whoplans.value=self.whoplans.OTHER
         self.pubGoal = rospy.Publisher('goal', Goal, queue_size=1)
         self.pubWhoPlans = rospy.Publisher("who_plans",WhoPlans,queue_size=1,latch=True) 
+        self.timer_take_off=rospy.Timer(rospy.Duration(0.004), self.timerTakeOffCB)
+        self.timer_take_off.shutdown()
         #self.pubClickedPoint = rospy.Publisher("/move_base_simple/goal",PoseStamped,queue_size=1,latch=True)
 
         self.initialized=False
@@ -66,11 +68,13 @@ class Mader_Commands:
             self.whoplans.value=self.whoplans.MADER
 
         if req.mode == req.KILL:
+            self.timer_take_off.shutdown()
             print ("Killing")
             self.kill()
             print ("Killed done")
 
         if req.mode == req.LAND and self.whoplans.value==self.whoplans.MADER:
+            self.timer_take_off.shutdown()
             print ("Landing")
             self.land()
             print ("Landing done")
@@ -93,17 +97,29 @@ class Mader_Commands:
         alt_taken_off = 1.8; #Altitude when hovering after taking off
 
         #Note that self.pose.position is being updated in the parallel callback
-        ######## Commented for simulations
-        while( abs(self.pose.position.z-alt_taken_off)>0.1 ):  
-            goal.p.z = min(goal.p.z+0.0035, alt_taken_off);
-            rospy.sleep(0.004) 
-            rospy.loginfo_throttle(0.5, "Taking off..., error={}".format(self.pose.position.z-alt_taken_off) )
-            self.sendGoal(goal)
-        ######## 
+
+        self.timer_take_off.run()
+
+
+
+
 
         rospy.sleep(0.1) 
         self.whoplans.value=self.whoplans.MADER
         self.sendWhoPlans();
+
+    def timerTakeOffCB(self):
+        ######## Commented for simulations
+        # while( abs(self.pose.position.z-alt_taken_off)>0.1 ):  
+        goal.p.z = min(goal.p.z+0.0035, alt_taken_off);
+        rospy.loginfo_throttle(0.5, "Taking off..., error={}".format(self.pose.position.z-alt_taken_off) )
+        self.sendGoal(goal)
+
+        if(abs(self.pose.position.z-alt_taken_off)<0.1 ):
+            self.timer_take_off.stop()
+
+        ######## 
+
 
     def land(self):
         self.is_kill = False
