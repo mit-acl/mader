@@ -11,7 +11,7 @@ SESSION=mader
 WINDOW=base_station
 
 # creates the session with a name and renames the window name
-cmd="new-session -d -s $SESSION ; rename-window $WINDOW"
+cmd="new-session -d -s $SESSION -x- -y-; rename-window $WINDOW"
 tmux -2 $cmd
 
 # window number
@@ -29,6 +29,16 @@ for i in 0 2 4 6 8 10
 do 
 	tmux select-pane -t $SESSION:$w.$i
 	tmux split-window -v
+done
+
+# for i in 0 2 4 6 8 10
+# do
+# 	tmux resize-pane -t $SESSION:$w.$i -y 300
+# done
+
+for i in 1 3 5 7 9 11
+do
+	tmux resize-pane -t $SESSION:$w.$i -y 20
 done
 
 # wait for .bashrc to load
