@@ -33,7 +33,9 @@ class Mader_Commands:
         self.whoplans.value=self.whoplans.OTHER
         self.pubGoal = rospy.Publisher('goal', Goal, queue_size=1)
         self.pubWhoPlans = rospy.Publisher("who_plans",WhoPlans,queue_size=1,latch=True) 
+        print("Creating the timer")
         self.timer_take_off=rospy.Timer(rospy.Duration(0.004), self.timerTakeOffCB)
+        print("Shutdown the timer")
         self.timer_take_off.shutdown()
         #self.pubClickedPoint = rospy.Publisher("/move_base_simple/goal",PoseStamped,queue_size=1,latch=True)
 
@@ -85,6 +87,7 @@ class Mader_Commands:
         self.pubWhoPlans.publish(self.whoplans)
 
     def takeOff(self):
+        print("In takeOff")
         self.is_kill = False
         goal=Goal();
         goal.p.x = self.pose.position.x;
@@ -109,6 +112,8 @@ class Mader_Commands:
         self.sendWhoPlans();
 
     def timerTakeOffCB(self):
+        print("In timerTakeOffCB")
+        
         ######## Commented for simulations
         # while( abs(self.pose.position.z-alt_taken_off)>0.1 ):  
         goal.p.z = min(goal.p.z+0.0035, alt_taken_off);
