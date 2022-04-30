@@ -33,10 +33,17 @@ class Mader_Commands:
         self.whoplans.value=self.whoplans.OTHER
         self.pubGoal = rospy.Publisher('goal', Goal, queue_size=1)
         self.pubWhoPlans = rospy.Publisher("who_plans",WhoPlans,queue_size=1,latch=True) 
+        print("Creating the timer")
+        self.timer_take_off=rospy.Timer(rospy.Duration(0.004), self.timerTakeOffCB)
+        print("Shutdown the timer")
+        self.timer_take_off.shutdown()
         #self.pubClickedPoint = rospy.Publisher("/move_base_simple/goal",PoseStamped,queue_size=1,latch=True)
 
         self.initialized=False
         self.is_kill = False
+
+        self.takeoff_goal=Goal();
+
 
     #In rospy, the callbacks are all of them in separate threads
     def stateCB(self, data):
@@ -62,15 +69,17 @@ class Mader_Commands:
         if req.mode == req.GO and self.whoplans.value==self.whoplans.OTHER:
             print ("Starting taking off")
             self.takeOff()
-            print ("Take off done")
+            # print ("Take off done")
             self.whoplans.value=self.whoplans.MADER
 
         if req.mode == req.KILL:
+            self.timer_take_off.shutdown()
             print ("Killing")
             self.kill()
             print ("Killed done")
 
         if req.mode == req.LAND and self.whoplans.value==self.whoplans.MADER:
+            self.timer_take_off.shutdown()
             print ("Landing")
             self.land()
             print ("Landing done")
@@ -81,29 +90,40 @@ class Mader_Commands:
         self.pubWhoPlans.publish(self.whoplans)
 
     def takeOff(self):
+        print("In takeOff")
         self.is_kill = False
-        goal=Goal();
-        goal.p.x = self.pose.position.x;
-        goal.p.y = self.pose.position.y;
-        goal.p.z = self.pose.position.z;
-        goal.psi = quat2yaw(self.pose.orientation)
+        self.takeoff_goal.p.x = self.pose.position.x;
+        self.takeoff_goal.p.y = self.pose.position.y;
+        self.takeoff_goal.p.z = self.pose.position.z;
+        self.takeoff_goal.psi = quat2yaw(self.pose.orientation)
 
-        goal.power= True; #Turn on the motors
+        self.takeoff_goal.power= True; #Turn on the motors
         #Note that self.pose.position is being updated in the parallel callback
-        alt_taken_off = 1.8; #Altitude when hovering after taking off
 
         #Note that self.pose.position is being updated in the parallel callback
+
+        # self.timer_take_off.run()
+        self.timer_take_off=rospy.Timer(rospy.Duration(0.004), self.timerTakeOffCB)
+
+
+    def timerTakeOffCB(self, event):
+        print("In timerTakeOffCB")
+
         ######## Commented for simulations
-        while( abs(self.pose.position.z-alt_taken_off)>0.1 ):  
-            goal.p.z = min(goal.p.z+0.0035, alt_taken_off);
-            rospy.sleep(0.004) 
-            rospy.loginfo_throttle(0.5, "Taking off..., error={}".format(self.pose.position.z-alt_taken_off) )
-            self.sendGoal(goal)
+        # while( abs(self.pose.position.z-alt_taken_off)>0.1 ): 
+        alt_taken_off = 1.8; #Altitude when hovering after taking off
+         
+        self.takeoff_goal.p.z = min(self.takeoff_goal.p.z+0.0035, alt_taken_off);
+        rospy.loginfo_throttle(0.5, "Taking off..., error={}".format(self.pose.position.z-alt_taken_off) )
+        self.sendGoal(self.takeoff_goal)
+
+        if(abs(self.pose.position.z-alt_taken_off)<0.1 ):
+            self.timer_take_off.stop()
+            self.whoplans.value=self.whoplans.MADER
+            self.sendWhoPlans();
+
         ######## 
 
-        rospy.sleep(0.1) 
-        self.whoplans.value=self.whoplans.MADER
-        self.sendWhoPlans();
 
     def land(self):
         self.is_kill = False
