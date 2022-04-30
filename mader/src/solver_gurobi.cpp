@@ -475,10 +475,10 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
   final_state_ = final_state;
 
   // std::cout << "initial_state= " << std::endl;
-  initial_state.printHorizontal();
+  // initial_state.printHorizontal();
 
   // std::cout << "final_state= " << std::endl;
-  final_state.printHorizontal();
+  // final_state.printHorizontal();
 
   //////////////////////////////
 
