@@ -216,9 +216,9 @@ void MaderRos::pubObstacles(mt::Edges edges_obstacles)
 void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 {
   // test pop_up scheme (SQ06 doesn't listen /trajs)
-  if (id_ == 6){
-    return;
-  }
+  // if (id_ == 6){
+  //   return;
+  // }
 
   if (msg.id == id_)
   {  // This is my own trajectory
