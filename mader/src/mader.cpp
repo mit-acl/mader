@@ -845,6 +845,27 @@ bool Mader::safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_prev)
   return result;
 }
 
+// this is just Check in case A* failed
+bool Mader::safetyCheck_for_A_star_failure_pwp_now(mt::PieceWisePol pwp_now)
+{
+  bool result = true;
+  for (auto traj : trajs_)
+  {
+    if (traj.time_received > time_init_opt_ && traj.is_agent == true)
+    {
+      if (trajsAndPwpAreInCollision(traj, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      {
+        if (id_ < traj.id){ // tie breaking mechanism
+          ROS_ERROR_STREAM("my pwp_now collides with " << traj.id << " and they have higher number, so I need to change my traj.");
+          result = false;  // will have to redo the optimization  
+        }
+        break;
+      }
+    }
+  }
+  return result;
+}
+
 bool Mader::isReplanningNeeded()
 {
   if (initializedStateAndTermGoal() == false)
@@ -1162,6 +1183,32 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   mt::PieceWisePol pwp_now;
   solver_->getSolution(pwp_now);
+
+  // check if A_star is failed and see if the previous plan is feasible
+  if (is_A_star_failed){
+    // need to check if my previous traj collides with others. and if that's the case pop it up
+    A_star_fail_count_pwp_now_ = A_star_fail_count_pwp_now_ + 1;
+    std::cout << "A_star is failing\n";
+    std::cout << "A_star_fail_count_pwp_now_ is " << A_star_fail_count_pwp_now_ << "\n"; 
+    double how_many_A_star_failure_now = 30;
+    if (A_star_fail_count_pwp_now_ > how_many_A_star_failure_now){
+      if(!safetyCheck_for_A_star_failure_pwp_now(pwp_now)){
+        std::cout << "pwp now collide!" << "\n";
+        // if previous pwp is not feasible pop up the drone 
+        // this only happens when two agents commit traj at the very same time (or in Recheck period)
+        is_pop_up_ = true;
+        return false; //abort mader
+      } else {
+        is_pop_up_ = false;
+        A_star_fail_count_pwp_now_ = 0;
+      }
+    }
+  } else {
+    is_pop_up_ = false;
+    A_star_fail_count_pwp_now_ = 0;
+  }
+
+  // check if the current position/plan is colliding
 
   MyTimer check_t(true);
   mtx_trajs_.lock();

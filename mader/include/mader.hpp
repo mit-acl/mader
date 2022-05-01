@@ -77,7 +77,8 @@ private:
   bool initializedStateAndTermGoal();
 
   bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized);
-  bool safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_optimized);
+  bool safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_prev);
+  bool safetyCheck_for_A_star_failure_pwp_now(mt::PieceWisePol pwp_now);
 
   bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
                                  double t_end);
@@ -196,6 +197,8 @@ private:
   bool is_going_back_to_normal_z_max_ = false;
 
   int A_star_fail_count_ = 0;
+
+  int A_star_fail_count_pwp_now_ = 0;
 
   // double av_improvement_nlopt_ = 0.0;
 
