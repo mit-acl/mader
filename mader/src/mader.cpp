@@ -1117,7 +1117,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     A_star_fail_count_ = A_star_fail_count_ + 1;
     std::cout << "A_star is failing\n";
     std::cout << "A_star_fail_count_ is " << A_star_fail_count_ << "\n"; 
-    double how_many_A_star_failure = 10;
+    double how_many_A_star_failure = 30;
     if (A_star_fail_count_ > how_many_A_star_failure){
       if(!safetyCheck_for_A_star_failure(pwp_prev_)){
         std::cout << "previous pwp collide!" << "\n";
@@ -1324,11 +1324,22 @@ bool Mader::getNextGoal(mt::state& next_goal)
     std::cout << "pop up!!!!" << std::endl;
     double pop_up_alt = par_.drone_bbox[2] + 0.5;
     pop_up_state_ = state_;
-    double pop_up_increment = pop_up_alt / plan_.size();
-    for (int i = 0; i < plan_.size(); i++){
+    std::cout << "plan_.size() is " << plan_.size() << "\n";
+    if (plan_.size() != 0){
+      for (int i = 0; i < plan_.size(); i++){
       // increment z axis value
+      double pop_up_increment = pop_up_alt / plan_.size();
       plan_.content[i].pos[2] = plan_.content[i].pos[2] + i * pop_up_increment;
+      } 
+    } else {
+      double pop_up_increment = pop_up_alt / 400;
+      for (int i = 0; i < 400; i++){
+        mt::state temporaty_state = state_;
+        temporaty_state.pos[2] += i * pop_up_increment;
+        plan_.push_back(temporaty_state);
+      }
     }
+    
     is_pop_up_ = false;
     pop_up_last_state_in_plan_ = plan_.back();
     double new_zmax = par_.z_max + pop_up_alt;
