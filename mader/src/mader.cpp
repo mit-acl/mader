@@ -1163,7 +1163,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     }
 
   } else {
-    if (result)
+    if (planner_initialized_)
     {
       std::cout << "pop up initialized" << "\n";
       is_pop_up_initialized_ = true;
@@ -1197,31 +1197,34 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   mt::PieceWisePol pwp_now;
   solver_->getSolution(pwp_now);
 
-  // check if A_star is failed and see if the previous plan is feasible
-  if (is_A_star_failed){
-    // need to check if my previous traj collides with others. and if that's the case pop it up
-    A_star_fail_count_pwp_now_ = A_star_fail_count_pwp_now_ + 1;
-    std::cout << "A_star is failing\n";
-    std::cout << "A_star_fail_count_pwp_now_ is " << A_star_fail_count_pwp_now_ << "\n"; 
-    double how_many_A_star_failure_now = 30;
-    if (A_star_fail_count_pwp_now_ > how_many_A_star_failure_now){
-      if(!safetyCheck_for_A_star_failure_pwp_now(pwp_now)){
-        std::cout << "pwp now collide!" << "\n";
-        // if previous pwp is not feasible pop up the drone 
-        // this only happens when two agents commit traj at the very same time (or in Recheck period)
-        is_pop_up_ = true;
-        return false; //abort mader
-      } else {
-        is_pop_up_ = false;
-        A_star_fail_count_pwp_now_ = 0;
-      }
-    }
-  } else {
-    is_pop_up_ = false;
-    A_star_fail_count_pwp_now_ = 0;
-  }
-
   // check if the current position/plan is colliding
+  if (is_pop_up_initialized_){
+
+    // check if A_star is failed and see if the previous plan is feasible
+    if (is_A_star_failed){
+      // need to check if my previous traj collides with others. and if that's the case pop it up
+      A_star_fail_count_pwp_now_ = A_star_fail_count_pwp_now_ + 1;
+      std::cout << "A_star is failing\n";
+      std::cout << "A_star_fail_count_pwp_now_ is " << A_star_fail_count_pwp_now_ << "\n"; 
+      double how_many_A_star_failure_now = 30;
+      if (A_star_fail_count_pwp_now_ > how_many_A_star_failure_now){
+        if(!safetyCheck_for_A_star_failure_pwp_now(pwp_now)){
+          std::cout << "pwp now collide!" << "\n";
+          // if previous pwp is not feasible pop up the drone 
+          // this only happens when two agents commit traj at the very same time (or in Recheck period)
+          is_pop_up_ = true;
+          return false; //abort mader
+        } else {
+          is_pop_up_ = false;
+          A_star_fail_count_pwp_now_ = 0;
+        }
+      }
+    } else {
+      is_pop_up_ = false;
+      A_star_fail_count_pwp_now_ = 0;
+    }
+
+  }
 
   MyTimer check_t(true);
   mtx_trajs_.lock();
