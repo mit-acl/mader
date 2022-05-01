@@ -598,7 +598,7 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
   return true;
 }
 
-bool SolverGurobi::optimize(bool& is_stuck)
+bool SolverGurobi::optimize(bool& is_stuck, bool& is_A_star_failed)
 {
   // reset some stuff
   traj_solution_.clear();
@@ -615,11 +615,11 @@ bool SolverGurobi::optimize(bool& is_stuck)
     // std::cout << "par_.z_min= " << par_.z_min << ", par_.z_max=" << par_.z_max << std::endl;
     return false;
   }
-  bool guess_is_feasible = generateAStarGuess(is_stuck);  // I obtain q_quess_, n_guess_, d_guess_
+  bool guess_is_feasible = generateAStarGuess(is_stuck, is_A_star_failed);  // I obtain q_quess_, n_guess_, d_guess_
 
   // Note that guess_is_feasible does not take into account jerk constraints
 
-  if (guess_is_feasible == false)
+  if (guess_is_feasible == false || is_A_star_failed == true)
   {
     // std::cout << "Planes haven't been found" << std::endl;
     return false;
@@ -696,3 +696,13 @@ void SolverGurobi::getSolution(mt::PieceWisePol &solution)
 {
   solution = solution_;
 }
+
+void SolverGurobi::changeZmax(double& new_z_max){
+  par_.z_max = new_z_max;
+}
+
+double SolverGurobi::printZmax()
+{
+  return par_.z_max;
+}
+

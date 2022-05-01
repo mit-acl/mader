@@ -30,7 +30,7 @@ public:
 
   ~SolverGurobi();
 
-  bool optimize(bool &is_stuck);
+  bool optimize(bool &is_stuck, bool& is_A_star_failed);
 
   // setters
   void setMaxRuntimeKappaAndMu(double runtime, double kappa, double mu);
@@ -52,6 +52,9 @@ public:
   int BEZIER = 3;    // Bezier basis
 
   bool checkGradientsUsingFiniteDiff();
+  void changeZmax(double& new_z_max);
+  double printZmax();
+
 
 protected:
 private:
@@ -77,7 +80,7 @@ private:
                                       std::vector<std::vector<GRBLinExpr>> &Qmv, int interval);
 
   void generateRandomGuess();
-  bool generateAStarGuess(bool& is_stuck);
+  bool generateAStarGuess(bool& is_stuck, bool& is_A_star_failed);
   void generateStraightLineGuess();
 
   void printStd(const std::vector<Eigen::Vector3d> &v);

@@ -182,6 +182,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   std::string id = name_drone_;
   id.erase(0, 2);  // Erase SQ or HX i.e. SQ12 --> 12  HX8621 --> 8621 # TODO Hard-coded for this this convention
   id_ = std::stoi(id);
+  mader_ptr_->getID(id_);
 
   timer_stop_.Reset();
 
@@ -214,6 +215,11 @@ void MaderRos::pubObstacles(mt::Edges edges_obstacles)
 
 void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 {
+  // test pop_up scheme (SQ06 doesn't listen /trajs)
+  if (id_ == 6){
+    return;
+  }
+
   if (msg.id == id_)
   {  // This is my own trajectory
     return;

@@ -168,6 +168,7 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
   traj_compiled.pwp = traj.pwp;
 }
 // Note that we need to compile the trajectories inside mader.cpp because t_ is in mader.hpp
+
 void Mader::updateTrajObstacles(mt::dynTraj traj)
 {
   MyTimer tmp_t(true);
@@ -326,7 +327,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
     //                            Eigen::Vector3d::Ones();  // every side of the box will be increased by 2*delta
     //(+delta on one end, -delta on the other)
 
-    //changeBBox(drone_boundarybox);
+    changeBBox(drone_boundarybox);
 
     delta = traj.bbox / 2.0 + drone_boundarybox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
     // std::cout << "boundary box size" << std::endl;
@@ -367,7 +368,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
     // delta = traj.bbox / 2.0 + (par_.drone_radius) * Eigen::Vector3d::Ones();
     // delta = traj.bbox / 2.0 + par_.drone_bbox / 2.0;  // instad of using drone_radius
 
-    //changeBBox(drone_boundarybox);
+    changeBBox(drone_boundarybox);
 
     delta = traj.bbox / 2.0 + drone_boundarybox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
     // std::cout << "boundary box size" << std::endl;
@@ -790,7 +791,9 @@ bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol
   // if reached this point, they don't collide
   return false;
 }
+
 // Checks that I have not received new trajectories that affect me while doing the optimization
+// Check period and Recheck period is defined here
 bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
 {
   started_check_ = true;
@@ -810,6 +813,7 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
   }
 
   // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
+  // This is Recheck
   if (have_received_trajectories_while_checking_ == true)
   {
     ROS_ERROR_STREAM("Recvd traj while checking ");
@@ -817,6 +821,27 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
   }
   started_check_ = false;
 
+  return result;
+}
+
+// this is just Check in case A* failed
+bool Mader::safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_prev)
+{
+  bool result = true;
+  for (auto traj : trajs_)
+  {
+    if (traj.time_received > time_init_opt_ && traj.is_agent == true)
+    {
+      if (trajsAndPwpAreInCollision(traj, pwp_prev, pwp_prev.times.front(), pwp_prev.times.back()))
+      {
+        if (id_ < traj.id){ // tie breaking mechanism
+          ROS_ERROR_STREAM("my previous traj collides with " << traj.id << " and they have higher number, so I need to change my traj.");
+          result = false;  // will have to redo the optimization  
+        }
+        break;
+      }
+    }
+  }
   return result;
 }
 
@@ -874,6 +899,31 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   {
     return false;
   }
+
+  if (is_z_max_increased_ && !is_going_back_to_normal_z_max_){
+    // following popped up trajectory and haven't yet reached to pop_up_last_state_in_plan_ 
+    Eigen::Vector3d diff = state_.pos - pop_up_last_state_in_plan_.pos;
+    if (diff.norm() > 0.1){
+      return false;
+    }
+    std::cout << "reached pop_up_last_state_in_plan_" << "\n";
+    is_going_back_to_normal_z_max_ = true;
+  } 
+
+  if (is_z_max_increased_ && is_going_back_to_normal_z_max_){
+    // once you reached pop_up_last_state_in_plan_, then you start planning new traj in extended z_max space
+    // std::cout << "state_.pos[2] " << state_.pos[2] << "\n";
+    // std::cout << "par_.z_max_ " << par_.z_max << "\n";
+    // std::cout << "par_for_solver.z_max " << solver_->printZmax() << "\n";
+    std::cout << "going back to the nominal space" << "\n";
+    if (state_.pos[2] < par_.z_max - 0.3){ // if you go back to the nominal z_max, then put z_max back. 0.3 is a buffer
+      std::cout << "got back to the nomial space!!" << "\n";
+      solver_->changeZmax(par_.z_max); // put the z_max back to the nominal value
+      is_z_max_increased_ = false;
+      is_going_back_to_normal_z_max_ = false;
+    }
+  }
+  // std::cout << "par_for_solver.z_max " << solver_->printZmax() << "\n";
 
   MyTimer replanCB_t(true);
 
@@ -1050,7 +1100,8 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   // std::cout << "[FA] Calling NL" << std::endl;
 
   bool is_stuck;
-  bool result = solver_->optimize(is_stuck);  // calling the solver
+  bool is_A_star_failed;
+  bool result = solver_->optimize(is_stuck, is_A_star_failed);  // calling the solver
   
   // check if drones are stuck or not
   if (is_stuck){
@@ -1058,6 +1109,31 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     return false; //abort mader
   } else {
     par_.is_stuck = false;
+  }
+
+  // check if A_star is failed and see if the previous plan is feasible
+  if (is_A_star_failed && !is_pwp_prev_feasible_){
+    // need to check if my previous traj collides with others. and if that's the case pop it up
+    A_star_fail_count_ = A_star_fail_count_ + 1;
+    std::cout << "A_star is failing\n";
+    std::cout << "A_star_fail_count_ is " << A_star_fail_count_ << "\n"; 
+    double how_many_A_star_failure = 10;
+    if (A_star_fail_count_ > how_many_A_star_failure){
+      if(!safetyCheck_for_A_star_failure(pwp_prev_)){
+        std::cout << "previous pwp collide!" << "\n";
+        // if previous pwp is not feasible pop up the drone 
+        // this only happens when two agents commit traj at the very same time (or in Recheck period)
+        is_pop_up_ = true;
+        return false; //abort mader
+      } else {
+        is_pwp_prev_feasible_ = true;
+        is_pop_up_ = false;
+        A_star_fail_count_ = 0;
+      }
+    }
+  } else {
+    is_pop_up_ = false;
+    A_star_fail_count_ = 0;
   }
 
   num_of_LPs_run = solver_->getNumOfLPsRun();
@@ -1147,6 +1223,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     pwp_prev_ = pwp_now;
     exists_previous_pwp_ = true;
   }
+  is_pwp_prev_feasible_ = false; // we don't know for sure if this traj is feasible until you run opt in the next step and see A* fails
 
   X_safe_out = plan_.toStdVector();
 
@@ -1242,6 +1319,23 @@ bool Mader::getNextGoal(mt::state& next_goal)
   next_goal.setZero();
   next_goal = plan_.front();
 
+  if (is_pop_up_ && !is_z_max_increased_){
+    // we need to pop up the drone
+    std::cout << "pop up!!!!" << std::endl;
+    double pop_up_alt = par_.drone_bbox[2] + 0.5;
+    pop_up_state_ = state_;
+    double pop_up_increment = pop_up_alt / plan_.size();
+    for (int i = 0; i < plan_.size(); i++){
+      // increment z axis value
+      plan_.content[i].pos[2] = plan_.content[i].pos[2] + i * pop_up_increment;
+    }
+    is_pop_up_ = false;
+    pop_up_last_state_in_plan_ = plan_.back();
+    double new_zmax = par_.z_max + pop_up_alt;
+    solver_->changeZmax(new_zmax);
+    is_z_max_increased_ = true;
+  }
+
   if (plan_.size() > 1)
   {
     plan_.pop_front();
@@ -1319,4 +1413,8 @@ void Mader::printDroneStatus()
       std::cout << bold << "status_=GOAL_REACHED" << reset << std::endl;
       break;
   }
+}
+
+void Mader::getID(int& id){
+  id_ = id;
 }

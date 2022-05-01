@@ -15,7 +15,7 @@
 
 using namespace termcolor;
 
-bool SolverGurobi::generateAStarGuess(bool& is_stuck)
+bool SolverGurobi::generateAStarGuess(bool& is_stuck, bool& is_A_star_failed)
 {
   std::cout << "[NL] Running A* from" << q0_.transpose() << " to " << final_state_.pos.transpose()
             << ", allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << std::endl;
@@ -101,12 +101,13 @@ bool SolverGurobi::generateAStarGuess(bool& is_stuck)
     // (but with different n and d than before)
     // and they are close to the vertexes of the obstacle
     /////////////////////////////////////
-
+    is_A_star_failed = false;
     return true;
   }
   else
   {
     ROS_ERROR_STREAM("[NL] A* didn't find a feasible solution, using straight line guess");
+    is_A_star_failed = true;
     return false;
   }
 }

@@ -61,6 +61,7 @@ public:
   bool IsTranslating();
   void updateTrajObstacles(mt::dynTraj traj);
   Eigen::Vector2d RotationMatrix(Eigen::Vector2d& vec, const double& angle);
+  void getID(int& id);
 
 private:
   mt::state M_;
@@ -76,6 +77,7 @@ private:
   bool initializedStateAndTermGoal();
 
   bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized);
+  bool safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_optimized);
 
   bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
                                  double t_end);
@@ -148,6 +150,8 @@ private:
   mt::state state_;
   mt::state stuck_state_;
   mt::state stuck_state_for_bbox_;
+  mt::state pop_up_state_;
+  mt::state pop_up_last_state_in_plan_;
   mt::state G_;       // This goal is always inside of the map
   mt::state G_term_;  // This goal is the clicked goal
   mt::state detoured_G_;
@@ -180,6 +184,18 @@ private:
   int stuck_count_for_detour_ = 0;
 
   bool if_A_moveback_ = false;
+
+  bool is_pwp_prev_feasible_ = false;
+
+  bool is_pop_up_ = false;
+
+  int id_;
+
+  bool is_z_max_increased_ = false;
+
+  bool is_going_back_to_normal_z_max_ = false;
+
+  int A_star_fail_count_ = 0;
 
   // double av_improvement_nlopt_ = 0.0;
 

@@ -107,7 +107,7 @@ class Mader_Commands:
 
 
     def timerTakeOffCB(self, event):
-        print("In timerTakeOffCB")
+        # print("In timerTakeOffCB")
 
         ######## Commented for simulations
         # while( abs(self.pose.position.z-alt_taken_off)>0.1 ): 
@@ -118,7 +118,7 @@ class Mader_Commands:
         self.sendGoal(self.takeoff_goal)
 
         if(abs(self.pose.position.z-alt_taken_off)<0.1 ):
-            self.timer_take_off.stop()
+            self.timer_take_off.shutdown()
             self.whoplans.value=self.whoplans.MADER
             self.sendWhoPlans();
 
