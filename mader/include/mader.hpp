@@ -200,6 +200,8 @@ private:
 
   int A_star_fail_count_pwp_now_ = 0;
 
+  bool is_pop_up_initialized_ = false;
+
   // double av_improvement_nlopt_ = 0.0;
 
 #if USE_GUROBI_FLAG

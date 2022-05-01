@@ -1132,29 +1132,42 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     par_.is_stuck = false;
   }
 
-  // check if A_star is failed and see if the previous plan is feasible
-  if (is_A_star_failed && !is_pwp_prev_feasible_){
-    // need to check if my previous traj collides with others. and if that's the case pop it up
-    A_star_fail_count_ = A_star_fail_count_ + 1;
-    std::cout << "A_star is failing\n";
-    std::cout << "A_star_fail_count_ is " << A_star_fail_count_ << "\n"; 
-    double how_many_A_star_failure = 30;
-    if (A_star_fail_count_ > how_many_A_star_failure){
-      if(!safetyCheck_for_A_star_failure(pwp_prev_)){
-        std::cout << "previous pwp collide!" << "\n";
-        // if previous pwp is not feasible pop up the drone 
-        // this only happens when two agents commit traj at the very same time (or in Recheck period)
-        is_pop_up_ = true;
-        return false; //abort mader
-      } else {
-        is_pwp_prev_feasible_ = true;
-        is_pop_up_ = false;
-        A_star_fail_count_ = 0;
+  // right after taking off, sometims drones cannot find a path
+  // sometimes the very initial path search takes more than how_many_A_star_failure counts and fails
+  if (is_pop_up_initialized_){
+
+    // check if A_star is failed and see if the previous plan is feasible
+    if (is_A_star_failed && !is_pwp_prev_feasible_){
+
+      // need to check if my previous traj collides with others. and if that's the case pop it up
+      A_star_fail_count_ = A_star_fail_count_ + 1;
+      std::cout << "A_star is failing\n";
+      std::cout << "A_star_fail_count_ is " << A_star_fail_count_ << "\n"; 
+      double how_many_A_star_failure = 30;
+      if (A_star_fail_count_ > how_many_A_star_failure){
+        if(!safetyCheck_for_A_star_failure(pwp_prev_)){
+          std::cout << "previous pwp collide!" << "\n";
+          // if previous pwp is not feasible pop up the drone 
+          // this only happens when two agents commit traj at the very same time (or in Recheck period)
+          is_pop_up_ = true;
+          return false; //abort mader
+        } else {
+          is_pwp_prev_feasible_ = true;
+          is_pop_up_ = false;
+          A_star_fail_count_ = 0;
+        }
       }
+    } else {
+      is_pop_up_ = false;
+      A_star_fail_count_ = 0;
     }
+
   } else {
-    is_pop_up_ = false;
-    A_star_fail_count_ = 0;
+    if (result)
+    {
+      std::cout << "pop up initialized" << "\n";
+      is_pop_up_initialized_ = true;
+    }
   }
 
   num_of_LPs_run = solver_->getNumOfLPsRun();
