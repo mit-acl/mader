@@ -659,8 +659,8 @@ void Mader::getDetourG(mt::state& G)
 
 void Mader::moveAtowardG(mt::state& A, mt::state& G){
   Eigen::Vector2d v = G.pos.head(2) - stuck_state_.pos.head(2);
-  A.pos[0] = stuck_state_.pos[0] + 0.1 * v[0];
-  A.pos[1] = stuck_state_.pos[1] + 0.1 * v[1];
+  A.pos[0] = stuck_state_.pos[0] + 0.01 * v[0];
+  A.pos[1] = stuck_state_.pos[1] + 0.01 * v[1];
 }
 
 Eigen::Vector2d Mader::RotationMatrix(Eigen::Vector2d& vec, const double& angle){
@@ -1039,11 +1039,11 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
      dist_prog.norm() < unstuck_dist && 
      dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
       getDetourG(G); // if stuck, make a new G for detour
-      // if (!if_A_moveback_){
-      //   moveAtowardG(A, G);
-      //   if_A_moveback_ = true;
-      // }
-      // std::cout << "using detoured G" << std::endl;
+      if (!if_A_moveback_){
+        moveAtowardG(A, G);
+        if_A_moveback_ = true;
+      }
+      std::cout << "using detoured G" << std::endl;
       stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
       if_detour_ = true;
       if (stuck_count_for_detour_ > 10){
@@ -1123,14 +1123,6 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   bool is_stuck;
   bool is_A_star_failed;
   bool result = solver_->optimize(is_stuck, is_A_star_failed);  // calling the solver
-  
-  // check if drones are stuck or not
-  if (is_stuck){
-    par_.is_stuck = true;
-    return false; //abort mader
-  } else {
-    par_.is_stuck = false;
-  }
 
   // right after taking off, sometims drones cannot find a path
   // sometimes the very initial path search takes more than how_many_A_star_failure counts and fails
@@ -1152,6 +1144,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
           is_pop_up_ = true;
           return false; //abort mader
         } else {
+          std::cout << "previous pwp doesn't collide!\n";
           is_pwp_prev_feasible_ = true;
           is_pop_up_ = false;
           A_star_fail_count_ = 0;
@@ -1168,6 +1161,13 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
       std::cout << "pop up initialized" << "\n";
       is_pop_up_initialized_ = true;
     }
+  }
+
+  // check if drones are stuck or not
+  if (is_stuck){
+    par_.is_stuck = true;
+  } else {
+    par_.is_stuck = false;
   }
 
   num_of_LPs_run = solver_->getNumOfLPsRun();
