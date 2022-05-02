@@ -392,7 +392,7 @@ void Mader::changeBBox(Eigen::Vector3d& drone_boundarybox){
   double unstuck_dist = 1.0; //meters
   Eigen::Vector3d dist(1e5, 1e5, 1e5); //random big numer, need to initialized before used 
 
-  if (par_.is_stuck || if_bbox_change_){
+  if (par_.is_stuck || if_bbox_change_ || is_A_star_failed_30_){
 
       if (!if_bbox_change_){
         // timer_bbox_.Reset(); // start timer
@@ -1016,7 +1016,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   // double detour_max_time = 5; //seconds, how long want to detour
   
-  if (par_.is_stuck || if_detour_){
+  if (par_.is_stuck || if_detour_ || is_A_star_failed_30_){
     
     if (par_.is_stuck && !if_detour_){
       // timer_detour_.Reset();
@@ -1038,11 +1038,12 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
      dist_from_state__to_goal.norm() > reached_goal_dist &&
      dist_prog.norm() < unstuck_dist && 
      dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
+      
       getDetourG(G); // if stuck, make a new G for detour
-      if (!if_A_moveback_){
-        moveAtowardG(A, G);
-        if_A_moveback_ = true;
-      }
+      // if (!if_A_moveback_){
+      //   moveAtowardG(A, G);
+      //   if_A_moveback_ = true;
+      // }
       std::cout << "using detoured G" << std::endl;
       stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
       if_detour_ = true;
@@ -1126,25 +1127,25 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   // right after taking off, sometims drones cannot find a path
   // sometimes the very initial path search takes more than how_many_A_star_failure counts and fails
-  if (is_pop_up_initialized_){
+  if (planner_initialized_){
 
     // check if A_star is failed and see if the previous plan is feasible
     if (is_A_star_failed && !is_pwp_prev_feasible_){
-
+      A_star_fail_count_ += 1;
+      is_A_star_failed_30_ = (A_star_fail_count_ > 30);
       // need to check if my previous traj collides with others. and if that's the case pop it up
-      A_star_fail_count_ = A_star_fail_count_ + 1;
       std::cout << "A_star is failing\n";
       std::cout << "A_star_fail_count_ is " << A_star_fail_count_ << "\n"; 
-      double how_many_A_star_failure = 30;
-      if (A_star_fail_count_ > how_many_A_star_failure){
+      if (is_A_star_failed_30_){
         if(!safetyCheck_for_A_star_failure(pwp_prev_)){
           std::cout << "previous pwp collide!" << "\n";
           // if previous pwp is not feasible pop up the drone 
           // this only happens when two agents commit traj at the very same time (or in Recheck period)
           is_pop_up_ = true;
+          A_star_fail_count_ = 0;
           return false; //abort mader
         } else {
-          std::cout << "previous pwp doesn't collide!\n";
+          // std::cout << "previous pwp doesn't collide!\n";
           is_pwp_prev_feasible_ = true;
           is_pop_up_ = false;
           A_star_fail_count_ = 0;
@@ -1155,12 +1156,6 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
       A_star_fail_count_ = 0;
     }
 
-  } else {
-    if (planner_initialized_)
-    {
-      std::cout << "pop up initialized" << "\n";
-      is_pop_up_initialized_ = true;
-    }
   }
 
   // check if drones are stuck or not
@@ -1201,7 +1196,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   // if (is_pop_up_initialized_){
 
   //   // check if A_star is failed and see if the previous plan is feasible
-  //   if (is_A_star_failed){
+  //   if (is_A_star_failed_){
   //     // need to check if my previous traj collides with others. and if that's the case pop it up
   //     A_star_fail_count_pwp_now_ = A_star_fail_count_pwp_now_ + 1;
   //     std::cout << "A_star is failing\n";
@@ -1385,7 +1380,7 @@ bool Mader::getNextGoal(mt::state& next_goal)
   if (is_pop_up_ && !is_z_max_increased_){
     // we need to pop up the drone
     std::cout << "pop up!!!!" << std::endl;
-    double pop_up_alt = par_.drone_bbox[2] + 0.5;
+    double pop_up_alt = par_.drone_bbox[2] + 0.1;
     pop_up_state_ = state_;
     std::cout << "plan_.size() is " << plan_.size() << "\n";
     if (plan_.size() != 0){

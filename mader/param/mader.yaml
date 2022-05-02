@@ -32,7 +32,7 @@ y_min: -4.1  # [m] don't forget the .0
 y_max: 4.1   # [m] don't forget the .0
 
 z_min: 0.9  # [m] don't forget the .0
-z_max: 2.5  # [m] don't forget the .0
+z_max: 2.0  # [m] don't forget the .0
 
 #For single-agent simulations
 v_max: [2.0, 2.0, 2.0]   #[m/s]  7.0

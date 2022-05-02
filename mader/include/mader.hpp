@@ -202,6 +202,8 @@ private:
 
   bool is_pop_up_initialized_ = false;
 
+  bool is_A_star_failed_30_ = false;
+
   // double av_improvement_nlopt_ = 0.0;
 
 #if USE_GUROBI_FLAG
