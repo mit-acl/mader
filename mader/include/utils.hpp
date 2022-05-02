@@ -66,6 +66,8 @@ void rescaleCoeffPol(const Eigen::Matrix<double, 4, 1>& coeff_old, Eigen::Matrix
 
 mt::PieceWisePol createPwpFromStaticPosition(const mt::state& current_state);
 
+mt::PieceWisePol constPosition2pwp(const Eigen::Vector3d& pos);
+
 mt::PieceWisePol pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg);
 mader_msgs::PieceWisePolTraj pwp2PwpMsg(const mt::PieceWisePol& pwp);
 

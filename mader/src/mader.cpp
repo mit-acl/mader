@@ -924,8 +924,9 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   if (is_z_max_increased_ && !is_going_back_to_normal_z_max_){
     // following popped up trajectory and haven't yet reached to pop_up_last_state_in_plan_ 
     Eigen::Vector3d diff = state_.pos - pop_up_last_state_in_plan_.pos;
+    pwp_out = mu::constPosition2pwp(pop_up_last_state_in_plan_.pos);
     if (diff.norm() > 0.1){
-      return false;
+      return true;
     }
     std::cout << "reached pop_up_last_state_in_plan_" << "\n";
     is_going_back_to_normal_z_max_ = true;

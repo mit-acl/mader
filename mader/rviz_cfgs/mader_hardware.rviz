@@ -11,7 +11,6 @@ Panels:
         - /TF1/Frames1
         - /Setpoint1
         - /Obstacles1
-        - /Obstacles2
         - /FOV1
         - /Console1
         - /Safe_Color1
@@ -185,19 +184,11 @@ Visualization Manager:
       VsColor: 0; 255; 0
       VsScale: 1
     - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: /HX15/mader/obstacles
-      Name: Obstacles
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /HX17/mader/obstacles
+      Marker Topic: /HX16/mader/obstacles
       Name: Obstacles
       Namespaces:
-        {}
+        markertacles: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -311,7 +302,7 @@ Visualization Manager:
       Marker Topic: /HX15/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        HX15: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -319,7 +310,7 @@ Visualization Manager:
       Marker Topic: /HX16/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        HX16: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -327,7 +318,7 @@ Visualization Manager:
       Marker Topic: /HX17/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        HX17: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -335,7 +326,7 @@ Visualization Manager:
       Marker Topic: /HX18/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        HX18: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -343,7 +334,7 @@ Visualization Manager:
       Marker Topic: /HX19/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        HX19: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -351,7 +342,7 @@ Visualization Manager:
       Marker Topic: /HX20/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        HX20: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -820,6 +811,14 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: false
+      Marker Topic: /HX17/mader/obstacles
+      Name: Obstacles
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
       Marker Topic: /SQ01s/marker
       Name: Marker
       Namespaces:
@@ -923,7 +922,7 @@ Visualization Manager:
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -933,7 +932,7 @@ Visualization Manager:
       Shape: Axes
       Topic: /HX20/world
       Unreliable: false
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 85; 87; 83
@@ -961,26 +960,20 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/ThirdPersonFollower
-      Distance: 18.659934997558594
+      Angle: 0
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Field of View: 0.7853981852531433
-      Focal Point:
-        X: 2.561105728149414
-        Y: -3.1465725898742676
-        Z: -1.33514404296875e-05
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7047971487045288
+      Scale: 225.98509216308594
       Target Frame: <Fixed Frame>
-      Yaw: 4.159992218017578
+      X: 1.545034646987915
+      Y: 0.16784310340881348
     Saved:
       - Class: rviz/ThirdPersonFollower
         Distance: 16.45623207092285

@@ -260,6 +260,32 @@ mt::PieceWisePol mu::pwpMsg2Pwp(const mader_msgs::PieceWisePolTraj& pwp_msg)
   return pwp;
 }
 
+mt::PieceWisePol mu::constPosition2pwp(const Eigen::Vector3d& pos){
+
+    mt::PieceWisePol pwp;
+
+    pwp.times.push_back(ros::Time::now().toSec());
+    pwp.times.push_back(ros::Time::now().toSec()+10e6);
+
+
+    Eigen::Matrix<double, 4, 1> coeff_poly3x;
+    coeff_poly3x << 0.0, 0.0, 0.0, pos.x();
+    pwp.coeff_x.push_back(coeff_poly3x);
+
+
+    Eigen::Matrix<double, 4, 1> coeff_poly3y;
+    coeff_poly3y << 0.0, 0.0, 0.0, pos.x();
+    pwp.coeff_y.push_back(coeff_poly3y);
+
+
+    Eigen::Matrix<double, 4, 1> coeff_poly3z;
+    coeff_poly3z << 0.0, 0.0, 0.0, pos.z();
+    pwp.coeff_z.push_back(coeff_poly3z);
+
+    return pwp;
+
+}
+
 visualization_msgs::Marker mu::edges2Marker(const mt::Edges& edges, std_msgs::ColorRGBA color_marker)
 {
   visualization_msgs::Marker marker;
