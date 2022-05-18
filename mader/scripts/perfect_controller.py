@@ -30,6 +30,8 @@ class FakeSim:
         self.state.pos.z = rospy.get_param('~z', 0.0);
         yaw = rospy.get_param('~yaw', 0.0);
 
+        self.publish_marker_drone=True;
+
         pitch=0.0;
         roll=0.0;
         quat = quaternion_from_euler(yaw, pitch, roll, 'rzyx')
@@ -40,6 +42,7 @@ class FakeSim:
         self.state.quat.w = quat[3]
 
         self.pubState = rospy.Publisher('state', State, queue_size=1, latch=True)
+        self.pubMarkerDrone = rospy.Publisher('drone_marker', Marker, queue_size=1, latch=True)
         self.timer = rospy.Timer(rospy.Duration(0.01), self.pubTF)
         name = rospy.get_namespace()
         self.name = name[1:-1]
@@ -49,16 +52,8 @@ class FakeSim:
         self.state.header.frame_id="world"
         self.pubState.publish(self.state)  
 
-        pose=Pose()
-        pose.position.x=self.state.pos.x;
-        pose.position.y=self.state.pos.y;
-        pose.position.z=self.state.pos.z;
-        pose.orientation.x = quat[0]
-        pose.orientation.y = quat[1]
-        pose.orientation.z = quat[2]
-        pose.orientation.w = quat[3]
-
-        # self.pubMarkerDrone.publish(self.getDroneMarker(pose));
+        if(self.publish_marker_drone):
+            self.pubMarkerDrone.publish(self.getDroneMarker());
 
 
     def goalCB(self, data):
@@ -104,7 +99,8 @@ class FakeSim:
         self.state.quat.z=w_q_b[2]  #z
 
         self.pubState.publish(self.state) 
-        # self.pubMarkerDrone.publish(self.getDroneMarker(gazebo_state.pose));
+        if(self.publish_marker_drone):
+            self.pubMarkerDrone.publish(self.getDroneMarker());
 
     def pubTF(self, timer):
         br = tf.TransformBroadcaster()
@@ -114,22 +110,29 @@ class FakeSim:
                          self.name,
                          "vicon")
 
-    # def getDroneMarker(self, pose):
-    #     marker=Marker();
-    #     marker.id=1;
-    #     marker.ns="mesh_"+self.name;
-    #     marker.header.frame_id="world"
-    #     marker.type=marker.MESH_RESOURCE;
-    #     marker.action=marker.ADD;
+    def getDroneMarker(self):
+        marker=Marker();
+        marker.id=1;
+        marker.ns="mesh_"+self.name;
+        marker.header.frame_id="world"
+        marker.type=marker.MESH_RESOURCE;
+        marker.action=marker.ADD;
 
-    #     marker.pose=pose
-    #     marker.lifetime = rospy.Duration.from_sec(0.0);
-    #     marker.mesh_use_embedded_materials=True
-    #     marker.mesh_resource="package://panther_gazebo/meshes/quadrotor/quadrotor.dae"
-    #     marker.scale.x=1.0;
-    #     marker.scale.y=1.0;
-    #     marker.scale.z=1.0;
-    #     return marker            
+        marker.pose.position.x=self.state.pos.x
+        marker.pose.position.y=self.state.pos.y
+        marker.pose.position.z=self.state.pos.z
+        marker.pose.orientation.x=self.state.quat.x
+        marker.pose.orientation.y=self.state.quat.y
+        marker.pose.orientation.z=self.state.quat.z
+        marker.pose.orientation.w=self.state.quat.w
+
+        marker.lifetime = rospy.Duration.from_sec(0.0);
+        marker.mesh_use_embedded_materials=True
+        marker.mesh_resource="package://mader/meshes/quadrotor/quadrotor.dae"
+        marker.scale.x=1.0;
+        marker.scale.y=1.0;
+        marker.scale.z=1.0;
+        return marker            
 
 def startNode():
     c = FakeSim()
