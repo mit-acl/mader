@@ -30,7 +30,7 @@ class FakeSim:
         self.state.pos.z = rospy.get_param('~z', 0.0);
         yaw = rospy.get_param('~yaw', 0.0);
 
-        self.publish_marker_drone=True;
+        self.publish_marker_drone=False; #TODO: this mesh is not scaled by the radius of the UAV of panther.yaml
 
         pitch=0.0;
         roll=0.0;
