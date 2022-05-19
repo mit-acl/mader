@@ -24,6 +24,9 @@ typedef MADER_timers::Timer MyTimer;
 // this object is created in the mader_ros_node
 MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3) : nh1_(nh1), nh2_(nh2), nh3_(nh3)
 {
+  bool sim; // if this is simulation or hardware. Used to check if we need SQ or HX
+  mu::safeGetParam(nh1_, "sim", sim);
+
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
   mu::safeGetParam(nh1_, "visual", par_.visual);
   mu::safeGetParam(nh1_, "color_type", par_.color_type);
@@ -126,6 +129,9 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   mader_ptr_ = std::unique_ptr<Mader>(new Mader(par_));
 
+  // get my namespace
+  std::string myns = ros::this_node::getNamespace();
+
   // Publishers
   pub_goal_ = nh1_.advertise<snapstack_msgs::Goal>("goal", 1);
   pub_setpoint_ = nh1_.advertise<visualization_msgs::Marker>("setpoint", 1);
@@ -136,17 +142,39 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   poly_safe_pub_ = nh1_.advertise<decomp_ros_msgs::PolyhedronArray>("poly_safe", 1, true);
   pub_text_ = nh1_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
   pub_traj_safe_colored_ = nh1_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
-  pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("/trajs", 1, true);  // The last boolean is latched or not
   pub_text_ = nh1_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
   pub_fov_ = nh1_.advertise<visualization_msgs::Marker>("fov", 1);
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
-
+  pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("trajs", 1, true);  // The last boolean is latched or not
+  
   // Subscribers
   sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
   // sub_mode_ = nh1_.subscribe("mode", 1, &MaderRos::modeCB, this);
   sub_whoplans_ = nh1_.subscribe("who_plans", 1, &MaderRos::whoPlansCB, this);
   sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);
-  sub_traj_ = nh1_.subscribe("/trajs", 20, &MaderRos::trajCB, this);  // The number is the queue size
+
+  // Subscribers for each agents
+
+  // if it's simulation SQ01s to SQ06s
+  // TODO:: make more general/robust
+  if (sim) {
+    for (int i = 1; i < 7; ++i)
+     {
+      std::string agent = "SQ0" + std::to_string(i) + "s";
+      if (myns != agent){ // if my namespace is the same as the agent, then it's you
+        sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
+      }
+     } 
+  } else { // if it's simulation HX15 to HX20
+    for (int i = 1; i < 7; ++i)
+     {
+      int j = i + 14;
+      std::string agent = "HX" + std::to_string(i);
+      if (myns != agent){ // if my namespace is the same as the agent, then it's you
+        sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
+      }
+     } 
+  }
 
   // Timers
   pubCBTimer_ = nh2_.createTimer(ros::Duration(par_.dc), &MaderRos::pubCB, this);
