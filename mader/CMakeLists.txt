@@ -108,10 +108,13 @@ add_executable(test_utils src/examples/test_utils.cpp)
 add_dependencies(test_utils ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_utils ${catkin_LIBRARIES} utils)
 
-
 add_executable(test_bspline_utils src/examples/test_bspline_utils.cpp src/bspline_utils.cpp)
 add_dependencies(test_bspline_utils ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_bspline_utils ${catkin_LIBRARIES})
+
+add_executable(test_stuck_exam_octopus_search src/examples/test_stuck_exam_octopus_search.cpp src/octopus_search.cpp src/bspline_utils.cpp) 
+add_dependencies(test_stuck_exam_octopus_search ${catkin_EXPORTED_TARGETS} )
+target_link_libraries(test_stuck_exam_octopus_search ${catkin_LIBRARIES} utils cgal_utils) 
 
 unset(USE_GUROBI CACHE) # To avoid https://stackoverflow.com/questions/22481647/cmake-if-else-with-option
 

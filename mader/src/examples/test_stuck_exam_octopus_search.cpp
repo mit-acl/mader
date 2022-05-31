@@ -220,10 +220,10 @@ int main(int argc, char** argv)
   Eigen::Vector3d v_max(4.0, 4.0, 4.0);
   Eigen::Vector3d a_max(6.0, 6.0, 6.0);
 
-  Eigen::Vector3d q0(0.0, 0.0, 1);
+  Eigen::Vector3d q0(-0.5, 0.0, 1.0);
   Eigen::Vector3d q1 = q0;
   Eigen::Vector3d q2 = q1;
-  Eigen::Vector3d goal(5.0, 0, 1);
+  Eigen::Vector3d goal(5.0, 0, 1.0);
 
   double t_min = 0.0;
   double t_max = t_min + (goal - q0).norm() / (0.8 * v_max(0));
@@ -253,14 +253,14 @@ int main(int argc, char** argv)
   // ConvexHullsOfCurve hulls_curve = createDynamicObstacle(ma_vector, 0.0, 0.0, bbox_z / 2.0, num_pol, bbox_x, bbox_y, bbox_z, t_min, t_max);
   
   // Static obstacles
-  ConvexHullsOfCurve hulls_curve = createStaticObstacle(0.5000001, 0.0, 1.0, num_pol, bbox_x, bbox_y, bbox_z);
+  ConvexHullsOfCurve hulls_curve = createStaticObstacle(0.0, 0.0, 1.0, num_pol, bbox_x, bbox_y, bbox_z);
   
   hulls_curves.push_back(hulls_curve);  // only one obstacle
 
   for (int i = 1; i <= num_of_obs_up; i++)
   {
     ConvexHullsOfCurve hulls_curve =
-        createStaticObstacle(0.0, i * (bbox_y + separation), 0.0, num_pol, bbox_x, bbox_y, bbox_z);
+        createStaticObstacle(5.0, i * (bbox_y + separation), 0.0, num_pol, bbox_x, bbox_y, bbox_z);
     hulls_curves.push_back(hulls_curve);  // only one obstacle
 
     hulls_curve = createStaticObstacle(0.0, -i * (bbox_y + separation), 0.0, num_pol, bbox_x, bbox_y, bbox_z);
@@ -306,7 +306,6 @@ int main(int argc, char** argv)
     {
       hulls_curve.push_back(hull);
     }
-
     hulls_curves.push_back(hulls_curve);*/
 
   OctopusSearch myAStarSolver(basis, num_pol, deg_pol, alpha_shrink);
@@ -329,7 +328,11 @@ int main(int argc, char** argv)
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
-  bool solved = myAStarSolver.run(q, n, d);
+  bool is_stuck;
+
+  bool solved = myAStarSolver.run(q, n, d, is_stuck);
+
+  if(is_stuck){std::cout << "stuck" << std::endl;}
 
   // Recover all the trajectories found and the best trajectory
   std::vector<mt::trajectory> all_trajs_found;
@@ -409,12 +412,18 @@ int main(int argc, char** argv)
   ros::Publisher pub_goal = nh.advertise<geometry_msgs::PointStamped>("/oct_goal", 1, true);
   pub_goal.publish(quadgoal);
 
+  Eigen::Vector3d origin(0.0, 0.0, 0.0);
+  geometry_msgs::PointStamped originpt;
+  originpt.header.frame_id = "world";
+  originpt.point = mu::eigen2point(origin);
+  ros::Publisher pub_origin = nh.advertise<geometry_msgs::PointStamped>("/origin", 1, true);
+  pub_origin.publish(originpt);
+
   ros::spinOnce;
 
 
   /*
     vectorOfNodes2vectorOfStates()
-
         traj_committed_colored_ = stateVector2ColoredMarkerArray(data, type, par_.v_max, increm, name_drone_);
     pub_traj_committed_colored_.publish(traj_committed_colored_);*/
 

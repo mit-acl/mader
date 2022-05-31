@@ -728,7 +728,8 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
   bool isFeasible = true;
 
   // Check obstacles constraints (and compute n and d)
-  for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++)
+  // for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++)
+  for (int index_interv = 1; index_interv < (q.size() - 3); index_interv++)
   {
     last4Cps.col(0) = q[index_interv];
     last4Cps.col(1) = q[index_interv + 1];
@@ -876,6 +877,7 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
 bool OctopusSearch::collidesWithObstacles(Node& current)
 {
   Eigen::Matrix<double, 3, 4> last4Cps;  // Each column contains a control point
+  bool collides = false;
 
   if (current.index >= 3)
   {
@@ -885,6 +887,7 @@ bool OctopusSearch::collidesWithObstacles(Node& current)
       last4Cps.col(1) = q1_;
       last4Cps.col(2) = current.previous->qi;
       last4Cps.col(3) = current.qi;
+      collides = false;
     }
     else if (current.index == 4)
     {
@@ -892,6 +895,7 @@ bool OctopusSearch::collidesWithObstacles(Node& current)
       last4Cps.col(1) = current.previous->previous->qi;
       last4Cps.col(2) = current.previous->qi;
       last4Cps.col(3) = current.qi;
+      collides = collidesWithObstaclesGivenVertexes(last4Cps, current.index);
     }
     else
     {
@@ -899,9 +903,8 @@ bool OctopusSearch::collidesWithObstacles(Node& current)
       last4Cps.col(1) = current.previous->previous->qi;
       last4Cps.col(2) = current.previous->qi;
       last4Cps.col(3) = current.qi;
+      collides = collidesWithObstaclesGivenVertexes(last4Cps, current.index);
     }
-
-    bool collides = collidesWithObstaclesGivenVertexes(last4Cps, current.index);
 
     ////////
     if (current.index == (N_ - 2))
