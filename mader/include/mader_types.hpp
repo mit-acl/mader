@@ -560,6 +560,8 @@ struct dynTrajCompiled
 
 struct parameters
 {
+  double expected_comm_delay;
+
   bool use_ff;
   bool visual;
 

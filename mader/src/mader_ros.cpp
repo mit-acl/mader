@@ -27,6 +27,10 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   bool sim; // if this is simulation or hardware. Used to check if we need SQ or HX
   mu::safeGetParam(nh1_, "sim", sim);
 
+  mu::safeGetParam(nh1_, "expected_comm_delay", par_.expected_comm_delay);
+  expected_comm_delay_ = par_.expected_comm_delay;
+  mu::safeGetParam(nh1_, "simulated_comm_delay", simulated_comm_delay_);
+
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
   mu::safeGetParam(nh1_, "visual", par_.visual);
   mu::safeGetParam(nh1_, "color_type", par_.color_type);

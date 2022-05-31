@@ -136,6 +136,9 @@ private:
 
   bool published_initial_position_ = false;
 
+  bool simulated_comm_delay_;
+  bool expected_comm_delay_;
+
   Eigen::Affine3d W_T_B_;
 
   mt::PieceWisePol pwp_last_;
