@@ -856,6 +856,34 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
   return result;
 }
 
+// Delay check
+bool Mader::everyTrajCheck(mt::PieceWisePol pwp_optimized)
+{
+  // std::cout << "bef mtx_trajs_.lock() in delayCheck" << std::endl;
+  mtx_trajs_.lock(); // this function is called in mader_ros.cpp so need to lock in the function
+  // std::cout << "aft mtx_trajs_.lock() in delayCheck" << std::endl;
+
+  bool result = true;
+  for (auto &traj : trajs_)
+  {
+    if (traj.is_agent == true)
+    {
+      if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
+      {
+        ROS_ERROR_STREAM("[First Delay Check] In delay check traj collides with " << traj.id);
+        result = false;  // will have to redo the optimization
+        break;
+      }
+    } 
+  }
+
+  // std::cout << "bef mtx_trajs_.unlock() in delayCheck" << std::endl;
+  mtx_trajs_.unlock();
+  // std::cout << "aft mtx_trajs_.unlock() in delayCheck" << std::endl;
+
+  return result;
+}
+
 // this is just Check in case A* failed
 bool Mader::safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_prev)
 {

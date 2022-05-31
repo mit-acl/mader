@@ -417,7 +417,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         // start
         MyTimer delay_check_t(true);
 
+
+
         // delay check *******************************************************
+        delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now);
         is_in_DC_ = true;
         while (delay_check_t.ElapsedMs()/1000.0 < expected_comm_delay_)
         {
@@ -432,6 +435,9 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         // ros::Duration(expected_comm_delay_).sleep();
         is_in_DC_ = false;
         // end of delay check *******************************************************
+
+
+
 
         if(delay_check_result_){
           // execute the new trajectory
