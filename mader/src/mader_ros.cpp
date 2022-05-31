@@ -26,6 +26,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 {
   bool sim; // if this is simulation or hardware. Used to check if we need SQ or HX
   mu::safeGetParam(nh1_, "sim", sim_);
+  mu::safeGetParam(nh1_, "if_delaycheck", if_delaycheck_);
 
   mu::safeGetParam(nh1_, "expected_comm_delay", par_.expected_comm_delay);
   expected_comm_delay_ = par_.expected_comm_delay;
@@ -409,13 +410,11 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       visual_tools_->deleteAllMarkers();
       visual_tools_->enableBatchPublishing();
 
-      if (edges_obstacles.size() > 0)
-      {
-        pubObstacles(edges_obstacles);
-      }
+      if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
       pubTraj(X_safe);
-      publishPlanes(planes);
-      publishText();
+
+      // publishPlanes(planes);
+      // publishText();
     }
 
     if (replanned)
