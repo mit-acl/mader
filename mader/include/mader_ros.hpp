@@ -44,7 +44,7 @@ private:
   void publishPlanes(std::vector<Hyperplane3D>& planes);
 
   // class methods
-  void pubTraj(const std::vector<mt::state>& data);
+  void pubTraj(const std::vector<mt::state>& data, const bool& is_committed);
   void terminalGoalCB(const geometry_msgs::PoseStamped& msg);
   void pubState(const mt::state& msg, const ros::Publisher pub);
   void stateCB(const snapstack_msgs::State& msg);
@@ -109,7 +109,8 @@ private:
   ros::Publisher pub_point_A_;
 
   ros::Publisher pub_traj_safe_colored_;
-
+  ros::Publisher pub_traj_safe_colored_bef_commit_;
+  
   ros::Publisher pub_text_;
   ros::Publisher pub_traj_;
 
@@ -136,6 +137,8 @@ private:
   std::vector<std::string> traj_;  // trajectory of the dynamic obstacle
 
   visualization_msgs::MarkerArray traj_safe_colored_;
+  visualization_msgs::MarkerArray traj_safe_colored_bef_commit_;
+  visualization_msgs::MarkerArray traj_safe_colored_bef_commit_save_;
 
   int actual_trajID_ = 0;
 
@@ -148,6 +151,7 @@ private:
 
   double simulated_comm_delay_;
   double expected_comm_delay_;
+
 
   std::mutex mtx_alltrajs_;
   std::mutex mtx_alltrajsTimers_;

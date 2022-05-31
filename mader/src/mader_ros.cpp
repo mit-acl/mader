@@ -147,6 +147,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   poly_safe_pub_ = nh1_.advertise<decomp_ros_msgs::PolyhedronArray>("poly_safe", 1, true);
   pub_text_ = nh1_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
   pub_traj_safe_colored_ = nh1_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored", 1);
+  pub_traj_safe_colored_bef_commit_ = nh1_.advertise<visualization_msgs::MarkerArray>("traj_safe_colored_bef_commit", 1);
   pub_text_ = nh1_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
   pub_fov_ = nh1_.advertise<visualization_msgs::Marker>("fov", 1);
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
@@ -311,6 +312,9 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   tmp.time_received = ros::Time::now().toSec();
 
+  // double comm_delay = tmp.time_received - tmp.time_created;
+  // std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
+
   if (sim_) {
     //****** Communication delay introduced in the simulation
     // save all the trajectories into alltrajs_ and create a timer corresponding to that
@@ -424,6 +428,16 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         // start
         MyTimer delay_check_t(true);
 
+        // visualization
+        if (par_.visual)
+        {
+          // Delete markers to publish stuff
+          visual_tools_->deleteAllMarkers();
+          visual_tools_->enableBatchPublishing();
+          if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
+          pubTraj(X_safe, false);
+        }
+
 
         // delay check *******************************************************
         delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
@@ -432,7 +446,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         {
           // wait while trajCB() is checking new trajs
           // TODO make this as a timer so that i can move onto the next optimization
-          // std::cout << "waiting in DC" << std::endl;
+          std::cout << "waiting in DC" << std::endl;
           if (delay_check_result_ == false)
           {
             break;
@@ -453,7 +467,6 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           // }
 
           if(mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now_)){
-            std::cout << "here" << std::endl;
             publishOwnTraj(pwp_now_, true);
             pwp_last_ = pwp_now_;
             // std::cout << "Success!" << std::endl;
@@ -463,15 +476,13 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
               visual_tools_->deleteAllMarkers();
               visual_tools_->enableBatchPublishing();
               if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
-              pubTraj(X_safe);
+              pubTraj(X_safe, true);
             }
           } else {
             int time_ms = int(ros::Time::now().toSec() * 1000);
 
             if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
             {
-              std::cout << "here2" << std::endl;
-
               publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                           // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
                                           // very far from the other drones with it last successfully planned a trajectory).
@@ -481,12 +492,11 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             }
           }
         } else {
-          std::cout << "here4" << std::endl;
+
           int time_ms = int(ros::Time::now().toSec() * 1000);
 
-          if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
+          if (timer_stop_.ElapsedMs() > 200.0)  // TODO set as param
           {
-            std::cout << "here3" << std::endl;
 
             publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                         // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
@@ -507,7 +517,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           visual_tools_->enableBatchPublishing();
 
           if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
-          pubTraj(X_safe);
+          pubTraj(X_safe, true);
 
           // publishPlanes(planes);
           // publishText();
@@ -749,7 +759,7 @@ void MaderRos::clearMarkerArray(visualization_msgs::MarkerArray* tmp, ros::Publi
   (*tmp).markers.clear();
 }
 
-void MaderRos::pubTraj(const std::vector<mt::state>& data)
+void MaderRos::pubTraj(const std::vector<mt::state>& data, const bool& is_committed)
 {
   // Trajectory
   nav_msgs::Path traj;
@@ -778,9 +788,20 @@ void MaderRos::pubTraj(const std::vector<mt::state>& data)
 
   double scale = 0.15;
 
-  traj_safe_colored_ = mu::trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale,
-                                                         par_.color_type, id_, par_.n_agents);
-  pub_traj_safe_colored_.publish(traj_safe_colored_);
+  if (!is_committed)
+  {
+    traj_safe_colored_bef_commit_ = mu::trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale,
+                                                         "bef_DC", id_, par_.n_agents);
+    traj_safe_colored_bef_commit_save_ = mu::trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale,
+                                                         par_.color_type, id_, par_.n_agents);    
+    pub_traj_safe_colored_bef_commit_.publish(traj_safe_colored_bef_commit_);
+  } 
+  else
+  { // if commit is successful then delete the old one
+    clearMarkerArray(&traj_safe_colored_, &pub_traj_safe_colored_);
+    traj_safe_colored_ = traj_safe_colored_bef_commit_save_;
+    pub_traj_safe_colored_.publish(traj_safe_colored_);
+  }
 }
 
 void MaderRos::pubActualTraj()

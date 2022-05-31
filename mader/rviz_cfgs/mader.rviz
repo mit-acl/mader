@@ -230,7 +230,7 @@ Visualization Manager:
       VsScale: 1
     - Class: rviz/Marker
       Enabled: false
-      Marker Topic: /SQ03s/mader/obstacles
+      Marker Topic: /SQ05s/mader/obstacles
       Name: Obstacles
       Namespaces:
         {}
@@ -351,53 +351,101 @@ Visualization Manager:
       top: 0
       width: 128
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
+      Marker Topic: /SQ01s/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ02s/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ03s/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        SQ03s: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ04s/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ05s/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ06s/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
       Marker Topic: /SQ01s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ02s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ03s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ04s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ05s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ06s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /SQ07s/mader/traj_safe_colored
@@ -966,9 +1014,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.044796347618103
+      Pitch: 1.054796576499939
       Target Frame: <Fixed Frame>
-      Yaw: 4.724995136260986
+      Yaw: 4.724992275238037
     Saved:
       - Class: rviz/ThirdPersonFollower
         Distance: 16.45623207092285
@@ -1088,5 +1136,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1829
-  X: 100
-  Y: 621
+  X: 97
+  Y: 577
