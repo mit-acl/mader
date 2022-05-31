@@ -25,7 +25,7 @@ typedef MADER_timers::Timer MyTimer;
 MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3) : nh1_(nh1), nh2_(nh2), nh3_(nh3)
 {
   bool sim; // if this is simulation or hardware. Used to check if we need SQ or HX
-  mu::safeGetParam(nh1_, "sim", sim);
+  mu::safeGetParam(nh1_, "sim", sim_);
 
   mu::safeGetParam(nh1_, "expected_comm_delay", par_.expected_comm_delay);
   expected_comm_delay_ = par_.expected_comm_delay;

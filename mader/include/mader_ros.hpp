@@ -75,6 +75,7 @@ private:
 
   void verify(bool cond, std::string info_if_false);
 
+  bool sim_;
   mt::state state_;
 
   std::string world_name_ = "world";
