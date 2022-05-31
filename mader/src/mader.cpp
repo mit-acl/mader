@@ -1295,7 +1295,7 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   // std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
 
   time_init_opt_ = ros::Time::now().toSec();
-  removeTrajsThatWillNotAffectMe(A, t_start, t_final);
+  // removeTrajsThatWillNotAffectMe(A, t_start, t_final);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
 
   // std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
@@ -2011,33 +2011,33 @@ bool Mader::getNextGoal(mt::state& next_goal)
   next_goal.setZero();
   next_goal = plan_.front();
 
-  if (is_pop_up_ && !is_z_max_increased_){
-    // we need to pop up the drone
-    std::cout << "pop up!!!!" << std::endl;
-    double pop_up_alt = par_.drone_bbox[2] + 0.1;
-    pop_up_state_ = state_;
-    std::cout << "plan_.size() is " << plan_.size() << "\n";
-    if (plan_.size() != 0){
-      for (int i = 0; i < plan_.size(); i++){
-      // increment z axis value
-      double pop_up_increment = pop_up_alt / plan_.size();
-      plan_.content[i].pos[2] = plan_.content[i].pos[2] + i * pop_up_increment;
-      } 
-    } else {
-      double pop_up_increment = pop_up_alt / 400;
-      for (int i = 0; i < 400; i++){
-        mt::state temporaty_state = state_;
-        temporaty_state.pos[2] += i * pop_up_increment;
-        plan_.push_back(temporaty_state);
-      }
-    }
+  // if (is_pop_up_ && !is_z_max_increased_){
+  //   // we need to pop up the drone
+  //   std::cout << "pop up!!!!" << std::endl;
+  //   double pop_up_alt = par_.drone_bbox[2] + 0.1;
+  //   pop_up_state_ = state_;
+  //   std::cout << "plan_.size() is " << plan_.size() << "\n";
+  //   if (plan_.size() != 0){
+  //     for (int i = 0; i < plan_.size(); i++){
+  //     // increment z axis value
+  //     double pop_up_increment = pop_up_alt / plan_.size();
+  //     plan_.content[i].pos[2] = plan_.content[i].pos[2] + i * pop_up_increment;
+  //     } 
+  //   } else {
+  //     double pop_up_increment = pop_up_alt / 400;
+  //     for (int i = 0; i < 400; i++){
+  //       mt::state temporaty_state = state_;
+  //       temporaty_state.pos[2] += i * pop_up_increment;
+  //       plan_.push_back(temporaty_state);
+  //     }
+  //   }
     
-    is_pop_up_ = false;
-    pop_up_last_state_in_plan_ = plan_.back();
-    double new_zmax = par_.z_max + pop_up_alt;
-    solver_->changeZmax(new_zmax);
-    is_z_max_increased_ = true;
-  }
+  //   is_pop_up_ = false;
+  //   pop_up_last_state_in_plan_ = plan_.back();
+  //   double new_zmax = par_.z_max + pop_up_alt;
+  //   solver_->changeZmax(new_zmax);
+  //   is_z_max_increased_ = true;
+  // }
 
   if (plan_.size() > 1)
   {
