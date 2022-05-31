@@ -156,6 +156,7 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
   traj_compiled.bbox = traj.bbox;
   traj_compiled.id = traj.id;
   traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
+  traj_compiled.time_created = traj.time_created;
 
   traj_compiled.is_static =
       ((traj.is_agent == false) &&                           // is an obstacle and
@@ -168,6 +169,131 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
   traj_compiled.pwp = traj.pwp;
 }
 // Note that we need to compile the trajectories inside mader.cpp because t_ is in mader.hpp
+
+void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC, bool& delay_check_result, const double& headsup_time)
+{
+  MyTimer tmp_t(true);
+
+  if (started_check_ == true && traj.is_agent == true)
+  {
+    have_received_trajectories_while_checking_ = true;
+  }
+
+  mtx_trajs_.lock();
+
+  std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
+      std::find_if(trajs_.begin(), trajs_.end(),
+                   [=](const mt::dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
+
+  bool exists_in_local_map = (obs_ptr != std::end(trajs_));
+
+  mt::dynTrajCompiled traj_compiled;
+  dynTraj2dynTrajCompiled(traj, traj_compiled);
+
+  if (is_in_DC){ 
+
+    // do delay check for the new traj
+    if (traj_compiled.is_agent == true)
+    {
+      if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      {
+        ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
+        delay_check_result = false;  // will have to redo the optimization
+        mtx_trajs_.unlock();
+        have_received_trajectories_while_checking_ = false;
+        return;
+      } else if (traj_compiled.time_created == headsup_time) // tie breaking: compare x, y, z and bigger one wins
+      {
+        Eigen::Vector3d center_obs;
+        center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(), traj_compiled.function[2].value();
+        if (center_obs[0] > state_.pos[0])
+        {
+          delay_check_result = false;
+          mtx_trajs_.unlock();
+          have_received_trajectories_while_checking_ = false;
+          return;
+        } else if (center_obs[1] > state_.pos[1])
+        {
+          delay_check_result = false;
+          mtx_trajs_.unlock();
+          have_received_trajectories_while_checking_ = false;
+          return;
+        } else if (center_obs[2] > state_.pos[2])
+        {
+          delay_check_result = false;
+          mtx_trajs_.unlock();
+          have_received_trajectories_while_checking_ = false;
+          return;
+        }
+      // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't happen bc it's the same position and collision
+      }
+    }
+  }
+
+  if (exists_in_local_map)
+  {  // if that object already exists, substitute its trajectory
+    *obs_ptr = traj_compiled;
+  }
+  else
+  {  // if it doesn't exist, add it to the local map
+    trajs_.push_back(traj_compiled);
+    // ROS_WARN_STREAM("Adding " << traj_compiled.id);
+  }
+
+  // and now let's delete those trajectories of the obs/agents whose current positions are outside the local map
+  // Note that these positions are obtained with the trajectory stored in the past in the local map
+  std::vector<int> ids_to_remove;
+
+  for (int index_traj = 0; index_traj < trajs_.size(); index_traj++)
+  {
+    bool traj_affects_me = false;
+
+    mtx_t_.lock();
+    t_ = ros::Time::now().toSec();
+
+    Eigen::Vector3d center_obs;
+    center_obs << trajs_[index_traj].function[0].value(),  ////////////////////
+        trajs_[index_traj].function[1].value(),            ////////////////
+        trajs_[index_traj].function[2].value();            /////////////////
+
+    mtx_t_.unlock();
+
+    // mtx_t_.unlock();
+    if (((traj_compiled.is_static == true) && (center_obs - state_.pos).norm() > 2 * par_.Ra) ||  ////
+        ((traj_compiled.is_static == false) && (center_obs - state_.pos).norm() > 4 * par_.Ra))
+    // #### Static Obstacle: 2*Ra because: traj_{k-1} is inside a sphere of Ra.
+    // Then, in iteration k the point A (which I don't
+    // know yet)  is taken along that trajectory, and
+    // another trajectory of radius Ra will be obtained.
+    // Therefore, I need to take 2*Ra to make sure the
+    // extreme case (A taken at the end of traj_{k-1} is
+    // covered).
+
+    // #### Dynamic Agent: 4*Ra. Same reasoning as above, but with two agets
+    // #### Dynamic Obstacle: 4*Ra, it's a heuristics.
+
+    // ######REMEMBER######
+    // Note that removeTrajsThatWillNotAffectMe will later
+    // on take care of deleting the ones I don't need once
+    // I know A
+    {
+      ids_to_remove.push_back(trajs_[index_traj].id);
+    }
+  }
+
+  for (auto id : ids_to_remove)
+  {
+    // ROS_WARN_STREAM("Removing " << id);
+    trajs_.erase(
+        std::remove_if(trajs_.begin(), trajs_.end(), [&](mt::dynTrajCompiled const& traj) { return traj.id == id; }),
+        trajs_.end());
+  }
+
+  mtx_trajs_.unlock();
+
+  have_received_trajectories_while_checking_ = false;
+  // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
+}
 
 void Mader::updateTrajObstacles(mt::dynTraj traj)
 {
@@ -253,7 +379,6 @@ void Mader::updateTrajObstacles(mt::dynTraj traj)
   have_received_trajectories_while_checking_ = false;
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
-
 std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, double t_start, double t_end,
                                                        const Eigen::Vector3d& delta)
 {

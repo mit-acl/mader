@@ -300,6 +300,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   tmp.is_agent = msg.is_agent;
 
+  tmp.time_created = msg.time_created;
+
   if (msg.is_agent)
   {
     tmp.pwp = mu::pwpMsg2Pwp(msg.pwp);
@@ -343,7 +345,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   //   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_new_, is_in_DC_, headsup_time_, delay_check_result_);
   // }
   
-  mader_ptr_->updateTrajObstacles(alltrajs_[0]);
+  mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
 
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
   mtx_alltrajs_.lock();
@@ -387,6 +389,8 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
 
   msg.pwp = mu::pwp2PwpMsg(pwp);
 
+  msg.time_created = ros::Time::now().toSec();
+
   // std::cout<<"msg.pwp.times[0]= "<<msg.pwp.times[0]
 
   pub_traj_.publish(msg);
@@ -400,16 +404,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     mt::Edges edges_obstacles;
     std::vector<mt::state> X_safe;
     std::vector<Hyperplane3D> planes;
-    mt::PieceWisePol pwp_now;
 
     // replan    
     bool replanned = false;
     if (if_delaycheck_){
-      replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now, headsup_time_);
+      replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_, headsup_time_);
       if (replanned){
 
         // let others know my new trajectory
-        publishOwnTraj(pwp_now);
+        publishOwnTraj(pwp_now_);
 
         // get the time
         headsup_time_ =ros::Time::now().toSec();
@@ -418,9 +421,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         MyTimer delay_check_t(true);
 
 
-
         // delay check *******************************************************
-        delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now);
+        delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
         is_in_DC_ = true;
         while (delay_check_t.ElapsedMs()/1000.0 < expected_comm_delay_)
         {
@@ -437,20 +439,18 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         // end of delay check *******************************************************
 
 
-
-
         if(delay_check_result_){
           // execute the new trajectory
           // if it's the first time to add traj to plan_ then don't execute it. you don't have a back-up traj (pwp_last_)
           // if (!is_add_plan_initialized_){
-          //   pwp_last_ = pwp_now;
+          //   pwp_last_ = pwp_now_;
           //   is_add_plan_initialized_ = true;
           //   return;
           // }
 
-          if(mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now)){
-            publishOwnTraj(pwp_now);
-            pwp_last_ = pwp_now;
+          if(mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now_)){
+            publishOwnTraj(pwp_now_);
+            pwp_last_ = pwp_now_;
             // std::cout << "Success!" << std::endl;
             if (par_.visual)
             {
@@ -485,7 +485,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         }
       } else {
 
-        replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now);
+        replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
 
         if (par_.visual)
         {
@@ -502,8 +502,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
         if (replanned)
         {
-          publishOwnTraj(pwp_now);
-          pwp_last_ = pwp_now;
+          publishOwnTraj(pwp_now_);
+          pwp_last_ = pwp_now_;
         }
         else
         {

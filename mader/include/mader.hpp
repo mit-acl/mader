@@ -65,7 +65,9 @@ public:
   void resetInitialization();
 
   bool IsTranslating();
+  void updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC, bool& delay_check_result, const double& headsup_time);
   void updateTrajObstacles(mt::dynTraj traj);
+
   Eigen::Vector2d RotationMatrix(Eigen::Vector2d& vec, const double& angle);
   void getID(int& id);
 
