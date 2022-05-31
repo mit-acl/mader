@@ -78,6 +78,9 @@ private:
 
   bool sim_;
   bool if_delaycheck_;
+  double headsup_time_ = 0.0;
+  bool is_in_DC_ = false;
+  bool delay_check_result_ = true;
   mt::state state_;
 
   std::string world_name_ = "world";

@@ -794,6 +794,39 @@ bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol
 
 // Checks that I have not received new trajectories that affect me while doing the optimization
 // Check period and Recheck period is defined here
+bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_time)
+{
+  started_check_ = true;
+
+  bool result = true;
+  for (auto &traj : trajs_)
+  {
+    if (traj.time_received > headsup_time && traj.is_agent == true)
+    // if (traj.is_agent == true) // need to include the trajs that came in the last delay check
+    {
+      if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
+      {
+        ROS_ERROR_STREAM("Traj collides with " << traj.id);
+        result = false;  // will have to redo the optimization
+        break;
+      }
+    }
+  }
+
+  // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
+  // This is Recheck
+  if (have_received_trajectories_while_checking_ == true)
+  {
+    ROS_ERROR_STREAM("Recvd traj while checking ");
+    result = false;
+  }
+
+  started_check_ = false;
+
+  return result;
+}
+
+// Checks that I have not received new trajectories that affect me while doing the optimization
 bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
 {
   started_check_ = true;
@@ -813,7 +846,6 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
   }
 
   // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
-  // This is Recheck
   if (have_received_trajectories_while_checking_ == true)
   {
     ROS_ERROR_STREAM("Recvd traj while checking ");
@@ -909,6 +941,456 @@ bool Mader::isReplanningNeeded()
     // printDroneStatus();
     return false;
   }
+  return true;
+}
+
+bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
+                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
+                   mt::PieceWisePol& pwp_now, double& headsup_time)
+{
+  if (isReplanningNeeded() == false)
+  {
+    // std::cout << "replan is not needed" << std::endl;
+    return false;
+  }
+
+  // Pop-up for demos
+
+  // if (is_z_max_increased_ && !is_going_back_to_normal_z_max_){
+  //   // following popped up trajectory and haven't yet reached to pop_up_last_state_in_plan_ 
+  //   Eigen::Vector3d diff = state_.pos - pop_up_last_state_in_plan_.pos;
+  //   pwp_out = mu::constPosition2pwp(pop_up_last_state_in_plan_.pos);
+  //   if (diff.norm() > 0.1){
+  //     return true;
+  //   }
+  //   std::cout << "reached pop_up_last_state_in_plan_" << "\n";
+  //   is_going_back_to_normal_z_max_ = true;
+  // } 
+
+  // if (is_z_max_increased_ && is_going_back_to_normal_z_max_){
+  //   // once you reached pop_up_last_state_in_plan_, then you start planning new traj in extended z_max space
+  //   // std::cout << "state_.pos[2] " << state_.pos[2] << "\n";
+  //   // std::cout << "par_.z_max_ " << par_.z_max << "\n";
+  //   // std::cout << "par_for_solver.z_max " << solver_->printZmax() << "\n";
+  //   std::cout << "going back to the nominal space" << "\n";
+  //   if (state_.pos[2] < par_.z_max - 0.3){ // if you go back to the nominal z_max, then put z_max back. 0.3 is a buffer
+  //     std::cout << "got back to the nomial space!!" << "\n";
+  //     solver_->changeZmax(par_.z_max); // put the z_max back to the nominal value
+  //     is_z_max_increased_ = false;
+  //     is_going_back_to_normal_z_max_ = false;
+  //   }
+  // }
+  // std::cout << "par_for_solver.z_max " << solver_->printZmax() << "\n";
+
+  MyTimer replanCB_t(true);
+
+  std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
+
+  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Select mt::state A /////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+
+  mtx_G_term.lock();
+  mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
+  mtx_G_term.unlock();
+
+  mt::state A;
+  int k_index;
+
+  // If k_index_end_=0, then A = plan_.back() = plan_[plan_.size() - 1]
+
+  mtx_plan_.lock();
+
+  mu::saturate(deltaT_, par_.lower_bound_runtime_snlopt / par_.dc, par_.upper_bound_runtime_snlopt / par_.dc);
+
+  k_index_end_ = std::max((int)(plan_.size() - deltaT_), 0);
+
+  if (plan_.size() < 5)
+  {
+    k_index_end_ = 0;
+  }
+
+  k_index = plan_.size() - 1 - k_index_end_;
+  A = plan_.get(k_index);
+
+  mtx_plan_.unlock();
+
+  // std::cout << blue << "k_index:" << k_index << reset << std::endl;
+  // std::cout << blue << "k_index_end_:" << k_index_end_ << reset << std::endl;
+  // std::cout << blue << "plan_.size():" << plan_.size() << reset << std::endl;
+
+  double runtime_snlopt;
+
+  if (k_index_end_ != 0)
+  {
+    runtime_snlopt = k_index * par_.dc;  // std::min(, par_.upper_bound_runtime_snlopt);
+  }
+  else
+  {
+    runtime_snlopt = par_.upper_bound_runtime_snlopt;  // I'm stopped at the end of the trajectory --> take my
+                                                       // time to replan
+  }
+  mu::saturate(runtime_snlopt, par_.lower_bound_runtime_snlopt, par_.upper_bound_runtime_snlopt);
+
+  // std::cout << green << "Runtime snlopt= " << runtime_snlopt << reset << std::endl;
+
+  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Get point G ////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+
+  double distA2TermGoal = (G_term.pos - A.pos).norm();
+  double ra = std::min((distA2TermGoal - 0.001), par_.Ra);  // radius of the sphere S
+  mt::state G;
+  G.pos = A.pos + ra * (G_term.pos - A.pos).normalized(); 
+  
+  // detoured G
+
+  Eigen::Vector3d dist_prog(1e5, 1e5, 1e5);
+  Eigen::Vector3d dist_to_goal(1e5, 1e5, 1e5);
+  Eigen::Vector3d dist_from_state__to_goal(1e5, 1e5, 1e5);
+  double unstuck_dist = 2.0; //meters
+  double reached_goal_dist = par_.drone_bbox[0]+0.1; // avoid the detoured goal is within others bbox and cannot move at all sitution.
+  double how_much_to_detoured_G = 0.7; //0.1 means 10%
+  double vel_stuck_detect = 0.1; // m/s
+
+  double detour_max_time = 5; //seconds, how long want to detour
+  
+  if (par_.is_stuck || if_detour_ || is_A_star_failed_30_){
+    
+    if (par_.is_stuck && !if_detour_){
+      // timer_detour_.Reset();
+      stuck_state_ = state_;
+      A_when_stuck_ = A;
+      G_when_stuck_ = G;
+    }
+
+    dist_prog = state_.pos - stuck_state_.pos;
+    dist_to_goal = detoured_G_.pos - stuck_state_.pos;
+    dist_from_state__to_goal = detoured_G_.pos - state_.pos;
+
+    // std::cout << "dist_prog is " << dist_prog << std::endl;
+    // std::cout << "state_.pos is " << state_.pos << std::endl;
+    // std::cout << "stuck_state_.pos is " << stuck_state_.pos << std::endl;
+
+    //if (timer_detour_.ElapsedMs() < detour_max_time * 1000){
+    if (state_.vel.norm() < vel_stuck_detect &&
+     dist_from_state__to_goal.norm() > reached_goal_dist &&
+     dist_prog.norm() < unstuck_dist && 
+     dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
+      
+      getDetourG(G); // if stuck, make a new G for detour
+      // if (!if_A_moveback_){
+      //   moveAtowardG(A, G);
+      //   if_A_moveback_ = true;
+      // }
+      std::cout << "using detoured G" << std::endl;
+      stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
+      if_detour_ = true;
+      if (stuck_count_for_detour_ > 10){
+        if_detour_ = false; // maybe the detour G is also causing stuck, so go back to the original one
+        if_A_moveback_ = false;
+      }
+    } else {
+      stuck_count_for_detour_ = 0;
+      if_detour_ = false;
+      if_A_moveback_ = false;
+    //   std::cout << "stop using detoured G" << std::endl;
+    //   std::cout << "dist_prog.norm() is " << dist_prog.norm() << std::endl;
+    } 
+  }
+
+  mt::state initial = A;
+  mt::state final = G;
+
+  mtx_G.lock();
+  G_ = G;
+  mtx_G.unlock();
+
+  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Solve optimization! ////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+
+  solver_->setMaxRuntimeKappaAndMu(runtime_snlopt, par_.kappa, par_.mu);
+
+  //////////////////////
+  time_now_ = ros::Time::now().toSec();  // TODO this ros dependency shouldn't be here
+
+  double t_start = k_index * par_.dc + time_now_;
+
+  double factor_alloc = (distA2TermGoal > par_.dist_factor_alloc_close) ? par_.factor_alloc : par_.factor_alloc_close;
+
+  double time_allocated = factor_alloc * mu::getMinTimeDoubleIntegrator3D(initial.pos, initial.vel, final.pos,
+                                                                          final.vel, par_.v_max, par_.a_max);
+
+  std::cout << "time_allocated= " << time_allocated << std::endl;
+
+  // std::cout << "initial is " << initial.pos.transpose() << std::endl;
+  // std::cout << "Pos of A is" << A.pos.transpose() << std::endl;
+
+  double t_final = t_start + time_allocated;
+
+  bool correctInitialCond =
+      solver_->setInitStateFinalStateInitTFinalT(initial, final, t_start,
+                                                 t_final);  // note that here t_final may have been updated
+
+  if (correctInitialCond == false)
+  {
+    std::cout << bold << red << "The solver cannot guarantee feasibility for v1" << reset << std::endl;
+    return false;
+  }
+
+  ////////////////
+  // std::cout << "bef mtx_trajs_.lock() in replan" << std::endl;
+  mtx_trajs_.lock();
+  // std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
+
+  time_init_opt_ = ros::Time::now().toSec();
+  removeTrajsThatWillNotAffectMe(A, t_start, t_final);
+  ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
+
+  // std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
+  mtx_trajs_.unlock();
+  // std::cout << "aft mtx_trajs_.unlock() in replan" << std::endl;
+
+  mt::ConvexHullsOfCurves_Std hulls_std = cu::vectorGCALPol2vectorStdEigen(hulls);
+  // poly_safe_out = cu::vectorGCALPol2vectorJPSPol(hulls);
+  edges_obstacles_out = cu::vectorGCALPol2edges(hulls);
+
+  solver_->setHulls(hulls_std);
+
+  //////////////////////
+  // std::cout << on_cyan << bold << "Solved so far" << solutions_found_ << "/" << total_replannings_ << reset
+  //           << std::endl;
+
+  // std::cout << "[FA] Calling NL" << std::endl;
+
+  bool is_stuck;
+  bool is_A_star_failed;
+  bool result = solver_->optimize(is_stuck, is_A_star_failed);  // calling the solver
+
+  // right after taking off, sometims drones cannot find a path
+  // sometimes the very initial path search takes more than how_many_A_star_failure counts and fails
+  // if (planner_initialized_){
+
+  //   // check if A_star is failed and see if the previous plan is feasible
+  //   if (is_A_star_failed && !is_pwp_prev_feasible_){
+  //     A_star_fail_count_ += 1;
+  //     is_A_star_failed_30_ = (A_star_fail_count_ > 30);
+  //     // need to check if my previous traj collides with others. and if that's the case pop it up
+  //     std::cout << "A_star is failing\n";
+  //     std::cout << "A_star_fail_count_ is " << A_star_fail_count_ << "\n"; 
+  //     if (is_A_star_failed_30_){
+  //       if(!safetyCheck_for_A_star_failure(pwp_prev_)){
+  //         std::cout << "previous pwp collide!" << "\n";
+  //         // if previous pwp is not feasible pop up the drone 
+  //         // this only happens when two agents commit traj at the very same time (or in Recheck period)
+  //         is_pop_up_ = true;
+  //         A_star_fail_count_ = 0;
+  //         return false; //abort mader
+  //       } else {
+  //         // std::cout << "previous pwp doesn't collide!\n";
+  //         is_pwp_prev_feasible_ = true;
+  //         is_pop_up_ = false;
+  //         A_star_fail_count_ = 0;
+  //       }
+  //     }
+  //   } else {
+  //     is_pop_up_ = false;
+  //     A_star_fail_count_ = 0;
+  //   }
+
+  // }
+
+  // // check if drones are stuck or not
+  // if (is_stuck){
+  //   par_.is_stuck = true;
+  // } else {
+  //   par_.is_stuck = false;
+  // }
+
+  num_of_LPs_run = solver_->getNumOfLPsRun();
+  num_of_QCQPs_run = solver_->getNumOfQCQPsRun();
+
+  total_replannings_++;
+  if (result == false)
+  {
+    int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) + par_.expected_comm_delay / par_.dc);  // Number of states that
+                                                                               // would have been needed for
+                                                                               // the last replan
+    deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
+    deltaT_ = std::min(1.0 * deltaT_, 2.0 / par_.dc);
+    std::cout << "solver couldn't find optimal path" << std::endl;
+    return false;
+  }
+  
+  solver_->getPlanes(planes);
+
+  solutions_found_++;
+
+  // av_improvement_nlopt_ = ((solutions_found_ - 1) * av_improvement_nlopt_ + solver_->improvement_) /
+  // solutions_found_;
+
+  // std::cout << blue << "Average improvement so far" << std::setprecision(5) << av_improvement_nlopt_ << reset
+  //          << std::endl;
+
+  solver_->getSolution(pwp_now);
+
+  // // check if the current position/plan is colliding
+  // if (is_pop_up_initialized_){
+
+  //   // check if A_star is failed and see if the previous plan is feasible
+  //   if (is_A_star_failed_){
+  //     // need to check if my previous traj collides with others. and if that's the case pop it up
+  //     A_star_fail_count_pwp_now_ = A_star_fail_count_pwp_now_ + 1;
+  //     std::cout << "A_star is failing\n";
+  //     std::cout << "A_star_fail_count_pwp_now_ is " << A_star_fail_count_pwp_now_ << "\n"; 
+  //     double how_many_A_star_failure_now = 30;
+  //     if (A_star_fail_count_pwp_now_ > how_many_A_star_failure_now){
+  //       if(!safetyCheck_for_A_star_failure_pwp_now(pwp_now)){
+  //         std::cout << "pwp now collide!" << "\n";
+  //         // if previous pwp is not feasible pop up the drone 
+  //         // this only happens when two agents commit traj at the very same time (or in Recheck period)
+  //         is_pop_up_ = true;
+  //         return false; //abort mader
+  //       } else {
+  //         is_pop_up_ = false;
+  //         A_star_fail_count_pwp_now_ = 0;
+  //       }
+  //     }
+  //   } else {
+  //     is_pop_up_ = false;
+  //     A_star_fail_count_pwp_now_ = 0;
+  //   }
+
+  // }
+
+  MyTimer check_t(true);
+
+  // std::cout << "bef mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
+  mtx_trajs_.lock();
+  // std::cout << "aft mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
+
+  // first make sure none of the trajectory is checked in this optimization
+  // for (auto &traj : trajs_){
+  //   traj.is_checked = false;
+  // }
+
+  // check and recheck are done in safetyChechAfterOpt() 
+  bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now, headsup_time);
+
+  // std::cout << "bef mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
+  mtx_trajs_.unlock();
+  // std::cout << "aft mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
+
+  // To deal with comm delay, now we publish two trajectories(pwp_prev_ and pwp_now)
+
+  if (is_safe_after_opt == false)
+  {
+    ROS_ERROR_STREAM("safetyCheckAfterOpt is not satisfied, returning");
+    return false;
+  }
+
+  ///////////////////////////////////////////////////////////
+  ///////////////       OTHER STUFF    //////////////////////
+  //////////////////////////////////////////////////////////
+
+  mtx_plan_.lock();
+
+  // Check if we have planned until G_term
+  mt::state F = plan_.back();  // Final point of the safe path (\equiv final point of the comitted path)
+  
+  mtx_plan_.unlock();
+
+  double dist = (G_term_.pos - F.pos).norm();
+
+  if (dist < par_.goal_radius)
+  {
+    changeDroneStatus(DroneStatus::GOAL_SEEN);
+  }
+
+  mtx_offsets.lock();
+
+  int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) + par_.expected_comm_delay / par_.dc);  // Number of states that
+                                                                               // would have been needed for
+                                                                               // the last replan
+  deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
+  mtx_offsets.unlock();
+
+  // std::cout << "end of replan" << "\n";
+  // std::cout << "k_index_end_ is " << k_index_end_ << "\n";
+  // std::cout << "deltaT_ is " << deltaT_ << "\n";
+  // std::cout << "plan_.size() " << plan_.size() << "\n";
+
+  planner_initialized_ = true;
+
+  mtx_plan_.lock();
+
+  X_safe_out = plan_.toStdVector();
+
+  mtx_plan_.unlock();
+
+  return true;
+
+}
+
+bool Mader::addTrajToPlan_with_delaycheck(mt::PieceWisePol& pwp){
+
+  // std::cout << bold << "Check Timer=" << check_t << std::endl;
+
+  mtx_G_term.lock();
+  mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
+  mtx_G_term.unlock();
+
+  M_ = G_term;
+
+  //////////////////////////////////////////////////////////////////////////
+  ///////////////////////// Append to plan /////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+
+  mtx_plan_.lock();
+
+  int plan_size = plan_.size();
+
+  if ((plan_size - 1 - k_index_end_) < 0)
+  {
+    std::cout << bold << red << "Already published the point A" << reset << std::endl;
+    std::cout << "plan_size= " << plan_size << std::endl;
+    std::cout << "k_index_end_= " << k_index_end_ << std::endl;
+    mtx_plan_.unlock();
+    return false;
+  }
+  else
+  {
+    // std::cout << "Appending" << std::endl;
+    // std::cout << "before, plan_size=" << plan_.size() << std::endl;
+    plan_.erase(plan_.end() - k_index_end_ - 1, plan_.end());  // this deletes also the initial condition...
+    // std::cout << "middle, plan_size=" << plan_.size() << " sol.size()=" << (solver_->traj_solution_).size()
+    // << std::endl;
+    for (int i = 0; i < (solver_->traj_solution_).size(); i++)  //... which is included in traj_solution_[0]
+    {
+      plan_.push_back(solver_->traj_solution_[i]);
+    }
+    // std::cout << "after, plan_size=" << plan_.size() << std::endl;
+  }
+  
+  // plan_.print();
+  mtx_plan_.unlock();
+
+  ////////////////////
+  ////////////////////
+
+  if (exists_previous_pwp_ == true)
+  {
+    pwp_prev_ = mu::composePieceWisePol(time_now_, par_.dc, pwp_prev_, pwp);
+  }
+  else
+  {
+    pwp_prev_ = pwp;
+    exists_previous_pwp_ = true;
+  }
+
+  is_pwp_prev_feasible_ = false; // we don't know for sure if this traj is feasible until you run opt in the next step and see A* fails
+
   return true;
 }
 

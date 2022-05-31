@@ -396,54 +396,130 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 {
   if (ros::ok() && published_initial_position_ == true)
   {
+    // initialization
     mt::Edges edges_obstacles;
     std::vector<mt::state> X_safe;
-
     std::vector<Hyperplane3D> planes;
-    mt::PieceWisePol pwp;
+    mt::PieceWisePol pwp_now;
 
-    bool replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
+    // replan    
+    bool replanned = false;
+    if (if_delaycheck_){
+      replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now, headsup_time_);
+      if (replanned){
 
-    if (par_.visual)
-    {
-      // Delete markers to publish stuff
-      visual_tools_->deleteAllMarkers();
-      visual_tools_->enableBatchPublishing();
+        // let others know my new trajectory
+        publishOwnTraj(pwp_now);
 
-      if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
-      pubTraj(X_safe);
+        // get the time
+        headsup_time_ =ros::Time::now().toSec();
+        
+        // start
+        MyTimer delay_check_t(true);
 
-      // publishPlanes(planes);
-      // publishText();
-    }
+        // delay check *******************************************************
+        is_in_DC_ = true;
+        while (delay_check_t.ElapsedMs()/1000.0 < expected_comm_delay_)
+        {
+          // wait while trajCB() is checking new trajs
+          // TODO make this as a timer so that i can move onto the next optimization
+          // std::cout << "waiting in DC" << std::endl;
+          if (delay_check_result_ == false)
+          {
+            break;
+          }
+        }
+        // ros::Duration(expected_comm_delay_).sleep();
+        is_in_DC_ = false;
+        // end of delay check *******************************************************
 
-    if (replanned)
-    {
-      publishOwnTraj(pwp);
-      pwp_last_ = pwp;
-    }
-    else
-    {
-      int time_ms = int(ros::Time::now().toSec() * 1000);
+        if(delay_check_result_){
+          // execute the new trajectory
+          // if it's the first time to add traj to plan_ then don't execute it. you don't have a back-up traj (pwp_last_)
+          // if (!is_add_plan_initialized_){
+          //   pwp_last_ = pwp_now;
+          //   is_add_plan_initialized_ = true;
+          //   return;
+          // }
 
-      if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
-      {
-        publishOwnTraj(pwp_last_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
-                                    // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
-                                    // very far from the other drones with it last successfully planned a trajectory).
-                                    // Note that these trajectories are time-indexed, and the last position is taken if
-                                    // t>times.back(). See eval() function in the pwp struct
-        timer_stop_.Reset();
+          if(mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now)){
+            publishOwnTraj(pwp_now);
+            pwp_last_ = pwp_now;
+            // std::cout << "Success!" << std::endl;
+            if (par_.visual)
+            {
+              if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
+              pubTraj(X_safe);
+            }
+          } else {
+            int time_ms = int(ros::Time::now().toSec() * 1000);
+
+            if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
+            {
+              publishOwnTraj(pwp_last_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+                                          // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
+                                          // very far from the other drones with it last successfully planned a trajectory).
+                                          // Note that these trajectories are time-indexed, and the last position is taken if
+                                          // t>times.back(). See eval() function in the pwp struct
+              timer_stop_.Reset();        
+            }
+          }
+        } else {
+          int time_ms = int(ros::Time::now().toSec() * 1000);
+
+          if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
+          {
+            publishOwnTraj(pwp_last_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+                                        // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
+                                        // very far from the other drones with it last successfully planned a trajectory).
+                                        // Note that these trajectories are time-indexed, and the last position is taken if
+                                        // t>times.back(). See eval() function in the pwp struct
+            timer_stop_.Reset();        
+          }
+        }
+      } else {
+
+        replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now);
+
+        if (par_.visual)
+        {
+          // Delete markers to publish stuff
+          visual_tools_->deleteAllMarkers();
+          visual_tools_->enableBatchPublishing();
+
+          if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
+          pubTraj(X_safe);
+
+          // publishPlanes(planes);
+          // publishText();
+        }
+
+        if (replanned)
+        {
+          publishOwnTraj(pwp_now);
+          pwp_last_ = pwp_now;
+        }
+        else
+        {
+          int time_ms = int(ros::Time::now().toSec() * 1000);
+
+          if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
+          {
+            publishOwnTraj(pwp_last_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+                                        // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
+                                        // very far from the other drones with it last successfully planned a trajectory).
+                                        // Note that these trajectories are time-indexed, and the last position is taken if
+                                        // t>times.back(). See eval() function in the pwp struct
+            timer_stop_.Reset();
+          }
+        }
       }
-    }
-
-    // std::cout << "[Callback] Leaving replanCB" << std::endl;
-  }
-
+    }// std::cout << "[Callback] Leaving replanCB" << std::endl;
 
   mt::state G;  // projected goal
   mader_ptr_->getG(G);
   pubState(G, pub_point_G_);
+  }
 
 }
 

@@ -48,6 +48,11 @@ public:
   Mader(mt::parameters par);
   bool replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out, std::vector<Hyperplane3D>& planes,
               int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out);
+  bool replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
+                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
+                   mt::PieceWisePol& pwp_now, double& headsup_time);
+  bool addTrajToPlan_with_delaycheck(mt::PieceWisePol& pwp);
+
   void updateState(mt::state data);
 
   bool getNextGoal(mt::state& next_goal);
@@ -76,7 +81,9 @@ private:
 
   bool initializedStateAndTermGoal();
 
+  bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_time);
   bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized);
+
   bool safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_prev);
   bool safetyCheck_for_A_star_failure_pwp_now(mt::PieceWisePol pwp_now);
 
@@ -123,6 +130,10 @@ private:
   bool planner_initialized_ = false;
 
   int deltaT_ = 75;
+
+  int k_index_end_ = 0;
+
+  double time_now_ = 0;
 
   bool terminal_goal_initialized_ = false;
 
