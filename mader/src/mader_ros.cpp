@@ -294,7 +294,7 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
   tmp.function.push_back(msg.function[1]);
   tmp.function.push_back(msg.function[2]);
 
-  tmp.if_clean = msg.if_clean;
+  tmp.is_committed = msg.is_committed;
 
   tmp.bbox << msg.bbox[0], msg.bbox[1], msg.bbox[2];
 
@@ -366,7 +366,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
 
 // This trajectory contains all the future trajectory (current_pos --> A --> final_point_of_traj), because it's the
 // composition of pwp
-void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& if_clean)
+void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_committed)
 {
   std::vector<std::string> s;  // mu::pieceWisePol2String(pwp); The rest of the agents will use the pwp field, not the
                                // string
@@ -393,7 +393,7 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& if_clean)
 
   msg.time_created = ros::Time::now().toSec();
 
-  msg.if_clean = if_clean;
+  msg.is_committed = is_committed;
 
   // std::cout<<"msg.pwp.times[0]= "<<msg.pwp.times[0]
 

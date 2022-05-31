@@ -230,8 +230,8 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     }
   }
 
-  // if (exists_in_local_map && traj.if_clean)
-  if (traj.if_clean)
+  // if (exists_in_local_map && traj.is_committed)
+  if (traj.is_committed)
   {  // if that object already exists, substitute its trajectory    
     // clean
 
@@ -247,7 +247,7 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     trajs_.push_back(traj_compiled);
   }
   else
-  {  // if it doesn't exist or traj.if_clean == false, then add it to the local map
+  {  // if it doesn't exist or traj.is_committed == false, then add it to the local map
     trajs_.push_back(traj_compiled);
     // ROS_WARN_STREAM("Adding " << traj_compiled.id);
   }
