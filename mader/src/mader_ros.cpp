@@ -22,7 +22,7 @@
 typedef MADER_timers::Timer MyTimer;
 
 // this object is created in the mader_ros_node
-MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3) : nh1_(nh1), nh2_(nh2), nh3_(nh3)
+MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3, ros::NodeHandle nh4, ros::NodeHandle nh5) : nh1_(nh1), nh2_(nh2), nh3_(nh3), nh4_(nh4), nh5_(nh5)
 {
   bool sim; // if this is simulation or hardware. Used to check if we need SQ or HX
   mu::safeGetParam(nh1_, "sim", sim_);
@@ -161,7 +161,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   // if it's simulation SQ01s to SQ06s
   // TODO:: make more general/robust
-  if (sim) {
+  if (sim_) {
     for (int i = 1; i < 7; ++i)
      {
       std::string agent = "SQ0" + std::to_string(i) + "s";
@@ -247,6 +247,8 @@ void MaderRos::pubObstacles(mt::Edges edges_obstacles)
 
 void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 {
+
+  // std::cout << "TrajCB is called" << std::endl;
   // test pop_up scheme (SQ06 doesn't listen /trajs)
   // if (id_ == 6){
   //   return;
@@ -304,7 +306,57 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   tmp.time_received = ros::Time::now().toSec();
 
-  mader_ptr_->updateTrajObstacles(tmp);
+  if (sim_) {
+    //****** Communication delay introduced in the simulation
+    // save all the trajectories into alltrajs_ and create a timer corresponding to that
+    // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
+    mtx_alltrajs_.lock();
+    mtx_alltrajsTimers_.lock();
+    // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
+
+    alltrajs_.push_back(tmp);
+    ros::Timer alltrajs_timer = nh4_.createTimer(ros::Duration(simulated_comm_delay_), &MaderRos::allTrajsTimerCB, this, true);
+    alltrajsTimers_.push_back(alltrajs_timer);
+
+    // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in TrajCB" << std::endl;
+    mtx_alltrajs_.unlock();
+    mtx_alltrajsTimers_.unlock();
+    // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in TrajCB" << std::endl;
+  } else {
+    mader_ptr_->updateTrajObstacles(tmp);
+  }
+}
+
+void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
+{
+  // std::cout << "delayed enough" << std::endl;
+
+  // just measure how long it takes to check collisions
+
+  // if (is_in_DC_)
+  // {
+  //   // MyTimer each_collision_check_t(true);
+  //   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_new_, is_in_DC_, headsup_time_, delay_check_result_);
+  //   // std::cout << "each collision check takes " << each_collision_check_t.ElapsedUs() << "us" << std::endl;
+  // } else {
+  //   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_new_, is_in_DC_, headsup_time_, delay_check_result_);
+  // }
+  
+  mader_ptr_->updateTrajObstacles(alltrajs_[0]);
+
+  // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
+  mtx_alltrajs_.lock();
+  mtx_alltrajsTimers_.lock();
+  // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
+
+  alltrajs_.pop_front();
+  alltrajsTimers_.pop_front();
+
+  // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in allTrajsTimerCB" << std::endl;
+  mtx_alltrajs_.unlock();
+  mtx_alltrajsTimers_.unlock();
+  // std::cout << "aft alltrajs_ and alltrajsTimers_ are unlocked() in allTrajsTimerCB" << std::endl;
+
 }
 
 // This trajectory contains all the future trajectory (current_pos --> A --> final_point_of_traj), because it's the

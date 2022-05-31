@@ -34,7 +34,7 @@ namespace rvt = rviz_visual_tools;
 class MaderRos
 {
 public:
-  MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3);
+  MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3, ros::NodeHandle nh4, ros::NodeHandle nh5);
   ~MaderRos();
 
 private:
@@ -53,6 +53,7 @@ private:
   void pubCB(const ros::TimerEvent& e);
   void replanCB(const ros::TimerEvent& e);
   void trajCB(const mader_msgs::DynTraj& msg);
+  void allTrajsTimerCB(const ros::TimerEvent& e);
 
   // void clearMarkerSetOfArrows();
   void clearMarkerActualTraj();
@@ -89,6 +90,8 @@ private:
   ros::NodeHandle nh1_;
   ros::NodeHandle nh2_;
   ros::NodeHandle nh3_;
+  ros::NodeHandle nh4_;
+  ros::NodeHandle nh5_;
 
   ros::Publisher pub_point_G_;
   ros::Publisher pub_point_G_term_;
@@ -137,8 +140,14 @@ private:
 
   bool published_initial_position_ = false;
 
-  bool simulated_comm_delay_;
-  bool expected_comm_delay_;
+  double simulated_comm_delay_;
+  double expected_comm_delay_;
+
+  std::mutex mtx_alltrajs_;
+  std::mutex mtx_alltrajsTimers_;
+
+  std::deque<mt::dynTraj> alltrajs_;
+  std::deque<ros::Timer> alltrajsTimers_;
 
   Eigen::Affine3d W_T_B_;
 
