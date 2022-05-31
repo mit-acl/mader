@@ -535,6 +535,7 @@ struct dynTraj
   double time_created;
   bool is_agent;         // true for a trajectory of an agent, false for an obstacle
   mt::PieceWisePol pwp;
+  bool if_clean;
 };
 
 struct dynTrajCompiled

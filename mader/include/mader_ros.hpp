@@ -40,7 +40,7 @@ public:
 private:
   std::unique_ptr<Mader> mader_ptr_;
 
-  void publishOwnTraj(const mt::PieceWisePol& pwp);
+  void publishOwnTraj(const mt::PieceWisePol& pwp, const bool& if_clean);
   void publishPlanes(std::vector<Hyperplane3D>& planes);
 
   // class methods

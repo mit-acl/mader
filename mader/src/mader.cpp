@@ -230,35 +230,43 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     }
   }
 
-  if (exists_in_local_map)
-  {  // if that object already exists, substitute its trajectory
-    *obs_ptr = traj_compiled;
+  // if (exists_in_local_map && traj.if_clean)
+  if (traj.if_clean)
+  {  // if that object already exists, substitute its trajectory    
+    // clean
+
+    // std::cout << "clean!" << std::endl;
+
+    trajs_.erase(
+        std::remove_if(trajs_.begin(), trajs_.end(), [&](mt::dynTrajCompiled const& traj) { return traj.id == traj_compiled.id; }),
+        trajs_.end());
+
+    // std::cout << "traj_compiled.id is " << traj_compiled.id << std::endl;
+    // for (auto traj : trajs_){std::cout << "traj.id is " << traj.id << std::endl;}
+  
+    trajs_.push_back(traj_compiled);
   }
   else
-  {  // if it doesn't exist, add it to the local map
+  {  // if it doesn't exist or traj.if_clean == false, then add it to the local map
     trajs_.push_back(traj_compiled);
     // ROS_WARN_STREAM("Adding " << traj_compiled.id);
   }
 
   // and now let's delete those trajectories of the obs/agents whose current positions are outside the local map
   // Note that these positions are obtained with the trajectory stored in the past in the local map
-  std::vector<int> ids_to_remove;
 
-  for (int index_traj = 0; index_traj < trajs_.size(); index_traj++)
+  std::vector<mt::dynTrajCompiled> local_trajs;
+
+  for (auto traj_compiled : trajs_)
   {
-    bool traj_affects_me = false;
-
     mtx_t_.lock();
     t_ = ros::Time::now().toSec();
 
     Eigen::Vector3d center_obs;
-    center_obs << trajs_[index_traj].function[0].value(),  ////////////////////
-        trajs_[index_traj].function[1].value(),            ////////////////
-        trajs_[index_traj].function[2].value();            /////////////////
+    center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(), traj_compiled.function[2].value(); 
 
     mtx_t_.unlock();
 
-    // mtx_t_.unlock();
     if (((traj_compiled.is_static == true) && (center_obs - state_.pos).norm() > 2 * par_.Ra) ||  ////
         ((traj_compiled.is_static == false) && (center_obs - state_.pos).norm() > 4 * par_.Ra))
     // #### Static Obstacle: 2*Ra because: traj_{k-1} is inside a sphere of Ra.
@@ -277,17 +285,13 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     // on take care of deleting the ones I don't need once
     // I know A
     {
-      ids_to_remove.push_back(trajs_[index_traj].id);
+      // if it's too far away then do nothing
+    } else {
+      local_trajs.push_back(traj_compiled);
     }
   }
 
-  for (auto id : ids_to_remove)
-  {
-    // ROS_WARN_STREAM("Removing " << id);
-    trajs_.erase(
-        std::remove_if(trajs_.begin(), trajs_.end(), [&](mt::dynTrajCompiled const& traj) { return traj.id == id; }),
-        trajs_.end());
-  }
+  trajs_ = local_trajs;
 
   mtx_trajs_.unlock();
 
@@ -327,23 +331,18 @@ void Mader::updateTrajObstacles(mt::dynTraj traj)
 
   // and now let's delete those trajectories of the obs/agents whose current positions are outside the local map
   // Note that these positions are obtained with the trajectory stored in the past in the local map
-  std::vector<int> ids_to_remove;
+  std::vector<mt::dynTrajCompiled> local_trajs;
 
-  for (int index_traj = 0; index_traj < trajs_.size(); index_traj++)
+  for (auto traj_compiled : trajs_)
   {
-    bool traj_affects_me = false;
-
     mtx_t_.lock();
     t_ = ros::Time::now().toSec();
 
     Eigen::Vector3d center_obs;
-    center_obs << trajs_[index_traj].function[0].value(),  ////////////////////
-        trajs_[index_traj].function[1].value(),            ////////////////
-        trajs_[index_traj].function[2].value();            /////////////////
+    center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(), traj_compiled.function[2].value(); 
 
     mtx_t_.unlock();
 
-    // mtx_t_.unlock();
     if (((traj_compiled.is_static == true) && (center_obs - state_.pos).norm() > 2 * par_.Ra) ||  ////
         ((traj_compiled.is_static == false) && (center_obs - state_.pos).norm() > 4 * par_.Ra))
     // #### Static Obstacle: 2*Ra because: traj_{k-1} is inside a sphere of Ra.
@@ -362,23 +361,20 @@ void Mader::updateTrajObstacles(mt::dynTraj traj)
     // on take care of deleting the ones I don't need once
     // I know A
     {
-      ids_to_remove.push_back(trajs_[index_traj].id);
+      // if it's too far away then do nothing
+    } else {
+      local_trajs.push_back(traj_compiled);
     }
   }
 
-  for (auto id : ids_to_remove)
-  {
-    // ROS_WARN_STREAM("Removing " << id);
-    trajs_.erase(
-        std::remove_if(trajs_.begin(), trajs_.end(), [&](mt::dynTrajCompiled const& traj) { return traj.id == id; }),
-        trajs_.end());
-  }
+  trajs_ = local_trajs;
 
   mtx_trajs_.unlock();
 
   have_received_trajectories_while_checking_ = false;
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
+
 std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, double t_start, double t_end,
                                                        const Eigen::Vector3d& delta)
 {
@@ -590,6 +586,8 @@ void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, d
   pointsB.push_back(Eigen::Vector3d(A.pos.x() - delta.x(), A.pos.y() + delta.y(), A.pos.z() - delta.z()));
   pointsB.push_back(Eigen::Vector3d(A.pos.x() - delta.x(), A.pos.y() - delta.y(), A.pos.z() + delta.z()));
 
+  std::vector<mt::dynTrajCompiled> local_trajs;
+
   for (auto traj : trajs_)
   {
     bool traj_affects_me = false;
@@ -646,20 +644,17 @@ void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, d
     }
 
   exit:
+
     if (traj_affects_me == false)
     {
       // std::cout << red << bold << "Going to  delete traj " << trajs_[index_traj].id << reset << std::endl;
-      ids_to_remove.push_back(traj.id);
+      // ids_to_remove.push_back(traj.id);
+    } else {
+      local_trajs.push_back(traj);
     }
   }
 
-  for (auto id : ids_to_remove)
-  {
-    // ROS_INFO_STREAM("traj " << id << " doesn't affect me");
-    trajs_.erase(
-        std::remove_if(trajs_.begin(), trajs_.end(), [&](mt::dynTrajCompiled const& traj) { return traj.id == id; }),
-        trajs_.end());
-  }
+  trajs_ = local_trajs;
 
   /*  std::cout << "After deleting the trajectory, we have these ids= " << std::endl;
 

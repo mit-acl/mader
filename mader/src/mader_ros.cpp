@@ -294,6 +294,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
   tmp.function.push_back(msg.function[1]);
   tmp.function.push_back(msg.function[2]);
 
+  tmp.if_clean = msg.if_clean;
+
   tmp.bbox << msg.bbox[0], msg.bbox[1], msg.bbox[2];
 
   tmp.id = msg.id;
@@ -364,7 +366,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
 
 // This trajectory contains all the future trajectory (current_pos --> A --> final_point_of_traj), because it's the
 // composition of pwp
-void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
+void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& if_clean)
 {
   std::vector<std::string> s;  // mu::pieceWisePol2String(pwp); The rest of the agents will use the pwp field, not the
                                // string
@@ -391,6 +393,8 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
 
   msg.time_created = ros::Time::now().toSec();
 
+  msg.if_clean = if_clean;
+
   // std::cout<<"msg.pwp.times[0]= "<<msg.pwp.times[0]
 
   pub_traj_.publish(msg);
@@ -412,7 +416,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       if (replanned){
 
         // let others know my new trajectory
-        publishOwnTraj(pwp_now_);
+        publishOwnTraj(pwp_now_,false);
 
         // get the time
         headsup_time_ =ros::Time::now().toSec();
@@ -434,7 +438,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             break;
           }
         }
-        // ros::Duration(expected_comm_delay_).sleep();
+        ros::Duration(expected_comm_delay_).sleep();
         is_in_DC_ = false;
         // end of delay check *******************************************************
 
@@ -449,11 +453,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           // }
 
           if(mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now_)){
-            publishOwnTraj(pwp_now_);
+            std::cout << "here" << std::endl;
+            publishOwnTraj(pwp_now_, true);
             pwp_last_ = pwp_now_;
             // std::cout << "Success!" << std::endl;
             if (par_.visual)
             {
+              // Delete markers to publish stuff
+              visual_tools_->deleteAllMarkers();
+              visual_tools_->enableBatchPublishing();
               if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
               pubTraj(X_safe);
             }
@@ -462,7 +470,9 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
             if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
             {
-              publishOwnTraj(pwp_last_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+              std::cout << "here2" << std::endl;
+
+              publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                           // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
                                           // very far from the other drones with it last successfully planned a trajectory).
                                           // Note that these trajectories are time-indexed, and the last position is taken if
@@ -471,11 +481,14 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             }
           }
         } else {
+          std::cout << "here4" << std::endl;
           int time_ms = int(ros::Time::now().toSec() * 1000);
 
           if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
           {
-            publishOwnTraj(pwp_last_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+            std::cout << "here3" << std::endl;
+
+            publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                         // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
                                         // very far from the other drones with it last successfully planned a trajectory).
                                         // Note that these trajectories are time-indexed, and the last position is taken if
@@ -502,7 +515,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
         if (replanned)
         {
-          publishOwnTraj(pwp_now_);
+          publishOwnTraj(pwp_now_, true);
           pwp_last_ = pwp_now_;
         }
         else
@@ -511,7 +524,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
           if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
           {
-            publishOwnTraj(pwp_last_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+            publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                         // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
                                         // very far from the other drones with it last successfully planned a trajectory).
                                         // Note that these trajectories are time-indexed, and the last position is taken if
@@ -636,7 +649,7 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   if (published_initial_position_ == false)
   {
     pwp_last_ = mu::createPwpFromStaticPosition(state_);
-    publishOwnTraj(pwp_last_);
+    publishOwnTraj(pwp_last_, true);
     published_initial_position_ = true;
   }
   if (mader_ptr_->IsTranslating() == true && par_.visual)
