@@ -5,6 +5,7 @@
 
 # if deleting old .bag and .active in voxl and .txt on nuc
 ifDELETE=$1
+howMany=$2
 
 # session name
 SESSION=sim_mader
@@ -51,22 +52,26 @@ sleep 1
 
 # run mader hw_onboard and save termial data into txt files
 
-tmux send-keys -t $SESSION:$w.1 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=01 x:=-3 y:=3) 2>&1 | tee ~/Research/data/txt_files/SQ01_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m 
 tmux send-keys -t $SESSION:$w.3 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=02 x:=0 y:=3) 2>&1 | tee ~/Research/data/txt_files/SQ02_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
-tmux send-keys -t $SESSION:$w.5 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=03 x:=3 y:=3) 2>&1 | tee ~/Research/data/txt_files/SQ03_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
-tmux send-keys -t $SESSION:$w.7 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=04 x:=-3 y:=-3) 2>&1 | tee ~/Research/data/txt_files/SQ04_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 tmux send-keys -t $SESSION:$w.9 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=05 x:=0 y:=-3) 2>&1 | tee ~/Research/data/txt_files/SQ05_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
-tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=06 x:=3 y:=-3) 2>&1 | tee ~/Research/data/txt_files/SQ06_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 
-sleep 1
+if [[ $howMany != 2 ]]; then
+	tmux send-keys -t $SESSION:$w.1 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=01 x:=-3 y:=3) 2>&1 | tee ~/Research/data/txt_files/SQ01_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m 
+	tmux send-keys -t $SESSION:$w.5 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=03 x:=3 y:=3) 2>&1 | tee ~/Research/data/txt_files/SQ03_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+	tmux send-keys -t $SESSION:$w.7 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=04 x:=-3 y:=-3) 2>&1 | tee ~/Research/data/txt_files/SQ04_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+	tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=06 x:=3 y:=-3) 2>&1 | tee ~/Research/data/txt_files/SQ06_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+fi
 
 # snap sim
-tmux send-keys -t $SESSION:$w.2 "roslaunch snap_sim sim.launch veh:=SQ num:=01 x:=-3 y:=3" C-m
 tmux send-keys -t $SESSION:$w.4 "roslaunch snap_sim sim.launch veh:=SQ num:=02 x:=0 y:=3" C-m
-tmux send-keys -t $SESSION:$w.6 "roslaunch snap_sim sim.launch veh:=SQ num:=03 x:=3 y:=3" C-m
-tmux send-keys -t $SESSION:$w.8 "roslaunch snap_sim sim.launch veh:=SQ num:=04 x:=-3 y:=-3" C-m
 tmux send-keys -t $SESSION:$w.10 "roslaunch snap_sim sim.launch veh:=SQ num:=05 x:=0 y:=-3" C-m
-tmux send-keys -t $SESSION:$w.12 "roslaunch snap_sim sim.launch veh:=SQ num:=06 x:=3 y:=-3" C-m
+
+if [[ $howMany != 2 ]]; then
+	tmux send-keys -t $SESSION:$w.2 "roslaunch snap_sim sim.launch veh:=SQ num:=01 x:=-3 y:=3" C-m
+	tmux send-keys -t $SESSION:$w.6 "roslaunch snap_sim sim.launch veh:=SQ num:=03 x:=3 y:=3" C-m
+	tmux send-keys -t $SESSION:$w.8 "roslaunch snap_sim sim.launch veh:=SQ num:=04 x:=-3 y:=-3" C-m
+	tmux send-keys -t $SESSION:$w.12 "roslaunch snap_sim sim.launch veh:=SQ num:=06 x:=3 y:=-3" C-m
+fi
 
 # base station
 tmux send-keys -t $SESSION:$w.13 "roslaunch mader base_station.launch" C-m
