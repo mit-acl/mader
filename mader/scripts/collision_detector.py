@@ -28,8 +28,14 @@ class CollisionDetector:
         
         if self.initialized:
             for i in range(5):
-                if (abs(self.world_pos[i,0] - self.world_pos[i+1,0]) < self.bbox_x or abs(self.world_pos[i,1] - self.world_pos[i+1,1]) < self.bbox_y or abs(self.world_pos[i,2] - self.world_pos[i+1,2]) < self.bbox_z):
-                    print("agent" + str(i+1) + "and agent" + str(i+1) + " collide")
+                for j in range(i+1,6):
+                    if (abs(self.world_pos[i,0] - self.world_pos[j,0]) < self.bbox_x 
+                        and abs(self.world_pos[i,1] - self.world_pos[j,1]) < self.bbox_y 
+                        and abs(self.world_pos[i,2] - self.world_pos[j,2]) < self.bbox_z):
+                        print("difference in x is " + str(abs(self.world_pos[i,0] - self.world_pos[j,0])))
+                        print("difference in y is " + str(abs(self.world_pos[i,1] - self.world_pos[j,1])))
+                        print("difference in z is " + str(abs(self.world_pos[i,2] - self.world_pos[j,2])))
+                        print("agent" + str(i+1) + " and " + str(j+1) + " collide")
 
     def SQ01worldCB(self, data):
         self.world_pos[0,0:3] = np.array([data.pose.position.x, data.pose.position.y, data.pose.position.z])

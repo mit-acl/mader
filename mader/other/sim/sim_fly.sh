@@ -6,6 +6,7 @@
 # if deleting old .bag and .active in voxl and .txt on nuc
 ifDELETE=$1
 howMany=$2
+snapsim_or_perfect=$3
 
 # session name
 SESSION=sim_mader
@@ -62,15 +63,29 @@ if [[ $howMany != 2 ]]; then
 	tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && roslaunch mader onboard.launch veh:=SQ num:=06 x:=3 y:=-3) 2>&1 | tee ~/Research/data/txt_files/SQ06_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 fi
 
-# snap sim
-tmux send-keys -t $SESSION:$w.4 "roslaunch snap_sim sim.launch veh:=SQ num:=02 x:=0 y:=3" C-m
-tmux send-keys -t $SESSION:$w.10 "roslaunch snap_sim sim.launch veh:=SQ num:=05 x:=0 y:=-3" C-m
+# snap sim or perfect tracker
 
-if [[ $howMany != 2 ]]; then
-	tmux send-keys -t $SESSION:$w.2 "roslaunch snap_sim sim.launch veh:=SQ num:=01 x:=-3 y:=3" C-m
-	tmux send-keys -t $SESSION:$w.6 "roslaunch snap_sim sim.launch veh:=SQ num:=03 x:=3 y:=3" C-m
-	tmux send-keys -t $SESSION:$w.8 "roslaunch snap_sim sim.launch veh:=SQ num:=04 x:=-3 y:=-3" C-m
-	tmux send-keys -t $SESSION:$w.12 "roslaunch snap_sim sim.launch veh:=SQ num:=06 x:=3 y:=-3" C-m
+if [[ $snapsim_or_perfect == "snap_sim" ]]; then
+	tmux send-keys -t $SESSION:$w.4 "roslaunch snap_sim sim.launch veh:=SQ num:=02 x:=0 y:=3" C-m
+	tmux send-keys -t $SESSION:$w.10 "roslaunch snap_sim sim.launch veh:=SQ num:=05 x:=0 y:=-3" C-m
+
+	if [[ $howMany != 2 ]]; then
+		tmux send-keys -t $SESSION:$w.2 "roslaunch snap_sim sim.launch veh:=SQ num:=01 x:=-3 y:=3" C-m
+		tmux send-keys -t $SESSION:$w.6 "roslaunch snap_sim sim.launch veh:=SQ num:=03 x:=3 y:=3" C-m
+		tmux send-keys -t $SESSION:$w.8 "roslaunch snap_sim sim.launch veh:=SQ num:=04 x:=-3 y:=-3" C-m
+		tmux send-keys -t $SESSION:$w.12 "roslaunch snap_sim sim.launch veh:=SQ num:=06 x:=3 y:=-3" C-m
+	fi
+
+else
+	tmux send-keys -t $SESSION:$w.4 "roslaunch mader perfect_tracker_and_sim.launch quad:=SQ02s x:=0 y:=3" C-m
+	tmux send-keys -t $SESSION:$w.10 "roslaunch mader perfect_tracker_and_sim.launch quad:=SQ05s x:=0 y:=-3" C-m
+
+	if [[ $howMany != 2 ]]; then
+		tmux send-keys -t $SESSION:$w.2 "roslaunch mader perfect_tracker_and_sim.launch quad:=SQ01s x:=-3 y:=3" C-m
+		tmux send-keys -t $SESSION:$w.6 "roslaunch mader perfect_tracker_and_sim.launch quad:=SQ03s x:=3 y:=3" C-m
+		tmux send-keys -t $SESSION:$w.8 "roslaunch mader perfect_tracker_and_sim.launch quad:=SQ04s x:=-3 y:=-3" C-m
+		tmux send-keys -t $SESSION:$w.12 "roslaunch mader perfect_tracker_and_sim.launch quad:=SQ06s x:=3 y:=-3" C-m
+	fi
 fi
 
 # base station
