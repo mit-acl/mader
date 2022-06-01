@@ -312,8 +312,11 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   tmp.time_received = ros::Time::now().toSec();
 
-  // double comm_delay = tmp.time_received - tmp.time_created;
-  // std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
+  double comm_delay = tmp.time_received - tmp.time_created;
+  if (comm_delay > expected_comm_delay_ - simulated_comm_delay_){
+    std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
+    std::cout << red << "comm delay is too huge!!!!" << std::endl;
+  }
 
   if (sim_) {
     //****** Communication delay introduced in the simulation
