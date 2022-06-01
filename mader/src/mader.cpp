@@ -174,7 +174,7 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
 {
   
   delay_check_result = true;
-  
+
   MyTimer tmp_t(true);
 
   if (started_check_ == true && traj.is_agent == true)
@@ -1166,6 +1166,9 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   k_index = plan_.size() - 1 - k_index_end_;
   A = plan_.get(k_index);
 
+  std::cout << "in replan_with_delaycheck before opt" << std::endl;
+  for (auto state : plan_) {state.print();}
+
   mtx_plan_.unlock();
 
   // std::cout << blue << "k_index:" << k_index << reset << std::endl;
@@ -1479,6 +1482,8 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   mtx_plan_.lock();
 
   X_safe_out = plan_.toStdVector();
+  std::cout << "in replan_with_delaycheck aft opt (i haven't changed plan_ yet so should be same as bef" << std::endl;
+  plan_.print();
 
   mtx_plan_.unlock();
 
@@ -1526,7 +1531,8 @@ bool Mader::addTrajToPlan_with_delaycheck(mt::PieceWisePol& pwp){
     // std::cout << "after, plan_size=" << plan_.size() << std::endl;
   }
   
-  // plan_.print();
+  std::cout << "in addTrajToPlan_with_delaycheck" << std::endl;
+  plan_.print();
   mtx_plan_.unlock();
 
   ////////////////////

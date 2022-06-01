@@ -410,13 +410,13 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
   {
     // initialization
     mt::Edges edges_obstacles;
-    std::vector<mt::state> X_safe;
+    std::vector<mt::state> traj_plan;
     std::vector<Hyperplane3D> planes;
 
     // replan    
     bool replanned = false;
     if (if_delaycheck_){
-      replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_, headsup_time_);
+      replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_, headsup_time_);
       if (replanned){
 
         // let others know my new trajectory
@@ -435,9 +435,11 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           // visual_tools_->deleteAllMarkers();
           // visual_tools_->enableBatchPublishing();
           if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
-          pubTraj(X_safe, false);
+          pubTraj(traj_plan, false);
         }
 
+        std::cout << "headsup" << std::endl;
+        for (auto state : traj_plan) {state.print();}
 
         // delay check *******************************************************
         delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
@@ -457,6 +459,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         is_in_DC_ = false;
         // end of delay check *******************************************************
 
+        std::cout << "after delay check" << std::endl;
 
         if(delay_check_result_){
           // execute the new trajectory
@@ -477,7 +480,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
               // visual_tools_->deleteAllMarkers();
               // visual_tools_->enableBatchPublishing();
               if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
-              pubTraj(X_safe, true);
+              pubTraj(traj_plan, true);
             }
           } else {
             int time_ms = int(ros::Time::now().toSec() * 1000);
@@ -509,7 +512,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         }
       } else {
 
-        replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
+        replanned = mader_ptr_->replan(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
 
         if (par_.visual)
         {
@@ -518,7 +521,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           visual_tools_->enableBatchPublishing();
 
           if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
-          pubTraj(X_safe, true);
+          pubTraj(traj_plan, true);
 
           // publishPlanes(planes);
           // publishText();
