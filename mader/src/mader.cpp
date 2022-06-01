@@ -172,6 +172,9 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
 
 void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC, bool& delay_check_result, const double& headsup_time)
 {
+  
+  delay_check_result = true;
+  
   MyTimer tmp_t(true);
 
   if (started_check_ == true && traj.is_agent == true)
