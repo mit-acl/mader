@@ -184,11 +184,11 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
 
   mtx_trajs_.lock();
 
-  std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
-      std::find_if(trajs_.begin(), trajs_.end(),
-                   [=](const mt::dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
+  // std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
+  //     std::find_if(trajs_.begin(), trajs_.end(),
+  //                  [=](const mt::dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
 
-  bool exists_in_local_map = (obs_ptr != std::end(trajs_));
+  // bool exists_in_local_map = (obs_ptr != std::end(trajs_));
 
   mt::dynTrajCompiled traj_compiled;
   dynTraj2dynTrajCompiled(traj, traj_compiled);

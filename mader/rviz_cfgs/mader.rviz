@@ -8,7 +8,6 @@ Panels:
         - /Grid1
         - /TF1/Frames1
         - /Setpoint1
-        - /Obstacles1
         - /Obstacle1
         - /Console1
         - /Marker1
@@ -17,7 +16,7 @@ Panels:
         - /Marker5
         - /Marker6
         - /Marker7
-      Splitter Ratio: 0.3382789194583893
+      Splitter Ratio: 0.34117648005485535
     Tree Height: 1236
   - Class: rviz/Selection
     Name: Selection
@@ -229,21 +228,53 @@ Visualization Manager:
       VsColor: 0; 255; 0
       VsScale: 1
     - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /SQ04s/mader/obstacles
-      Name: Obstacles
-      Namespaces:
-        markertacles: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ01s/mader/obstacles
       Name: Obstacle
       Namespaces:
-        markertacles: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ02s/mader/obstacles
+      Name: Obstacle
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ03s/mader/obstacles
+      Name: Obstacle
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ04s/mader/obstacles
+      Name: Obstacle
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ05s/mader/obstacles
+      Name: Obstacle
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ06s/mader/obstacles
+      Name: Obstacles
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /SQ01s/mader/fov
@@ -998,7 +1029,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 7.525735855102539
+      Distance: 18.208093643188477
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1006,17 +1037,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 2.7627546787261963
-        Y: -0.880815863609314
+        X: 0.05113023519515991
+        Y: -2.36083984375
         Z: 1.52587890625e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.089796781539917
+      Pitch: 1.274796724319458
       Target Frame: <Fixed Frame>
-      Yaw: 4.644988536834717
+      Yaw: 4.8099894523620605
     Saved:
       - Class: rviz/ThirdPersonFollower
         Distance: 16.45623207092285
@@ -1137,4 +1168,4 @@ Window Geometry:
     collapsed: false
   Width: 1829
   X: 97
-  Y: 540
+  Y: 503
