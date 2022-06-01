@@ -432,8 +432,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         if (par_.visual)
         {
           // Delete markers to publish stuff
-          visual_tools_->deleteAllMarkers();
-          visual_tools_->enableBatchPublishing();
+          // visual_tools_->deleteAllMarkers();
+          // visual_tools_->enableBatchPublishing();
           if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
           pubTraj(X_safe, false);
         }
@@ -446,13 +446,14 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         {
           // wait while trajCB() is checking new trajs
           // TODO make this as a timer so that i can move onto the next optimization
-          std::cout << "waiting in DC" << std::endl;
+          // std::cout << "waiting in DC" << std::endl;
           if (delay_check_result_ == false)
           {
             break;
           }
+          ros::Duration(0.001).sleep();
         }
-        ros::Duration(expected_comm_delay_).sleep();
+        // ros::Duration(expected_comm_delay_).sleep();
         is_in_DC_ = false;
         // end of delay check *******************************************************
 
@@ -473,15 +474,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             if (par_.visual)
             {
               // Delete markers to publish stuff
-              visual_tools_->deleteAllMarkers();
-              visual_tools_->enableBatchPublishing();
+              // visual_tools_->deleteAllMarkers();
+              // visual_tools_->enableBatchPublishing();
               if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
               pubTraj(X_safe, true);
             }
           } else {
             int time_ms = int(ros::Time::now().toSec() * 1000);
 
-            if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
+            if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
             {
               publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                           // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
@@ -495,7 +496,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
           int time_ms = int(ros::Time::now().toSec() * 1000);
 
-          if (timer_stop_.ElapsedMs() > 200.0)  // TODO set as param
+          if (timer_stop_.ElapsedMs() > expected_comm_delay_)
           {
 
             publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
@@ -532,7 +533,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         {
           int time_ms = int(ros::Time::now().toSec() * 1000);
 
-          if (timer_stop_.ElapsedMs() > 500.0)  // publish every half a second. TODO set as param
+          if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
           {
             publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                         // last planned trajectory, so that other drones can avoid it (even if DRONE1 was

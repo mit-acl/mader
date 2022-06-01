@@ -241,16 +241,16 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
         std::remove_if(trajs_.begin(), trajs_.end(), [&](mt::dynTrajCompiled const& traj) { return traj.id == traj_compiled.id; }),
         trajs_.end());
 
-    std::cout << "traj_compiled.id is " << traj_compiled.id << std::endl;
-    for (auto traj : trajs_){std::cout << "traj.id is " << traj.id << std::endl;}
+    // std::cout << "traj_compiled.id is " << traj_compiled.id << std::endl;
+    // for (auto traj : trajs_){std::cout << "traj.id is " << traj.id << std::endl;}
   
     trajs_.push_back(traj_compiled);
   }
   else
   {  // if it doesn't exist or traj.is_committed == false, then add it to the local map
     trajs_.push_back(traj_compiled);
-    std::cout << "traj_compiled.id is " << traj_compiled.id << std::endl;
-    for (auto traj : trajs_){std::cout << "traj.id is " << traj.id << std::endl;}
+    // std::cout << "traj_compiled.id is " << traj_compiled.id << std::endl;
+    // for (auto traj : trajs_){std::cout << "traj.id is " << traj.id << std::endl;}
     // ROS_WARN_STREAM("Adding " << traj_compiled.id);
   }
 
@@ -1295,7 +1295,7 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   // std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
 
   time_init_opt_ = ros::Time::now().toSec();
-  // removeTrajsThatWillNotAffectMe(A, t_start, t_final);
+  removeTrajsThatWillNotAffectMe(A, t_start, t_final);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
 
   // std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
