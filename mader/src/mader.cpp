@@ -1195,59 +1195,59 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   
   // detoured G
 
-  Eigen::Vector3d dist_prog(1e5, 1e5, 1e5);
-  Eigen::Vector3d dist_to_goal(1e5, 1e5, 1e5);
-  Eigen::Vector3d dist_from_state__to_goal(1e5, 1e5, 1e5);
-  double unstuck_dist = 2.0; //meters
-  double reached_goal_dist = par_.drone_bbox[0]+0.1; // avoid the detoured goal is within others bbox and cannot move at all sitution.
-  double how_much_to_detoured_G = 0.7; //0.1 means 10%
-  double vel_stuck_detect = 0.1; // m/s
+  // Eigen::Vector3d dist_prog(1e5, 1e5, 1e5);
+  // Eigen::Vector3d dist_to_goal(1e5, 1e5, 1e5);
+  // Eigen::Vector3d dist_from_state__to_goal(1e5, 1e5, 1e5);
+  // double unstuck_dist = 2.0; //meters
+  // double reached_goal_dist = par_.drone_bbox[0]+0.1; // avoid the detoured goal is within others bbox and cannot move at all sitution.
+  // double how_much_to_detoured_G = 0.7; //0.1 means 10%
+  // double vel_stuck_detect = 0.1; // m/s
 
-  double detour_max_time = 5; //seconds, how long want to detour
+  // double detour_max_time = 5; //seconds, how long want to detour
   
-  if (par_.is_stuck || if_detour_ || is_A_star_failed_30_){
+  // if (par_.is_stuck || if_detour_ || is_A_star_failed_30_){
     
-    if (par_.is_stuck && !if_detour_){
-      // timer_detour_.Reset();
-      stuck_state_ = state_;
-      A_when_stuck_ = A;
-      G_when_stuck_ = G;
-    }
+  //   if (par_.is_stuck && !if_detour_){
+  //     // timer_detour_.Reset();
+  //     stuck_state_ = state_;
+  //     A_when_stuck_ = A;
+  //     G_when_stuck_ = G;
+  //   }
 
-    dist_prog = state_.pos - stuck_state_.pos;
-    dist_to_goal = detoured_G_.pos - stuck_state_.pos;
-    dist_from_state__to_goal = detoured_G_.pos - state_.pos;
+  //   dist_prog = state_.pos - stuck_state_.pos;
+  //   dist_to_goal = detoured_G_.pos - stuck_state_.pos;
+  //   dist_from_state__to_goal = detoured_G_.pos - state_.pos;
 
-    // std::cout << "dist_prog is " << dist_prog << std::endl;
-    // std::cout << "state_.pos is " << state_.pos << std::endl;
-    // std::cout << "stuck_state_.pos is " << stuck_state_.pos << std::endl;
+  //   // std::cout << "dist_prog is " << dist_prog << std::endl;
+  //   // std::cout << "state_.pos is " << state_.pos << std::endl;
+  //   // std::cout << "stuck_state_.pos is " << stuck_state_.pos << std::endl;
 
-    //if (timer_detour_.ElapsedMs() < detour_max_time * 1000){
-    if (state_.vel.norm() < vel_stuck_detect &&
-     dist_from_state__to_goal.norm() > reached_goal_dist &&
-     dist_prog.norm() < unstuck_dist && 
-     dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
+  //   //if (timer_detour_.ElapsedMs() < detour_max_time * 1000){
+  //   if (state_.vel.norm() < vel_stuck_detect &&
+  //    dist_from_state__to_goal.norm() > reached_goal_dist &&
+  //    dist_prog.norm() < unstuck_dist && 
+  //    dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
       
-      getDetourG(G); // if stuck, make a new G for detour
-      // if (!if_A_moveback_){
-      //   moveAtowardG(A, G);
-      //   if_A_moveback_ = true;
-      // }
-      std::cout << "using detoured G" << std::endl;
-      stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
-      if_detour_ = true;
-      if (stuck_count_for_detour_ > 10){
-        if_detour_ = false; // maybe the detour G is also causing stuck, so go back to the original one
-        if_A_moveback_ = false;
-      }
-    } else {
-      stuck_count_for_detour_ = 0;
-      if_detour_ = false;
-      if_A_moveback_ = false;
-    //   std::cout << "stop using detoured G" << std::endl;
-    //   std::cout << "dist_prog.norm() is " << dist_prog.norm() << std::endl;
-    } 
-  }
+  //     getDetourG(G); // if stuck, make a new G for detour
+  //     // if (!if_A_moveback_){
+  //     //   moveAtowardG(A, G);
+  //     //   if_A_moveback_ = true;
+  //     // }
+  //     std::cout << "using detoured G" << std::endl;
+  //     stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
+  //     if_detour_ = true;
+  //     if (stuck_count_for_detour_ > 10){
+  //       if_detour_ = false; // maybe the detour G is also causing stuck, so go back to the original one
+  //       if_A_moveback_ = false;
+  //     }
+  //   } else {
+  //     stuck_count_for_detour_ = 0;
+  //     if_detour_ = false;
+  //     if_A_moveback_ = false;
+  //   //   std::cout << "stop using detoured G" << std::endl;
+  //   //   std::cout << "dist_prog.norm() is " << dist_prog.norm() << std::endl;
+  //   } 
+  // }
 
   mt::state initial = A;
   mt::state final = G;
