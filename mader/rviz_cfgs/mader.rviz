@@ -958,7 +958,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -974,7 +974,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -982,7 +982,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -998,7 +998,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -1167,5 +1167,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1829
-  X: 97
-  Y: 466
+  X: 96
+  Y: 609

@@ -152,6 +152,8 @@ private:
   double simulated_comm_delay_;
   double expected_comm_delay_;
 
+  std::vector<mt::state> last_traj_plan_;
+  mt::Edges last_edges_obstacles_;
 
   std::mutex mtx_alltrajs_;
   std::mutex mtx_alltrajsTimers_;

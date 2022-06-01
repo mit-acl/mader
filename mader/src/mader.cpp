@@ -1097,7 +1097,7 @@ bool Mader::isReplanningNeeded()
   return true;
 }
 
-bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
+bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& headsup_plan,
                    std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
                    mt::PieceWisePol& pwp_now, double& headsup_time)
 {
@@ -1166,8 +1166,8 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   k_index = plan_.size() - 1 - k_index_end_;
   A = plan_.get(k_index);
 
-  std::cout << "in replan_with_delaycheck before opt" << std::endl;
-  for (auto state : plan_) {state.print();}
+  // std::cout << "in replan_with_delaycheck before opt" << std::endl;
+  // plan_.print();
 
   mtx_plan_.unlock();
 
@@ -1481,9 +1481,25 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   mtx_plan_.lock();
 
-  X_safe_out = plan_.toStdVector();
-  std::cout << "in replan_with_delaycheck aft opt (i haven't changed plan_ yet so should be same as bef" << std::endl;
-  plan_.print();
+  // headsup trajectory
+  headsup_plan = plan_.toStdVector();
+  
+  int headsup_plan_size = headsup_plan.size();
+
+  if ((headsup_plan_size - 1 - k_index_end_) < 0)
+  {
+    std::cout << bold << red << "Already published the point A" << reset << std::endl;
+    std::cout << "headsup_plan_size= " << headsup_plan_size << std::endl;
+    std::cout << "k_index_end_= " << k_index_end_ << std::endl;
+    mtx_plan_.unlock();
+    return false;
+  } else {
+    headsup_plan.erase(headsup_plan.end() - k_index_end_ - 1, headsup_plan.end());  // this deletes also the initial condition...
+    for (int i = 0; i < (solver_->traj_solution_).size(); i++)  //... which is included in traj_solution_[0]
+    {
+      headsup_plan.push_back(solver_->traj_solution_[i]);
+    }
+  }
 
   mtx_plan_.unlock();
 
@@ -1531,8 +1547,8 @@ bool Mader::addTrajToPlan_with_delaycheck(mt::PieceWisePol& pwp){
     // std::cout << "after, plan_size=" << plan_.size() << std::endl;
   }
   
-  std::cout << "in addTrajToPlan_with_delaycheck" << std::endl;
-  plan_.print();
+  // std::cout << "in addTrajToPlan_with_delaycheck" << std::endl;
+  // plan_.print();
   mtx_plan_.unlock();
 
   ////////////////////

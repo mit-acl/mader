@@ -48,7 +48,7 @@ public:
   Mader(mt::parameters par);
   bool replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out, std::vector<Hyperplane3D>& planes,
               int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out);
-  bool replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
+  bool replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& headsup_plan,
                    std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
                    mt::PieceWisePol& pwp_now, double& headsup_time);
   bool addTrajToPlan_with_delaycheck(mt::PieceWisePol& pwp);
