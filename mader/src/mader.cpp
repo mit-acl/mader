@@ -812,8 +812,12 @@ void Mader::updateState(mt::state data)
     mt::state tmp;
     tmp.pos = data.pos;
     tmp.yaw = data.yaw;
+    mtx_plan_.lock();
+
     plan_.erase(plan_.begin(), plan_.end());
     plan_.push_back(tmp);  // plan_ should be empty
+    
+    mtx_plan_.unlock();
     // std::cout << "in updateState function ";
     // plan_.print();
     // previous_yaw_ = tmp.yaw;
@@ -1066,6 +1070,8 @@ bool Mader::isReplanningNeeded()
   mtx_G_term.unlock();
 
   // Check if we have reached the goal
+  mtx_plan_.lock();
+
   double dist_to_goal = (G_term.pos - plan_.front().pos).norm();
   // std::cout << "dist_to_goal= " << dist_to_goal << std::endl;
   if (dist_to_goal < par_.goal_radius)
@@ -1075,10 +1081,10 @@ bool Mader::isReplanningNeeded()
   }
 
   // Check if we have seen the goal in the last replan
-  mtx_plan_.lock();
   double dist_last_plan_to_goal = (G_term.pos - plan_.back().pos).norm();
   // std::cout << "dist_last_plan_to_goal= " << dist_last_plan_to_goal << std::endl;
   mtx_plan_.unlock();
+  
   if (dist_last_plan_to_goal < par_.goal_radius && drone_status_ == DroneStatus::TRAVELING)
   {
     changeDroneStatus(DroneStatus::GOAL_SEEN);
@@ -1942,6 +1948,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   }
   is_pwp_prev_feasible_ = false; // we don't know for sure if this traj is feasible until you run opt in the next step and see A* fails
 
+  mtx_plan_.lock();
   X_safe_out = plan_.toStdVector();
 
   ///////////////////////////////////////////////////////////
@@ -1950,6 +1957,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   // Check if we have planned until G_term
   mt::state F = plan_.back();  // Final point of the safe path (\equiv final point of the comitted path)
+  mtx_plan_.unlock();
   double dist = (G_term_.pos - F.pos).norm();
 
   if (dist < par_.goal_radius)
