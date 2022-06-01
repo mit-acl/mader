@@ -930,8 +930,8 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_
   bool result = true;
   for (auto &traj : trajs_)
   {
-    if (traj.time_received > headsup_time && traj.is_agent == true)
-    // if (traj.is_agent == true) // need to include the trajs that came in the last delay check
+    // if (traj.time_received > headsup_time && traj.is_agent == true)
+    if (traj.is_agent == true) // need to include the trajs that came in the last delay check
     {
       if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
       {
@@ -1084,7 +1084,7 @@ bool Mader::isReplanningNeeded()
   double dist_last_plan_to_goal = (G_term.pos - plan_.back().pos).norm();
   // std::cout << "dist_last_plan_to_goal= " << dist_last_plan_to_goal << std::endl;
   mtx_plan_.unlock();
-  
+
   if (dist_last_plan_to_goal < par_.goal_radius && drone_status_ == DroneStatus::TRAVELING)
   {
     changeDroneStatus(DroneStatus::GOAL_SEEN);

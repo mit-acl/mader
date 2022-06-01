@@ -350,12 +350,12 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   // } else {
   //   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_new_, is_in_DC_, headsup_time_, delay_check_result_);
   // }
+  mtx_alltrajs_.lock();
+  mtx_alltrajsTimers_.lock();
   
   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
 
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
-  mtx_alltrajs_.lock();
-  mtx_alltrajsTimers_.lock();
   // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
 
   alltrajs_.pop_front();
