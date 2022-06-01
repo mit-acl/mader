@@ -800,6 +800,7 @@ void MaderRos::pubTraj(const std::vector<mt::state>& data, const bool& is_commit
   else
   { // if commit is successful then delete the old one
     clearMarkerArray(&traj_safe_colored_, &pub_traj_safe_colored_);
+    clearMarkerArray(&traj_safe_colored_bef_commit_, &pub_traj_safe_colored_bef_commit_);
     traj_safe_colored_ = traj_safe_colored_bef_commit_save_;
     pub_traj_safe_colored_.publish(traj_safe_colored_);
   }
