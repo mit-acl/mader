@@ -481,8 +481,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             if (par_.visual)
             {
               // Delete markers to publish stuff
-              // visual_tools_->deleteAllMarkers();
-              // visual_tools_->enableBatchPublishing();
+              visual_tools_->deleteAllMarkers();
+              visual_tools_->enableBatchPublishing();
               if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
               pubTraj(traj_plan, true);
               last_traj_plan_ = traj_plan;
@@ -504,8 +504,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             if (par_.visual)
             {
               // Delete markers to publish stuff
-              // visual_tools_->deleteAllMarkers();
-              // visual_tools_->enableBatchPublishing();
+              visual_tools_->deleteAllMarkers();
+              visual_tools_->enableBatchPublishing();
               if (last_edges_obstacles_.size() > 0){pubObstacles(last_edges_obstacles_);} 
               pubTraj(last_traj_plan_, true);
             }        
@@ -528,8 +528,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           if (par_.visual)
           {
             // Delete markers to publish stuff
-            // visual_tools_->deleteAllMarkers();
-            // visual_tools_->enableBatchPublishing();
+            visual_tools_->deleteAllMarkers();
+            visual_tools_->enableBatchPublishing();
             if (last_edges_obstacles_.size() > 0){pubObstacles(last_edges_obstacles_);} 
             pubTraj(last_traj_plan_, true);
           }        
@@ -544,8 +544,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           visual_tools_->deleteAllMarkers();
           visual_tools_->enableBatchPublishing();
 
-          if (last_edges_obstacles_.size() > 0){pubObstacles(edges_obstacles);}
-          pubTraj(traj_plan, true);
+          // visualization
+          if (par_.visual)
+          {
+            // Delete markers to publish stuff
+            visual_tools_->deleteAllMarkers();
+            visual_tools_->enableBatchPublishing();
+            if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
+            pubTraj(traj_plan, true);
+          }        
 
           // publishPlanes(planes);
           // publishText();
@@ -573,8 +580,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           if (par_.visual)
           {
             // Delete markers to publish stuff
-            // visual_tools_->deleteAllMarkers();
-            // visual_tools_->enableBatchPublishing();
+            visual_tools_->deleteAllMarkers();
+            visual_tools_->enableBatchPublishing();
             if (last_edges_obstacles_.size() > 0){pubObstacles(last_edges_obstacles_);} 
             pubTraj(last_traj_plan_, true);
           }        
