@@ -53,12 +53,12 @@ class CollisionDetector:
 
 def startNode():
     c = CollisionDetector()
-    rospy.Subscriber("SQ01s/state", PoseStamped, c.SQ01stateCB)
-    rospy.Subscriber("SQ02s/state", PoseStamped, c.SQ02stateCB)
-    rospy.Subscriber("SQ03s/state", PoseStamped, c.SQ03stateCB)
-    rospy.Subscriber("SQ04s/state", PoseStamped, c.SQ04stateCB)
-    rospy.Subscriber("SQ05s/state", PoseStamped, c.SQ05stateCB)
-    rospy.Subscriber("SQ06s/state", PoseStamped, c.SQ06stateCB)
+    rospy.Subscriber("SQ01s/state", State, c.SQ01stateCB)
+    rospy.Subscriber("SQ02s/state", State, c.SQ02stateCB)
+    rospy.Subscriber("SQ03s/state", State, c.SQ03stateCB)
+    rospy.Subscriber("SQ04s/state", State, c.SQ04stateCB)
+    rospy.Subscriber("SQ05s/state", State, c.SQ05stateCB)
+    rospy.Subscriber("SQ06s/state", State, c.SQ06stateCB)
     rospy.Timer(rospy.Duration(0.01), c.collisionDetect)
     rospy.spin()
 
