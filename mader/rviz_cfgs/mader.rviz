@@ -10,12 +10,12 @@ Panels:
         - /Setpoint1
         - /Obstacle1
         - /Console1
-        - /Marker1
-        - /Marker3
-        - /Marker4
-        - /Marker5
-        - /Marker6
-        - /Marker7
+        - /Marker8
+        - /Marker9
+        - /Marker10
+        - /Marker11
+        - /Marker12
+        - /Marker13
       Splitter Ratio: 0.34117648005485535
     Tree Height: 1236
   - Class: rviz/Selection
@@ -73,26 +73,10 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 1000
       Frames:
         All Enabled: true
-        SQ01s:
-          Value: true
-        SQ02s:
-          Value: true
-        SQ03s:
-          Value: true
-        SQ04s:
-          Value: true
-        SQ05s:
-          Value: true
-        SQ06s:
-          Value: true
-        vicon:
-          Value: true
-        world:
-          Value: true
       Marker Alpha: 1
       Marker Scale: 2
       Name: TF
@@ -100,22 +84,9 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          vicon:
-            SQ01s:
-              {}
-            SQ02s:
-              {}
-            SQ03s:
-              {}
-            SQ04s:
-              {}
-            SQ05s:
-              {}
-            SQ06s:
-              {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/PointStamped
       Color: 0; 255; 0
@@ -1030,6 +1001,54 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ01s/drone_marker
+      Name: Marker
+      Namespaces:
+        mesh_SQ01s: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ02s/drone_marker
+      Name: Marker
+      Namespaces:
+        mesh_SQ02s: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ03s/drone_marker
+      Name: Marker
+      Namespaces:
+        mesh_SQ03s: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ04s/drone_marker
+      Name: Marker
+      Namespaces:
+        mesh_SQ04s: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ05s/drone_marker
+      Name: Marker
+      Namespaces:
+        mesh_SQ05s: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ06s/drone_marker
+      Name: Marker
+      Namespaces:
+        mesh_SQ06s: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 238; 238; 236
@@ -1197,4 +1216,4 @@ Window Geometry:
     collapsed: false
   Width: 1829
   X: 96
-  Y: 572
+  Y: 535

@@ -30,7 +30,7 @@ class FakeSim:
         self.state.pos.z = rospy.get_param('~z', 0.0);
         yaw = rospy.get_param('~yaw', 0.0);
 
-        self.publish_marker_drone=False; #TODO: this mesh is not scaled by the radius of the UAV of panther.yaml
+        self.publish_marker_drone=True #TODO: this mesh is not scaled by the radius of the UAV of panther.yaml
 
         pitch=0.0;
         roll=0.0;
@@ -129,9 +129,9 @@ class FakeSim:
         marker.lifetime = rospy.Duration.from_sec(0.0);
         marker.mesh_use_embedded_materials=True
         marker.mesh_resource="package://mader/meshes/quadrotor/quadrotor.dae"
-        marker.scale.x=1.0;
-        marker.scale.y=1.0;
-        marker.scale.z=1.0;
+        marker.scale.x=0.75;
+        marker.scale.y=0.75;
+        marker.scale.z=0.75;
         return marker            
 
 def startNode():

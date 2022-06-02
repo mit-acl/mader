@@ -356,16 +356,17 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   mtx_alltrajs_.lock();
   mtx_alltrajsTimers_.lock();
 
+  
+  mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
+
   double time_now = ros::Time::now().toSec();
   double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_received;
   
   // supposedly_simulated_time_delay should be simulated_comm_delay_
-  if (supposedly_simulated_comm_delay > 1.4 * simulated_comm_delay_){
+  if (supposedly_simulated_comm_delay > 1.5 * simulated_comm_delay_){
     std::cout << "supposedly_simulated_comm_delay is too big" << std::endl;
     std::cout << "supposedly_simulated_comm_delay is " << supposedly_simulated_comm_delay << std::endl;
   }
-  
-  mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
 
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
   // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
