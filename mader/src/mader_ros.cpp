@@ -315,7 +315,7 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
   double comm_delay = tmp.time_received - tmp.time_created;
   if (comm_delay > expected_comm_delay_ - simulated_comm_delay_){
     std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
-    std::cout << red << "comm delay is too huge!!!!" << std::endl;
+    std::cout << "comm delay is huge!!!!" << std::endl;
   }
 
   if (sim_) {
@@ -491,15 +491,16 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           } else {
             // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-            // if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
-            // {
-            publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+            if (timer_stop_.ElapsedMs() > expected_comm_delay_ / 2.0) 
+            {
+              publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                           // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
                                           // very far from the other drones with it last successfully planned a trajectory).
                                           // Note that these trajectories are time-indexed, and the last position is taken if
                                           // t>times.back(). See eval() function in the pwp struct
-              // timer_stop_.Reset();
-              // visualization
+              timer_stop_.Reset();
+            }
+            // visualization
             if (par_.visual)
             {
               // Delete markers to publish stuff
@@ -514,14 +515,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
           // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-            // if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
-            // {
-          publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
-                                          // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
-                                          // very far from the other drones with it last successfully planned a trajectory).
-                                          // Note that these trajectories are time-indexed, and the last position is taken if
-                                          // t>times.back(). See eval() function in the pwp struct
-              // timer_stop_.Reset();
+          if (timer_stop_.ElapsedMs() > expected_comm_delay_ / 2.0) 
+          {
+            publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+                                        // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
+                                        // very far from the other drones with it last successfully planned a trajectory).
+                                        // Note that these trajectories are time-indexed, and the last position is taken if
+                                        // t>times.back(). See eval() function in the pwp struct
+            timer_stop_.Reset();
+          }
           // visualization
           if (par_.visual)
           {
@@ -558,15 +560,16 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         {
           // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-          // if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
-          // {
-          publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+          if (timer_stop_.ElapsedMs() > expected_comm_delay_ / 2.0) 
+          {
+            publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                         // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
                                         // very far from the other drones with it last successfully planned a trajectory).
                                         // Note that these trajectories are time-indexed, and the last position is taken if
                                         // t>times.back(). See eval() function in the pwp struct
-            // timer_stop_.Reset();
-            // visualization
+            timer_stop_.Reset();
+          }
+          // visualization
           if (par_.visual)
           {
             // Delete markers to publish stuff
