@@ -26,7 +26,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 {
   bool sim; // if this is simulation or hardware. Used to check if we need SQ or HX
   mu::safeGetParam(nh1_, "sim", sim_);
-  mu::safeGetParam(nh1_, "if_delaycheck", if_delaycheck_);
+  mu::safeGetParam(nh1_, "is_delaycheck", is_delaycheck_);
 
   mu::safeGetParam(nh1_, "expected_comm_delay", par_.expected_comm_delay);
   expected_comm_delay_ = par_.expected_comm_delay;
@@ -428,7 +428,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
     // replan    
     bool replanned = false;
-    if (if_delaycheck_){
+    if (is_delaycheck_){
       replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_, headsup_time_);
       if (replanned){
 
@@ -505,7 +505,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           else {
             // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-            if (timer_stop_.ElapsedMs() > expected_comm_delay_ / 2.0) 
+            if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
             {
               publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                           // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
@@ -529,7 +529,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
           // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-          if (timer_stop_.ElapsedMs() > expected_comm_delay_ / 2.0) 
+          if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
           {
             publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                         // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
@@ -581,7 +581,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         {
           // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-          if (timer_stop_.ElapsedMs() > expected_comm_delay_ / 2.0) 
+          if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
           {
             publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                         // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
@@ -848,6 +848,7 @@ void MaderRos::pubTraj(const std::vector<mt::state>& data, const bool& is_commit
 
   if (!is_committed)
   {
+    clearMarkerArray(&traj_safe_colored_bef_commit_, &pub_traj_safe_colored_bef_commit_);
     traj_safe_colored_bef_commit_ = mu::trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale,
                                                          "bef_DC", id_, par_.n_agents);   
     pub_traj_safe_colored_bef_commit_.publish(traj_safe_colored_bef_commit_);

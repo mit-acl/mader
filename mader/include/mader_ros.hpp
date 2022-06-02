@@ -77,7 +77,7 @@ private:
   void verify(bool cond, std::string info_if_false);
 
   bool sim_;
-  bool if_delaycheck_;
+  bool is_delaycheck_ = true;
   double headsup_time_ = 0.0;
   bool is_in_DC_ = false;
   bool delay_check_result_ = true;

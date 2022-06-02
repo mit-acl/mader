@@ -973,7 +973,8 @@ visualization_msgs::MarkerArray mu::trajectory2ColoredMarkerArray(const mt::traj
       m.color = mu::getColorJet(i, 0, data.size());  // note that par_.v_max is per axis!
     } else if (color_type == "bef_DC")
     {
-      m.color = mu::color(mu::black_trans);
+      // m.color = mu::color(mu::black_trans);
+      m.color = mu::color(mu::red_normal);
     }
     else
     {
