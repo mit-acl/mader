@@ -38,18 +38,18 @@ class CollisionDetector:
                         print("agent" + str(i+1) + " and " + str(j+1) + " collide")
 
     def SQ01stateCB(self, data):
-        self.state_pos[0,0:3] = np.array([data.pose.position.x, data.pose.position.y, data.pose.position.z])
+        self.state_pos[0,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
         self.initialized = True
     def SQ02stateCB(self, data):
-        self.state_pos[1,0:3] = np.array([data.pose.position.x, data.pose.position.y, data.pose.position.z])
+        self.state_pos[1,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
     def SQ03stateCB(self, data):
-        self.state_pos[2,0:3] = np.array([data.pose.position.x, data.pose.position.y, data.pose.position.z])
+        self.state_pos[2,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
     def SQ04stateCB(self, data):
-        self.state_pos[3,0:3] = np.array([data.pose.position.x, data.pose.position.y, data.pose.position.z])
+        self.state_pos[3,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
     def SQ05stateCB(self, data):
-        self.state_pos[4,0:3] = np.array([data.pose.position.x, data.pose.position.y, data.pose.position.z])
+        self.state_pos[4,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
     def SQ06stateCB(self, data):
-        self.state_pos[5,0:3] = np.array([data.pose.position.x, data.pose.position.y, data.pose.position.z])
+        self.state_pos[5,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
 
 def startNode():
     c = CollisionDetector()
