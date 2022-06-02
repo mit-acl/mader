@@ -514,15 +514,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
                                           // t>times.back(). See eval() function in the pwp struct
               timer_stop_.Reset();
             }
-            // visualization
-            if (par_.visual)
-            {
-              // Delete markers to publish stuff
-              visual_tools_->deleteAllMarkers();
-              visual_tools_->enableBatchPublishing();
-              if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
-              pubTraj(traj_plan, true);
-            }        
+            // // visualization
+            // if (par_.visual)
+            // {
+            //   // Delete markers to publish stuff
+            //   visual_tools_->deleteAllMarkers();
+            //   visual_tools_->enableBatchPublishing();
+            //   if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
+            //   pubTraj(traj_plan, true);
+            // }        
             
           }
         } else {
@@ -538,15 +538,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
                                         // t>times.back(). See eval() function in the pwp struct
             timer_stop_.Reset();
           }
-          // visualization
-          if (par_.visual)
-          {
-            // Delete markers to publish stuff
-            visual_tools_->deleteAllMarkers();
-            visual_tools_->enableBatchPublishing();
-            if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
-            pubTraj(traj_plan, true);
-          }        
+          // // visualization
+          // if (par_.visual)
+          // {
+          //   // Delete markers to publish stuff
+          //   visual_tools_->deleteAllMarkers();
+          //   visual_tools_->enableBatchPublishing();
+          //   if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
+          //   pubTraj(traj_plan, true);
+          // }        
         }
       } else {
 
@@ -843,23 +843,21 @@ void MaderRos::pubTraj(const std::vector<mt::state>& data, const bool& is_commit
   }
 
   pub_traj_safe_.publish(traj);
-  clearMarkerArray(&traj_safe_colored_, &pub_traj_safe_colored_);
 
   double scale = 0.15;
 
   if (!is_committed)
   {
     traj_safe_colored_bef_commit_ = mu::trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale,
-                                                         "bef_DC", id_, par_.n_agents);
-    traj_safe_colored_bef_commit_save_ = mu::trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale,
-                                                         par_.color_type, id_, par_.n_agents);    
+                                                         "bef_DC", id_, par_.n_agents);   
     pub_traj_safe_colored_bef_commit_.publish(traj_safe_colored_bef_commit_);
   } 
   else
   { // if commit is successful then delete the old one
     clearMarkerArray(&traj_safe_colored_, &pub_traj_safe_colored_);
     clearMarkerArray(&traj_safe_colored_bef_commit_, &pub_traj_safe_colored_bef_commit_);
-    traj_safe_colored_ = traj_safe_colored_bef_commit_save_;
+    traj_safe_colored_ = mu::trajectory2ColoredMarkerArray(data, par_.v_max.maxCoeff(), increm, name_drone_, scale,
+                                                         par_.color_type, id_, par_.n_agents); 
     pub_traj_safe_colored_.publish(traj_safe_colored_);
   }
 }
