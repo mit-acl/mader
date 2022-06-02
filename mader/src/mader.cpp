@@ -1310,17 +1310,17 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   }
 
   ////////////////
-  // std::cout << "bef mtx_trajs_.lock() in replan" << std::endl;
+  std::cout << "bef mtx_trajs_.lock() in replan" << std::endl;
   mtx_trajs_.lock();
-  // std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
+  std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
 
   time_init_opt_ = ros::Time::now().toSec();
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
 
-  // std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
+  std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
   mtx_trajs_.unlock();
-  // std::cout << "aft mtx_trajs_.unlock() in replan" << std::endl;
+  std::cout << "aft mtx_trajs_.unlock() in replan" << std::endl;
 
   mt::ConvexHullsOfCurves_Std hulls_std = cu::vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = cu::vectorGCALPol2vectorJPSPol(hulls);
@@ -1436,9 +1436,9 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   MyTimer check_t(true);
 
-  // std::cout << "bef mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
+  std::cout << "bef mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
   mtx_trajs_.lock();
-  // std::cout << "aft mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
+  std::cout << "aft mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
 
   // first make sure none of the trajectory is checked in this optimization
   // for (auto &traj : trajs_){
@@ -1448,9 +1448,9 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   // check and recheck are done in safetyChechAfterOpt() 
   bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now, headsup_time);
 
-  // std::cout << "bef mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
+  std::cout << "bef mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
   mtx_trajs_.unlock();
-  // std::cout << "aft mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
+  std::cout << "aft mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
 
   // To deal with comm delay, now we publish two trajectories(pwp_prev_ and pwp_now)
 
