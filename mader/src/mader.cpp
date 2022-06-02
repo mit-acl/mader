@@ -822,12 +822,14 @@ void Mader::updateState(mt::state data)
     // plan_.print();
     // previous_yaw_ = tmp.yaw;
     initial_yaw_ = tmp.yaw;
-  }
-
-  if (drone_status_ == DroneStatus::TRAVELING)
-  {
     state_initialized_ = true;
   }
+
+  // printDroneStatus();
+
+  // if (drone_status_ == DroneStatus::TRAVELING)
+  // {
+  // }
 
   /* skip yawing process
   if (drone_status_ == DroneStatus::YAWING)
@@ -865,6 +867,11 @@ bool Mader::initializedStateAndTermGoal()
 {
   if (!state_initialized_ || !terminal_goal_initialized_)
   {
+    if (!state_initialized_){
+      // std::cout << "not initialized yet" << std::endl;
+    } else {
+      // std::cout << "not terminal_goal_initialized yet" << std::endl;
+    }
     return false;
   }
   return true;
@@ -1059,6 +1066,7 @@ bool Mader::isReplanningNeeded()
 {
   if (initializedStateAndTermGoal() == false)
   {
+    // std::cout << "here" << std::endl;
     return false;
   }
 
