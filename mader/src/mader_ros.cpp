@@ -508,7 +508,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
               // visual_tools_->deleteAllMarkers();
               // visual_tools_->enableBatchPublishing();
               // if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
-              // pubTraj(traj_plan, true);
+              pubTraj(traj_plan, true);
               // last_traj_plan_ = traj_plan;
               // last_edges_obstacles_ = edges_obstacles;
             }
