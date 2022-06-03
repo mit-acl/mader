@@ -691,8 +691,14 @@ ConvexHullsOfCurves Mader::convexHullsOfCurves(double t_start, double t_end)
 {
   ConvexHullsOfCurves result;
 
+  if (trajs_.size() == 0){
+    std::cout << "trajs_ is empty" << std::endl;
+  }
+
   for (auto traj : trajs_)
   {
+    std::cout << "traj.pwp print out in convexHullsOfCurves" << std::endl;
+    traj.pwp.print();    
     result.push_back(convexHullsOfCurve(traj, t_start, t_end));
   }
 
@@ -1316,6 +1322,13 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   time_init_opt_ = ros::Time::now().toSec();
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
+
+  std::cout << "in replan(), trajs_ pwps print out" << std::endl;
+  std::cout << "trajs_.size() is " << trajs_.size() << std::endl;
+  for (auto traj : trajs_){
+    traj.pwp.print();
+  }
+
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
 
   std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
@@ -1779,6 +1792,13 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   time_init_opt_ = ros::Time::now().toSec();
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
+
+  std::cout << "in OLD replan(), trajs_ pwps print out" << std::endl;
+  std::cout << "trajs_.size() is " << trajs_.size() << std::endl;
+  for (auto traj : trajs_){
+    traj.pwp.print();
+  }
+
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
   mtx_trajs_.unlock();
 

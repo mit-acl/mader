@@ -1006,7 +1006,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ01s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1022,7 +1022,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ03s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1030,7 +1030,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ04s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1046,7 +1046,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ06s: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -1215,5 +1215,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1829
-  X: 96
-  Y: 498
+  X: 101
+  Y: 619

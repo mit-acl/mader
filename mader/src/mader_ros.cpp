@@ -429,7 +429,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     // replan    
     bool replanned = false;
 
-    replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_, headsup_time_);
+    // replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_, headsup_time_);
+    replanned = mader_ptr_->replan(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
     if (replanned){
 
       // let others know my new trajectory
