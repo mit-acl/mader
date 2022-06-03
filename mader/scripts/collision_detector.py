@@ -14,10 +14,14 @@ class CollisionDetector:
 
     def __init__(self):
 
+
+        # tolerance
+        self.tol = 0.001
+
         # bbox size
-        self.bbox_x = rospy.get_param('bbox_x', 1.0) #default value is 1.0 
-        self.bbox_y = rospy.get_param('bbox_y', 1.0) #default value is 1.0 
-        self.bbox_z = rospy.get_param('bbox_z', 1.5) #default value is 1.5
+        self.bbox_x = rospy.get_param('bbox_x', 1.0) - self.tol #default value is 1.0 
+        self.bbox_y = rospy.get_param('bbox_y', 1.0) - self.tol #default value is 1.0 
+        self.bbox_z = rospy.get_param('bbox_z', 1.5) - self.tol #default value is 1.5
 
         self.initialized = False
 
