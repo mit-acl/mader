@@ -496,7 +496,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::dynTrajCompiled& traj
 
     // changeBBox(drone_boundarybox);
 
-    delta = traj.bbox / 2.0 + drone_boundarybox / 2.0 + (par_.beta + par_.alpha) * Eigen::Vector3d::Ones();
+    delta = traj.bbox / 2.0 + drone_boundarybox / 2.0;
     // std::cout << "boundary box size" << std::endl;
     // std::cout << drone_boundarybox[0] << std::endl;
     // std::cout << drone_boundarybox[1] << std::endl;
