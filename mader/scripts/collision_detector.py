@@ -58,9 +58,9 @@ class CollisionDetector:
                             
                             print("collistion btwn " + trans.header.frame_id + " and " + trans.child_frame_id)
 
-                            print("diff in x is " + str(abs(trans.transform.translation.x)))
-                            print("diff in y is " + str(abs(trans.transform.translation.y)))
-                            print("diff in z is " + str(abs(trans.transform.translation.z)))
+                            max_dist = max(abs(trans.transform.translation.x), abs(trans.transform.translation.y), abs(trans.transform.translation.z))
+
+                            print("violation dist is " + str(max_dist))
 
                         # if (abs(self.state_pos[i,0] - self.state_pos[j,0]) < self.bbox_x 
                         #     and abs(self.state_pos[i,1] - self.state_pos[j,1]) < self.bbox_y 
