@@ -429,102 +429,104 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     // replan    
     bool replanned = false;
 
-    // replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_, headsup_time_);
-    replanned = mader_ptr_->replan(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
-    if (replanned){
+    if (is_delaycheck_)
+    {
+      replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_, headsup_time_);
+      if (replanned){
 
-      // let others know my new trajectory
-      publishOwnTraj(pwp_now_,false);
+        // let others know my new trajectory
+        publishOwnTraj(pwp_now_,false);
 
-      // get the time
-      headsup_time_ =ros::Time::now().toSec();
-      
-      // start
-      MyTimer delay_check_t(true);
+        // get the time
+        headsup_time_ =ros::Time::now().toSec();
+        
+        // start
+        MyTimer delay_check_t(true);
 
-      // visualization
-      if (par_.visual)
-      {
-        // Delete markers to publish stuff
-        // visual_tools_->deleteAllMarkers();
-        // visual_tools_->enableBatchPublishing();
-        if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
-        pubTraj(traj_plan, false);
-      }
-
-      // std::cout << "headsup" << std::endl;
-      // for (auto state : traj_plan) {state.print();}
-
-      // delay check *******************************************************
-      is_in_DC_ = true;
-      delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
-      while (delay_check_t.ElapsedMs()/1000.0 < expected_comm_delay_)
-      {
-        // wait while trajCB() is checking new trajs
-        // TODO make this as a timer so that i can move onto the next optimization
-        // std::cout << "waiting in DC" << std::endl;
-        if (delay_check_result_ == false)
+        // visualization
+        if (par_.visual)
         {
-          break;
+          // Delete markers to publish stuff
+          // visual_tools_->deleteAllMarkers();
+          // visual_tools_->enableBatchPublishing();
+          if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
+          pubTraj(traj_plan, false);
         }
-        // std::cout << "dc elapsed " << delay_check_t.ElapsedMs()/1000.0 << "[s]"<< std::endl;
-        ros::Duration(0.001).sleep();
-      }
-      // ros::Duration(expected_comm_delay_).sleep();
-      is_in_DC_ = false;
-      // end of delay check *******************************************************
 
-      // std::cout << "after delay check" << std::endl;
+        // std::cout << "headsup" << std::endl;
+        // for (auto state : traj_plan) {state.print();}
 
-      if(delay_check_result_){
-        // execute the new trajectory
-        // if it's the first time to add traj to plan_ then don't execute it. you don't have a back-up traj (pwp_last_)
-        // if (!is_add_plan_initialized_){
-        //   pwp_last_ = pwp_now_;
-        //   is_add_plan_initialized_ = true;
-        //   return;
-        // }
-
-        if(mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now_)){
-
-          // successful
-
-          publishOwnTraj(pwp_now_, true);
-          pwp_last_ = pwp_now_;
-          // std::cout << "Success!" << std::endl;
-          if (par_.visual)
+        // delay check *******************************************************
+        is_in_DC_ = true;
+        delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
+        while (delay_check_t.ElapsedMs()/1000.0 < expected_comm_delay_)
+        {
+          // wait while trajCB() is checking new trajs
+          // TODO make this as a timer so that i can move onto the next optimization
+          // std::cout << "waiting in DC" << std::endl;
+          if (delay_check_result_ == false)
           {
-            // Delete markers to publish stuff
-            visual_tools_->deleteAllMarkers();
-            visual_tools_->enableBatchPublishing();
-            if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
-            pubTraj(traj_plan, true);
-            // last_traj_plan_ = traj_plan;
-            // last_edges_obstacles_ = edges_obstacles;
+            break;
           }
-        } 
-        else {
-          // int time_ms = int(ros::Time::now().toSec() * 1000);
+          // std::cout << "dc elapsed " << delay_check_t.ElapsedMs()/1000.0 << "[s]"<< std::endl;
+          ros::Duration(0.001).sleep();
+        }
+        // ros::Duration(expected_comm_delay_).sleep();
+        is_in_DC_ = false;
+        // end of delay check *******************************************************
 
-          if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
-          {
-            publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
-                                        // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
-                                        // very far from the other drones with it last successfully planned a trajectory).
-                                        // Note that these trajectories are time-indexed, and the last position is taken if
-                                        // t>times.back(). See eval() function in the pwp struct
-            timer_stop_.Reset();
+        // std::cout << "after delay check" << std::endl;
+
+        if(delay_check_result_){
+          // execute the new trajectory
+          // if it's the first time to add traj to plan_ then don't execute it. you don't have a back-up traj (pwp_last_)
+          // if (!is_add_plan_initialized_){
+          //   pwp_last_ = pwp_now_;
+          //   is_add_plan_initialized_ = true;
+          //   return;
+          // }
+
+          if(mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now_)){
+
+            // successful
+
+            publishOwnTraj(pwp_now_, true);
+            pwp_last_ = pwp_now_;
+            // std::cout << "Success!" << std::endl;
+            if (par_.visual)
+            {
+              // Delete markers to publish stuff
+              visual_tools_->deleteAllMarkers();
+              visual_tools_->enableBatchPublishing();
+              if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
+              pubTraj(traj_plan, true);
+              // last_traj_plan_ = traj_plan;
+              // last_edges_obstacles_ = edges_obstacles;
+            }
           }
-          // // visualization
-          // if (par_.visual)
-          // {
-          //   // Delete markers to publish stuff
-          //   visual_tools_->deleteAllMarkers();
-          //   visual_tools_->enableBatchPublishing();
-          //   if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
-          //   pubTraj(traj_plan, true);
-          // }        
-          
+
+        } else {
+            // int time_ms = int(ros::Time::now().toSec() * 1000);
+
+            if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
+            {
+              publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+                                          // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
+                                          // very far from the other drones with it last successfully planned a trajectory).
+                                          // Note that these trajectories are time-indexed, and the last position is taken if
+                                          // t>times.back(). See eval() function in the pwp struct
+              timer_stop_.Reset();
+            }
+            // // visualization
+            // if (par_.visual)
+            // {
+            //   // Delete markers to publish stuff
+            //   visual_tools_->deleteAllMarkers();
+            //   visual_tools_->enableBatchPublishing();
+            //   if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
+            //   pubTraj(traj_plan, true);
+            // }        
+            
         }
       } else {
 
@@ -549,15 +551,69 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         //   pubTraj(traj_plan, true);
         // }        
       }
+      
+    } else {
 
+        // replanned = mader_ptr_->replan(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
+
+        // if (par_.visual)
+        // {
+        //   // Delete markers to publish stuff
+        //   visual_tools_->deleteAllMarkers();
+        //   visual_tools_->enableBatchPublishing();
+
+        //   // visualization
+        //   if (par_.visual)
+        //   {
+        //     // Delete markers to publish stuff
+        //     visual_tools_->deleteAllMarkers();
+        //     visual_tools_->enableBatchPublishing();
+        //     if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
+        //     pubTraj(traj_plan, true);
+        //   }        
+
+        //   // publishPlanes(planes);
+        //   // publishText();
+        // }
+
+        // if (replanned)
+        // {
+        //   publishOwnTraj(pwp_now_, true);
+        //   pwp_last_ = pwp_now_;
+        // }
+        // else
+        // {
+        //   // int time_ms = int(ros::Time::now().toSec() * 1000);
+
+        //   if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
+        //   {
+        //     publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+        //                                 // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
+        //                                 // very far from the other drones with it last successfully planned a trajectory).
+        //                                 // Note that these trajectories are time-indexed, and the last position is taken if
+        //                                 // t>times.back(). See eval() function in the pwp struct
+        //     timer_stop_.Reset();
+        //   }
+        //   // visualization
+        //   if (par_.visual)
+        //   {
+        //     // Delete markers to publish stuff
+        //     visual_tools_->deleteAllMarkers();
+        //     visual_tools_->enableBatchPublishing();
+        //     if (last_edges_obstacles_.size() > 0){pubObstacles(last_edges_obstacles_);} 
+        //     pubTraj(last_traj_plan_, true);
+        //   }        
+          
+        // }
+      }
     }// std::cout << "[Callback] Leaving replanCB" << std::endl;
 
   mt::state G;  // projected goal
   mader_ptr_->getG(G);
   pubState(G, pub_point_G_);
-  }
-
 }
+
+
 
 void MaderRos::publishText()
 {

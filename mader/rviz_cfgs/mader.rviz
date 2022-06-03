@@ -430,53 +430,53 @@ Visualization Manager:
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ01s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ02s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ03s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ04s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ05s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ06s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /SQ07s/mader/traj_safe_colored
@@ -1006,7 +1006,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/drone_marker
       Name: Marker
       Namespaces:
-        {}
+        mesh_SQ01s: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1022,7 +1022,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/drone_marker
       Name: Marker
       Namespaces:
-        {}
+        mesh_SQ03s: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1030,7 +1030,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/drone_marker
       Name: Marker
       Namespaces:
-        {}
+        mesh_SQ04s: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1046,7 +1046,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/drone_marker
       Name: Marker
       Namespaces:
-        {}
+        mesh_SQ06s: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -1216,4 +1216,4 @@ Window Geometry:
     collapsed: false
   Width: 1829
   X: 101
-  Y: 619
+  Y: 582

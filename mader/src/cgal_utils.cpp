@@ -124,18 +124,18 @@ CGAL_Polyhedron_3 cu::convexHullOfPoints(const std::vector<Point_3>& points)
   CGAL::Object ch_object;
 
   // compute convex hull
-  std::cout << "Computing the convex hull CGAL for these points:" << std::endl;
-  for (auto points_i : points)
-  {
-    if (std::isnan(points_i.x()) || std::isnan(points_i.y()) || std::isnan(points_i.z()))
-    {
-      std::cout << "points are nan in convexHullOfPoints" << std::endl;
-      std::abort();
-    }
+  // std::cout << "Computing the convex hull CGAL for these points:" << std::endl;
+  // for (auto points_i : points)
+  // {
+  //   if (std::isnan(points_i.x()) || std::isnan(points_i.y()) || std::isnan(points_i.z()))
+  //   {
+  //     std::cout << "points are nan in convexHullOfPoints" << std::endl;
+  //     std::abort();
+  //   }
 
-    // std::cout << points_i.x() << ", " << points_i.y() << ", " << points_i.z() << std::endl;
+  //   // std::cout << points_i.x() << ", " << points_i.y() << ", " << points_i.z() << std::endl;
 
-  }
+  // }
 
   CGAL::convex_hull_3(points.begin(), points.end(), ch_object);
   // std::cout << "convexHullCgal Computed!" << std::endl;
