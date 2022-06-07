@@ -466,19 +466,20 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         // delay check *******************************************************
         // start
         MyTimer delay_check_t(true);
-        is_in_DC_ = true;
-        delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
+        // is_in_DC_ = true;
+        // delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
         while (delay_check_t.ElapsedMs()/1000.0 < expected_comm_delay_)
         {
           // wait while trajCB() is checking new trajs
           // TODO make this as a timer so that i can move onto the next optimization
           // std::cout << "waiting in DC" << std::endl;
+          delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
           if (delay_check_result_ == false)
           {
             break;
           }
           // std::cout << "dc elapsed " << delay_check_t.ElapsedMs()/1000.0 << "[s]"<< std::endl;
-          ros::Duration(0.001).sleep();
+          ros::Duration(0.01).sleep();
         }
         // ros::Duration(expected_comm_delay_).sleep();
         is_in_DC_ = false;
