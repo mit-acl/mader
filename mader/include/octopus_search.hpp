@@ -76,7 +76,7 @@ public:
 
   void setBias(double bias);
 
-  bool run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d, bool& is_stuck);
+  bool run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d, bool& is_stuck, bool& is_q0_fail);
 
   void recoverPath(Node* node1_ptr);
 
@@ -118,7 +118,7 @@ public:
   };
 
   bool collidesWithObstaclesGivenVertexes(const Eigen::Matrix<double, 3, 4>& last4Cps, int index_lastCP);
-  bool collidesWithObstacles(Node& current);
+  bool collidesWithObstacles(Node& current, bool& is_q0_fail);
   double getCost();
 
 protected:

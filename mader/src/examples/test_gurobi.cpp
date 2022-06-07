@@ -106,7 +106,9 @@ int main()
   std::cout << "Calling optimize" << std::endl;
   bool is_stuck;
   bool is_A_star_failed;
-  bool converged = my_solver.optimize(is_stuck, is_A_star_failed);
+  bool is_q0_fail;
+
+  bool converged = my_solver.optimize(is_stuck, is_A_star_failed, is_q0_fail);
 
   // double time_needed = my_solver.getTimeNeeded();
   double delta = (t_max - t_min) / num_pol;

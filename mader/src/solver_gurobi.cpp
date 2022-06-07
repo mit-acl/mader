@@ -598,7 +598,7 @@ bool SolverGurobi::setInitStateFinalStateInitTFinalT(mt::state initial_state, mt
   return true;
 }
 
-bool SolverGurobi::optimize(bool& is_stuck, bool& is_A_star_failed)
+bool SolverGurobi::optimize(bool& is_stuck, bool& is_A_star_failed, bool& is_q0_fail)
 {
   // reset some stuff
   traj_solution_.clear();
@@ -615,7 +615,7 @@ bool SolverGurobi::optimize(bool& is_stuck, bool& is_A_star_failed)
     // std::cout << "par_.z_min= " << par_.z_min << ", par_.z_max=" << par_.z_max << std::endl;
     return false;
   }
-  bool guess_is_feasible = generateAStarGuess(is_stuck, is_A_star_failed);  // I obtain q_quess_, n_guess_, d_guess_
+  bool guess_is_feasible = generateAStarGuess(is_stuck, is_A_star_failed, is_q0_fail);  // I obtain q_quess_, n_guess_, d_guess_
 
   // Note that guess_is_feasible does not take into account jerk constraints
 

@@ -1270,6 +1270,11 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   // }
 
   mt::state initial = A;
+  if (is_movingAoutOfBbox_) {
+    initial = movedA_;
+    A = movedA_;
+    is_movingAoutOfBbox_ = false;
+  }
   mt::state final = G;
 
   mtx_G.lock();
@@ -1337,7 +1342,21 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   bool is_stuck;
   bool is_A_star_failed;
-  bool result = solver_->optimize(is_stuck, is_A_star_failed);  // calling the solver
+  bool is_q0_fail = false;
+  bool result = solver_->optimize(is_stuck, is_A_star_failed, is_q0_fail);  // calling the solver
+
+  if (is_q0_fail){
+    // std::cout << "q0_fail_count_ is " << q0_fail_count_ << std::endl;
+    q0_fail_count_ += 1;
+    if (q0_fail_count_ > 3 && state_.vel.norm() < 0.0001){
+      // in this case one agent is on the bbox constraint so need to move A away
+      std::cout << "move A out of the bbox" << std::endl;
+      movedA_ = moveAoutOfBbox(A);
+      is_movingAoutOfBbox_ = true;
+    }
+  } else {
+    q0_fail_count_ = 0;
+  }
 
   // right after taking off, sometims drones cannot find a path
   // sometimes the very initial path search takes more than how_many_A_star_failure counts and fails
@@ -1584,6 +1603,65 @@ bool Mader::addTrajToPlan_with_delaycheck(mt::PieceWisePol& pwp){
   return true;
 }
 
+mt::state Mader::moveAoutOfBbox(const mt::state& A){
+  
+  mt::state newA = A;
+  double tol = 0.05;
+  double move_how_much = 0.001;
+
+  mtx_trajs_.lock();
+
+  // identify which agent we are stuck with
+  for (auto traj : trajs_){
+    
+    Eigen::Vector3d dist = state_.pos - traj.pwp.eval(ros::Time::now().toSec());
+
+    if (dist[0] <= par_.drone_bbox[0] + tol){
+      std::cout << "stuck with agent " << traj.id << std::endl;
+      std::cout << "plan_.size() is " << plan_.size() << std::endl;
+      std::cout << "k_index_end_ is" << k_index_end_ << std::endl;
+      newA.pos[0] = state_.pos[0] + move_how_much;
+      break;
+    } else if (- par_.drone_bbox[0] - tol <= dist[0]){
+      std::cout << "stuck with agent " << traj.id << std::endl;
+      std::cout << "plan_.size() is " << plan_.size() << std::endl;
+      std::cout << "k_index_end_ is" << k_index_end_ << std::endl;
+      newA.pos[0] = state_.pos[0] - move_how_much;
+      break;
+    } else if (dist[1] <= par_.drone_bbox[1] + tol){
+      std::cout << "stuck with agent " << traj.id << std::endl;
+      std::cout << "plan_.size() is " << plan_.size() << std::endl;
+      std::cout << "k_index_end_ is" << k_index_end_ << std::endl;
+      newA.pos[1] = state_.pos[1] + move_how_much;
+      break;
+    } else if (- par_.drone_bbox[1] - tol <= dist[1]){
+      std::cout << "stuck with agent " << traj.id << std::endl;
+      std::cout << "plan_.size() is " << plan_.size() << std::endl;
+      std::cout << "k_index_end_ is" << k_index_end_ << std::endl;
+      newA.pos[1] = state_.pos[1] - move_how_much;
+      break;
+    } else if (dist[2] <= par_.drone_bbox[2] + tol){
+      std::cout << "stuck with agent " << traj.id << std::endl;
+      std::cout << "plan_.size() is " << plan_.size() << std::endl;
+      std::cout << "k_index_end_ is" << k_index_end_ << std::endl;
+      newA.pos[2] = state_.pos[2] + move_how_much;
+      break;
+    } else if (- par_.drone_bbox[2] - tol <= dist[2]){
+      std::cout << "stuck with agent " << traj.id << std::endl;
+      std::cout << "plan_.size() is " << plan_.size() << std::endl;
+      std::cout << "k_index_end_ is" << k_index_end_ << std::endl;
+      newA.pos[2] = state_.pos[2] - move_how_much;  
+      break;
+    }
+  
+  }
+
+  mtx_trajs_.unlock();
+
+  return newA;
+}
+
+
 bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
                    std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
                    mt::PieceWisePol& pwp_out)
@@ -1804,7 +1882,9 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   bool is_stuck;
   bool is_A_star_failed;
-  bool result = solver_->optimize(is_stuck, is_A_star_failed);  // calling the solver
+  bool is_q0_fail;
+
+  bool result = solver_->optimize(is_stuck, is_A_star_failed, is_q0_fail);  // calling the solver
 
   // right after taking off, sometims drones cannot find a path
   // sometimes the very initial path search takes more than how_many_A_star_failure counts and fails

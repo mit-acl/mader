@@ -70,6 +70,7 @@ public:
 
   Eigen::Vector2d RotationMatrix(Eigen::Vector2d& vec, const double& angle);
   void getID(int& id);
+  mt::state moveAoutOfBbox(const mt::state& A);
 
 private:
   mt::state M_;
@@ -217,6 +218,10 @@ private:
   bool is_pop_up_initialized_ = false;
 
   bool is_A_star_failed_30_ = false;
+
+  int q0_fail_count_ = 0;
+  bool is_movingAoutOfBbox_ = false;
+  mt::state movedA_;
 
   // double av_improvement_nlopt_ = 0.0;
 

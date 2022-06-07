@@ -30,7 +30,7 @@ public:
 
   ~SolverGurobi();
 
-  bool optimize(bool &is_stuck, bool& is_A_star_failed);
+  bool optimize(bool &is_stuck, bool& is_A_star_failed, bool& is_q0_fail);
 
   // setters
   void setMaxRuntimeKappaAndMu(double runtime, double kappa, double mu);
@@ -80,7 +80,7 @@ private:
                                       std::vector<std::vector<GRBLinExpr>> &Qmv, int interval);
 
   void generateRandomGuess();
-  bool generateAStarGuess(bool& is_stuck, bool& is_A_star_failed);
+  bool generateAStarGuess(bool& is_stuck, bool& is_A_star_failed, bool& is_q0_fail);
   void generateStraightLineGuess();
 
   void printStd(const std::vector<Eigen::Vector3d> &v);

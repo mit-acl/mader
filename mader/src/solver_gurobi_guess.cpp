@@ -15,7 +15,7 @@
 
 using namespace termcolor;
 
-bool SolverGurobi::generateAStarGuess(bool& is_stuck, bool& is_A_star_failed)
+bool SolverGurobi::generateAStarGuess(bool& is_stuck, bool& is_A_star_failed, bool& is_q0_fail)
 {
   std::cout << "[NL] Running A* from" << q0_.transpose() << " to " << final_state_.pos.transpose()
             << ", allowing time = " << kappa_ * max_runtime_ * 1000 << " ms" << std::endl;
@@ -54,7 +54,7 @@ bool SolverGurobi::generateAStarGuess(bool& is_stuck, bool& is_A_star_failed)
   std::vector<Eigen::Vector3d> q;
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
-  bool is_feasible = octopusSolver_->run(q, n, d, is_stuck);
+  bool is_feasible = octopusSolver_->run(q, n, d, is_stuck, is_q0_fail);
 
   // num_of_LPs_run_ = octopusSolver_->getNumOfLPsRun();
 

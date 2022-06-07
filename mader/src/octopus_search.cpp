@@ -729,8 +729,7 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
   bool isFeasible = true;
 
   // Check obstacles constraints (and compute n and d)
-  // for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++) 
-  for (int index_interv = 1; index_interv < (q.size() - 3); index_interv++) // not check the initial position
+  for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++) 
   {
     last4Cps.col(0) = q[index_interv];
     last4Cps.col(1) = q[index_interv + 1];
@@ -875,7 +874,7 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
   return isFeasible;
 }
 
-bool OctopusSearch::collidesWithObstacles(Node& current)
+bool OctopusSearch::collidesWithObstacles(Node& current, bool& is_q0_fail)
 {
   Eigen::Matrix<double, 3, 4> last4Cps;  // Each column contains a control point
   bool collides = false;
@@ -888,7 +887,10 @@ bool OctopusSearch::collidesWithObstacles(Node& current)
       last4Cps.col(1) = q1_;
       last4Cps.col(2) = current.previous->qi;
       last4Cps.col(3) = current.qi;
-      collides = false;
+      collides = collidesWithObstaclesGivenVertexes(last4Cps, current.index);
+      if (collides) {
+        is_q0_fail = true;
+      }
     }
     else if (current.index == 4)
     {
@@ -906,6 +908,7 @@ bool OctopusSearch::collidesWithObstacles(Node& current)
       last4Cps.col(3) = current.qi;
       collides = collidesWithObstaclesGivenVertexes(last4Cps, current.index);
     }
+
 
     ////////
     if (current.index == (N_ - 2))
@@ -1038,7 +1041,7 @@ exit:
   return (!satisfies_LP);
 }
 
-bool OctopusSearch::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d, bool & is_stuck)
+bool OctopusSearch::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d, bool& is_stuck, bool& is_q0_fail)
 {
   /////////// reset some stuff
   // stores the closest node found
@@ -1164,7 +1167,7 @@ bool OctopusSearch::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen:
     /////////////////////
 
     MyTimer timer_collision_check(true);
-    bool collides = collidesWithObstacles(*current_ptr);
+    bool collides = collidesWithObstacles(*current_ptr, is_q0_fail);
     // std::cout << "collision check took " << timer_collision_check << std::endl;
 
     // already_exist = false;

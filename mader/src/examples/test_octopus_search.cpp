@@ -325,7 +325,9 @@ int main(int argc, char** argv)
   std::vector<Eigen::Vector3d> n;
   std::vector<double> d;
   bool is_stuck;
-  bool solved = myAStarSolver.run(q, n, d, is_stuck);
+  bool is_q0_fail;
+
+  bool solved = myAStarSolver.run(q, n, d, is_stuck, is_q0_fail);
 
   if (is_stuck){
     std::cout << "drones are stuck" << std::endl;
