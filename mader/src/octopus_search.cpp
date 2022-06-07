@@ -1,3 +1,4 @@
+
 /* ----------------------------------------------------------------------------
  * Copyright 2020, Jesus Tordesillas Torres, Aerospace Controls Laboratory
  * Massachusetts Institute of Technology
@@ -728,8 +729,8 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
   bool isFeasible = true;
 
   // Check obstacles constraints (and compute n and d)
-  // for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++)
-  for (int index_interv = 1; index_interv < (q.size() - 3); index_interv++)
+  // for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++) 
+  for (int index_interv = 1; index_interv < (q.size() - 3); index_interv++) // not check the initial position
   {
     last4Cps.col(0) = q[index_interv];
     last4Cps.col(1) = q[index_interv + 1];
