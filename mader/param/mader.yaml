@@ -43,9 +43,9 @@ z_min: 0.9  # [m] don't forget the .0
 z_max: 2.0  # [m] don't forget the .0
 
 #For single-agent simulations
-v_max: [3.0, 3.0, 3.0]   #[m/s]  7.0
-a_max: [3.0, 3.0, 3.0]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
-j_max: [3.0, 3.0, 3.0]   #[m/s3]  #Right now it's only used for Gurobi, not for NLOPT
+v_max: [5.0, 5.0, 5.0]   #[m/s]  7.0
+a_max: [5.0, 5.0, 5.0]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
+j_max: [5.0, 5.0, 5.0]   #[m/s3]  #Right now it's only used for Gurobi, not for NLOPT
 
 factor_alpha: 1.5 #[-] DeltaT = factor_alpha*States_took_previous_replan
 
@@ -76,7 +76,7 @@ a_star_samp_z: 3 # odd number
 a_star_fraction_voxel_size: 0.5 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
 allow_infeasible_guess: true  #whether allow infeasible guesses to be used for the optimization. If false, straight line guess will be used in the case of an infeasible guess
 
-a_star_bias: 0.5 #Bias (cost=g+bias*h) in the A* search #default is 1.0
+a_star_bias: 0.01 #Bias (cost=g+bias*h) in the A* search #default is 1.0
 
 basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER.  This is the basis used for collision checking
 
