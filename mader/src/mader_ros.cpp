@@ -316,8 +316,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   double comm_delay = tmp.time_received - tmp.time_created;
   if (comm_delay > expected_comm_delay_ - simulated_comm_delay_){
-    std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
-    std::cout << "comm delay is huge!!!!" << std::endl;
+    // std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
+    // std::cout << "comm delay is huge!!!!" << std::endl;
   }
 
   if (sim_) {
@@ -366,8 +366,8 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   
   // supposedly_simulated_time_delay should be simulated_comm_delay_
   if (supposedly_simulated_comm_delay > 1.5 * simulated_comm_delay_){
-    std::cout << "supposedly_simulated_comm_delay is too big" << std::endl;
-    std::cout << "supposedly_simulated_comm_delay is " << supposedly_simulated_comm_delay << std::endl;
+    // std::cout << "supposedly_simulated_comm_delay is too big" << std::endl;
+    // std::cout << "supposedly_simulated_comm_delay is " << supposedly_simulated_comm_delay << std::endl;
   }
 
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
