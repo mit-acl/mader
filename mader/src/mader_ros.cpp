@@ -19,6 +19,8 @@
 
 #include <jsk_rviz_plugins/OverlayText.h>
 
+#include <random>
+
 typedef MADER_timers::Timer MyTimer;
 
 // this object is created in the mader_ros_node
@@ -623,8 +625,6 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
   pubState(G, pub_point_G_);
 }
 
-
-
 void MaderRos::publishText()
 {
   jsk_rviz_plugins::OverlayText text;
@@ -733,6 +733,15 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   {
     pwp_last_ = mu::createPwpFromStaticPosition(state_);
     publishOwnTraj(pwp_last_, true);
+
+    // to avoid initial path search congestions add some random sleep here
+
+    std::random_device rd;
+    std::default_random_engine eng(rd());
+    std::uniform_real_distribution<float> distr(0, 1); // sleep between 0 an 1 sec
+
+    ros::Duration(distr(eng)).sleep();
+
     published_initial_position_ = true;
   }
   if (mader_ptr_->IsTranslating() == true && par_.visual)
