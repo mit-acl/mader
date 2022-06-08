@@ -10,6 +10,7 @@
 
 import math
 import os
+import sys
 import time
 import rospy
 import rosgraph
@@ -32,9 +33,10 @@ class CollisionDetector:
         self.tol = 0.001
 
         # bbox size
-        self.bbox_x = rospy.get_param('bbox_x', 1.0) - self.tol #default value is 1.0 
-        self.bbox_y = rospy.get_param('bbox_y', 1.0) - self.tol #default value is 1.0 
-        self.bbox_z = rospy.get_param('bbox_z', 1.5) - self.tol #default value is 1.5
+        self.bbox_x = rospy.get_param('~bbox_x', 1.0) - self.tol #default value is 1.0 
+        self.bbox_y = rospy.get_param('~bbox_y', 1.0) - self.tol #default value is 1.0 
+        self.bbox_z = rospy.get_param('~bbox_z', 1.5) - self.tol #default value is 1.5
+        self.num_of_agents = rospy.get_param('~num_of_agents')
 
         self.initialized = True
 
@@ -44,19 +46,30 @@ class CollisionDetector:
     def collisionDetect(self, timer):
         
         if self.initialized:
-            for i in range(1,6):
-                for j in range(i+1,7):
-                    agent1 = "SQ0" + str(i) + "s" 
-                    agent2 = "SQ0" + str(j) + "s" 
+            for i in range(1,self.num_of_agents):
+                for j in range(i+1,self.num_of_agents+1):
+
+                    if i<=9:
+                        agent1 = "SQ0" + str(i) + "s" 
+                    else:
+                        agent1 = "SQ" + str(i) + "s" 
+
+                    if j<=9:
+                        agent2 = "SQ0" + str(j) + "s" 
+                    else:
+                        agent2 = "SQ" + str(j) + "s" 
+                    
                     trans = self.get_transformation(agent1, agent2)
 
                     if trans is not None:
+
+                        print(str(agent1) + " and " + str(agent2) + ": " + str(trans.transform.translation.x))
                     
                         if (abs(trans.transform.translation.x) < self.bbox_x
                             and abs(trans.transform.translation.y) < self.bbox_y
                             and abs(trans.transform.translation.z) < self.bbox_z):
                             
-                            print("collistion btwn " + trans.header.frame_id + " and " + trans.child_frame_id)
+                            print("collision btwn " + trans.header.frame_id + " and " + trans.child_frame_id)
 
                             max_dist = max(abs(trans.transform.translation.x), abs(trans.transform.translation.y), abs(trans.transform.translation.z))
 
