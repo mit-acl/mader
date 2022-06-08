@@ -1387,7 +1387,7 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   if (!result){
     // std::cout << "q0_fail_count_ is " << q0_fail_count_ << std::endl;
     opt_fail_count_ += 1;
-    if (q0_fail_count_ > 3 && state_.vel.norm() < 0.001){
+    if (opt_fail_count_ > 3 && state_.vel.norm() < 0.001){
       // in this case one agent is on the bbox constraint so need to move A away
       std::cout << "[opt fail] move A out of the bbox" << std::endl;
       movedA_ = moveAoutOfBbox(A);
@@ -1658,7 +1658,7 @@ mt::state Mader::moveAoutOfBbox(const mt::state& A){
   
   mt::state newA = A;
   double tol = 0.001;
-  double move_how_much = 0.0011;
+  double move_how_much = 0.002;
 
   mtx_trajs_.lock();
 
