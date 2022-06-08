@@ -21,30 +21,34 @@ from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
 def create_session(session_name, commands):
 
-    os.system("tmux new -d -s "+str(session_name)+" -x 300 -y 300")
+    os.system("tmux new-session -d -s "+str(session_name)+" -x 300 -y 300")
 
     for i in range(len(commands)):
         print('splitting ',i)
         os.system('tmux split-window ; tmux select-layout tiled')
    
     for i in range(len(commands)):
-        os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m') 
+        os.system('tmux send-keys -t '+str(session_name)+':1.'+str(i+1) +' "'+ commands[i]+'" '+' C-m') 
     print("Commands sent")
 
 
-def convertToStringCommand(action,quad,x,y,z,goal_x,goal_y,goal_z, yaw):
-    if(action=="start"):
-        return "roslaunch mader mader_specific.launch gazebo:=false quad:="+quad+" x:="+str(x)+" y:="+str(y)+" z:="+str(z)+" yaw:="+str(yaw); #Kota comment: this line launches mader_specific.launch
+def convertToStringCommand(action,veh,num,x,y,z,goal_x,goal_y,goal_z, yaw):
+    # if(action=="base_station"):
+    #     return "roslaunch mader base_station.launch type_of_environment:=dynamic_forest";
+    if(action=="controller"):
+        quad = veh + num + "s"
+        return "roslaunch mader perfect_tracker_and_sim.launch quad:=" + quad + " x:=" + str(x) + " y:=" + str(y)
     if(action=="send_goal"):
+        quad = veh + num + "s";
         return "rostopic pub /"+quad+"/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: 'world'}, pose: {position: {x: "+str(goal_x)+", y: "+str(goal_y)+", z: "+str(goal_z)+"}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}}}'"
     if(action=="mader"):
-        return "roslaunch mader mader.launch quad:="+quad #+ " >> "+quad+".txt" #Kota comment: this line launches mader.launch with the argument of quad number
+        return "roslaunch mader onboard.launch veh:="+veh+" num:="+num #+ " >> "+quad+".txt" #Kota comment: this line launches mader.launch with the argument of quad number
         # return "script -q -c 'roslaunch mader mader.launch quad:="+quad + "' "+quad+".txt"
         
 
 if __name__ == '__main__':
     # formation="sphere", "square" "circle"
-    formation="sphere"
+    formation="circle"
     commands = []
     num_of_agents=8; 
     radius=10;
@@ -91,8 +95,6 @@ if __name__ == '__main__':
 
     square_yaws_deg=  [-180.0, -135.0, -90.0, -45.0, 0.0, 45.0, 90.0, 135.0];
 
-
-
     for i in range(1, num_mer+1):
         theta=0.0+i*(2*math.pi/num_mer);
         for j in range(1, num_of_agents_per_mer+1):
@@ -110,7 +112,9 @@ if __name__ == '__main__':
             goal_y=radius*math.sin(theta+2*math.pi)*math.sin(phi+math.pi)
             goal_z=shift_z + radius*math.cos(phi+math.pi)
                 
-            quad="SQ0" + str(id_number) + "s";
+            # quad="SQ0" + str(id_number) + "s";
+            veh="SQ";
+            num="0" + str(id_number);
             id_number=id_number+1;
 
             if(formation=="square"):
@@ -126,7 +130,7 @@ if __name__ == '__main__':
                 print("yaw= ", square_yaws_deg[i-1])
 
 
-            commands.append(convertToStringCommand(sys.argv[1],quad,x,y,z,goal_x,goal_y,goal_z, yaw));
+            commands.append(convertToStringCommand(sys.argv[1],veh,num,x,y,z,goal_x,goal_y,goal_z, yaw));
 
             x_tmp="{:5.3f}".format(x);
             y_tmp="{:5.3f}".format(y);
@@ -144,7 +148,7 @@ if __name__ == '__main__':
     os.system("tmux kill-session -t" + session_name)
     create_session(session_name, commands) #Kota commented out July 16, 2021
     if(sys.argv[1]!="send_goal"):
-        #os.system("tmux attach") #comment if you don't want to visualize all the terminals
+        os.system("tmux attach") #comment if you don't want to visualize all the terminals
         time.sleep(1); #Kota added to make this "if statement" works even when i comment out the above line
     else: ##if send_goal, kill after some time
         time.sleep(num_of_agents); #The more agents, the more I've to wait to make sure the goal is sent correctly

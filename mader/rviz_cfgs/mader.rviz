@@ -16,6 +16,8 @@ Panels:
         - /Marker11
         - /Marker12
         - /Marker13
+        - /Marker14
+        - /Marker15
       Splitter Ratio: 0.34117648005485535
     Tree Height: 1236
   - Class: rviz/Selection
@@ -304,7 +306,7 @@ Visualization Manager:
       Marker Topic: /shapes_static_mesh
       Name: Static_Obstacles_Mesh
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -312,7 +314,7 @@ Visualization Manager:
       Marker Topic: /shapes_dynamic_mesh
       Name: Dynamic_Obstacles_Mesh
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -938,7 +940,7 @@ Visualization Manager:
       Marker Topic: /high_bay
       Name: Marker
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Image
@@ -1049,6 +1051,22 @@ Visualization Manager:
         mesh_SQ06s: true
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ07s/drone_marker
+      Name: Marker
+      Namespaces:
+        mesh_SQ07s: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ08s/drone_marker
+      Name: Marker
+      Namespaces:
+        mesh_SQ08s: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 238; 238; 236
@@ -1077,7 +1095,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 18.208093643188477
+      Distance: 40.252296447753906
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1085,8 +1103,8 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.05113023519515991
-        Y: -2.36083984375
+        X: -0.4925055503845215
+        Y: -6.247268199920654
         Z: 1.52587890625e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
@@ -1216,4 +1234,4 @@ Window Geometry:
     collapsed: false
   Width: 1829
   X: 101
-  Y: 582
+  Y: 508
