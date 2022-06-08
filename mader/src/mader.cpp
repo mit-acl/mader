@@ -891,6 +891,45 @@ bool Mader::initialized()
 
 // check wheter a mt::dynTrajCompiled and a pwp_optimized are in collision in the interval [t_start, t_end]
 bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
+                                      double t_end, bool& is_q0_fail)
+{
+  Eigen::Vector3d n_i;
+  double d_i;
+
+  double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
+  for (int i = 0; i < par_.num_pol; i++)                     // for each interval
+  {
+    // This is my trajectory (no inflation)
+    std::vector<Eigen::Vector3d> pointsA =
+        vertexesOfInterval(pwp_optimized, t_start + i * deltaT, t_start + (i + 1) * deltaT, Eigen::Vector3d::Zero());
+
+    // This is the trajectory of the other agent/obstacle
+    std::vector<Eigen::Vector3d> pointsB = vertexesOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT);
+
+    // std::cout << "Going to solve model with pointsA.size()= " << pointsA.size() << std::endl;
+    // for (auto point_i : pointsA)
+    // {
+    //   std::cout << point_i.transpose() << std::endl;
+    // }
+
+    // std::cout << "Going to solve model with pointsB.size()= " << pointsB.size() << std::endl;
+    // for (auto point_i : pointsB)
+    // {
+    //   std::cout << point_i.transpose() << std::endl;
+    // }
+
+    if (separator_solver_->solveModel(n_i, d_i, pointsA, pointsB) == false)
+    {
+      if (i == 0) {is_q0_fail = true;}
+      return true;  // There is not a solution --> they collide
+    }
+  }
+
+  // if reached this point, they don't collide
+  return false;
+}
+
+bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
                                       double t_end)
 {
   Eigen::Vector3d n_i;
@@ -930,7 +969,7 @@ bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol
 
 // Checks that I have not received new trajectories that affect me while doing the optimization
 // Check period and Recheck period is defined here
-bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_time)
+bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_time, bool& is_q0_fail)
 {
   started_check_ = true;
 
@@ -940,7 +979,7 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_
     // if (traj.time_received > headsup_time && traj.is_agent == true)
     if (traj.is_agent == true) // need to include the trajs that came in the last delay check
     {
-      if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
+      if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back(), is_q0_fail))
       {
         ROS_ERROR_STREAM("Traj collides with " << traj.id);
         result = false;  // will have to redo the optimization
@@ -1345,12 +1384,12 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   bool is_q0_fail = false;
   bool result = solver_->optimize(is_stuck, is_A_star_failed, is_q0_fail);  // calling the solver
 
-  if (is_q0_fail){
+  if (!result){
     // std::cout << "q0_fail_count_ is " << q0_fail_count_ << std::endl;
-    q0_fail_count_ += 1;
-    if (q0_fail_count_ > 3 && state_.vel.norm() < 0.0001){
+    opt_fail_count_ += 1;
+    if (q0_fail_count_ > 3 && state_.vel.norm() < 0.001){
       // in this case one agent is on the bbox constraint so need to move A away
-      std::cout << "move A out of the bbox" << std::endl;
+      std::cout << "[opt fail] move A out of the bbox" << std::endl;
       movedA_ = moveAoutOfBbox(A);
       is_movingAoutOfBbox_ = true;
     }
@@ -1466,13 +1505,25 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   // }
 
   // check and recheck are done in safetyChechAfterOpt() 
-  bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now, headsup_time);
+  bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now, headsup_time, is_q0_fail);
 
   // std::cout << "bef mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
   mtx_trajs_.unlock();
   // std::cout << "aft mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
 
-  // To deal with comm delay, now we publish two trajectories(pwp_prev_ and pwp_now)
+  if (!is_safe_after_opt){
+    // std::cout << "q0_fail_count_ is " << q0_fail_count_ << std::endl;
+    safetycheck_fail_count_ += 1;
+    if (safetycheck_fail_count_ > 3 && state_.vel.norm() < 0.001){
+      // in this case one agent is on the bbox constraint so need to move A away
+      std::cout << "[safety check fail] move A out of the bbox" << std::endl;
+      movedA_ = moveAoutOfBbox(A);
+      is_movingAoutOfBbox_ = true;
+    }
+  } else {
+    q0_fail_count_ = 0;
+  }
+
 
   if (is_safe_after_opt == false)
   {
@@ -1606,8 +1657,8 @@ bool Mader::addTrajToPlan_with_delaycheck(mt::PieceWisePol& pwp){
 mt::state Mader::moveAoutOfBbox(const mt::state& A){
   
   mt::state newA = A;
-  double tol = 0.05;
-  double move_how_much = 0.001;
+  double tol = 0.001;
+  double move_how_much = 0.0011;
 
   mtx_trajs_.lock();
 

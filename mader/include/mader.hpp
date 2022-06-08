@@ -85,11 +85,14 @@ private:
 
   bool initializedStateAndTermGoal();
 
-  bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_time);
+  bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_time, bool& is_q0_fail);
   bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized);
 
   bool safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_prev);
   bool safetyCheck_for_A_star_failure_pwp_now(mt::PieceWisePol pwp_now);
+
+  bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
+                                 double t_end, bool& is_q0_fail);
 
   bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
                                  double t_end);
@@ -220,6 +223,9 @@ private:
   bool is_A_star_failed_30_ = false;
 
   int q0_fail_count_ = 0;
+  int opt_fail_count_ = 0;
+  int safetycheck_fail_count_ = 0;
+
   bool is_movingAoutOfBbox_ = false;
   mt::state movedA_;
 
