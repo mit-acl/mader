@@ -168,6 +168,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   if (sim_) {
     for (int i = 1; i < par_.n_agents + 1; ++i)
      {
+
       std::string agent = "SQ0" + std::to_string(i) + "s";
       if (i >= 10){
         agent = "SQ" + std::to_string(i) + "s";
@@ -200,6 +201,14 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   sub_term_goal_.shutdown();
   pubCBTimer_.stop();
   replanCBTimer_.stop();
+
+  if (sim_){ // no need to take off
+    sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
+    sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
+    pubCBTimer_.start();
+    replanCBTimer_.start();
+    std::cout << on_blue << "**************MADER STARTED" << reset << std::endl;
+  }
 
   // Rviz_Visual_Tools
   visual_tools_.reset(new rvt::RvizVisualTools("world", "/rviz_visual_tools"));
@@ -693,13 +702,8 @@ void MaderRos::publishPoly(const vec_E<Polyhedron<3>>& poly)
 
 void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
 {
-  if (sim_){ // no need to take off
-    sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
-    sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
-    pubCBTimer_.start();
-    replanCBTimer_.start();
-    std::cout << on_blue << "**************MADER STARTED" << reset << std::endl;
-  }else if (msg.value != msg.MADER)
+  
+  if (msg.value != msg.MADER)
   {  // MADER does nothing
     sub_state_.shutdown();
     sub_term_goal_.shutdown();
