@@ -29,10 +29,7 @@ MADER has been tested with
 * Ubuntu 16.04/ROS Kinetic
 * Ubuntu 18.04/ROS Melodic
 
-The backend optimizer can be either Gurobi (recommended, used by default) or NLOPT (discouraged): 
-
-* To use [`Gurobi`](https://www.gurobi.com/), install the [Gurobi Optimizer](https://www.gurobi.com/products/gurobi-optimizer/). You can test your installation typing `gurobi.sh` in the terminal. Have a look at [this section](#issues-when-installing-gurobi) if you have any issues.
-* To use [`NLOPT`](https://nlopt.readthedocs.io/en/latest/), set `USE_GUROBI` to `OFF` in the [CMakeList.txt](https://github.com/mit-acl/mader/blob/master/mader/CMakeLists.txt). 
+The backend optimizer is Gurobi. Please install the [Gurobi Optimizer](https://www.gurobi.com/products/gurobi-optimizer/), and test your installation typing `gurobi.sh` in the terminal. Have a look at [this section](#issues-when-installing-gurobi) if you have any issues.
 
 Then simply run this commands:
 
@@ -40,7 +37,6 @@ Then simply run this commands:
 cd ~/ && mkdir ws && cd ws && mkdir src && cd src
 git clone https://github.com/mit-acl/mader.git
 cd ..
-#bash src/mader/install_nlopt.sh      #ONLY if you are going to use NLOPT, it'll install NLopt v2.6.2
 bash src/mader/install_and_compile.sh      
 ```
 
@@ -103,6 +99,13 @@ sudo cp libgurobi_c++.a ../../lib/
 ## Credits:
 This package uses some C++ classes from the [DecompROS](https://github.com/sikang/DecompROS) repo (included in the `thirdparty` folder).
 
+
+<details>
+  <summary> <b>Note</b></summary>
+
+We strongly recommend the use of `Gurobi` as the backend optimizer. Alternatively, you can use [`NLOPT`](https://nlopt.readthedocs.io/en/latest/) by setting `USE_GUROBI` to `OFF` in the [CMakeList.txt](https://github.com/mit-acl/mader/blob/master/mader/CMakeLists.txt), and then running `bash src/mader/install_nlopt.sh` before running `bash src/mader/install_and_compile.sh`. 
+
+</details>
 
 ---------
 
