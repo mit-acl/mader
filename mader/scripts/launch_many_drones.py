@@ -28,7 +28,10 @@ def create_session(session_name, commands):
         os.system('tmux split-window ; tmux select-layout tiled')
    
     for i in range(len(commands)):
-        os.system('tmux send-keys -t '+str(session_name)+':1.'+str(i+1) +' "'+ commands[i]+'" '+' C-m') 
+        os.system('tmux send-keys -t '+str(session_name)+':1.'+str(i+1) +' "'+ commands[i]+'" '+' C-m')
+    
+    os.system('tmux send-keys -t '+str(session_name)+':1.'+str(i+1) +' "tmux kill-server" ')
+
     print("Commands sent")
 
 
@@ -114,8 +117,12 @@ if __name__ == '__main__':
                 
             # quad="SQ0" + str(id_number) + "s";
             veh="SQ";
-            num="0" + str(id_number);
-            id_number=id_number+1;
+            if i <= 9:
+                num="0" + str(id_number)
+            else:
+                num=str(id_number)
+
+            id_number=id_number+1
 
             if(formation=="square"):
                 x=square_starts[i-1][0];
@@ -148,7 +155,7 @@ if __name__ == '__main__':
     os.system("tmux kill-session -t" + session_name)
     create_session(session_name, commands) #Kota commented out July 16, 2021
     if(sys.argv[1]!="send_goal"):
-        os.system("tmux attach") #comment if you don't want to visualize all the terminals
+        # os.system("tmux attach") #comment if you don't want to visualize all the terminals
         time.sleep(1); #Kota added to make this "if statement" works even when i comment out the above line
     else: ##if send_goal, kill after some time
         time.sleep(num_of_agents); #The more agents, the more I've to wait to make sure the goal is sent correctly

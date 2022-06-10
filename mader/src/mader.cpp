@@ -1384,18 +1384,18 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   bool is_q0_fail = false;
   bool result = solver_->optimize(is_stuck, is_A_star_failed, is_q0_fail);  // calling the solver
 
-  if (!result){
-    // std::cout << "q0_fail_count_ is " << q0_fail_count_ << std::endl;
-    opt_fail_count_ += 1;
-    if (opt_fail_count_ > 3 && state_.vel.norm() < 0.001){
-      // in this case one agent is on the bbox constraint so need to move A away
-      std::cout << "[opt fail] move A out of the bbox" << std::endl;
-      movedA_ = moveAoutOfBbox(A);
-      is_movingAoutOfBbox_ = true;
-    }
-  } else {
-    q0_fail_count_ = 0;
-  }
+  // if (!result){
+  //   // std::cout << "q0_fail_count_ is " << q0_fail_count_ << std::endl;
+  //   opt_fail_count_ += 1;
+  //   if (opt_fail_count_ > 3 && state_.vel.norm() < 0.001){
+  //     // in this case one agent is on the bbox constraint so need to move A away
+  //     std::cout << "[opt fail] move A out of the bbox" << std::endl;
+  //     movedA_ = moveAoutOfBbox(A);
+  //     is_movingAoutOfBbox_ = true;
+  //   }
+  // } else {
+  //   q0_fail_count_ = 0;
+  // }
 
   // right after taking off, sometims drones cannot find a path
   // sometimes the very initial path search takes more than how_many_A_star_failure counts and fails
@@ -1511,18 +1511,18 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   mtx_trajs_.unlock();
   // std::cout << "aft mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
 
-  if (!is_safe_after_opt){
-    // std::cout << "q0_fail_count_ is " << q0_fail_count_ << std::endl;
-    safetycheck_fail_count_ += 1;
-    if (safetycheck_fail_count_ > 3 && state_.vel.norm() < 0.001){
-      // in this case one agent is on the bbox constraint so need to move A away
-      std::cout << "[safety check fail] move A out of the bbox" << std::endl;
-      movedA_ = moveAoutOfBbox(A);
-      is_movingAoutOfBbox_ = true;
-    }
-  } else {
-    q0_fail_count_ = 0;
-  }
+  // if (!is_safe_after_opt){
+  //   // std::cout << "q0_fail_count_ is " << q0_fail_count_ << std::endl;
+  //   safetycheck_fail_count_ += 1;
+  //   if (safetycheck_fail_count_ > 3 && state_.vel.norm() < 0.001){
+  //     // in this case one agent is on the bbox constraint so need to move A away
+  //     std::cout << "[safety check fail] move A out of the bbox" << std::endl;
+  //     movedA_ = moveAoutOfBbox(A);
+  //     is_movingAoutOfBbox_ = true;
+  //   }
+  // } else {
+  //   q0_fail_count_ = 0;
+  // }
 
 
   if (is_safe_after_opt == false)

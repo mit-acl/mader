@@ -163,12 +163,16 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   // Subscribers for each agents
 
-  // if it's simulation SQ01s to SQ06s
+  // if it's simulation SQ01s to SQxxs
   // TODO:: make more general/robust
   if (sim_) {
-    for (int i = 1; i < 7; ++i)
+    for (int i = 1; i < par_.n_agents + 1; ++i)
      {
       std::string agent = "SQ0" + std::to_string(i) + "s";
+      if (i >= 10){
+        agent = "SQ" + std::to_string(i) + "s";
+      }
+
       if (myns != agent){ // if my namespace is the same as the agent, then it's you
         sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
       }
@@ -316,8 +320,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   double comm_delay = tmp.time_received - tmp.time_created;
   if (comm_delay > expected_comm_delay_ - simulated_comm_delay_){
-    // std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
-    // std::cout << "comm delay is huge!!!!" << std::endl;
+    std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
+    std::cout << "comm delay is huge!!!!" << std::endl;
   }
 
   if (sim_) {
@@ -366,8 +370,8 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   
   // supposedly_simulated_time_delay should be simulated_comm_delay_
   if (supposedly_simulated_comm_delay > 1.5 * simulated_comm_delay_){
-    // std::cout << "supposedly_simulated_comm_delay is too big" << std::endl;
-    // std::cout << "supposedly_simulated_comm_delay is " << supposedly_simulated_comm_delay << std::endl;
+    std::cout << "supposedly_simulated_comm_delay is too big" << std::endl;
+    std::cout << "supposedly_simulated_comm_delay is " << supposedly_simulated_comm_delay << std::endl;
   }
 
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
@@ -689,7 +693,13 @@ void MaderRos::publishPoly(const vec_E<Polyhedron<3>>& poly)
 
 void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
 {
-  if (msg.value != msg.MADER)
+  if (sim_){ // no need to take off
+    sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
+    sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
+    pubCBTimer_.start();
+    replanCBTimer_.start();
+    std::cout << on_blue << "**************MADER STARTED" << reset << std::endl;
+  }else if (msg.value != msg.MADER)
   {  // MADER does nothing
     sub_state_.shutdown();
     sub_term_goal_.shutdown();

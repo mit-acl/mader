@@ -63,7 +63,7 @@ class CollisionDetector:
 
                     if trans is not None:
 
-                        print(str(agent1) + " and " + str(agent2) + ": " + str(trans.transform.translation.x))
+                        # print(str(agent1) + " and " + str(agent2) + ": " + str(trans.transform.translation.x))
                     
                         if (abs(trans.transform.translation.x) < self.bbox_x
                             and abs(trans.transform.translation.y) < self.bbox_y
