@@ -21,7 +21,7 @@ alpha_filter_dyaw: 0.99 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> Mo
 
 Ra: 20.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
-expected_comm_delay: 0.15 #seconds
+expected_comm_delay: 0.25 #seconds
 simulated_comm_delay: 0.1 #seconds, should be less than expected_comm_delay
 
 x_min: -1000000000.0  # [m] don't forget the .0
