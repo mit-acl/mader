@@ -1443,7 +1443,7 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   total_replannings_++;
   if (result == false)
   {
-    int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) + par_.expected_comm_delay / par_.dc);  // Number of states that
+    int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) + par_.delay_check / par_.dc);  // Number of states that
                                                                                // would have been needed for
                                                                                // the last replan
     deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
@@ -1551,7 +1551,7 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   mtx_offsets.lock();
 
-  int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) + par_.expected_comm_delay / par_.dc);  // Number of states that
+  int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) + par_.delay_check / par_.dc);  // Number of states that
                                                                                // would have been needed for
                                                                                // the last replan
   deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);

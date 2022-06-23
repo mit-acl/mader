@@ -30,8 +30,8 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "sim", sim_);
   mu::safeGetParam(nh1_, "is_delaycheck", is_delaycheck_);
 
-  mu::safeGetParam(nh1_, "expected_comm_delay", par_.expected_comm_delay);
-  expected_comm_delay_ = par_.expected_comm_delay;
+  mu::safeGetParam(nh1_, "delay_check_", par_.delay_check);
+  delay_check_ = par_.delay_check;
   mu::safeGetParam(nh1_, "simulated_comm_delay", simulated_comm_delay_);
 
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
@@ -327,11 +327,11 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   tmp.time_received = ros::Time::now().toSec();
 
-  double comm_delay = tmp.time_received - tmp.time_created;
-  if (comm_delay > expected_comm_delay_ - simulated_comm_delay_){
-    std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
-    std::cout << "comm delay is huge!!!!" << std::endl;
-  }
+  // double comm_delay = tmp.time_received - tmp.time_created;
+  // if (comm_delay > delay_check_ - simulated_comm_delay_){
+  //   std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
+  //   std::cout << "comm delay is huge!!!!" << std::endl;
+  // }
 
   if (sim_) {
     //****** Communication delay introduced in the simulation
@@ -375,12 +375,11 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
 
   double time_now = ros::Time::now().toSec();
-  double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_received;
+  double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_created;
   
   // supposedly_simulated_time_delay should be simulated_comm_delay_
-  if (supposedly_simulated_comm_delay > 1.5 * simulated_comm_delay_){
-    std::cout << "supposedly_simulated_comm_delay is too big" << std::endl;
-    std::cout << "supposedly_simulated_comm_delay is " << supposedly_simulated_comm_delay << std::endl;
+  if (supposedly_simulated_comm_delay > simulated_comm_delay_){
+    std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s" << std::endl;
   }
 
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
@@ -483,7 +482,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         MyTimer delay_check_t(true);
         // is_in_DC_ = true;
         // delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
-        while (delay_check_t.ElapsedMs()/1000.0 < expected_comm_delay_)
+        while (delay_check_t.ElapsedMs()/1000.0 < delay_check_)
         {
           // wait while trajCB() is checking new trajs
           // TODO make this as a timer so that i can move onto the next optimization
@@ -496,7 +495,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           // std::cout << "dc elapsed " << delay_check_t.ElapsedMs()/1000.0 << "[s]"<< std::endl;
           ros::Duration(0.01).sleep();
         }
-        // ros::Duration(expected_comm_delay_).sleep();
+        // ros::Duration(delay_check_).sleep();
         is_in_DC_ = false;
         // end of delay check *******************************************************
 
@@ -533,7 +532,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         } else {
             // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-            if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
+            if (timer_stop_.ElapsedMs() > delay_check_) 
             {
               publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                           // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
@@ -557,7 +556,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
         // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-        if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
+        if (timer_stop_.ElapsedMs() > delay_check_) 
         {
           publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
                                       // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
@@ -610,7 +609,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         // {
         //   // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-        //   if (timer_stop_.ElapsedMs() > expected_comm_delay_) 
+        //   if (timer_stop_.ElapsedMs() > delay_check_) 
         //   {
         //     publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
         //                                 // last planned trajectory, so that other drones can avoid it (even if DRONE1 was

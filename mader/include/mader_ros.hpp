@@ -150,7 +150,7 @@ private:
   bool published_initial_position_ = false;
 
   double simulated_comm_delay_;
-  double expected_comm_delay_;
+  double delay_check_;
 
   std::vector<mt::state> last_traj_plan_;
   mt::Edges last_edges_obstacles_;
