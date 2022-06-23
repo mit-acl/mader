@@ -158,7 +158,7 @@ if __name__ == '__main__':
     os.system("tmux kill-session -t" + session_name)
     create_session(session_name, commands) #Kota commented out July 16, 2021
     if(sys.argv[1]!="send_goal"):
-        # os.system("tmux attach") #comment if you don't want to visualize all the terminals
+        os.system("tmux attach") #comment if you don't want to visualize all the terminals
         time.sleep(1); #Kota added to make this "if statement" works even when i comment out the above line
     else: ##if send_goal, kill after some time
         time.sleep(num_of_agents); #The more agents, the more I've to wait to make sure the goal is sent correctly
