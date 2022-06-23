@@ -30,8 +30,8 @@ x_max: 10000000000.0  # [m] don't forget the .0
 y_min: -1000000000.0  # [m] don't forget the .0
 y_max: 1000000000.0   # [m] don't forget the .0
 
-z_min: -1000000000.0  # [m] points below this are considered ground
-z_max: 1000000000.0   # [m] JPS is not allowed to give a solution that goes higher than this height
+# z_min: -1000000000.0  # [m] points below this are considered ground
+# z_max: 1000000000.0   # [m] JPS is not allowed to give a solution that goes higher than this height
 
 # highbay
 # x_min: -4.1  # [m] don't forget the .0
@@ -40,8 +40,8 @@ z_max: 1000000000.0   # [m] JPS is not allowed to give a solution that goes high
 # y_min: -4.1  # [m] don't forget the .0
 # y_max: 4.1   # [m] don't forget the .0
 
-# z_min: 0.9  # [m] don't forget the .0
-# z_max: 2.0  # [m] don't forget the .0
+z_min: 0.0  # [m] don't forget the .0
+z_max: 2.0  # [m] don't forget the .0
 
 #For single-agent simulations
 v_max: [2.0, 2.0, 2.0]   #[m/s]  7.0
