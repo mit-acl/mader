@@ -378,7 +378,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_created;
   
   // supposedly_simulated_time_delay should be simulated_comm_delay_
-  if (supposedly_simulated_comm_delay > simulated_comm_delay_){
+  if (supposedly_simulated_comm_delay > delay_check_){
     std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s" << std::endl;
   }
 
