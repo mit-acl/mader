@@ -22,6 +22,7 @@
 // #include <mader_msgs/Mode.h>
 #include <mader_msgs/WhoPlans.h>
 #include <mader_msgs/DynTraj.h>
+#include <mader_msgs/CommDelay.h>
 
 #include "utils.hpp"
 #include "mader.hpp"
@@ -118,6 +119,7 @@ private:
 
   ros::Publisher pub_fov_;
   ros::Publisher pub_obstacles_;
+  ros::Publisher pub_comm_delay_;
 
   ros::Subscriber sub_term_goal_;
   // ros::Subscriber sub_mode_;

@@ -154,6 +154,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pub_fov_ = nh1_.advertise<visualization_msgs::Marker>("fov", 1);
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
   pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("trajs", 1, true);  // The last boolean is latched or not
+  pub_comm_delay_ = nh1_.advertise<mader_msgs::CommDelay>("comm_delay", 1);
   
   // Subscribers
   sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
@@ -371,7 +372,6 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   mtx_alltrajs_.lock();
   mtx_alltrajsTimers_.lock();
 
-  
   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
 
   double time_now = ros::Time::now().toSec();
@@ -381,6 +381,10 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   if (supposedly_simulated_comm_delay > delay_check_){
     std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s" << std::endl;
   }
+
+  mader_msgs::CommDelay msg;
+  msg.comm_delay = supposedly_simulated_comm_delay;
+  pub_comm_delay_.publish(msg);
 
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
   // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
