@@ -17,10 +17,11 @@ RUN apt-get update -y && apt-get install -y \
 RUN update-alternatives --install /usr/bin/python python $(which python3) 1
 
 # install MADER
-RUN git clone -b mindist https://github.com/mit-acl/clipper.git && \
-    mkdir clipper/build && cd clipper/build && \
-    cmake .. && make && \
-    cd bindings/python && python3 -m pip install .
+RUN mkdir -p mader_ws/src && \
+	cd mader_ws/src && \
+	git clone https://github.com/mit-acl/mader.git && \
+    cd .. && \
+    bash src/mader/install_and_compile.sh
 
 # # install python dependencies
 # RUN python3 -m pip install \

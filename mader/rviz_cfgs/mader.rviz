@@ -1104,7 +1104,7 @@ Visualization Manager:
       Marker Topic: /SQ09s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ09s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1112,7 +1112,7 @@ Visualization Manager:
       Marker Topic: /SQ10s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ10s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1351,7 +1351,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 49.76538848876953
+      Distance: 35.326194763183594
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1359,8 +1359,8 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -0.4925055503845215
-        Y: -6.247268199920654
+        X: 0.2950775623321533
+        Y: -5.258465766906738
         Z: 1.52587890625e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
@@ -1489,5 +1489,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1829
-  X: 101
-  Y: 571
+  X: 98
+  Y: 584

@@ -23,8 +23,8 @@ if __name__ == '__main__':
     #Let's start by commenting the visual and basis params (we will set them in this file)
 
     #https://stackoverflow.com/questions/24889346/how-to-uncomment-a-line-that-contains-a-specific-string-using-sed/24889374
-    os.system("sed -i '/visual/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment visual param
-    os.system("sed -i '/basis/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment basis param
+    os.system("sed -i '/visual/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment out visual param
+    os.system("sed -i '/basis/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment out basis param
 
     num_of_sims=5;
     total_num_of_obs=[50,100,150,200, 250]#[1000]#[50,400,500,600,700]#[150, 200, 250, 300, 350] #[340,380,420,460,500]; #140,180,220,260,300
@@ -90,5 +90,5 @@ if __name__ == '__main__':
                 os.system(kill_all)
 
     time.sleep(3.0)
-    os.system("sed -i '/visual/s/^#//g' $(rospack find mader)/param/mader.yaml") #comment out visual param
-    os.system("sed -i '/basis/s/^#//g' $(rospack find mader)/param/mader.yaml") #comment out basis param
+    os.system("sed -i '/visual/s/^#//g' $(rospack find mader)/param/mader.yaml") #uncomment visual param
+    os.system("sed -i '/basis/s/^#//g' $(rospack find mader)/param/mader.yaml") #uncomment basis param
