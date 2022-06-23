@@ -30,7 +30,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "sim", sim_);
   mu::safeGetParam(nh1_, "is_delaycheck", is_delaycheck_);
 
-  mu::safeGetParam(nh1_, "delay_check_", par_.delay_check);
+  mu::safeGetParam(nh1_, "delay_check", par_.delay_check);
   delay_check_ = par_.delay_check;
   mu::safeGetParam(nh1_, "simulated_comm_delay", simulated_comm_delay_);
 
