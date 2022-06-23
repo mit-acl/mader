@@ -28,9 +28,11 @@ def create_session(session_name, commands):
         os.system('tmux split-window ; tmux select-layout tiled')
    
     for i in range(len(commands)):
-        os.system('tmux send-keys -t '+str(session_name)+':1.'+str(i+1) +' "'+ commands[i]+'" '+' C-m')
+        # os.system('tmux send-keys -t '+str(session_name)+':1.'+str(i+1) +' "'+ commands[i]+'" '+' C-m')
+        os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i+1) +' "'+ commands[i]+'" '+' C-m')
     
-    os.system('tmux send-keys -t '+str(session_name)+':1.'+str(i+1) +' "tmux kill-server" ')
+    # os.system('tmux send-keys -t '+str(session_name)+':1.'+str(i+1) +' "tmux kill-server" ')
+    os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i+1) +' "tmux kill-server" ')
 
     print("Commands sent")
 
@@ -53,7 +55,7 @@ if __name__ == '__main__':
     # formation="sphere", "square" "circle"
     formation="circle"
     commands = []
-    num_of_agents=8; 
+    num_of_agents=6; 
     radius=10;
 
 
