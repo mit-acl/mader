@@ -16,6 +16,7 @@ import rospy
 import rosgraph
 from geometry_msgs.msg import PoseStamped
 from snapstack_msgs.msg import State
+from mader_msgs.msg import Collision
 import numpy as np
 from random import *
 import tf2_ros
@@ -41,6 +42,10 @@ class CollisionDetector:
         self.initialized = True
 
         self.state_pos = np.empty([6,3])
+
+        # publisher init
+        self.collision=Collision()
+        self.pubIsCollided = rospy.Publisher('is_collided', Collision, queue_size=1, latch=True)
 
     # collision detection
     def collisionDetect(self, timer):
@@ -69,6 +74,9 @@ class CollisionDetector:
                             and abs(trans.transform.translation.y) < self.bbox_y
                             and abs(trans.transform.translation.z) < self.bbox_z):
                             
+                            self.collision.is_collided = True
+                            self.pubIsCollided.publish(self.collision)
+
                             print("collision btwn " + trans.header.frame_id + " and " + trans.child_frame_id)
 
                             max_dist = max(abs(trans.transform.translation.x), abs(trans.transform.translation.y), abs(trans.transform.translation.z))
