@@ -25,14 +25,14 @@ def create_session(session_name, commands):
 
     for i in range(len(commands)):
         print('splitting ',i)
-        os.system('tmux split-window ; tmux select-layout tiled')
+        os.system('tmux new-window -t ' + str(session_name))
    
     for i in range(len(commands)):
         # os.system('tmux send-keys -t '+str(session_name)+':1.'+str(i+1) +' "'+ commands[i]+'" '+' C-m')
-        os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i+1) +' "'+ commands[i]+'" '+' C-m')
+        os.system('tmux send-keys -t '+str(session_name)+':'+str(i) +'.0 "'+ commands[i]+'" '+' C-m')
     
     # os.system('tmux send-keys -t '+str(session_name)+':1.'+str(i+1) +' "tmux kill-server" ')
-    os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i+1) +' "tmux kill-server" ')
+    # os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i+1) +' "tmux kill-server" ')
 
     print("Commands sent")
 

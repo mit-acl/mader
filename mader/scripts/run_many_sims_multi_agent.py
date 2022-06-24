@@ -105,7 +105,7 @@ def getGoals(num_of_agents):
                 yaw=square_yaws_deg[i-1]*math.pi/180;
                 print("yaw= ", square_yaws_deg[i-1])
 
-            goals[i,:] = [goal_x, goal_y, goal_z];
+            goals[i-1,:] = [goal_x, goal_y, goal_z];
 
     return goals
 
@@ -113,17 +113,17 @@ def checkGoalReached(num_of_agents):
 
     goals = getGoals(num_of_agents)
 
-    for i in range(num_of_agents):
+    for i in range(1, num_of_agents+1):
         pos = np.empty(3)
         if i <= 9:
-            pos[0] = subprocess.check_output(['rostopic', 'echo', '/SQ0' + i + 's/state/pos/x', '-n', '1'])
-            pos[1] = subprocess.check_output(['rostopic', 'echo', '/SQ0' + i + 's/state/pos/y', '-n', '1'])
-            pos[2] = subprocess.check_output(['rostopic', 'echo', '/SQ0' + i + 's/state/pos/z', '-n', '1'])
+            pos[0] = subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/x', '-n', '1'])
+            pos[1] = subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/y', '-n', '1'])
+            pos[2] = subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/z', '-n', '1'])
             print(pos)
         else:
-            pos[0] = subprocess.check_output(['rostopic', 'echo', '/SQ' + i + 's/state/pos/x', '-n', '1'])
-            pos[1] = subprocess.check_output(['rostopic', 'echo', '/SQ' + i + 's/state/pos/y', '-n', '1'])
-            pos[2] = subprocess.check_output(['rostopic', 'echo', '/SQ' + i + 's/state/pos/z', '-n', '1'])
+            pos[0] = subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/x', '-n', '1'])
+            pos[1] = subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/y', '-n', '1'])
+            pos[2] = subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/z', '-n', '1'])
         
         goal_radius = 0.15 # set by mader.yaml
 
@@ -150,17 +150,18 @@ if __name__ == '__main__':
     #make sure ROS (and related stuff) is not running
     os.system(kill_all)
 
-    for k in range(len(num_of_sims)):
+    for k in range(num_of_sims):
 
         commands = []
 
         commands.append("roscore");
-        commands.append("sleep 1.0 && roslaunch mader many_drones.launch action:=controller");
+
+        commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=controller");
         # commands.append("sleep 1.0 && rosrun mader dynamic_corridor.py");
 
         commands.append("sleep 1.0 && roslaunch mader many_drones.launch action:=mader");
-        commands.append("sleep 1.0 && cd "+folder_bags+" && rosbag record -o sim_num_" + k);
-        commands.append("sleep 1.0 && roslaunch mader collision_detector.launch num_of_agents:=" + num_of_agents);
+        commands.append("sleep 1.0 && cd "+folder_bags+" && rosbag record -a -o sim_num_" + str(k));
+        commands.append("sleep 1.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
 
         #publishing the goal should be the last command
         commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=send_goal");
@@ -175,8 +176,12 @@ if __name__ == '__main__':
             print('splitting ',i)
             os.system('tmux split-window ; tmux select-layout tiled')
        
+        time.sleep(5.0)
+
         for i in range(len(commands)):
             os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m')
+
+        os.system("tmux attach")
 
         print("Commands sent")
 
