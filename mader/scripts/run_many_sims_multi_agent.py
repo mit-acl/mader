@@ -167,7 +167,7 @@ if __name__ == '__main__':
         # commands.append("sleep 1.0 && rosrun mader dynamic_corridor.py");
 
         commands.append("sleep 1.0 && roslaunch mader many_drones.launch action:=mader");
-        commands.append("sleep 1.0 && cd "+folder_bags+" && rosbag record -a -o sim_num_" + str(k) + "__name:="+name_node_record);
+        commands.append("sleep 1.0 && cd "+folder_bags+" && rosbag record -a -o sim_num_" + str(k) + " __name:="+name_node_record);
         commands.append("sleep 1.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
 
         #publishing the goal should be the last command
