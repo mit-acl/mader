@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
     # parameters
     num_of_sims=2
-    num_of_agents=10
+    num_of_agents=16
 
     # initialize commands list
     commands = []
