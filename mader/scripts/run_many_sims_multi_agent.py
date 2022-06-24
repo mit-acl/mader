@@ -160,14 +160,14 @@ if __name__ == '__main__':
     for k in range(num_of_sims):
 
         commands = []
-
+        name_node_record="bag_recorder"
         commands.append("roscore");
 
         commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=controller");
         # commands.append("sleep 1.0 && rosrun mader dynamic_corridor.py");
 
         commands.append("sleep 1.0 && roslaunch mader many_drones.launch action:=mader");
-        commands.append("sleep 1.0 && cd "+folder_bags+" && rosbag record -a -o sim_num_" + str(k));
+        commands.append("sleep 1.0 && cd "+folder_bags+" && rosbag record -a -o sim_num_" + str(k) + "__name:="+name_node_record);
         commands.append("sleep 1.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
 
         #publishing the goal should be the last command
@@ -205,8 +205,8 @@ if __name__ == '__main__':
                 print('all the agents reached the goal')
                 is_goal_reached = True
 
-
-        time.sleep(0.5)
+        os.system("rosnode kill "+name_node_record);
+        time.sleep(1.0)
         os.system(kill_all)
 
     time.sleep(3.0)
