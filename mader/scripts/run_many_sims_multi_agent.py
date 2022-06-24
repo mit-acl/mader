@@ -164,7 +164,7 @@ if __name__ == '__main__':
         commands.append("sleep 1.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
 
         #publishing the goal should be the last command
-        commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=send_goal");
+        commands.append("sleep 15.0 && roslaunch mader many_drones.launch action:=send_goal");
 
         # print("len(commands)= " , len(commands))
         session_name="run_many_sims_multi_agent_session"
