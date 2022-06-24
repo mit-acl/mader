@@ -59,7 +59,8 @@ if __name__ == '__main__':
         plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay,3))+' [s]')
         plt.xlabel("comm delay [s]")
         plt.ylabel("count")
-        plt.show()   
+        plt.savefig('comm_delay_histogram.png')
+        plt.show()
 
 
     # fig=plt.figure()
