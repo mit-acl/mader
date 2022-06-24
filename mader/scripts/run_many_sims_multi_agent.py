@@ -117,7 +117,7 @@ def checkGoalReached(num_of_agents):
     for i in range(1, num_of_agents+1):
         pos = np.empty(3)
         if i <= 9:
-            # print(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/x', '-n', '1']))
+            print(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos', '-n', '1']))
             # string = subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/x', '-n', '1'])
             # print(string.decode())
             pos[0] = float(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/x', '-n', '1']).decode()[:-1])
