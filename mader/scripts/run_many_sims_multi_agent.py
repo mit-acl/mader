@@ -143,7 +143,7 @@ if __name__ == '__main__':
     commands = []
 
     # other strings
-    folder_bags="/home/kota/Research/data/bags/mader/multi_agent/many_sims";
+    folder_bags="/home/kota/data/bags/multi_agent";
     # name_node_record="bag_recorder"
     kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
 
