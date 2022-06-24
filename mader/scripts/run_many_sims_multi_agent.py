@@ -118,15 +118,16 @@ def checkGoalReached(num_of_agents):
         pos = np.empty(3)
         if i <= 9:
             print(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos', '-n', '1']))
+            print(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos', '-n', '1']).decode().strip())
             # string = subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/x', '-n', '1'])
             # print(string.decode())
-            pos[0] = float(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/x', '-n', '1']).decode()[:-1])
-            pos[1] = float(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/y', '-n', '1']).decode()[:-1])
-            pos[2] = float(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/z', '-n', '1']).decode()[:-1])
+            pos[0] = float(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/x', '-n', '1']).decode().strip())
+            pos[1] = float(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/y', '-n', '1']).decode().strip())
+            pos[2] = float(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/z', '-n', '1']).decode().strip())
         else:
-            pos[0] = float(subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/x', '-n', '1']).decode()[:-1])
-            pos[1] = float(subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/y', '-n', '1']).decode()[:-1])
-            pos[2] = float(subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/z', '-n', '1']).decode()[:-1])
+            pos[0] = float(subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/x', '-n', '1']).decode().strip())
+            pos[1] = float(subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/y', '-n', '1']).decode().strip())
+            pos[2] = float(subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/z', '-n', '1']).decode().strip())
         
         print('agent'+str(i))
         print(pos)
