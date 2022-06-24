@@ -120,8 +120,11 @@ def checkGoalReached(num_of_agents):
             # print(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/x', '-n', '1']))
             # string = subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/x', '-n', '1'])
             # print(string.decode())
+            print('hi1')
             pos[0] = float(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/x', '-n', '1']).decode()[:-6])
+            print('hi2')
             pos[1] = float(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/y', '-n', '1']).decode()[:-6])
+            print('hi3')
             pos[2] = float(subprocess.check_output(['rostopic', 'echo', '/SQ0' + str(i) + 's/state/pos/z', '-n', '1']).decode()[:-6])
         else:
             pos[0] = float(subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/x', '-n', '1']).decode()[:-6])
@@ -130,7 +133,7 @@ def checkGoalReached(num_of_agents):
         
         print('agent'+str(i))
         print(pos)
-        goal_radius = 0.5 # set by mader.yaml
+        goal_radius = 0.15 # set by mader.yaml
 
         if (LA.norm(goals[i-1,:]-pos) > goal_radius):
             print(goals[i-1])
