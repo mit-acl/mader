@@ -143,7 +143,7 @@ def checkGoalReached(num_of_agents):
 if __name__ == '__main__':
 
     # parameters
-    num_of_sims=10
+    num_of_sims=50
     num_of_agents=16
 
     # initialize commands list
