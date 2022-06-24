@@ -194,12 +194,10 @@ if __name__ == '__main__':
 
         while (toc - tic < 120 or not is_goal_reached):
             toc = time.perf_counter()
-            try:
-                if(checkGoalReached(num_of_agents)):
-                    print('all the agents reached the goal')
-                    is_goal_reached = True
-            except:
-                print("An Error occurred")
+            if(checkGoalReached(num_of_agents)):
+                print('all the agents reached the goal')
+                is_goal_reached = True
+
 
         time.sleep(0.5)
         os.system(kill_all)
