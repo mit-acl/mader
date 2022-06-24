@@ -172,6 +172,7 @@ if __name__ == '__main__':
 
         #publishing the goal should be the last command
         commands.append("sleep 15.0 && roslaunch mader many_drones.launch action:=send_goal");
+        commands.append("sleep 20.0 && tmux detach")
 
         # print("len(commands)= " , len(commands))
         session_name="run_many_sims_multi_agent_session"
