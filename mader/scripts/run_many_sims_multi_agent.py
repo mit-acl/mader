@@ -159,6 +159,12 @@ if __name__ == '__main__':
 
     for k in range(num_of_sims):
 
+        if k <= 9:
+            sim_id = "0"+str(k)
+        else:
+            sim_id = str(k)
+
+
         commands = []
         name_node_record="bag_recorder"
         commands.append("roscore");
@@ -167,11 +173,11 @@ if __name__ == '__main__':
         # commands.append("sleep 1.0 && rosrun mader dynamic_corridor.py");
 
         commands.append("sleep 1.0 && roslaunch mader many_drones.launch action:=mader");
-        commands.append("sleep 1.0 && cd "+folder_bags+" && rosbag record -a -o sim_num_" + str(k) + " __name:="+name_node_record);
+        commands.append("sleep 1.0 && cd "+folder_bags+" && rosbag record -a -o sim_num_" + sim_id + " __name:="+name_node_record);
         commands.append("sleep 1.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
 
         #publishing the goal should be the last command
-        commands.append("sleep 20.0 && roslaunch mader many_drones.launch action:=send_goal");
+        commands.append("sleep 30.0 && roslaunch mader many_drones.launch action:=send_goal");
         commands.append("sleep 25.0 && tmux detach")
 
         # print("len(commands)= " , len(commands))
@@ -207,9 +213,9 @@ if __name__ == '__main__':
                 is_goal_reached = True
 
         os.system("rosnode kill "+name_node_record);
-        time.sleep(1.0)
+        time.sleep(10.0)
         os.system(kill_all)
 
-        time.sleep(30.0)
+        time.sleep(60.0)
 
     time.sleep(3.0)
