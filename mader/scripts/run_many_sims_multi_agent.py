@@ -152,7 +152,7 @@ if __name__ == '__main__':
     # other strings
     folder_bags="/home/kota/data/bags/rmader";
     # name_node_record="bag_recorder"
-    kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
+    kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands & killall5 -9"
 
     #make sure ROS (and related stuff) is not running
     os.system(kill_all)
@@ -164,7 +164,6 @@ if __name__ == '__main__':
         else:
             sim_id = str(k)
 
-
         commands = []
         name_node_record="bag_recorder"
         commands.append("roscore");
@@ -173,12 +172,12 @@ if __name__ == '__main__':
         # commands.append("sleep 1.0 && rosrun mader dynamic_corridor.py");
 
         commands.append("sleep 1.0 && roslaunch mader many_drones.launch action:=mader");
-        commands.append("sleep 1.0 && cd "+folder_bags+" && rosbag record -a -o sim_num_" + sim_id + " __name:="+name_node_record);
-        commands.append("sleep 1.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
+        commands.append("sleep 3.0 && cd "+folder_bags+" && rosbag record -a -o sim_num_" + sim_id + " __name:="+name_node_record);
+        commands.append("sleep 5.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
 
         #publishing the goal should be the last command
-        commands.append("sleep 30.0 && roslaunch mader many_drones.launch action:=send_goal");
-        commands.append("sleep 25.0 && tmux detach")
+        commands.append("sleep 15.0 && roslaunch mader many_drones.launch action:=send_goal");
+        commands.append("sleep 15.0 && tmux detach")
 
         # print("len(commands)= " , len(commands))
         session_name="run_many_sims_multi_agent_session"
@@ -211,6 +210,12 @@ if __name__ == '__main__':
             if(checkGoalReached(num_of_agents)):
                 print('all the agents reached the goal')
                 is_goal_reached = True
+
+        if (not is_goal_reached):
+            os.system('echo "simulation '+sim_id+': not goal reached" > /home/kota/data/bags/rmader/status.txt')
+        else:
+            os.system('echo "simulation '+sim_id+': goal reached" > /home/kota/data/bags/rmader/status.txt')
+
 
         os.system("rosnode kill "+name_node_record);
         time.sleep(10.0)
