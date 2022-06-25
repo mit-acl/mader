@@ -334,7 +334,7 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
   //   std::cout << "comm delay is huge!!!!" << std::endl;
   // }
 
-  if (sim_) {
+  if (sim_ && is_term_goal_initialized_) {
     //****** Communication delay introduced in the simulation
     // save all the trajectories into alltrajs_ and create a timer corresponding to that
     // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
@@ -992,6 +992,12 @@ void MaderRos::terminalGoalCB(const geometry_msgs::PoseStamped& msg)
 {
   mt::state G_term;
   double z;
+
+  if (!is_term_goal_initialized_){
+    is_term_goal_initialized_ = true;
+    ros::Duration(1.0).sleep(); // wait to receive other's trajs
+  }
+
   if (fabs(msg.pose.position.z) < 1e-5)  // This happens when you click in RVIZ (msg.z is 0.0)
   {
     z = 1.0;

@@ -212,9 +212,9 @@ if __name__ == '__main__':
                 is_goal_reached = True
 
         if (not is_goal_reached):
-            os.system('echo "simulation '+sim_id+': not goal reached" > /home/kota/data/bags/rmader/status.txt')
+            os.system('echo "simulation '+sim_id+': not goal reached" >> /home/kota/data/bags/rmader/status.txt')
         else:
-            os.system('echo "simulation '+sim_id+': goal reached" > /home/kota/data/bags/rmader/status.txt')
+            os.system('echo "simulation '+sim_id+': goal reached" >> /home/kota/data/bags/rmader/status.txt')
 
 
         os.system("rosnode kill "+name_node_record);

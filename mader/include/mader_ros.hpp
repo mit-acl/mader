@@ -154,6 +154,8 @@ private:
   double simulated_comm_delay_;
   double delay_check_;
 
+  bool is_term_goal_initialized_ = false;
+
   std::vector<mt::state> last_traj_plan_;
   mt::Edges last_edges_obstacles_;
 
