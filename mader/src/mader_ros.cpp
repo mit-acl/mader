@@ -995,7 +995,7 @@ void MaderRos::terminalGoalCB(const geometry_msgs::PoseStamped& msg)
 
   if (!is_term_goal_initialized_){
     is_term_goal_initialized_ = true;
-    ros::Duration(1.0).sleep(); // wait to receive other's trajs
+    ros::Duration(0.1).sleep(); // wait to receive other's trajs
   }
 
   if (fabs(msg.pose.position.z) < 1e-5)  // This happens when you click in RVIZ (msg.z is 0.0)
