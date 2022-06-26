@@ -1,8 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch>
 
 	<arg name="action" default=""/>
+	<arg name="sim_id" default="00"/> 
 
-	<node name="launch_many_drones" pkg="mader" type="launch_many_drones.py" output="screen" clear_params="true" args="$(arg action)" /> 
+	<node name="launch_many_drones" pkg="mader" type="launch_many_drones.py" 
+		output="screen" clear_params="true" args="$(arg action) $(arg sim_id)"/> 
 
 </launch>
 
