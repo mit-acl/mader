@@ -221,6 +221,6 @@ if __name__ == '__main__':
         time.sleep(10.0)
         os.system(kill_all)
 
-        time.sleep(60.0)
+        time.sleep(10.0)
 
     time.sleep(3.0)
