@@ -27,11 +27,12 @@ if __name__ == '__main__':
 
     # Dont use ~ like this
     # source_file = "~/Research/data/bags/mader/multi_agent/2022-06-23-20-02-26.bag" # change the source dir accordingly
-    source_file = "/home/kota/Research/data/bags/mader/multi_agent/sim_00_2022-06-26-13-57-03.bag" # change the source dir accordingly #10 agents 
+    source_file = "/home/kota/Research/data/bags/mader/multi_agent/sim_00_2022-06-26-14-17-29.bag" # change the source dir accordingly #10 agents 
 
     rosbag_list = glob.glob(source_file)
     rosbag = []
     comm_delay = []
+    num_of_agents = 10
 
     for bag in rosbag_list:
         rosbag.append(bag)
@@ -40,7 +41,7 @@ if __name__ == '__main__':
 
         b = bagreader(rosbag[i], verbose=False);
         
-        for i in range(1,11):
+        for i in range(1,num_of_agents+1):
             if i < 10:
                 log_data = b.message_by_topic("/SQ0" + str(i) + "s/mader/comm_delay")
             else:
