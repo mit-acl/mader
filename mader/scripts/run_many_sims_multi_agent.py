@@ -130,11 +130,11 @@ def checkGoalReached(num_of_agents):
             pos[2] = float(subprocess.check_output(['rostopic', 'echo', '/SQ' + str(i) + 's/state/pos/z', '-n', '1']).decode().replace("\n---\n",""))
         
         print('agent'+str(i))
-        print(pos)
+        print('state'+str(pos))
+        print('goal '+goals[i-1])
         goal_radius = 0.15 # set by mader.yaml
 
         if (LA.norm(goals[i-1,:]-pos) > goal_radius):
-            print(goals[i-1])
             return False
 
     return True
