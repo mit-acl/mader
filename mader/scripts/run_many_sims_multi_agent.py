@@ -131,7 +131,7 @@ def checkGoalReached(num_of_agents):
         
         print('agent'+str(i))
         print('state'+str(pos))
-        print('goal '+goals[i-1])
+        print('goal '+str(goals[i-1]))
         goal_radius = 0.15 # set by mader.yaml
 
         if (LA.norm(goals[i-1,:]-pos) > goal_radius):
