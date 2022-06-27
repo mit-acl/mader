@@ -174,7 +174,7 @@ if __name__ == '__main__':
         commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=controller");
         # commands.append("sleep 1.0 && rosrun mader dynamic_corridor.py");
 
-        commands.append("sleep 3.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+"folder:="+folder_txts);
+        commands.append("sleep 3.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts);
         commands.append("sleep 3.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record);
         commands.append("sleep 5.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
 
