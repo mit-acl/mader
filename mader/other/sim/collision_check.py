@@ -26,9 +26,12 @@ if __name__ == '__main__':
     # rosbag name
 
     # Dont use ~ like this
-    source_dir = "/home/kota/data/bags/rmader/*.bag" # change the source dir accordingly #10 agents 
+    source_dir = "/home/kota/data/bags/rmader" # change the source dir accordingly #10 agents 
+    source_len = len(source_dir)
+    source_bags = source_dir + "/*.bag" # change the source dir accordingly #10 agents 
 
-    rosbag_list = glob.glob(source_dir)
+    rosbag_list = glob.glob(source_bags)
+    rosbag_list.sort() #alphabetically order
     rosbag = []
 
     for bag in rosbag_list:
@@ -37,10 +40,11 @@ if __name__ == '__main__':
     for i in range(len(rosbag)):
 
         b = bagreader(rosbag[i], verbose=False)
-        print(rosbag[i])
+        sim_id = rosbag[i][source_len+4:source_len+6]
+        print(sim_id)
         
         log_data = b.message_by_topic("is_collided")
         if (log_data == None):
-        	print("no collision")
+        	os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'collision_status.txt')
        	else:
-       		print('collision detected')
+        	os.system('echo "simulation '+sim_id+': ******collision******" >> '+source_dir+'collision_status.txt')
