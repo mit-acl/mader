@@ -584,61 +584,61 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         }        
       }
       
-    }else {
+    }else{
 
-        // std::cout << "I'm using old mader!!!!!" << std::endl;
+        // // std::cout << "I'm using old mader!!!!!" << std::endl;
 
-        replanned = mader_ptr_->replan(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
+        // replanned = mader_ptr_->replan(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
 
-        if (par_.visual)
-        {
-          // Delete markers to publish stuff
-          visual_tools_->deleteAllMarkers();
-          visual_tools_->enableBatchPublishing();
+        // if (par_.visual)
+        // {
+        //   // Delete markers to publish stuff
+        //   visual_tools_->deleteAllMarkers();
+        //   visual_tools_->enableBatchPublishing();
 
-          // visualization
-          if (par_.visual)
-          {
-            // Delete markers to publish stuff
-            visual_tools_->deleteAllMarkers();
-            visual_tools_->enableBatchPublishing();
-            if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
-            pubTraj(traj_plan, true);
-          }        
+        //   // visualization
+        //   if (par_.visual)
+        //   {
+        //     // Delete markers to publish stuff
+        //     visual_tools_->deleteAllMarkers();
+        //     visual_tools_->enableBatchPublishing();
+        //     if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);} 
+        //     pubTraj(traj_plan, true);
+        //   }        
 
-          // publishPlanes(planes);
-          // publishText();
-        }
+        //   // publishPlanes(planes);
+        //   // publishText();
+        // }
 
-        if (replanned)
-        {
-          publishOwnTraj(pwp_now_, true);
-          pwp_last_ = pwp_now_;
-        }
-        else
-        {
-          // int time_ms = int(ros::Time::now().toSec() * 1000);
+        // if (replanned)
+        // {
+        //   publishOwnTraj(pwp_now_, true);
+        //   pwp_last_ = pwp_now_;
+        // }
+        // else
+        // {
+        //   // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-          if (timer_stop_.ElapsedMs() > delay_check_) 
-          {
-            publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
-                                        // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
-                                        // very far from the other drones with it last successfully planned a trajectory).
-                                        // Note that these trajectories are time-indexed, and the last position is taken if
-                                        // t>times.back(). See eval() function in the pwp struct
-            timer_stop_.Reset();
-          }
-          // visualization
-          if (par_.visual)
-          {
-            // Delete markers to publish stuff
-            visual_tools_->deleteAllMarkers();
-            visual_tools_->enableBatchPublishing();
-            if (last_edges_obstacles_.size() > 0){pubObstacles(last_edges_obstacles_);} 
-            pubTraj(last_traj_plan_, true);
-          }        
+        //   if (timer_stop_.ElapsedMs() > delay_check_) 
+        //   {
+        //     publishOwnTraj(pwp_last_, true);  // This is needed because is drone DRONE1 stops, it needs to keep publishing his
+        //                                 // last planned trajectory, so that other drones can avoid it (even if DRONE1 was
+        //                                 // very far from the other drones with it last successfully planned a trajectory).
+        //                                 // Note that these trajectories are time-indexed, and the last position is taken if
+        //                                 // t>times.back(). See eval() function in the pwp struct
+        //     timer_stop_.Reset();
+        //   }
+        //   // visualization
+        //   if (par_.visual)
+        //   {
+        //     // Delete markers to publish stuff
+        //     visual_tools_->deleteAllMarkers();
+        //     visual_tools_->enableBatchPublishing();
+        //     if (last_edges_obstacles_.size() > 0){pubObstacles(last_edges_obstacles_);} 
+        //     pubTraj(last_traj_plan_, true);
+        //   }        
           
-        }
+        // }
     }
   }// std::cout << "[Callback] Leaving replanCB" << std::endl;
 
