@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # rosbag name
 
     # Dont use ~ like this
-    source_dir = "/home/kota/Research/bags/rmader/*.bag" # change the source dir accordingly #10 agents 
+    source_dir = "/home/kota/data/bags/rmader/*.bag" # change the source dir accordingly #10 agents 
 
     rosbag_list = glob.glob(source_dir)
     rosbag = []
