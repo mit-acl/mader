@@ -151,6 +151,7 @@ if __name__ == '__main__':
 
     # other strings
     folder_bags="/home/kota/data/bags/oldmader";
+    folder_txts="/home/kota/data/txt_files/oldmader"
     # name_node_record="bag_recorder"
     kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
 
@@ -171,7 +172,7 @@ if __name__ == '__main__':
         commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=controller");
         # commands.append("sleep 1.0 && rosrun mader dynamic_corridor.py");
 
-        commands.append("sleep 1.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+"folder:="+folder_bags);
+        commands.append("sleep 1.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+"folder:="+folder_txts);
         commands.append("sleep 3.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record);
         commands.append("sleep 5.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
 
