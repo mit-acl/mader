@@ -378,7 +378,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_created;
   
   // supposedly_simulated_time_delay should be simulated_comm_delay_
-  if (supposedly_simulated_comm_delay > delay_check_){
+  if (supposedly_simulated_comm_delay > delay_check_ && is_delaycheck_){
     std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s" << std::endl;
   }
 
@@ -583,7 +583,6 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     }else {
 
         // std::cout << "I'm using old mader!!!!!" << std::endl;
-
 
         replanned = mader_ptr_->replan(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
 
