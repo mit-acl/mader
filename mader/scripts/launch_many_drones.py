@@ -37,7 +37,7 @@ def create_session(session_name, commands):
     print("Commands sent")
 
 
-def convertToStringCommand(action,sim_id,veh,num,x,y,z,goal_x,goal_y,goal_z,yaw):
+def convertToStringCommand(action,sim_id,folder,veh,num,x,y,z,goal_x,goal_y,goal_z,yaw):
     # if(action=="base_station"):
     #     return "roslaunch mader base_station.launch type_of_environment:=dynamic_forest";
     if(action=="controller"):
@@ -47,7 +47,7 @@ def convertToStringCommand(action,sim_id,veh,num,x,y,z,goal_x,goal_y,goal_z,yaw)
         quad = veh + num + "s";
         return "rostopic pub /"+quad+"/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: 'world'}, pose: {position: {x: "+str(goal_x)+", y: "+str(goal_y)+", z: "+str(goal_z)+"}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}}}'"
     if(action=="mader"):
-        return "roslaunch mader onboard.launch veh:="+veh+" num:="+num+" 2>&1 | tee ~/data/txt_files/rmader/"+sim_id+"_"+veh+num+"_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt"
+        return "roslaunch mader onboard.launch veh:="+veh+" num:="+num+" 2>&1 | tee "+folder+"/"+sim_id+"_"+veh+num+"_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt"
         # return "roslaunch mader onboard.launch veh:="+veh+" num:="+num #+ " >> "+quad+".txt" #Kota comment: this line launches mader.launch with the argument of quad number
         # return "script -q -c 'roslaunch mader mader.launch quad:="+quad + "' "+quad+".txt"
         
@@ -140,7 +140,7 @@ if __name__ == '__main__':
                 print("yaw= ", square_yaws_deg[i-1])
 
 
-            commands.append(convertToStringCommand(sys.argv[1],sys.argv[2],veh,num,x,y,z,goal_x,goal_y,goal_z, yaw));
+            commands.append(convertToStringCommand(sys.argv[1],sys.argv[2],sys.argv[3],veh,num,x,y,z,goal_x,goal_y,goal_z, yaw));
 
             x_tmp="{:5.3f}".format(x);
             y_tmp="{:5.3f}".format(y);

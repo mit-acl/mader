@@ -171,7 +171,7 @@ if __name__ == '__main__':
         commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=controller");
         # commands.append("sleep 1.0 && rosrun mader dynamic_corridor.py");
 
-        commands.append("sleep 1.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id);
+        commands.append("sleep 1.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+"folder:="+folder_bags);
         commands.append("sleep 3.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record);
         commands.append("sleep 5.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
 
@@ -212,9 +212,9 @@ if __name__ == '__main__':
                 is_goal_reached = True
 
         if (not is_goal_reached):
-            os.system('echo "simulation '+sim_id+': not goal reached" >> /home/kota/data/bags/rmader/status.txt')
+            os.system('echo "simulation '+sim_id+': not goal reached" >> '+folder_bags+'/status.txt')
         else:
-            os.system('echo "simulation '+sim_id+': goal reached" >> /home/kota/data/bags/rmader/status.txt')
+            os.system('echo "simulation '+sim_id+': goal reached" >> '+folder_bags+'/status.txt')
 
 
         os.system("rosnode kill "+name_node_record);

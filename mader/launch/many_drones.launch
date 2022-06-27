@@ -3,9 +3,10 @@
 
 	<arg name="action" default=""/>
 	<arg name="sim_id" default="00"/> 
+	<arg name="folder" default="/home/kota/data/bags/oldmader"/> 
 
 	<node name="launch_many_drones" pkg="mader" type="launch_many_drones.py" 
-		output="screen" clear_params="true" args="$(arg action) $(arg sim_id)"/> 
+		output="screen" clear_params="true" args="$(arg action) $(arg sim_id) $(arg folder)"/> 
 
 </launch>
 
