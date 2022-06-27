@@ -40,10 +40,7 @@ if __name__ == '__main__':
         print(rosbag[i])
         
         log_data = b.message_by_topic("is_collided")
-        print(log_data)
-        
-
-        # 	print('collisiondetected')
-        # except:
-        # 	print("no collision")
-
+        if (log_data == None):
+        	print("no collision")
+       	else:
+		    print('collision detected')
