@@ -37,7 +37,7 @@ if __name__ == '__main__':
     for i in range(len(rosbag)):
 
         b = bagreader(rosbag[i], verbose=False)
-    	print(rosbag[i])
+    	# print(rosbag[i])
     	try:
         	log_data = b.message_by_topic("is_collided")
         	print('collisiondetected')
