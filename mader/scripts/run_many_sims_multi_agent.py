@@ -143,22 +143,24 @@ def checkGoalReached(num_of_agents):
 if __name__ == '__main__':
 
     # parameters
-    num_of_sims=50
+    num_of_sims=1
     num_of_agents=10
 
     # initialize commands list
     commands = []
 
     # other strings
-    folder_bags="/home/kota/data/bags/oldmader";
-    folder_txts="/home/kota/data/txt_files/oldmader"
+    # folder_bags="/home/kota/data/bags/oldmader";
+    folder_bags="/home/kota/data/bags/rmader";
+    # folder_txts="/home/kota/data/txt_files/oldmader"
+    folder_txts="/home/kota/data/txt_files/rmader"
     # name_node_record="bag_recorder"
     kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
 
     #make sure ROS (and related stuff) is not running
     os.system(kill_all)
 
-    for k in range(28,num_of_sims):
+    for k in range(num_of_sims):
 
         if k <= 9:
             sim_id = "0"+str(k)
