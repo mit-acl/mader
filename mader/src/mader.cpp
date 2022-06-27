@@ -1910,12 +1910,6 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   time_init_opt_ = ros::Time::now().toSec();
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
 
-  // std::cout << "in OLD replan(), trajs_ pwps print out" << std::endl;
-  // std::cout << "trajs_.size() is " << trajs_.size() << std::endl;
-  for (auto traj : trajs_){
-    traj.pwp.print();
-  }
-
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
   mtx_trajs_.unlock();
 
