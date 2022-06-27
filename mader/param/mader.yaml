@@ -1,7 +1,7 @@
 # if simulatin or hex?
 sim: true
 # use delay_check or not?
-is_delaycheck: true
+is_delaycheck: false
 
 use_ff: true # use feedforward
 visual: true #publish visualization stuff
