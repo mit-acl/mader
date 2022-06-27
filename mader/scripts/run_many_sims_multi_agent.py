@@ -158,7 +158,7 @@ if __name__ == '__main__':
     #make sure ROS (and related stuff) is not running
     os.system(kill_all)
 
-    for k in range(num_of_sims):
+    for k in range(28,num_of_sims):
 
         if k <= 9:
             sim_id = "0"+str(k)
