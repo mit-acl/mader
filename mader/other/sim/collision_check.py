@@ -42,7 +42,6 @@ if __name__ == '__main__':
         b = bagreader(rosbag[i], verbose=False)
         sim_id = rosbag[i][source_len+5:source_len+7]
         
-        os.system('vi collision_status.txt')
         log_data = b.message_by_topic("is_collided")
         if (log_data == None):
         	os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'collision_status.txt')
