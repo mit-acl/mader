@@ -26,7 +26,8 @@ if __name__ == '__main__':
     # rosbag name
 
     # Dont use ~ like this
-    source_dir = "/home/kota/data/bags/rmader" # change the source dir accordingly #10 agents 
+    # source_dir = "/home/kota/data/bags/rmader" # change the source dir accordingly #10 agents 
+    source_dir = "/home/kota/data/bags/multi_agent/sim_num_1_2022-06-24-20-48-34_bag_comm_delay_proof" # change the source dir accordingly #10 agents 
     source_len = len(source_dir)
     source_bags = source_dir + "/*.bag" # change the source dir accordingly #10 agents 
 
@@ -42,7 +43,7 @@ if __name__ == '__main__':
         b = bagreader(rosbag[i], verbose=False)
         sim_id = rosbag[i][source_len+5:source_len+7]
         
-        log_data = b.message_by_topic("is_collided")
+        log_data = b.message_by_topic("/is_collided")
         if (log_data == None):
         	os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'/collision_status.txt')
        	else:
