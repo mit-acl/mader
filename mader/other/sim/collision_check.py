@@ -43,4 +43,4 @@ if __name__ == '__main__':
         if (log_data == None):
         	print("no collision")
        	else:
-		    print('collision detected')
+       		print('collision detected')
