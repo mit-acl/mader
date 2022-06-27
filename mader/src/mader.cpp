@@ -1911,6 +1911,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
 
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
+  
   mtx_trajs_.unlock();
 
   mt::ConvexHullsOfCurves_Std hulls_std = cu::vectorGCALPol2vectorStdEigen(hulls);

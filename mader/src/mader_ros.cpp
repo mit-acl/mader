@@ -372,7 +372,11 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   mtx_alltrajs_.lock();
   mtx_alltrajsTimers_.lock();
 
-  mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
+  if (is_delaycheck_){
+    mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
+  } else {
+    mader_ptr_->updateTrajObstacles(alltrajs_[0]);
+  }
 
   double time_now = ros::Time::now().toSec();
   double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_created;
