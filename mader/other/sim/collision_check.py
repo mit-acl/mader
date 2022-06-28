@@ -49,11 +49,11 @@ if __name__ == '__main__':
         if (log_data == None):
         	print("sim " + sim_id + ": no collision" )
         	# os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'/collision_status.txt')
-            os.system("sed -n '"+i+"s/$/  [[:space:]] no collision' >> "+source_dir+"/status.txt")
+            os.system("sed -n '"+str(i)+"s/$/  [[:space:]] no collision' >> "+source_dir+"/status.txt")
        	else:
         	print("sim " + sim_id + ": ******collision******" )
         	# os.system('echo "simulation '+sim_id+': ******collision******" > '+source_dir+'/collision_status.txt')
-            os.system("sed -n '"+i+"s/$/  [[:space:]] no collision' >> "+source_dir+"/status.txt")
+            os.system("sed -n '"+str(i)+"s/$/  [[:space:]] no collision' >> "+source_dir+"/status.txt")
 
 
 
