@@ -151,10 +151,12 @@ if __name__ == '__main__':
 
     # other strings
     # folder_bags="/home/kota/data/bags/oldmader";
-    folder_bags="/home/kota/data/bags/cd_50ms_dc_150ms/rmader";
+    # folder_bags="/home/kota/data/bags/cd_50ms_dc_150ms/rmader";
+    folder_bags="/home/kota/data/bags/cd_50ms_dc_100ms/rmader";
 
     # folder_txts="/home/kota/data/txt_files/oldmader"
-    folder_txts="/home/kota/data/txt_files/cd_50ms_dc_150ms/rmader"
+    # folder_txts="/home/kota/data/txt_files/cd_50ms_dc_150ms/rmader"
+    folder_txts="/home/kota/data/txt_files/cd_50ms_dc_100ms/rmader"
 
     # create directy if not exists
     if (not os.path.exists(folder_bags)):
