@@ -26,8 +26,8 @@ import numpy
 if __name__ == '__main__':
 
     # Dont use ~ like this
-    # source_dir = "/home/kota/data/bags/rmader" # change the source dir accordingly #10 agents 
-    source_dir = "/home/kota/data/bags/oldmader" # change the source dir accordingly #10 agents 
+    figname = 'cd_50_dc_100_rmader_comm_delay_histogram.png'
+    source_dir = "/home/kota/data/bags/cd_50ms_dc_100ms/rmader" # change the source dir accordingly #10 agents 
     # source_dir = "/home/kota/data/bags/multi_agent/sim_num_1_2022-06-24-20-48-34_bag_comm_delay_proof" # change the source dir accordingly #10 agents 
     source_len = len(source_dir)
     source_bags = source_dir + "/*.bag" # change the source dir accordingly
@@ -72,5 +72,5 @@ if __name__ == '__main__':
     plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay,3))+' [s]')
     plt.xlabel("comm delay [s]")
     plt.ylabel("count")
-    plt.savefig('comm_delay_histogram.png')
+    plt.savefig('data/'+figname)
     plt.show()
