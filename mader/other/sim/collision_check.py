@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     # Dont use ~ like this
     cd = "50" # [ms] communication delay
-    dc = "100" # [ms] delay check
+    dc = "150" # [ms] delay check
     source_dir = "/home/kota/data/bags/cd_"+cd+"ms_dc_"+dc+"ms/rmader" # change the source dir accordingly #10 agents
     source_len = len(source_dir)
     # source_dir = "/home/kota/data/bags/multi_agent/sim_num_1_2022-06-24-20-48-34_bag_comm_delay_proof" # change the source dir accordingly #10 agents 
@@ -48,12 +48,10 @@ if __name__ == '__main__':
         log_data = b.message_by_topic("/is_collided")
         if (log_data == None):
             print("sim " + sim_id + ": no collision" )
-            os.system("sed -n '"+str(i+1)+"s/s/$/[[:space:]] no collision/' "+source_dir+"/status.txt >> "+source_dir+"/complete_status.txt")
-            # os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'/collision_status.txt')
+            os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'/collision_status.txt')
         else:
             print("sim " + sim_id + ": ******collision******" )
-            os.system("sed -n '"+str(i+1)+"s/s/$/[[:space:]] ***collision***/' "+source_dir+"/status.txt >> "+source_dir+"/complete_status.txt")
-            # os.system('echo "simulation '+sim_id+': ******collision******" > '+source_dir+'/collision_status.txt')
+            os.system('echo "simulation '+sim_id+': ******collision******" > '+source_dir+'/collision_status.txt')
 
-
+    os.system('paste '+source_dir+'/collision_status.txt '+source_dir+'/status.txt > '+source_dir+'/complete_status.txt')
 
