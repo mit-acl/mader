@@ -143,7 +143,7 @@ def checkGoalReached(num_of_agents):
 if __name__ == '__main__':
 
     # parameters
-    num_of_sims=1
+    num_of_sims=50
     num_of_agents=10
 
     # initialize commands list
@@ -155,7 +155,15 @@ if __name__ == '__main__':
 
     # folder_txts="/home/kota/data/txt_files/oldmader"
     folder_txts="/home/kota/data/txt_files/cd_50ms_dc_150ms/rmader"
-    
+
+    # create directy if not exists
+    if (not os.path.exists(folder_bags)):
+        os.makedirs(folder_bags)
+
+    # create directy if not exists
+    if (not os.path.exists(folder_txts)):
+        os.makedirs(folder_txts)        
+
     # name_node_record="bag_recorder"
     kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
 
