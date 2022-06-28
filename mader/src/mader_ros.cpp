@@ -584,7 +584,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         }        
       }
       
-    }else{
+    } else{
 
         // // std::cout << "I'm using old mader!!!!!" << std::endl;
 
@@ -639,8 +639,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         //   }        
           
         // }
-    }
-  }// std::cout << "[Callback] Leaving replanCB" << std::endl;
+      }
+    }// std::cout << "[Callback] Leaving replanCB" << std::endl;
 
   mt::state G;  // projected goal
   mader_ptr_->getG(G);
