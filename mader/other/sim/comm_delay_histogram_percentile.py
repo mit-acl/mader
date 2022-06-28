@@ -5,6 +5,8 @@
 #  python comm_delay_histogram_percentile.py input_comm_delay
 #  Ex. python comm_delay_histogram_percentile.py 0.150
 
+# change cd and dc
+
 import bagpy
 from bagpy import bagreader
 import pandas as pd
@@ -27,7 +29,7 @@ if __name__ == '__main__':
 
     # Dont use ~ like this
     cd = "50" # [ms] communication delay
-    dc = "150" # [ms] delay check
+    dc = "250" # [ms] delay check
     figname = 'cd_'+cd+'_dc_'+dc+'_rmader_comm_delay_histogram.png'
     source_dir = "/home/kota/data/bags" # change the source dir accordingly #10 agents 
     # source_dir = "/home/kota/data/bags/multi_agent/sim_num_1_2022-06-24-20-48-34_bag_comm_delay_proof" # change the source dir accordingly #10 agents 
@@ -63,7 +65,7 @@ if __name__ == '__main__':
     # print percentile
     comm_delay_arr = numpy.array(comm_delay)
     percentile = scipy.stats.percentileofscore(comm_delay_arr, input_comm_delay, kind='mean')
-    os.system('echo " cd='+cd+', dc='+dc+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> '+source_dir+'/comm_delay_percentile.txt')
+    os.system('echo "cd='+cd+', dc='+dc+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> '+source_dir+'/comm_delay_percentile.txt')
     
     # print(comm_delay)
     max_comm_delay = max(comm_delay)
