@@ -165,6 +165,8 @@ private:
   std::deque<mt::dynTraj> alltrajs_;
   std::deque<ros::Timer> alltrajsTimers_;
 
+  bool is_replanCB_called_ = false;
+
   Eigen::Affine3d W_T_B_;
 
   mt::PieceWisePol pwp_last_;
