@@ -75,6 +75,8 @@ class CollisionDetector:
                             and abs(trans.transform.translation.z) < self.bbox_z):
                             
                             self.collision.is_collided = True
+                            self.collision.agent1 = trans.transform.frame_id
+                            self.collision.agent2 = trans.transform.child_frame_id
                             self.pubIsCollided.publish(self.collision)
 
                             print("collision btwn " + trans.header.frame_id + " and " + trans.child_frame_id)
