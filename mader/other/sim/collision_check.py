@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     # Dont use ~ like this
     cd = "50" # [ms] communication delay
-    dc = "150" # [ms] delay check
+    dc = "75" # [ms] delay check
     source_dir = "/home/kota/data/bags/cd_"+cd+"ms_dc_"+dc+"ms/rmader" # change the source dir accordingly #10 agents
     source_len = len(source_dir)
     # source_dir = "/home/kota/data/bags/multi_agent/sim_num_1_2022-06-24-20-48-34_bag_comm_delay_proof" # change the source dir accordingly #10 agents 
