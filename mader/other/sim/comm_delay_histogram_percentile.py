@@ -67,6 +67,10 @@ if __name__ == '__main__':
     percentile = scipy.stats.percentileofscore(comm_delay_arr, input_comm_delay, kind='mean')
     os.system('echo "cd='+cd+', dc='+dc+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> '+source_dir+'/comm_delay_percentile.txt')
     
+    # in case you wanna calculate the value of q-th percentile
+    q = 50
+    print(str(q) + "-th percentile value is " + str(numpy.percentile(comm_delay_arr, q)))
+
     # print(comm_delay)
     max_comm_delay = max(comm_delay)
 
