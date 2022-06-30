@@ -150,17 +150,17 @@ if __name__ == '__main__':
     commands = []
 
     # other strings
-    # folder_bags="/home/kota/data/bags/oldmader";
-    # folder_bags="/home/kota/data/bags/cd_50ms_dc_250ms/rmader";
-    # folder_bags="/home/kota/data/bags/cd_50ms_dc_150ms/rmader";
-    folder_bags="/home/kota/data/bags/cd_50ms_dc_100ms/rmader";
-    # folder_bags="/home/kota/data/bags/cd_50ms_dc_75ms/rmader";
+    folder_bags="/home/kota/data/bags/oldmader/cd_50ms";
+    # folder_bags="/home/kota/data/bags/rmader/cd_50ms_dc_250ms";
+    # folder_bags="/home/kota/data/bags/rmader/cd_50ms_dc_150ms";
+    # folder_bags="/home/kota/data/bags/rmader/cd_50ms_dc_100ms";
+    # folder_bags="/home/kota/data/bags/rmader/cd_50ms_dc_75ms";
 
-    # folder_txts="/home/kota/data/txt_files/oldmader"
-    # folder_txts="/home/kota/data/txt_files/cd_50ms_dc_250ms/rmader"
-    # folder_txts="/home/kota/data/txt_files/cd_50ms_dc_150ms/rmader"
-    folder_txts="/home/kota/data/txt_files/cd_50ms_dc_100ms/rmader"
-    # folder_txts="/home/kota/data/txt_files/cd_50ms_dc_75ms/rmader"
+    folder_txts="/home/kota/data/txt_files/oldmader/cd_50ms"
+    # folder_txts="/home/kota/data/txt_files/rmader/cd_50ms_dc_250ms"
+    # folder_txts="/home/kota/data/txt_files/rmader/cd_50ms_dc_150ms"
+    # folder_txts="/home/kota/data/txt_files/rmader/cd_50ms_dc_100ms"
+    # folder_txts="/home/kota/data/txt_files/rmader/cd_50ms_dc_75ms"
 
     # create directy if not exists
     if (not os.path.exists(folder_bags)):
