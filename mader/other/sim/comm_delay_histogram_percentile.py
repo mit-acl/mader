@@ -63,7 +63,7 @@ if __name__ == '__main__':
                 comm_delay.append(log.comm_delay[j])
 
     # print percentile
-    # comm_delay_arr = numpy.array(comm_delay)
+    comm_delay_arr = numpy.array(comm_delay)
     # percentile = scipy.stats.percentileofscore(comm_delay_arr, input_comm_delay, kind='mean')
     # os.system('echo "cd='+cd+', dc='+dc+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> '+source_dir+'/comm_delay_percentile.txt')
     
