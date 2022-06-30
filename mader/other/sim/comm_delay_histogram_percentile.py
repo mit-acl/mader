@@ -63,21 +63,21 @@ if __name__ == '__main__':
                 comm_delay.append(log.comm_delay[j])
 
     # print percentile
-    comm_delay_arr = numpy.array(comm_delay)
-    percentile = scipy.stats.percentileofscore(comm_delay_arr, input_comm_delay, kind='mean')
-    os.system('echo "cd='+cd+', dc='+dc+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> '+source_dir+'/comm_delay_percentile.txt')
+    # comm_delay_arr = numpy.array(comm_delay)
+    # percentile = scipy.stats.percentileofscore(comm_delay_arr, input_comm_delay, kind='mean')
+    # os.system('echo "cd='+cd+', dc='+dc+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> '+source_dir+'/comm_delay_percentile.txt')
     
     # in case you wanna calculate the value of q-th percentile
     q = 50
     print(str(q) + "-th percentile value is " + str(numpy.percentile(comm_delay_arr, q)))
 
-    # print(comm_delay)
-    max_comm_delay = max(comm_delay)
+    # # print(comm_delay)
+    # max_comm_delay = max(comm_delay)
 
-    n, bins, patches = plt.hist(x=comm_delay)
-    plt.grid(axis='y', color='black', alpha=0.2)
-    plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay,3))+' [s]')
-    plt.xlabel("comm delay [s]")
-    plt.ylabel("count")
-    plt.savefig('data/'+figname)
-    # plt.show()
+    # n, bins, patches = plt.hist(x=comm_delay)
+    # plt.grid(axis='y', color='black', alpha=0.2)
+    # plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay,3))+' [s]')
+    # plt.xlabel("comm delay [s]")
+    # plt.ylabel("count")
+    # plt.savefig('data/'+figname)
+    # # plt.show()
