@@ -154,6 +154,8 @@ if __name__ == '__main__':
 
     for dc in dc_list:
 
+        dc_in_ms = dc/1000;
+
         # mader.yaml modification. comment out delay_check param and is_delaycheck param
         os.system("sed -i '/delay_check/s/^/#/g' $(rospack find mader)/param/mader.yaml")
         os.system("sed -i '/is_delaycheck/s/^/#/g' $(rospack find mader)/param/mader.yaml")
@@ -196,7 +198,7 @@ if __name__ == '__main__':
                 else:
                     agent_id = str(num)
 
-                commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+str(dc))
+                commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+str(dc_in_ms))
                 if is_oldmader:
                     commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck false")
                 else:
