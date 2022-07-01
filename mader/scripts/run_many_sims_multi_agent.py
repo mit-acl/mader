@@ -190,13 +190,13 @@ if __name__ == '__main__':
             name_node_record="bag_recorder"
             commands.append("roscore");
 
-            for num in num_of_agents:
+            for num in range(num_of_agents):
                 if num <= 9:
                     agent_id = "0"+str(num)
                 else:
                     agent_id = str(num)
 
-                commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+dc)
+                commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+str(dc))
                 if is_oldmader:
                     commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck false")
                 else:
@@ -258,6 +258,10 @@ if __name__ == '__main__':
         # uncomment delay_check param
         os.system("sed -i '/delay_check/s/^#//g' $(rospack find mader)/param/mader.yaml")
         os.system("sed -i '/is_delaycheck/s/^#//g' $(rospack find mader)/param/mader.yaml")
+
+        # use old mader only once
+        if not is_oldmader:
+            is_oldmader=False
 
         time.sleep(3.0)
 
