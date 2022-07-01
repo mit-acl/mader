@@ -69,7 +69,7 @@ if __name__ == '__main__':
     # os.system('echo "cd='+cd+', dc='+dc+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> '+source_dir+'/comm_delay_percentile.txt')
     
     # in case you wanna calculate the value of q-th percentile
-    q = 10
+    q = 75
     print(str(q) + "-th percentile value is " + str(numpy.percentile(comm_delay_arr, q)))
 
     # # print(comm_delay)
