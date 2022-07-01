@@ -190,7 +190,7 @@ if __name__ == '__main__':
             name_node_record="bag_recorder"
             commands.append("roscore");
 
-            for num in range(num_of_agents):
+            for num in range(1,num_of_agents+1):
                 if num <= 9:
                     agent_id = "0"+str(num)
                 else:
