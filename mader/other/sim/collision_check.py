@@ -27,32 +27,40 @@ if __name__ == '__main__':
 
     # Dont use ~ like this
     cd = "50" # [ms] communication delay
-    dc = "75" # [ms] delay check
-    # source_dir = "/home/kota/data/bags/cd_"+cd+"ms_dc_"+dc+"ms/rmader" # change the source dir accordingly #10 agents
-    source_dir = "/home/kota/data/bags/cd_"+cd+"ms/oldmader" # change the source dir accordingly #10 agents
-    source_len = len(source_dir)
-    # source_dir = "/home/kota/data/bags/multi_agent/sim_num_1_2022-06-24-20-48-34_bag_comm_delay_proof" # change the source dir accordingly #10 agents 
-    source_bags = source_dir + "/*.bag" # change the source dir accordingly
+    dc_list = [0, 250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
-    rosbag_list = glob.glob(source_bags)
-    rosbag_list.sort() #alphabetically order
-    rosbag = []
+    is_oldmader = True
 
-    for bag in rosbag_list:
-        rosbag.append(bag)
+    for dc in dc_list:
 
-    for i in range(len(rosbag)):
-
-        b = bagreader(rosbag[i], verbose=False)
-        sim_id = rosbag[i][source_len+5:source_len+7]
-        
-        log_data = b.message_by_topic("/is_collided")
-        if (log_data == None):
-            print("sim " + sim_id + ": no collision" )
-            os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'/collision_status.txt')
+        if is_oldmader:
+            source_dir = "/home/kota/data/bags/oldmader/cd_"+cd+"ms" # change the source dir accordingly #10 agents
         else:
-            print("sim " + sim_id + ": ******collision******" )
-            os.system('echo "simulation '+sim_id+': ***collision***" >> '+source_dir+'/collision_status.txt')
+            source_dir = "/home/kota/data/bags/rmader/cd_"+cd+"ms_dc_"+dc+"ms" # change the source dir accordingly #10 agents
+        
+        source_len = len(source_dir)
+        source_bags = source_dir + "/*.bag" # change the source dir accordingly
 
-    os.system('paste '+source_dir+'/collision_status.txt '+source_dir+'/status.txt > '+source_dir+'/complete_status.txt')
+        rosbag_list = glob.glob(source_bags)
+        rosbag_list.sort() #alphabetically order
+        rosbag = []
 
+        for bag in rosbag_list:
+            rosbag.append(bag)
+
+        for i in range(len(rosbag)):
+
+            b = bagreader(rosbag[i], verbose=False)
+            sim_id = rosbag[i][source_len+5:source_len+7]
+            
+            log_data = b.message_by_topic("/is_collided")
+            if (log_data == None):
+                print("sim " + sim_id + ": no collision" )
+                os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'/collision_status.txt')
+            else:
+                print("sim " + sim_id + ": ******collision******" )
+                os.system('echo "simulation '+sim_id+': ***collision***" >> '+source_dir+'/collision_status.txt')
+
+        os.system('paste '+source_dir+'/collision_status.txt '+source_dir+'/status.txt > '+source_dir+'/complete_status.txt')
+
+        is_oldmader = False
