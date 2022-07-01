@@ -143,103 +143,121 @@ def checkGoalReached(num_of_agents):
 if __name__ == '__main__':
 
     # parameters
+    is_oldmader=True
     num_of_sims=50
     num_of_agents=10
+    dc_list = [0, 250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
-    # initialize commands list
-    commands = []
+    # folder initialization
+    folder_bags_list = []
+    folder_txts_list = []
 
-    # other strings
-    folder_bags="/home/kota/data/bags/oldmader/cd_50ms";
-    # folder_bags="/home/kota/data/bags/rmader/cd_50ms_dc_250ms";
-    # folder_bags="/home/kota/data/bags/rmader/cd_50ms_dc_150ms";
-    # folder_bags="/home/kota/data/bags/rmader/cd_50ms_dc_100ms";
-    # folder_bags="/home/kota/data/bags/rmader/cd_50ms_dc_75ms";
+    for dc in dc_list:
 
-    folder_txts="/home/kota/data/txt_files/oldmader/cd_50ms"
-    # folder_txts="/home/kota/data/txt_files/rmader/cd_50ms_dc_250ms"
-    # folder_txts="/home/kota/data/txt_files/rmader/cd_50ms_dc_150ms"
-    # folder_txts="/home/kota/data/txt_files/rmader/cd_50ms_dc_100ms"
-    # folder_txts="/home/kota/data/txt_files/rmader/cd_50ms_dc_75ms"
+        # mader.yaml modification. comment out delay_check param and is_delaycheck param
+        os.system("sed -i '/delay_check/s/^/#/g' $(rospack find mader)/param/mader.yaml")
+        os.system("sed -i '/is_delaycheck/s/^/#/g' $(rospack find mader)/param/mader.yaml")
 
-    # create directy if not exists
-    if (not os.path.exists(folder_bags)):
-        os.makedirs(folder_bags)
-
-    # create directy if not exists
-    if (not os.path.exists(folder_txts)):
-        os.makedirs(folder_txts)        
-
-    # name_node_record="bag_recorder"
-    kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
-
-    #make sure ROS (and related stuff) is not running
-    os.system(kill_all)
-
-    for k in range(num_of_sims):
-
-        if k <= 9:
-            sim_id = "0"+str(k)
+        if is_oldmader:
+            folder_bags="/home/kota/data/bags/oldmader/cd50ms"
+            folder_txts="/home/kota/data/txt_files/oldmader/cd50ms"
         else:
-            sim_id = str(k)
+            folder_bags="/home/kota/data/bags/rmader/cd50msdc"+str(dc)+"ms"
+            folder_txts="/home/kota/data/txt_files/rmader/cd50msdc"+str(dc)+"ms"
 
-        commands = []
-        name_node_record="bag_recorder"
-        commands.append("roscore");
+        # create directy if not exists
+        if (not os.path.exists(folder_bags)):
+            os.makedirs(folder_bags)
 
-        commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=controller");
-        # commands.append("sleep 1.0 && rosrun mader dynamic_corridor.py");
+        # create directy if not exists
+        if (not os.path.exists(folder_txts)):
+            os.makedirs(folder_txts)        
 
-        commands.append("sleep 3.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts);
-        commands.append("sleep 3.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record);
-        commands.append("sleep 5.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents));
+        # name_node_record="bag_recorder"
+        kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
 
-        #publishing the goal should be the last command
-        commands.append("sleep 15.0 && roslaunch mader many_drones.launch action:=send_goal");
-        commands.append("sleep 15.0 && tmux detach")
+        #make sure ROS (and related stuff) is not running
+        os.system(kill_all)
 
-        # print("len(commands)= " , len(commands))
-        session_name="run_many_sims_multi_agent_session"
-        os.system("tmux kill-session -t" + session_name)
-        os.system("tmux new -d -s "+str(session_name)+" -x 300 -y 300")
+        for k in range(num_of_sims):
 
-        # tmux splitting
-        for i in range(len(commands)):
-            print('splitting ',i)
-            os.system('tmux split-window ; tmux select-layout tiled')
-       
-        time.sleep(5.0)
+            if k <= 9:
+                sim_id = "0"+str(k)
+            else:
+                sim_id = str(k)
 
-        for i in range(len(commands)):
-            os.system('tmux send-keys -t '+str(session_name)+':0.'+str(i) +' "'+ commands[i]+'" '+' C-m')
+            commands = []
+            name_node_record="bag_recorder"
+            commands.append("roscore");
 
-        os.system("tmux attach")
+            for num in num_of_agents:
+                if num <= 9:
+                    agent_id = "0"+str(num)
+                else:
+                    agent_id = str(num)
 
-        print("Commands sent")
+                commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+dc)
+                if is_oldmader:
+                    commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck false")
+                else:
+                    commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck true")
+
+            commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=controller")
+            commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts)
+            commands.append("sleep 5.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
+            commands.append("sleep 5.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
+
+            #publishing the goal should be the last command
+            commands.append("sleep 15.0 && roslaunch mader many_drones.launch action:=send_goal")
+            commands.append("sleep 15.0 && tmux detach")
+
+            # print("len(commands)= " , len(commands))
+            session_name="run_many_sims_multi_agent_session"
+            os.system("tmux kill-session -t" + session_name)
+            os.system("tmux new-session -d -s "+str(session_name)+" -x 300 -y 300")
+
+            # tmux splitting
+            for i in range(len(commands)):
+                print('splitting ',i)
+                os.system('tmux new-window -t ' + str(session_name))
+           
+            time.sleep(5.0)
+
+            for i in range(len(commands)):
+                os.system('tmux send-keys -t '+str(session_name)+':'+str(i) +'.0 "'+ commands[i]+'" '+' C-m')
+
+            os.system("tmux attach")
+
+            print("Commands sent")
+
+            time.sleep(3.0)
+
+            # check if all the agents reached the goal
+            is_goal_reached = False
+            tic = time.perf_counter()
+            toc = time.perf_counter()
+
+            while (toc - tic < 60 and not is_goal_reached):
+                toc = time.perf_counter()
+                if(checkGoalReached(num_of_agents)):
+                    print('all the agents reached the goal')
+                    is_goal_reached = True
+
+            if (not is_goal_reached):
+                os.system('echo "simulation '+sim_id+': not goal reached" >> '+folder_bags+'/status.txt')
+            else:
+                os.system('echo "simulation '+sim_id+': goal reached" >> '+folder_bags+'/status.txt')
+
+
+            os.system("rosnode kill "+name_node_record);
+            time.sleep(10.0)
+            os.system(kill_all)
+
+            time.sleep(10.0)
+
+        # uncomment delay_check param
+        os.system("sed -i '/delay_check/s/^#//g' $(rospack find mader)/param/mader.yaml")
+        os.system("sed -i '/is_delaycheck/s/^#//g' $(rospack find mader)/param/mader.yaml")
 
         time.sleep(3.0)
 
-        # check if all the agents reached the goal
-        is_goal_reached = False
-        tic = time.perf_counter()
-        toc = time.perf_counter()
-
-        while (toc - tic < 120 and not is_goal_reached):
-            toc = time.perf_counter()
-            if(checkGoalReached(num_of_agents)):
-                print('all the agents reached the goal')
-                is_goal_reached = True
-
-        if (not is_goal_reached):
-            os.system('echo "simulation '+sim_id+': not goal reached" >> '+folder_bags+'/status.txt')
-        else:
-            os.system('echo "simulation '+sim_id+': goal reached" >> '+folder_bags+'/status.txt')
-
-
-        os.system("rosnode kill "+name_node_record);
-        time.sleep(10.0)
-        os.system(kill_all)
-
-        time.sleep(10.0)
-
-    time.sleep(3.0)
