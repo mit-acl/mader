@@ -34,9 +34,9 @@ if __name__ == '__main__':
     for dc in dc_list:
 
         if is_oldmader:
-            source_dir = "/home/kota/data/bags/oldmader/cd_"+cd+"ms" # change the source dir accordingly #10 agents
+            source_dir = "/home/kota/data/bags/oldmader/cd"+cd+"ms" # change the source dir accordingly #10 agents
         else:
-            source_dir = "/home/kota/data/bags/rmader/cd_"+cd+"ms_dc_"+dc+"ms" # change the source dir accordingly #10 agents
+            source_dir = "/home/kota/data/bags/rmader/cd"+cd+"msdc"+dc+"ms" # change the source dir accordingly #10 agents
         
         source_len = len(source_dir)
         source_bags = source_dir + "/*.bag" # change the source dir accordingly
