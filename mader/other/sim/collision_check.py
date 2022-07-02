@@ -27,16 +27,21 @@ if __name__ == '__main__':
 
     # Dont use ~ like this
     cd = "50" # [ms] communication delay
-    dc_list = [0, 250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
-    is_oldmader = True
+    is_oldmader = False # change here 
+    
+    if is_oldmader:
+        dc_list = [0, 250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+    else:
+        dc_list = [250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+
 
     for dc in dc_list:
 
         if is_oldmader:
             source_dir = "/home/kota/data/bags/oldmader/cd"+cd+"ms" # change the source dir accordingly #10 agents
         else:
-            source_dir = "/home/kota/data/bags/rmader/cd"+cd+"msdc"+dc+"ms" # change the source dir accordingly #10 agents
+            source_dir = "/home/kota/data/bags/rmader/cd"+cd+"msdc"+str(dc)+"ms" # change the source dir accordingly #10 agents
         
         source_len = len(source_dir)
         source_bags = source_dir + "/*.bag" # change the source dir accordingly
