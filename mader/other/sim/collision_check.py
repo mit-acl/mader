@@ -66,6 +66,6 @@ if __name__ == '__main__':
                 print("sim " + sim_id + ": ******collision******" )
                 os.system('echo "simulation '+sim_id+': ***collision***" >> '+source_dir+'/collision_status.txt')
 
-        os.system('paste '+source_dir+'/collision_status.txt '+source_dir+'/status.txt > '+source_dir+'/complete_status.txt')
+        os.system('paste '+source_dir+'/collision_status.txt '+source_dir+'/status.txt >> '+source_dir+'/complete_status.txt')
 
         is_oldmader = False
