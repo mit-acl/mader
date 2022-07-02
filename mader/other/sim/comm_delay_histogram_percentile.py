@@ -54,7 +54,7 @@ if __name__ == '__main__':
         comm_delay = []
 
         # comm_delay you use
-        input_comm_delay = float(sys.argv[1])
+        input_comm_delay = dc/1000
 
         for bag in rosbag_list:
             rosbag.append(bag)
