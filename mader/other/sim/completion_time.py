@@ -34,10 +34,13 @@ if __name__ == '__main__':
     else:
         dc_list = [250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
+    # this gives you 2d array, row gives you each sims data in corresponding dc
+    box_plot_list = [] 
+
     for dc in dc_list:
 
         home_dir = "/home/kota/data/bags"
-        
+
         # source directory
         if is_oldmader:
             source_dir = "/home/kota/data/bags/oldmader/cd"+cd+"ms" # change the source dir accordingly #10 agents
@@ -54,12 +57,15 @@ if __name__ == '__main__':
             rosbag.append(bag)
 
         # read ros bags
-        completion_time = 0.0
+        completion_time_per_sim_list = []
+        completion_time_per_sim = 0.0
         for i in range(len(rosbag)):
+            print('rosbag ' + str(rosbag[i]))
             b = bagreader(rosbag[i], verbose=False)
             sim_id = rosbag[i][source_len+5:source_len+7]
             
             # get all the agents' actual_traj topic ( this topic publishes as long as it is tranlating, meaning as soon as the agent reaches the goal this topic stop publishing)
+            completion_time_per_agent_list = [] 
             for j in range(1,n_agents+1):
                 if j <= 9:
                     topic_name = "/SQ0"+str(j)+"s/mader/actual_traj"
@@ -75,10 +81,31 @@ if __name__ == '__main__':
                     start_index = start_index + 1
 
                 start_time_agent = log.secs[start_index] + log.nsecs[start_index] / 10**9 # [0] is actually 0. You can check that with print(log)
-                # print('start time ' + str(start_time_agent))
+                print('start time ' + str(start_time_agent))
                 completion_time_agent = log.secs.iloc[-1] + log.nsecs.iloc[-1] / 10**9 - start_time_agent
-                # print('completion time ' + str(completion_time_agent))
-                completion_time = max(completion_time, completion_time_agent)
+                print('completion time ' + str(completion_time_agent))
+                completion_time_per_agent_list.append(completion_time_agent)
 
-        os.system('echo "'+source_dir+': '+str(completion_time)+' [s]" >> '+home_dir+'/completion_time.txt')
+            completion_time_per_sim_list.append(max(completion_time_per_agent_list))
+
+            print('sim '+sim_id+': '+completion_time_per_sim_list[-1]+' [s]')
+
+        box_plot_list.append(completion_time_per_sim_list)
+
         is_oldmader = False
+
+    # save data into csv file
+    dict = {'oldmader': box_plot_list[0], 'rmader 250': box_plot_list[1], 'rmader 87': box_plot_list[2], 'rmader 78': box_plot_list[3], 'rmader 63': box_plot_list[4], 'rmader 55': box_plot_list[5]}  
+    df = pd.DataFrame(dict) 
+    # saving the dataframe 
+    df.to_csv('completion_time.csv') 
+
+    # plot
+    fig = plt.figure()
+    # Creating axes instance
+    ax = fig.add_axes([0, 0, 1, 1])
+    # Creating plot
+    bp = ax.boxplot(box_plot_list)
+    plt.savefig(home_dir+'completion_time.png')
+    # show plot
+    # plt.show()
