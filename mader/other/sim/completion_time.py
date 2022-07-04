@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
             completion_time_per_sim_list.append(max(completion_time_per_agent_list))
 
-            print('sim '+sim_id+': '+completion_time_per_sim_list[-1]+' [s]')
+            print('sim '+str(sim_id)+': '+completion_time_per_sim_list[-1]+' [s]')
 
         box_plot_list.append(completion_time_per_sim_list)
 
