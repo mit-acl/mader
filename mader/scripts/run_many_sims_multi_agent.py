@@ -146,7 +146,7 @@ if __name__ == '__main__':
     is_oldmader=False
     num_of_sims=1
     num_of_agents=10
-     if is_oldmader:
+    if is_oldmader:
         dc_list = [0, 250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
     else:
         dc_list = [250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
