@@ -143,10 +143,13 @@ def checkGoalReached(num_of_agents):
 if __name__ == '__main__':
 
     # parameters
-    is_oldmader=True
-    num_of_sims=50
+    is_oldmader=False
+    num_of_sims=1
     num_of_agents=10
-    dc_list = [0, 250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+     if is_oldmader:
+        dc_list = [0, 250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+    else:
+        dc_list = [250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     # folder initialization
     folder_bags_list = []
