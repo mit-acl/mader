@@ -17,6 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import glob
+import statistics
 
 if __name__ == '__main__':
 
@@ -81,24 +82,26 @@ if __name__ == '__main__':
                     start_index = start_index + 1
 
                 start_time_agent = log.secs[start_index] + log.nsecs[start_index] / 10**9 # [0] is actually 0. You can check that with print(log)
-                print('start time ' + str(start_time_agent))
+                # print('start time ' + str(start_time_agent))
                 completion_time_agent = log.secs.iloc[-1] + log.nsecs.iloc[-1] / 10**9 - start_time_agent
-                print('completion time ' + str(completion_time_agent))
+                # print('completion time ' + str(completion_time_agent))
                 completion_time_per_agent_list.append(completion_time_agent)
 
             completion_time_per_sim_list.append(max(completion_time_per_agent_list))
 
-            print('sim '+str(sim_id)+': '+completion_time_per_sim_list[-1]+' [s]')
+            print('sim '+str(sim_id)+': '+str(completion_time_per_sim_list[-1])+' [s]')
 
         box_plot_list.append(completion_time_per_sim_list)
-
+        os.system('echo "'+source_dir+' : max is '+str(max(completion_time_per_sim_list))+'" >> '+home_dir+'/completion_time.txt')
+        os.system('echo "'+source_dir+' : ave is '+str(statistics.mean(completion_time_per_sim_list))+'" >> '+home_dir+'/completion_time.txt')
         is_oldmader = False
+        
 
     # save data into csv file
     dict = {'oldmader': box_plot_list[0], 'rmader 250': box_plot_list[1], 'rmader 87': box_plot_list[2], 'rmader 78': box_plot_list[3], 'rmader 63': box_plot_list[4], 'rmader 55': box_plot_list[5]}  
     df = pd.DataFrame(dict) 
     # saving the dataframe 
-    df.to_csv('completion_time.csv') 
+    df.to_csv(home_dir+'/completion_time.csv') 
 
     # plot
     fig = plt.figure()
@@ -106,6 +109,6 @@ if __name__ == '__main__':
     ax = fig.add_axes([0, 0, 1, 1])
     # Creating plot
     bp = ax.boxplot(box_plot_list)
-    plt.savefig(home_dir+'completion_time.png')
+    plt.savefig(home_dir+'/completion_time.png')
     # show plot
     # plt.show()
