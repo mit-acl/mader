@@ -55,6 +55,7 @@ add_message_files(
   CoeffPoly3.msg
   CommDelay.msg
   Collision.msg
+  GoalReached.msg
 )
 
 ## Generate services in the 'srv' folder
