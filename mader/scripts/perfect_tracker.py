@@ -79,8 +79,6 @@ class FakeSim:
         else: #Take only the yaw angle
           drone_quaternion_with_yaw = quaternion_from_euler(data.yaw, 0.0, 0.0, 'rzyx')
 
-
-
         self.state.header.frame_id="world"
         self.state.pos=data.p
         self.state.vel=data.v
