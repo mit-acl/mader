@@ -65,29 +65,47 @@ if __name__ == '__main__':
             b = bagreader(rosbag[i], verbose=False)
             sim_id = rosbag[i][source_len+5:source_len+7]
             
-            # get all the agents' actual_traj topic ( this topic publishes as long as it is tranlating, meaning as soon as the agent reaches the goal this topic stop publishing)
-            completion_time_per_agent_list = [] 
-            for j in range(1,n_agents+1):
-                if j <= 9:
-                    topic_name = "/SQ0"+str(j)+"s/mader/actual_traj"
-                else:
-                    topic_name = "/SQ"+str(j)+"s/mader/actual_traj"
+            # introduced goal_reached topic so no need t check actual_traj
 
-                log_data = b.message_by_topic(topic_name)
-                log = pd.read_csv(log_data, usecols=["header.stamp.secs", "header.stamp.nsecs"])
-                log = log.rename(columns={"header.stamp.secs": "secs", "header.stamp.nsecs": "nsecs"})
-
+            try:
+                log_data = b.message_by_topic("/goal_reached")
+                log = pd.read_csv(log_data, usecols=["secs", "nsecs"])
                 start_index = 0
                 while log.secs[start_index] == 0 or log.secs[start_index] == 0:
                     start_index = start_index + 1
 
-                start_time_agent = log.secs[start_index] + log.nsecs[start_index] / 10**9 # [0] is actually 0. You can check that with print(log)
+                start_time = log.secs[start_index] + log.nsecs[start_index] / 10**9 # [0] is actually 0. You can check that with print(log)
                 # print('start time ' + str(start_time_agent))
-                completion_time_agent = log.secs.iloc[-1] + log.nsecs.iloc[-1] / 10**9 - start_time_agent
+                completion_time = log.secs.iloc[-1] + log.nsecs.iloc[-1] / 10**9 - start_time
                 # print('completion time ' + str(completion_time_agent))
-                completion_time_per_agent_list.append(completion_time_agent)
+                completion_time_per_sim_list.append(completion_time)
+            except:
+                print("agents didn't reach goals")
 
-            completion_time_per_sim_list.append(max(completion_time_per_agent_list))
+
+            # # get all the agents' actual_traj topic ( this topic publishes as long as it is tranlating, meaning as soon as the agent reaches the goal this topic stop publishing)
+            # completion_time_per_agent_list = [] 
+            # for j in range(1,n_agents+1):
+            #     if j <= 9:
+            #         topic_name = "/SQ0"+str(j)+"s/mader/actual_traj"
+            #     else:
+            #         topic_name = "/SQ"+str(j)+"s/mader/actual_traj"
+
+            #     log_data = b.message_by_topic(topic_name)
+            #     log = pd.read_csv(log_data, usecols=["header.stamp.secs", "header.stamp.nsecs"])
+            #     log = log.rename(columns={"header.stamp.secs": "secs", "header.stamp.nsecs": "nsecs"})
+
+            #     start_index = 0
+            #     while log.secs[start_index] == 0 or log.secs[start_index] == 0:
+            #         start_index = start_index + 1
+
+            #     start_time_agent = log.secs[start_index] + log.nsecs[start_index] / 10**9 # [0] is actually 0. You can check that with print(log)
+            #     # print('start time ' + str(start_time_agent))
+            #     completion_time_agent = log.secs.iloc[-1] + log.nsecs.iloc[-1] / 10**9 - start_time_agent
+            #     # print('completion time ' + str(completion_time_agent))
+            #     completion_time_per_agent_list.append(completion_time_agent)
+
+            # completion_time_per_sim_list.append(max(completion_time_per_agent_list))
 
             print('sim '+str(sim_id)+': '+str(completion_time_per_sim_list[-1])+' [s]')
 
