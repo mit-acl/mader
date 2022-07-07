@@ -58,6 +58,9 @@ class GoalReachedCheck:
 
             if is_goal_reached:
             # print('here')
+                now = rospy.get_rostime()
+                self.goal_reached.secs = now.secs
+                self.goal_reached.nsecs = now.nsecs
                 self.goal_reached.is_goal_reached = True
                 self.pubIsGoalReached.publish(self.goal_reached)
 
