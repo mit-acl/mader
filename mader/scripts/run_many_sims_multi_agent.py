@@ -22,21 +22,14 @@ from numpy import linalg as LA
 import struct
 from mader_msgs.msg import GoalReached
 
-class GoalReachedCheck_sim:
-
-    def __init__(self):
-
-        # publisher init
-        self.is_goal_reached = False
-
-    def goal_reachedCB(self, data):
-        self.is_goal_reached = data.is_goal_reached
-
-    def checkGoalReached(self, num_of_agents):
-        if (self.is_goal_reached):
-            return True
-        else:
-            return False
+def checkGoalReached(num_of_agents):
+    try:
+        is_goal_reached = subprocess.check_output(['rostopic', 'echo', '/goal_reached', '-n', '1'], timeout=2).decode()
+        print("True")
+        return True 
+    except:
+        print("False")
+        return False        
 
 def myhook():
   print("shutdown time!")
@@ -102,21 +95,21 @@ if __name__ == '__main__':
                 else:
                     agent_id = str(num)
 
-                commands.append("sleep 5.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+str(dc_in_ms))
+                commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+str(dc_in_ms))
                 if is_oldmader:
-                    commands.append("sleep 5.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck false")
+                    commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck false")
                 else:
-                    commands.append("sleep 5.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck true")
+                    commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck true")
 
-            commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=controller")
-            commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts)
-            commands.append("sleep 5.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
-            commands.append("sleep 5.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
-            commands.append("sleep 5.0 && roslaunch mader goal_reached.launch")
+            commands.append("sleep 3.0 && roslaunch mader many_drones.launch action:=controller")
+            commands.append("sleep 3.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts)
+            commands.append("sleep 3.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
+            commands.append("sleep 3.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
+            commands.append("sleep 3.0 && roslaunch mader goal_reached.launch")
 
             #publishing the goal should be the last command
-            commands.append("sleep 15.0 && roslaunch mader many_drones.launch action:=send_goal")
-            commands.append("sleep 15.0 && tmux detach")
+            commands.append("sleep 10.0 && roslaunch mader many_drones.launch action:=send_goal")
+            commands.append("sleep 10.0 && tmux detach")
 
             # print("len(commands)= " , len(commands))
             session_name="run_many_sims_multi_agent_session"
@@ -136,11 +129,9 @@ if __name__ == '__main__':
             os.system("tmux attach")
             print("Commands sent")
 
-            time.sleep(3.0)
-
-            rospy.init_node('goalReachedCheck_in_sims', anonymous=True)
-            c = GoalReachedCheck_sim()
-            rospy.Subscriber("goal_reached", GoalReached, c.goal_reachedCB)
+            # rospy.init_node('goalReachedCheck_in_sims', anonymous=True)
+            # c = GoalReachedCheck_sim()
+            # rospy.Subscriber("goal_reached", GoalReached, c.goal_reachedCB)
             # rospy.on_shutdown(myhook)
 
             # check if all the agents reached the goal
@@ -150,23 +141,22 @@ if __name__ == '__main__':
 
             while (toc - tic < 40 and not is_goal_reached):
                 toc = time.perf_counter()
-                if(c.checkGoalReached(num_of_agents)):
+                if(checkGoalReached(num_of_agents)):
                     print('all the agents reached the goal')
                     is_goal_reached = True
-                time.sleep(1.0)
+                time.sleep(0.1)
 
             if (not is_goal_reached):
                 os.system('echo "simulation '+sim_id+': not goal reached" >> '+folder_bags+'/status.txt')
             else:
                 os.system('echo "simulation '+sim_id+': goal reached" >> '+folder_bags+'/status.txt')
 
-            del c
             os.system("rosnode kill "+name_node_record);
             os.system("rosnode kill goalReachedCheck_in_sims")
             os.system("rosnode kill -a")
-            time.sleep(3.0)
+            time.sleep(1.0)
             os.system(kill_all)
-            time.sleep(3.0)
+            time.sleep(1.0)
 
         # uncomment delay_check param
         os.system("sed -i '/delay_check/s/^#//g' $(rospack find mader)/param/mader.yaml")

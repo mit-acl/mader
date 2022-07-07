@@ -31,7 +31,7 @@ class CollisionDetector:
         rospy.sleep(3) #Important, if not it won't work
 
         # tolerance
-        self.tol = 0.000
+        self.tol = 0.001
 
         # bbox size
         self.bbox_x = rospy.get_param('~bbox_x', 0.25) - self.tol #default value is 1.0 
@@ -41,7 +41,7 @@ class CollisionDetector:
 
         self.initialized = True
 
-        self.state_pos = np.empty([6,3])
+        # self.state_pos = np.empty([self.num_of_agents,3])
 
         # publisher init
         self.collision=Collision()
