@@ -112,7 +112,7 @@ if __name__ == '__main__':
             commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts)
             commands.append("sleep 5.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
             commands.append("sleep 5.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
-            commands.append("sleep 15.0 && roslaunch mader goal_reached.launch")
+            commands.append("sleep 5.0 && roslaunch mader goal_reached.launch")
 
             #publishing the goal should be the last command
             commands.append("sleep 15.0 && roslaunch mader many_drones.launch action:=send_goal")
@@ -138,11 +138,10 @@ if __name__ == '__main__':
 
             time.sleep(3.0)
 
-            rospy.init_node('goalReachedCheck_in_sims')
+            rospy.init_node('goalReachedCheck_in_sims', anonymous=True)
             c = GoalReachedCheck_sim()
             rospy.Subscriber("goal_reached", GoalReached, c.goal_reachedCB)
-            # rospy.spin()
-            rospy.on_shutdown(myhook)
+            # rospy.on_shutdown(myhook)
 
             # check if all the agents reached the goal
             is_goal_reached = False
@@ -154,13 +153,17 @@ if __name__ == '__main__':
                 if(c.checkGoalReached(num_of_agents)):
                     print('all the agents reached the goal')
                     is_goal_reached = True
+                time.sleep(1.0)
 
             if (not is_goal_reached):
                 os.system('echo "simulation '+sim_id+': not goal reached" >> '+folder_bags+'/status.txt')
             else:
                 os.system('echo "simulation '+sim_id+': goal reached" >> '+folder_bags+'/status.txt')
 
+            del c
             os.system("rosnode kill "+name_node_record);
+            os.system("rosnode kill goalReachedCheck_in_sims")
+            os.system("rosnode kill -a")
             time.sleep(3.0)
             os.system(kill_all)
             time.sleep(3.0)
