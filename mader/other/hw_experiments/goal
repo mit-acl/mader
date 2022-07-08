@@ -43,19 +43,19 @@ sleep 1
 
 # send goals (randomly generated or position exchange)
 if [ "$1" == "pos" ]; then
-	tmux send-keys -t $SESSION:$w.0 "roslaunch mader position_exchange.launch mode:=1 quad:=HX15"
-	tmux send-keys -t $SESSION:$w.1 "roslaunch mader position_exchange.launch mode:=2 quad:=HX16"
-	tmux send-keys -t $SESSION:$w.2 "roslaunch mader position_exchange.launch mode:=3 quad:=HX17"
-	tmux send-keys -t $SESSION:$w.3 "roslaunch mader position_exchange.launch mode:=4 quad:=HX18"
-	tmux send-keys -t $SESSION:$w.4 "roslaunch mader position_exchange.launch mode:=5 quad:=HX19"
-	tmux send-keys -t $SESSION:$w.5 "roslaunch mader position_exchange.launch mode:=6 quad:=HX20"
+	tmux send-keys -t $SESSION:$w.0 "roslaunch mader position_exchange.launch mode:=1 quad:=NX01"
+	tmux send-keys -t $SESSION:$w.1 "roslaunch mader position_exchange.launch mode:=2 quad:=NX02"
+	tmux send-keys -t $SESSION:$w.2 "roslaunch mader position_exchange.launch mode:=3 quad:=NX03"
+	tmux send-keys -t $SESSION:$w.3 "roslaunch mader position_exchange.launch mode:=4 quad:=NX04"
+	tmux send-keys -t $SESSION:$w.4 "roslaunch mader position_exchange.launch mode:=5 quad:=NX05"
+	tmux send-keys -t $SESSION:$w.5 "roslaunch mader position_exchange.launch mode:=6 quad:=NX06"
 elif [ "$1" == "ran" ]; then
-	tmux send-keys -t $SESSION:$w.0 "roslaunch mader random_goal.launch quad:=HX15"
-	tmux send-keys -t $SESSION:$w.1 "roslaunch mader random_goal.launch quad:=HX16"
-	tmux send-keys -t $SESSION:$w.2 "roslaunch mader random_goal.launch quad:=HX17"
-	tmux send-keys -t $SESSION:$w.3 "roslaunch mader random_goal.launch quad:=HX18"
-	tmux send-keys -t $SESSION:$w.4 "roslaunch mader random_goal.launch quad:=HX19"
-	tmux send-keys -t $SESSION:$w.5 "roslaunch mader random_goal.launch quad:=HX20"
+	tmux send-keys -t $SESSION:$w.0 "roslaunch mader random_goal.launch quad:=NX01"
+	tmux send-keys -t $SESSION:$w.1 "roslaunch mader random_goal.launch quad:=NX02"
+	tmux send-keys -t $SESSION:$w.2 "roslaunch mader random_goal.launch quad:=NX03"
+	tmux send-keys -t $SESSION:$w.3 "roslaunch mader random_goal.launch quad:=NX04"
+	tmux send-keys -t $SESSION:$w.4 "roslaunch mader random_goal.launch quad:=NX05"
+	tmux send-keys -t $SESSION:$w.5 "roslaunch mader random_goal.launch quad:=NX06"
 fi
 
 tmux -2 attach-session -t $SESSION
