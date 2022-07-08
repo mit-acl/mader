@@ -82,7 +82,7 @@ a_star_samp_z: 5 # odd number
 a_star_fraction_voxel_size: 0.5 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
 allow_infeasible_guess: true  #whether allow infeasible guesses to be used for the optimization. If false, straight line guess will be used in the case of an infeasible guess
 
-a_star_bias: 0.1 #Bias (cost=g+bias*h) in the A* search #default is 1.0
+a_star_bias: 0.1exit #Bias (cost=g+bias*h) in the A* search #default is 1.0
 
 basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER.  This is the basis used for collision checking
 
