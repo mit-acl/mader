@@ -112,7 +112,9 @@ private:
   // ros::Subscriber sub_mode_;
   ros::Subscriber sub_whoplans_;
   ros::Subscriber sub_state_;
-  ros::Subscriber sub_traj_;
+
+  // subscribers for each agent
+  std::vector<ros::Subscriber> sub_traj_;
 
   ros::Timer pubCBTimer_;
   ros::Timer replanCBTimer_;

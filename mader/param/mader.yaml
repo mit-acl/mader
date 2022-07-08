@@ -1,3 +1,6 @@
+# if simulatin or hex?
+sim: true
+
 use_ff: true # use feedforward
 visual: true #publish visualization stuff
 color_type: "vel" #"vel" or "plain"

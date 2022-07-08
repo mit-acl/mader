@@ -693,12 +693,12 @@ void Mader::updateState(mt::state data)
     // plan_.print();
     // previous_yaw_ = tmp.yaw;
     initial_yaw_ = tmp.yaw;
-  }
-
-  if (drone_status_ == DroneStatus::TRAVELING)
-  {
     state_initialized_ = true;
   }
+
+  // if (drone_status_ == DroneStatus::TRAVELING)
+  // {
+  // }
 
   /* skip yawing process
   if (drone_status_ == DroneStatus::YAWING)
