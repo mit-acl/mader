@@ -109,7 +109,7 @@ This package uses some C++ classes from the [DecompROS](https://github.com/sikan
 ## Hardware Experiments
 
 In order to access the NUCs of all the agents, you need to establish an ip route in base station that defines how to get to NUCs (which is through their VOXLs' ethernet port as they are connect).
-In the path (`/mader/mader/other/hw_experiments`](https://github.com/mit-acl/mader/tree/hw_noetic/mader/other/hw_experiments) you will find a bash file named `NX_ip_route_setup.sh` that will do this for you.
+In the path [`/mader/mader/other/hw_experiments`](https://github.com/mit-acl/mader/tree/hw_noetic/mader/other/hw_experiments) you will find a bash file named `NX_ip_route_setup.sh` that will do this for you.
 
 
 
