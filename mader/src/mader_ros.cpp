@@ -48,9 +48,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   // since drone_bbox is a vector, you need a workaround like this
   std::vector<double> drone_bbox_tmp;
   mu::safeGetParam(nh1_, "drone_bbox", drone_bbox_tmp);
-
-  // numerical issue: sometimes MADER violates bbox very slightly (Ex. 0.001[m]) To avoid that, we inflate bbox slightly
-  par_.drone_bbox << drone_bbox_tmp[0]+0.001, drone_bbox_tmp[1]+0.001, drone_bbox_tmp[2]+0.001;
+  par_.drone_bbox << drone_bbox_tmp[0], drone_bbox_tmp[1], drone_bbox_tmp[2];
 
   mu::safeGetParam(nh1_, "Ra", par_.Ra);
 
