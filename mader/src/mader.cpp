@@ -198,7 +198,11 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     // do delay check for the new traj
     if (traj_compiled.is_agent == true)
     {
-      if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      
+      if (headsup_time < traj_compiled.time_created){
+        // Do nothing. They will change their traj.
+      } 
+      else if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
       {
         ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
         delay_check_result = false;  // will have to redo the optimization
