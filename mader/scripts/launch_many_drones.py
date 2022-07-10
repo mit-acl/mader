@@ -57,7 +57,7 @@ if __name__ == '__main__':
     formation="circle"
     commands = []
     num_of_agents=10; 
-    radius=15;
+    radius=10;
 
 
     if(formation=="sphere"):
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
     id_number=1;
     shift_z=radius;
-    shift_z=1.0
+    shift_z=0.0
 
     #TODO: Implement the square as well for other number_of_agents
     square_starts=[[4.0, 0.0, 1.0], 
