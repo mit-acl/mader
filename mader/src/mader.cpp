@@ -1589,9 +1589,9 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   planner_initialized_ = true;
 
   mtx_plan_.lock();
-
   // headsup trajectory
   headsup_plan = plan_.toStdVector();
+  mtx_plan_.unlock();
 
   int headsup_plan_size = headsup_plan.size();
 
@@ -1600,7 +1600,6 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
     std::cout << bold << red << "Already published the point A" << reset << std::endl;
     std::cout << "headsup_plan_size= " << headsup_plan_size << std::endl;
     std::cout << "k_index_end_= " << k_index_end_ << std::endl;
-    mtx_plan_.unlock();
     return false;
   }
   else
@@ -1612,8 +1611,6 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
       headsup_plan.push_back(solver_->traj_solution_[i]);
     }
   }
-
-  mtx_plan_.unlock();
 
   return true;
 }
