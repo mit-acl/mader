@@ -71,6 +71,7 @@ public:
   Eigen::Vector2d RotationMatrix(Eigen::Vector2d& vec, const double& angle);
   void getID(int& id);
   mt::state moveAoutOfBbox(const mt::state& A);
+  bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_time, bool& is_q0_fail);
 
 private:
   mt::state M_;
@@ -85,7 +86,6 @@ private:
 
   bool initializedStateAndTermGoal();
 
-  bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_time, bool& is_q0_fail);
   bool safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized);
 
   bool safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_prev);

@@ -1004,6 +1004,8 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_
 {
   started_check_ = true;
 
+  mtx_trajs_.lock();
+
   bool result = true;
   for (auto& traj : trajs_)
   {
@@ -1029,6 +1031,8 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_
   }
 
   started_check_ = false;
+
+  mtx_trajs_.unlock();
 
   return result;
 }
@@ -1531,42 +1535,44 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   // }
 
-  MyTimer check_t(true);
 
+  // moved check and recheck in mader_ros so that we can get accurate timestamp
+
+  // MyTimer check_t(true);
   // std::cout << "bef mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
-  mtx_trajs_.lock();
-  // std::cout << "aft mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
+  // mtx_trajs_.lock();
+  // // std::cout << "aft mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
 
-  // first make sure none of the trajectory is checked in this optimization
-  // for (auto &traj : trajs_){
-  //   traj.is_checked = false;
+  // // first make sure none of the trajectory is checked in this optimization
+  // // for (auto &traj : trajs_){
+  // //   traj.is_checked = false;
+  // // }
+
+  // // check and recheck are done in safetyChechAfterOpt()
+  // bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now, headsup_time, is_q0_fail);
+
+  // // std::cout << "bef mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
+  // mtx_trajs_.unlock();
+  // // std::cout << "aft mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
+
+  // // if (!is_safe_after_opt){
+  // //   // std::cout << "q0_fail_count_ is " << q0_fail_count_ << std::endl;
+  // //   safetycheck_fail_count_ += 1;
+  // //   if (safetycheck_fail_count_ > 3 && state_.vel.norm() < 0.001){
+  // //     // in this case one agent is on the bbox constraint so need to move A away
+  // //     std::cout << "[safety check fail] move A out of the bbox" << std::endl;
+  // //     movedA_ = moveAoutOfBbox(A);
+  // //     is_movingAoutOfBbox_ = true;
+  // //   }
+  // // } else {
+  // //   q0_fail_count_ = 0;
+  // // }
+
+  // if (is_safe_after_opt == false)
+  // {
+  //   ROS_ERROR_STREAM("safetyCheckAfterOpt is not satisfied, returning");
+  //   return false;
   // }
-
-  // check and recheck are done in safetyChechAfterOpt()
-  bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now, headsup_time, is_q0_fail);
-
-  // std::cout << "bef mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
-  mtx_trajs_.unlock();
-  // std::cout << "aft mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
-
-  // if (!is_safe_after_opt){
-  //   // std::cout << "q0_fail_count_ is " << q0_fail_count_ << std::endl;
-  //   safetycheck_fail_count_ += 1;
-  //   if (safetycheck_fail_count_ > 3 && state_.vel.norm() < 0.001){
-  //     // in this case one agent is on the bbox constraint so need to move A away
-  //     std::cout << "[safety check fail] move A out of the bbox" << std::endl;
-  //     movedA_ = moveAoutOfBbox(A);
-  //     is_movingAoutOfBbox_ = true;
-  //   }
-  // } else {
-  //   q0_fail_count_ = 0;
-  // }
-
-  if (is_safe_after_opt == false)
-  {
-    ROS_ERROR_STREAM("safetyCheckAfterOpt is not satisfied, returning");
-    return false;
-  }
 
   ///////////////////////////////////////////////////////////
   ///////////////       OTHER STUFF    //////////////////////
