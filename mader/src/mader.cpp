@@ -208,7 +208,6 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
         delay_check_result = false;  // will have to redo the optimization
         mtx_trajs_.unlock();
         have_received_trajectories_while_checking_ = false;
-        return;
       }
       else if (traj_compiled.time_created == headsup_time)  // tie breaking: compare x, y, z and bigger one wins
       {
@@ -220,21 +219,18 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
           delay_check_result = false;
           mtx_trajs_.unlock();
           have_received_trajectories_while_checking_ = false;
-          return;
         }
         else if (center_obs[1] > state_.pos[1])
         {
           delay_check_result = false;
           mtx_trajs_.unlock();
           have_received_trajectories_while_checking_ = false;
-          return;
         }
         else if (center_obs[2] > state_.pos[2])
         {
           delay_check_result = false;
           mtx_trajs_.unlock();
           have_received_trajectories_while_checking_ = false;
-          return;
         }
         // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
         // happen bc it's the same position and collision
@@ -1575,20 +1571,6 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   ///////////////////////////////////////////////////////////
   ///////////////       OTHER STUFF    //////////////////////
   //////////////////////////////////////////////////////////
-
-  mtx_plan_.lock();
-
-  // Check if we have planned until G_term
-  mt::state F = plan_.back();  // Final point of the safe path (\equiv final point of the comitted path)
-
-  mtx_plan_.unlock();
-
-  double dist = (G_term_.pos - F.pos).norm();
-
-  if (dist < par_.goal_radius)
-  {
-    changeDroneStatus(DroneStatus::GOAL_SEEN);
-  }
 
   mtx_offsets.lock();
 
