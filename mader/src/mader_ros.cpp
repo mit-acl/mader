@@ -517,7 +517,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         // delay check *******************************************************
         // start
         MyTimer delay_check_t(true);
-        // is_in_DC_ = true;
+        is_in_DC_ = true;
         delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
         while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
         {
