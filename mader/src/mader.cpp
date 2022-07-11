@@ -1007,7 +1007,6 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, bool& is_q0_fail
   bool result = true;
   for (auto& traj : trajs_)
   {
-    if (traj.time_received > headsup_time && traj.is_agent == true)
     if (traj.is_agent == true)  // need to include the trajs that came in the last delay check
     {
       if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back(),
