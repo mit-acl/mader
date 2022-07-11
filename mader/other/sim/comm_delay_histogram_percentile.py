@@ -29,10 +29,10 @@ if __name__ == '__main__':
 
     cd = "50" # [ms] communication delay
 
-    dc_list = [0, 250, 87, 78, 63, 55] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+    dc_list = [0, 170, 78, 63, 55, 50_1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     # you wanna get histogram or know the value at q-th percentile
-    is_histogram = True
+    is_histogram = False
     # q-th percentile
     q = 75
 
@@ -41,10 +41,11 @@ if __name__ == '__main__':
 
     for dc in dc_list:
 
-        figname = 'cd_'+cd+'_dc_'+str(dc)+'_rmader_comm_delay_histogram.png'
+        figname = 'cd'+cd+'dc'+str(dc)+'_rmader_comm_delay_histogram.png'
         source_dir = "/home/kota/data/bags" # change the source dir accordingly #10 agents 
         if is_oldmader:
             source_bags = source_dir + "/oldmader/cd"+cd+"ms/*.bag" # change the source dir accordingly #10 agents
+            is_oldmader = False
         else:
             source_bags = source_dir + "/rmader/cd"+cd+"msdc"+str(dc)+"ms/*.bag" # change the source dir accordingly #10 agents
 
@@ -83,14 +84,23 @@ if __name__ == '__main__':
             # print(comm_delay)
             max_comm_delay = max(comm_delay)
 
-            n, bins, patches = plt.hist(x=comm_delay)
+            fig = plt.figure()
+            ax = fig.add_subplot()
+            n, bins, patches = plt.hist(x=comm_delay, color="blue")
+            plt.axvline(x=dc/1000, color="red")
+            ax.set_xticks(np.arange(0.05,0.250,0.025))
+            ax.set_xticklabels(np.arange(50,250,25))
             plt.rcParams["font.family"] = "Times New Roman"
             plt.grid(axis='y', color='black', alpha=0.2)
-            plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay,3))+' [s]')
-            plt.xlabel("comm delay [s]")
+            plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay*1000))+' [ms]')
+            plt.xlabel("comm delay [ms]")
             plt.ylabel("count")
-            plt.savefig('data/'+figname)
+            plt.savefig('/home/kota/ws/src/mader/mader/other/sim/data/'+figname)
             # plt.show()
         else:
             # in case you wanna calculate the value of q-th percentile
             print(str(q) + "-th percentile value is " + str(numpy.percentile(comm_delay_arr, q)))
+            if q > 0:
+                q = q -25
+            else:
+                sys.exit()

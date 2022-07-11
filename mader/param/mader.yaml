@@ -1,7 +1,7 @@
 # if simulatin or hex?
 sim: true
 # use delay check or not?
-is_delaycheck: false
+############is_delaycheck: false
 
 use_ff: true # use feedforward
 visual: true #publish visualization stuff
@@ -19,9 +19,9 @@ w_max: 0.0
 
 alpha_filter_dyaw: 0.99 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
 
-Ra: 12.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
+Ra: 10.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
-delay_check: 0.0 #seconds
+############delay_check: 0.0 #seconds
 simulated_comm_delay: 0.05 #seconds
 
 x_min: -1000000000.0  # [m] don't forget the .0
@@ -72,17 +72,17 @@ solver: "LD_MMA"
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
 upper_bound_runtime_snlopt: 0.35 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
 lower_bound_runtime_snlopt: 0.05 #[seconds] snlopt (init guess + solver) will never take less than this amount of seconds
-kappa: 0.4 #% of time spent to find initial guess
+kappa: 0.3 #% of time spent to find initial guess
 mu: 0.4    #% of time spent to solve the optimization
 
 # Samples in velocity for the A* guess used in the nlopt optimization problem
 a_star_samp_x: 5 # odd number
 a_star_samp_y: 5 # odd number
 a_star_samp_z: 5 # odd number
-a_star_fraction_voxel_size: 0.5 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
+a_star_fraction_voxel_size: 0.1 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
 allow_infeasible_guess: true  #whether allow infeasible guesses to be used for the optimization. If false, straight line guess will be used in the case of an infeasible guess
 
-a_star_bias: 0.1exit #Bias (cost=g+bias*h) in the A* search #default is 1.0
+a_star_bias: 0.1 #Bias (cost=g+bias*h) in the A* search #default is 1.0
 
 basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER.  This is the basis used for collision checking
 
