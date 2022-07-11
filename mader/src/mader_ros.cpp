@@ -493,18 +493,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         }
       }
 
-      bool is_safe_after_opt = false;
-
       if (replanned)
-      {
-        // check and recheck here
-        bool is_q0_fail = false; // not used anymore
-        is_safe_after_opt = mader_ptr_->safetyCheckAfterOpt(pwp_now_, headsup_time_, is_q0_fail);
-        // get the time
-        headsup_time_ = ros::Time::now().toSec();
-      }
-
-      if (is_safe_after_opt)
       {
         // let others know my new trajectory
         publishOwnTraj(pwp_now_, false);
