@@ -509,7 +509,6 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         // let others know my new trajectory
         publishOwnTraj(pwp_now_, false);
 
-
         // visualization
         if (par_.visual)
         {

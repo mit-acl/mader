@@ -1022,6 +1022,8 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_
     }
   }
 
+  mtx_trajs_.unlock();
+  
   // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
   // This is Recheck
   if (have_received_trajectories_while_checking_ == true)
@@ -1032,7 +1034,6 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, double& headsup_
 
   started_check_ = false;
 
-  mtx_trajs_.unlock();
 
   return result;
 }
