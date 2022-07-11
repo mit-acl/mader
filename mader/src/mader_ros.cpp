@@ -388,7 +388,9 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
 
   if (is_delaycheck_)
   {
+    mtx_delay_check_result_.lock();
     mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
+    mtx_delay_check_result_.unlock();
   }
   else
   {
@@ -517,18 +519,24 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         // delay check *******************************************************
         // start
         MyTimer delay_check_t(true);
-        is_in_DC_ = true;
+        mtx_delay_check_result_.lock();
+        delay_check_result_ = true;
         delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
+        mtx_delay_check_result_.unlock();
+        is_in_DC_ = true;
         while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
         {
           // wait while trajCB() is checking new trajs
           // TODO make this as a timer so that i can move onto the next optimization
           // std::cout << "waiting in DC" << std::endl;
           // delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
+          
+          mtx_delay_check_result_.lock();
           if (delay_check_result_ == false)
           {
             break;
           }
+          mtx_delay_check_result_.unlock();
           // std::cout << "dc elapsed " << delay_check_t.ElapsedMs()/1000.0 << "[s]"<< std::endl;
           ros::Duration(0.01).sleep();
         }
