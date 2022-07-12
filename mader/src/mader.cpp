@@ -396,20 +396,23 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
 {
   std::vector<Eigen::Vector3d> points;
 
-  std::vector<double>::iterator low = std::lower_bound(pwp.times.begin(), pwp.times.end(), t_start);
-  std::vector<double>::iterator up = std::upper_bound(pwp.times.begin(), pwp.times.end(), t_end);
+  // std::vector<double>::iterator low = std::lower_bound(pwp.times.begin(), pwp.times.end(), t_start);
+  // std::vector<double>::iterator up = std::upper_bound(pwp.times.begin(), pwp.times.end(), t_end);
 
-  // Example: times=[1 2 3 4 5 6 7]
-  // t_start=1.5;
-  // t_end=5.5
-  // then low points to "2" (low - pwp.times.begin() is 1)
-  // and up points to "6" (up - pwp.times.begin() is 5)
+  // // Example: times=[1 2 3 4 5 6 7]
+  // // t_start=1.5;
+  // // t_end=5.5
+  // // then low points to "2" (low - pwp.times.begin() is 1)
+  // // and up points to "6" (up - pwp.times.begin() is 5)
 
-  int index_first_interval = low - pwp.times.begin() - 1;  // index of the interval [1,2]
-  int index_last_interval = up - pwp.times.begin() - 1;    // index of the interval [5,6]
+  // int index_first_interval = low - pwp.times.begin() - 1;  // index of the interval [1,2]
+  // int index_last_interval = up - pwp.times.begin() - 1;    // index of the interval [5,6]
 
-  mu::saturate(index_first_interval, 0, (int)(pwp.coeff_x.size() - 1));
-  mu::saturate(index_last_interval, 0, (int)(pwp.coeff_x.size() - 1));
+  // mu::saturate(index_first_interval, 0, (int)(pwp.coeff_x.size() - 1));
+  // mu::saturate(index_last_interval, 0, (int)(pwp.coeff_x.size() - 1));
+
+  int index_first_interval = 0;
+  int index_last_interval = static_cast<int>(pwp.coeff_x.size() - 1);
 
   Eigen::Matrix<double, 3, 4> P;
   Eigen::Matrix<double, 3, 4> V;
