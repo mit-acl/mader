@@ -140,7 +140,7 @@ if __name__ == '__main__':
             tic = time.perf_counter()
             toc = time.perf_counter()
 
-            while (toc - tic < 60 and not is_goal_reached):
+            while (toc - tic < 50 and not is_goal_reached):
                 toc = time.perf_counter()
                 if(checkGoalReached(num_of_agents)):
                     print('all the agents reached the goal')
