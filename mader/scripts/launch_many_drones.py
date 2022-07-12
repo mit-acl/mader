@@ -24,7 +24,7 @@ def create_session(session_name, commands):
     os.system("tmux new-session -d -s "+str(session_name)+" -x 300 -y 300")
 
     for i in range(len(commands)):
-        print('splitting ',i)
+        # print('splitting ',i)
         os.system('tmux new-window -t ' + str(session_name))
    
     for i in range(len(commands)):
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     formation="circle"
     commands = []
     num_of_agents=10; 
-    radius=20;
+    radius=10;
 
 
     if(formation=="sphere"):
