@@ -157,6 +157,7 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
   traj_compiled.id = traj.id;
   traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
   traj_compiled.time_created = traj.time_created;
+  traj_compiled.is_committed = traj.is_committed;
 
   traj_compiled.is_static =
       ((traj.is_agent == false) &&                           // is an obstacle and
@@ -207,7 +208,6 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
         {
           ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
           delay_check_result = false;  // will have to redo the optimization
-          mtx_trajs_.unlock();
           have_received_trajectories_while_checking_ = false;
         }
         else if (traj_compiled.time_created == headsup_time && trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
@@ -218,19 +218,16 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
           if (center_obs[0] > state_.pos[0])
           {
             delay_check_result = false;
-            mtx_trajs_.unlock();
             have_received_trajectories_while_checking_ = false;
           }
           else if (center_obs[1] > state_.pos[1])
           {
             delay_check_result = false;
-            mtx_trajs_.unlock();
             have_received_trajectories_while_checking_ = false;
           }
           else if (center_obs[2] > state_.pos[2])
           {
             delay_check_result = false;
-            mtx_trajs_.unlock();
             have_received_trajectories_while_checking_ = false;
           }
         // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
@@ -241,7 +238,6 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
       {
         ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
         delay_check_result = false;  // will have to redo the optimization
-        mtx_trajs_.unlock();
         have_received_trajectories_while_checking_ = false;
       }
     } 
