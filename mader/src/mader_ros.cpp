@@ -332,6 +332,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   tmp.is_agent = msg.is_agent;
 
+  tmp.time_sent = msg.time_sent;
+
   tmp.time_created = msg.time_created;
 
   if (msg.is_agent)
