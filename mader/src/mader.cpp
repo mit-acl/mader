@@ -239,11 +239,6 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
       }
     }
   }
-  else if (traj_compiled.time_created < headsup_time)
-  {
-    std::cout << "missed msgs ++" << std::endl;
-    // missed_msgs_cnt_++;
-  }
 
   mtx_trajs_.lock();
 
@@ -1192,11 +1187,6 @@ bool Mader::isReplanningNeeded()
     return false;
   }
   return true;
-}
-
-int Mader::getMissedMsgsCnt()
-{
-  return missed_msgs_cnt_;
 }
 
 mt::state Mader::getGterm()

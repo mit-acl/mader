@@ -232,8 +232,6 @@ private:
   bool is_movingAoutOfBbox_ = false;
   mt::state movedA_;
 
-  int missed_msgs_cnt_ = 0;
-
   // double av_improvement_nlopt_ = 0.0;
 
 #if USE_GUROBI_FLAG
