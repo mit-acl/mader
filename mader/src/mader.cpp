@@ -157,7 +157,6 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
   traj_compiled.id = traj.id;
   traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
   traj_compiled.time_created = traj.time_created;
-  traj_compiled.time_sent = traj.time_sent;
   traj_compiled.is_committed = traj.is_committed;
 
   traj_compiled.is_static =
@@ -184,10 +183,16 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     have_received_trajectories_while_checking_ = true;
   }
 
+  mtx_trajs_.lock();
+
+  // std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
+  //     std::find_if(trajs_.begin(), trajs_.end(),
+  //                  [=](const mt::dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
+
+  // bool exists_in_local_map = (obs_ptr != std::end(trajs_));
+
   mt::dynTrajCompiled traj_compiled;
   dynTraj2dynTrajCompiled(traj, traj_compiled);
-
-  mtx_trajs_.lock();
 
   if (is_in_DC)
   {
@@ -400,20 +405,23 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
 {
   std::vector<Eigen::Vector3d> points;
 
-  std::vector<double>::iterator low = std::lower_bound(pwp.times.begin(), pwp.times.end(), t_start);
-  std::vector<double>::iterator up = std::upper_bound(pwp.times.begin(), pwp.times.end(), t_end);
+  // std::vector<double>::iterator low = std::lower_bound(pwp.times.begin(), pwp.times.end(), t_start);
+  // std::vector<double>::iterator up = std::upper_bound(pwp.times.begin(), pwp.times.end(), t_end);
 
-  // Example: times=[1 2 3 4 5 6 7]
-  // t_start=1.5;
-  // t_end=5.5
-  // then low points to "2" (low - pwp.times.begin() is 1)
-  // and up points to "6" (up - pwp.times.begin() is 5)
+  // // Example: times=[1 2 3 4 5 6 7]
+  // // t_start=1.5;
+  // // t_end=5.5
+  // // then low points to "2" (low - pwp.times.begin() is 1)
+  // // and up points to "6" (up - pwp.times.begin() is 5)
 
-  int index_first_interval = low - pwp.times.begin() - 1;  // index of the interval [1,2]
-  int index_last_interval = up - pwp.times.begin() - 1;    // index of the interval [5,6]
+  // int index_first_interval = low - pwp.times.begin() - 1;  // index of the interval [1,2]
+  // int index_last_interval = up - pwp.times.begin() - 1;    // index of the interval [5,6]
 
-  mu::saturate(index_first_interval, 0, (int)(pwp.coeff_x.size() - 1));
-  mu::saturate(index_last_interval, 0, (int)(pwp.coeff_x.size() - 1));
+  // mu::saturate(index_first_interval, 0, (int)(pwp.coeff_x.size() - 1));
+  // mu::saturate(index_last_interval, 0, (int)(pwp.coeff_x.size() - 1));
+
+  int index_first_interval = 0;
+  int index_last_interval = static_cast<int>(pwp.coeff_x.size() - 1);
 
   Eigen::Matrix<double, 3, 4> P;
   Eigen::Matrix<double, 3, 4> V;
@@ -1394,18 +1402,18 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   }
 
   ////////////////
-  std::cout << "bef mtx_trajs_.lock() in replan" << std::endl;
+  // std::cout << "bef mtx_trajs_.lock() in replan" << std::endl;
   mtx_trajs_.lock();
-  std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
+  // std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
 
   time_init_opt_ = ros::Time::now().toSec();
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
 
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
 
-  std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
+  // std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
   mtx_trajs_.unlock();
-  std::cout << "aft mtx_trajs_.unlock() in replan" << std::endl;
+  // std::cout << "aft mtx_trajs_.unlock() in replan" << std::endl;
 
   mt::ConvexHullsOfCurves_Std hulls_std = cu::vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = cu::vectorGCALPol2vectorJPSPol(hulls);
@@ -1483,10 +1491,10 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   total_replannings_++;
   if (result == false)
   {
-    int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) +
-                                  par_.delay_check * par_.comm_delay_param / par_.dc);  // Number of states that
-                                                                                        // would have been needed for
-                                                                                        // the last replan
+    int states_last_replan =
+        ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) + par_.delay_check / par_.dc);  // Number of states that
+                                                                                       // would have been needed for
+                                                                                       // the last replan
     deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
     deltaT_ = std::min(1.0 * deltaT_, 2.0 / par_.dc);
     std::cout << "solver couldn't find optimal path" << std::endl;
@@ -1578,10 +1586,10 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   mtx_offsets.lock();
 
-  int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) +
-                                par_.delay_check * par_.comm_delay_param / par_.dc);  // Number of states that
-                                                                                      // would have been needed for
-                                                                                      // the last replan
+  int states_last_replan =
+      ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) + par_.delay_check / par_.dc);  // Number of states that
+                                                                                     // would have been needed for
+                                                                                     // the last replan
   deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
   mtx_offsets.unlock();
 
