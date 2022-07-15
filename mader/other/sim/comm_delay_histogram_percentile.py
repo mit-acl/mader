@@ -29,10 +29,10 @@ if __name__ == '__main__':
 
     cd = "50" # [ms] communication delay
 
-    dc_list = [0, 170, 78, 63, 55, 50_1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+    dc_list = [0, 170, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     # you wanna get histogram or know the value at q-th percentile
-    is_histogram = False
+    is_histogram = True
     # q-th percentile
     q = 75
 
@@ -76,6 +76,8 @@ if __name__ == '__main__':
                     comm_delay.append(log.comm_delay[j])
 
         # print percentile
+
+        comm_delay = [x for x in a if x <= 1]
         comm_delay_arr = numpy.array(comm_delay)
 
         if is_histogram:
@@ -90,7 +92,7 @@ if __name__ == '__main__':
             plt.axvline(x=dc/1000, color="red")
             ax.set_xticks(np.arange(0.05,0.250,0.025))
             ax.set_xticklabels(np.arange(50,250,25))
-            plt.rcParams["font.family"] = "Times New Roman"
+            # plt.rcParams["font.family"] = "Times New Roman"
             plt.grid(axis='y', color='black', alpha=0.2)
             plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay*1000))+' [ms]')
             plt.xlabel("comm delay [ms]")

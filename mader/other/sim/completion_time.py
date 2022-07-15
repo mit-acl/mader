@@ -31,9 +31,9 @@ if __name__ == '__main__':
     is_oldmader = True # change here 
     
     if is_oldmader:
-        dc_list = [0, 170, 78, 63, 55, 50_1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        dc_list = [0, 170, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
     else:
-        dc_list = [170, 78, 63, 55, 50_1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        dc_list = [170, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     # this gives you 2d array, row gives you each sims data in corresponding dc
     box_plot_list = [] 

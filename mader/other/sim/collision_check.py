@@ -28,12 +28,13 @@ if __name__ == '__main__':
     # Dont use ~ like this
     cd = "50" # [ms] communication delay
 
-    is_oldmader = True # change here 
+    is_oldmader = False # change here 
     
     if is_oldmader:
-        dc_list = [0, 170, 78, 63, 55, 50_1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        dc_list = [0, 170, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
     else:
-        dc_list = [170, 78, 63, 55, 50_1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        # dc_list = [170, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        dc_list = [51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
 
     for dc in dc_list:

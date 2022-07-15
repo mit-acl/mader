@@ -36,6 +36,8 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   delay_check_ = par_.delay_check;
   mu::safeGetParam(nh1_, "simulated_comm_delay", simulated_comm_delay_);
 
+  mu::safeGetParam(nh1_, "comm_delay_param", par_.comm_delay_param);
+
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
   mu::safeGetParam(nh1_, "visual", par_.visual);
   mu::safeGetParam(nh1_, "color_type", par_.color_type);
@@ -495,14 +497,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 {
   if (ros::ok() && published_initial_position_ == true)
   {
-    if (!is_replanCB_called_){
-      // to avoid initial path search congestions add some random sleep here
-      std::random_device rd;
-      std::default_random_engine eng(rd());
-      std::uniform_real_distribution<float> distr(0, 1); // sleep between 0 and 1 sec
-      ros::Duration(distr(eng)).sleep();
-      is_replanCB_called_ = true;
-    }
+    // if (!is_replanCB_called_){
+    //   // to avoid initial path search congestions add some random sleep here
+    //   std::random_device rd;
+    //   std::default_random_engine eng(rd());
+    //   std::uniform_real_distribution<float> distr(0, 1); // sleep between 0 and 1 sec
+    //   ros::Duration(distr(eng)).sleep();
+    //   std::cout << "sleep " << distr(eng) << std::endl;
+    //   is_replanCB_called_ = true;
+    // }
 
     // initialization
     mt::Edges edges_obstacles;

@@ -566,6 +566,8 @@ struct parameters
 {
   double delay_check;
 
+  double comm_delay_param;
+
   bool use_ff;
   bool visual;
 
