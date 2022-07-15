@@ -37,7 +37,7 @@ def myhook():
 if __name__ == '__main__':
 
     # parameters
-    is_oldmader=True
+    is_oldmader=False
     num_of_sims=60
     num_of_agents=10
     if is_oldmader:
