@@ -1,0 +1,1 @@
+uint8 missed_msgs_cnt 

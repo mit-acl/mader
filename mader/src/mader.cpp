@@ -157,6 +157,7 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
   traj_compiled.id = traj.id;
   traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
   traj_compiled.time_created = traj.time_created;
+  traj_compiled.time_sent = traj.time_sent;
   traj_compiled.is_committed = traj.is_committed;
 
   traj_compiled.is_static =
@@ -199,18 +200,22 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     // do delay check for the new traj
     if (traj_compiled.is_agent == true)
     {
-      
-      if (!traj_compiled.is_committed){
-        if (headsup_time < traj_compiled.time_created){
-        // Do nothing. They will change their traj.
+      if (!traj_compiled.is_committed)
+      {
+        if (headsup_time < traj_compiled.time_created)
+        {
+          // Do nothing. They will change their traj.
         }
-        else if (headsup_time > traj_compiled.time_created && trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+        else if (headsup_time > traj_compiled.time_created &&
+                 trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
         {
           ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
           delay_check_result = false;  // will have to redo the optimization
           have_received_trajectories_while_checking_ = false;
         }
-        else if (traj_compiled.time_created == headsup_time && trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
+        else if (traj_compiled.time_created == headsup_time &&
+                 trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(),
+                                           pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
         {
           Eigen::Vector3d center_obs;
           center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(),
@@ -230,17 +235,21 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
             delay_check_result = false;
             have_received_trajectories_while_checking_ = false;
           }
-        // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
-        // happen bc it's the same position and collision
+          // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
+          // happen bc it's the same position and collision
         }
-      } 
+      }
       else if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
       {
         ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
         delay_check_result = false;  // will have to redo the optimization
         have_received_trajectories_while_checking_ = false;
       }
-    } 
+    }
+  }
+  else if (traj_compiled.time_created < headsup_time)
+  {
+    missed_msgs_cnt_++;
   }
 
   // if (exists_in_local_map && traj.is_committed)
@@ -1190,6 +1199,21 @@ bool Mader::isReplanningNeeded()
   return true;
 }
 
+int Mader::getMissedMsgsCnt()
+{
+  return missed_msgs_cnt_;
+}
+
+mt::state Mader::getGterm()
+{
+  mtx_G_term.lock();
+
+  mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
+
+  mtx_G_term.unlock();
+  return G_term;
+}
+
 bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& headsup_plan,
                                    std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
                                    mt::PieceWisePol& pwp_now, double& headsup_time)
@@ -1548,7 +1572,7 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   // check and recheck are done in safetyChechAfterOpt()
   bool is_safe_after_opt = safetyCheckAfterOpt(pwp_now, is_q0_fail);
-  headsup_time = ros::Time::now().toSec(); 
+  headsup_time = ros::Time::now().toSec();
 
   // std::cout << "bef mtx_trajs_.unlock() in replan (safetyCheckAfterOpt)" << std::endl;
   mtx_trajs_.unlock();
