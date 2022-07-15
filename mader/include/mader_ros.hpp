@@ -170,6 +170,8 @@ private:
 
   bool is_replanCB_called_ = false;
 
+  bool is_missed_msgs_cnt_published_ = false;
+
   Eigen::Affine3d W_T_B_;
 
   mt::PieceWisePol pwp_last_;
