@@ -407,7 +407,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   if (supposedly_simulated_comm_delay > delay_check_ && is_delaycheck_)
   {
     std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s" << std::endl;
-    missed_msgs_cnt_++;
+    // missed_msgs_cnt_++;
   }
 
   mader_msgs::CommDelay msg;
@@ -514,18 +514,18 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     // }
 
     // when reached goal, publish how many msgs, which we supposedly should have considered
-    if (is_replanCB_initialized_)
-    {
-      mt::state G_term = mader_ptr_->getGterm();
-      double dist_to_goal = (state_.pos - G_term.pos).norm();
-      if (dist_to_goal < par_.goal_radius && !is_missed_msgs_cnt_published_)
-      {
-        mader_msgs::MissedMsgsCnt msg;
-        msg.missed_msgs_cnt = missed_msgs_cnt_;
-        pub_missed_msgs_cnt_.publish(msg);
-        is_missed_msgs_cnt_published_ = true;
-      }
-    }
+    // if (is_replanCB_initialized_)
+    // {
+    //   mt::state G_term = mader_ptr_->getGterm();
+    //   double dist_to_goal = (state_.pos - G_term.pos).norm();
+    //   if (dist_to_goal < par_.goal_radius && !is_missed_msgs_cnt_published_)
+    //   {
+    //     mader_msgs::MissedMsgsCnt msg;
+    //     msg.missed_msgs_cnt = missed_msgs_cnt_;
+    //     pub_missed_msgs_cnt_.publish(msg);
+    //     is_missed_msgs_cnt_published_ = true;
+    //   }
+    // }
 
     // initialization
     mt::Edges edges_obstacles;

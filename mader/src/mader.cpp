@@ -187,6 +187,8 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
   mt::dynTrajCompiled traj_compiled;
   dynTraj2dynTrajCompiled(traj, traj_compiled);
 
+  mtx_trajs_.lock();
+
   if (is_in_DC)
   {
     // do delay check for the new traj
@@ -239,8 +241,6 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
       }
     }
   }
-
-  mtx_trajs_.lock();
 
   // if (exists_in_local_map && traj.is_committed)
   if (traj.is_committed)
@@ -1189,16 +1189,6 @@ bool Mader::isReplanningNeeded()
   return true;
 }
 
-mt::state Mader::getGterm()
-{
-  mtx_G_term.lock();
-
-  mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
-
-  mtx_G_term.unlock();
-  return G_term;
-}
-
 bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& headsup_plan,
                                    std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
                                    mt::PieceWisePol& pwp_now, double& headsup_time)
@@ -1404,18 +1394,18 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   }
 
   ////////////////
-  // std::cout << "bef mtx_trajs_.lock() in replan" << std::endl;
+  std::cout << "bef mtx_trajs_.lock() in replan" << std::endl;
   mtx_trajs_.lock();
-  // std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
+  std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
 
   time_init_opt_ = ros::Time::now().toSec();
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
 
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
 
-  // std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
+  std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
   mtx_trajs_.unlock();
-  // std::cout << "aft mtx_trajs_.unlock() in replan" << std::endl;
+  std::cout << "aft mtx_trajs_.unlock() in replan" << std::endl;
 
   mt::ConvexHullsOfCurves_Std hulls_std = cu::vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = cu::vectorGCALPol2vectorJPSPol(hulls);
