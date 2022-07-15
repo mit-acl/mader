@@ -511,18 +511,18 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     // }
 
     // when reached goal, publish how many msgs, which we supposedly should have considered
-    if (is_replanCB_initialized_)
-    {
-      mt::state G_term = mader_ptr_->getGterm();
-      double dist_to_goal = (state_.pos - G_term.pos).norm();
-      if (dist_to_goal < par_.goal_radius && !is_missed_msgs_cnt_published_)
-      {
-        mader_msgs::MissedMsgsCnt msg;
-        msg.missed_msgs_cnt = mader_ptr_->getMissedMsgsCnt();
-        pub_missed_msgs_cnt_.publish(msg);
-        is_missed_msgs_cnt_published_ = true;
-      }
-    }
+    // if (is_replanCB_initialized_)
+    // {
+    //   mt::state G_term = mader_ptr_->getGterm();
+    //   double dist_to_goal = (state_.pos - G_term.pos).norm();
+    //   if (dist_to_goal < par_.goal_radius && !is_missed_msgs_cnt_published_)
+    //   {
+    //     mader_msgs::MissedMsgsCnt msg;
+    //     msg.missed_msgs_cnt = mader_ptr_->getMissedMsgsCnt();
+    //     pub_missed_msgs_cnt_.publish(msg);
+    //     is_missed_msgs_cnt_published_ = true;
+    //   }
+    // }
 
     // initialization
     mt::Edges edges_obstacles;
