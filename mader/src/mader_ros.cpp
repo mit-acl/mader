@@ -158,6 +158,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
   pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("trajs", 1, true);  // The last boolean is latched or not
   pub_comm_delay_ = nh1_.advertise<mader_msgs::CommDelay>("comm_delay", 1);
+  pub_missed_msgs_cnt_ = nh1_.advertise<mader_msgs::MissedMsgsCnt>("missed_msgs_cnt", 1);
 
   // Subscribers
   sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
@@ -496,6 +497,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 {
   if (ros::ok() && published_initial_position_ == true)
   {
+    // introduce random wait time in the beginning
     if (!is_replanCB_called_)
     {
       // to avoid initial path search congestions add some random sleep here
@@ -504,6 +506,16 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
       ros::Duration(distr(eng)).sleep();
       is_replanCB_called_ = true;
+    }
+
+    // when reached goal, publish how many msgs, which we supposedly should have considered
+    mt::state G_term = mader_ptr_->getGterm();
+    double dist_to_goal = (state_.pos - G_term.pos).norm();
+    if (dist_to_goal < par_.goal_radius)
+    {
+      mader_msgs::MissedMsgsCnt msg;
+      msg.missed_msgs_cnt = mader_ptr_->getMissedMsgsCnt();
+      pub_missed_msgs_cnt_.publish(msg);
     }
 
     // initialization

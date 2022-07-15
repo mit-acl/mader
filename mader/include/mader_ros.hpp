@@ -23,6 +23,7 @@
 #include <mader_msgs/WhoPlans.h>
 #include <mader_msgs/DynTraj.h>
 #include <mader_msgs/CommDelay.h>
+#include <mader_msgs/MissedMsgsCnt.h>
 
 #include "utils.hpp"
 #include "mader.hpp"
@@ -112,7 +113,7 @@ private:
 
   ros::Publisher pub_traj_safe_colored_;
   ros::Publisher pub_traj_safe_colored_bef_commit_;
-  
+
   ros::Publisher pub_text_;
   ros::Publisher pub_traj_;
 
@@ -121,6 +122,7 @@ private:
   ros::Publisher pub_fov_;
   ros::Publisher pub_obstacles_;
   ros::Publisher pub_comm_delay_;
+  ros::Publisher pub_missed_msgs_cnt_;
 
   ros::Subscriber sub_term_goal_;
   // ros::Subscriber sub_mode_;

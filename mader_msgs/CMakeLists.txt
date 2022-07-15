@@ -56,6 +56,7 @@ add_message_files(
   CommDelay.msg
   Collision.msg
   GoalReached.msg
+  MissedMsgsCnt.msg
 )
 
 ## Generate services in the 'srv' folder

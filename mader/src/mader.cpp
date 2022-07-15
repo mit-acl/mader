@@ -247,6 +247,10 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
       }
     }
   }
+  else if (traj_compiled.time_created < headsup_time)
+  {
+    missed_msgs_cnt_++;
+  }
 
   // if (exists_in_local_map && traj.is_committed)
   if (traj.is_committed)
@@ -1196,6 +1200,21 @@ bool Mader::isReplanningNeeded()
     return false;
   }
   return true;
+}
+
+int Mader::getMissedMsgsCnt()
+{
+  return missed_msgs_cnt_;
+}
+
+mt::state Mader::getGterm()
+{
+  mtx_G_term.lock();
+
+  mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
+
+  mtx_G_term.unlock();
+  return G_term;
 }
 
 bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& headsup_plan,

@@ -49,8 +49,8 @@ public:
   bool replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out, std::vector<Hyperplane3D>& planes,
               int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out);
   bool replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& headsup_plan,
-                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
-                   mt::PieceWisePol& pwp_now, double& headsup_time);
+                              std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
+                              mt::PieceWisePol& pwp_now, double& headsup_time);
   bool addTrajToPlan_with_delaycheck(mt::PieceWisePol& pwp);
   bool everyTrajCheck(mt::PieceWisePol pwp_optimized);
 
@@ -60,17 +60,20 @@ public:
   void getState(mt::state& data);
   void getG(mt::state& G);
   void getDetourG(mt::state& G);
-  void moveAtowardG(mt::state& A, mt::state&G);
+  void moveAtowardG(mt::state& A, mt::state& G);
   void setTerminalGoal(mt::state& term_goal);
   void resetInitialization();
 
   bool IsTranslating();
-  void updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC, bool& delay_check_result, const double& headsup_time);
+  void updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC,
+                           bool& delay_check_result, const double& headsup_time);
   void updateTrajObstacles(mt::dynTraj traj);
 
   Eigen::Vector2d RotationMatrix(Eigen::Vector2d& vec, const double& angle);
   void getID(int& id);
   mt::state moveAoutOfBbox(const mt::state& A);
+  int getMissedMsgsCnt();
+  mt::state getGterm();
 
 private:
   mt::state M_;
@@ -91,8 +94,8 @@ private:
   bool safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_prev);
   bool safetyCheck_for_A_star_failure_pwp_now(mt::PieceWisePol pwp_now);
 
-  bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
-                                 double t_end, bool& is_q0_fail);
+  bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start, double t_end,
+                                 bool& is_q0_fail);
 
   bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
                                  double t_end);
@@ -228,6 +231,8 @@ private:
 
   bool is_movingAoutOfBbox_ = false;
   mt::state movedA_;
+
+  int missed_msgs_cnt_ = 0;
 
   // double av_improvement_nlopt_ = 0.0;
 
