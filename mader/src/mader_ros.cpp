@@ -390,32 +390,35 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   // }
   mtx_alltrajs_.lock();
   mtx_alltrajsTimers_.lock();
-
-  if (is_delaycheck_)
-  {
-    mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
-  }
-  else
-  {
-    mader_ptr_->updateTrajObstacles(alltrajs_[0]);
-  }
-
-  double time_now = ros::Time::now().toSec();
-  double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_created;
-
-  // supposedly_simulated_time_delay should be simulated_comm_delay_
-  if (supposedly_simulated_comm_delay > delay_check_ && is_delaycheck_)
-  {
-    std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s" << std::endl;
-    missed_msgs_cnt_++;
-  }
-
-  mader_msgs::CommDelay msg;
-  msg.comm_delay = supposedly_simulated_comm_delay;
-  pub_comm_delay_.publish(msg);
-
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
   // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
+
+  if (is_mader_running_)
+  {
+    if (is_delaycheck_)
+    {
+      mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
+    }
+    else
+    {
+      mader_ptr_->updateTrajObstacles(alltrajs_[0]);
+    }
+
+    double time_now = ros::Time::now().toSec();
+    double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_created;
+
+    // supposedly_simulated_time_delay should be simulated_comm_delay_
+    if (supposedly_simulated_comm_delay > delay_check_ && is_delaycheck_)
+    {
+      std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s"
+                << std::endl;
+      missed_msgs_cnt_++;
+    }
+
+    mader_msgs::CommDelay msg;
+    msg.comm_delay = supposedly_simulated_comm_delay;
+    pub_comm_delay_.publish(msg);
+  }
 
   alltrajs_.pop_front();
   alltrajsTimers_.pop_front();
@@ -453,7 +456,14 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_commit
 
   msg.pwp = mu::pwp2PwpMsg(pwp);
 
-  msg.time_created = headsup_time;
+  if (headsup_time < 1)  // can be headsup_time == 0.0 but for safety we do this
+  {
+    msg.time_created = ros::Time::now().toSec();
+  }
+  else
+  {
+    msg.time_created = headsup_time;
+  }
 
   // msg.time_sent = ros::Time::now().toSec();  // to measure comm delay between agents
 
@@ -500,7 +510,7 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_commit
 
 void MaderRos::replanCB(const ros::TimerEvent& e)
 {
-  if (ros::ok() && published_initial_position_ == true)
+  if (ros::ok() && published_initial_position_ == true && is_mader_running_)
   {
     // introduce random wait time in the beginning
     // if (!is_replanCB_called_)
@@ -819,6 +829,7 @@ void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
 {
   if (msg.value != msg.MADER)
   {  // MADER does nothing
+    is_mader_running_ = false;
     sub_state_.shutdown();
     sub_term_goal_.shutdown();
     pubCBTimer_.stop();
@@ -828,6 +839,7 @@ void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
   }
   else
   {  // MADER is the one who plans now (this happens when the take-off is finished)
+    is_mader_running_ = true;
     sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
     sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
     pubCBTimer_.start();
