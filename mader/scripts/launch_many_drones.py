@@ -57,7 +57,7 @@ if __name__ == '__main__':
     formation="circle"
     commands = []
     num_of_agents=10; 
-    radius=10;
+    radius=20;
 
 
     if(formation=="sphere"):
