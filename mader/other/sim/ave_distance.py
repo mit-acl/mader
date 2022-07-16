@@ -1,72 +1,133 @@
+#!/usr/bin/env python
+
 #!/usr/bin/env python  
-# Kota Kondo
+#Author: Kota Kondo
+#Date: July 15, 2022
 
-#  Commands: Open three terminals and execute this:
-#  python collision_check.py
+#you can get transformation btwn two agents and if they are too close (violating bbox) then it prints out warning
+#the reason why we use tf instead of snapstack_msgs/State is two agents publish their states asynchrnonously and therefore comparing
+#these states (with slightly different timestamp) is not accurate position comparison. Whereas tf always compares two states with the same time stamp
 
-#Whenever you want, you can ctrl+C the second command and you will get the absolute and relative velocities
-
-import bagpy
-from bagpy import bagreader
-import pandas as pd
-
-import rosbag
-import rospy
 import math
-import tf2_ros
-import geometry_msgs.msg
-import tf
-import numpy as np
-import matplotlib.pyplot as plt
 import os
-import glob
+import sys
+import time
+import rospy
+import rosgraph
+from geometry_msgs.msg import PoseStamped
+from snapstack_msgs.msg import State
+from mader_msgs.msg import Collision
+import numpy as np
+from random import *
+import tf2_ros
+
+class CollisionDetector:
+
+    def __init__(self):
+
+        self.tfBuffer = tf2_ros.Buffer()
+        self.listener = tf2_ros.TransformListener(self.tfBuffer)
+
+        rospy.sleep(3) #Important, if not it won't work
+
+        # tolerance
+        self.tol = 0.00
+
+        # bbox size
+        self.bbox_x = rospy.get_param('~bbox_x', 0.25) - self.tol #default value is 1.0 
+        self.bbox_y = rospy.get_param('~bbox_y', 0.25) - self.tol #default value is 1.0 
+        self.bbox_z = rospy.get_param('~bbox_z', 0.25) - self.tol #default value is 1.5
+        self.num_of_agents = rospy.get_param('~num_of_agents')
+
+        self.initialized = True
+
+        # self.state_pos = np.empty([self.num_of_agents,3])
+
+        # publisher init
+        self.collision=Collision()
+        self.pubIsCollided = rospy.Publisher('is_collided', Collision, queue_size=1, latch=True)
+
+    # collision detection
+    def collisionDetect(self, timer):
+        
+        if self.initialized:
+            for i in range(1,self.num_of_agents):
+                for j in range(i+1,self.num_of_agents+1):
+
+                    if i<=9:
+                        agent1 = "SQ0" + str(i) + "s" 
+                    else:
+                        agent1 = "SQ" + str(i) + "s" 
+
+                    if j<=9:
+                        agent2 = "SQ0" + str(j) + "s" 
+                    else:
+                        agent2 = "SQ" + str(j) + "s" 
+                    
+                    trans = self.get_transformation(agent1, agent2)
+
+                    if trans is not None:
+
+                        # print(str(agent1) + " and " + str(agent2) + ": " + str(trans.transform.translation.x))
+                    
+                        if (abs(trans.transform.translation.x) < self.bbox_x
+                            and abs(trans.transform.translation.y) < self.bbox_y
+                            and abs(trans.transform.translation.z) < self.bbox_z):
+                            
+                            self.collision.is_collided = True
+                            self.collision.agent1 = trans.header.frame_id
+                            self.collision.agent2 = trans.child_frame_id
+                            self.pubIsCollided.publish(self.collision)
+
+                            print("collision btwn " + trans.header.frame_id + " and " + trans.child_frame_id)
+
+                            max_dist = max(abs(trans.transform.translation.x), abs(trans.transform.translation.y), abs(trans.transform.translation.z))
+
+                            print("violation dist is " + str(max_dist))
+
+                        # if (abs(self.state_pos[i,0] - self.state_pos[j,0]) < self.bbox_x 
+                        #     and abs(self.state_pos[i,1] - self.state_pos[j,1]) < self.bbox_y 
+                        #     and abs(self.state_pos[i,2] - self.state_pos[j,2]) < self.bbox_z):
+                        #     print("difference in x is " + str(abs(self.state_pos[i,0] - self.state_pos[j,0])))
+                        #     print("difference in y is " + str(abs(self.state_pos[i,1] - self.state_pos[j,1])))
+                        #     print("difference in z is " + str(abs(self.state_pos[i,2] - self.state_pos[j,2])))
+                        #     print("agent" + str(i+1) + " and " + str(j+1) + " collide")
+
+    # def SQ01stateCB(self, data):
+    #     self.state_pos[0,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+    #     self.initialized = True
+    # def SQ02stateCB(self, data):
+    #     self.state_pos[1,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+    # def SQ03stateCB(self, data):
+    #     self.state_pos[2,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+    # def SQ04stateCB(self, data):
+    #     self.state_pos[3,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+    # def SQ05stateCB(self, data):
+    #     self.state_pos[4,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+    # def SQ06stateCB(self, data):
+    #     self.state_pos[5,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+
+    def get_transformation(self, source_frame, target_frame):
+
+        # get the tf at first available time
+        try:
+            transformation = self.tfBuffer.lookup_transform(source_frame, target_frame, rospy.Time(0), rospy.Duration(0.1))
+            return transformation
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            pass
+            # rospy.logerr("Unable to find the transformation")
+
+def startNode():
+    c = CollisionDetector()
+    # rospy.Subscriber("SQ01s/state", State, c.SQ01stateCB)
+    # rospy.Subscriber("SQ02s/state", State, c.SQ02stateCB)
+    # rospy.Subscriber("SQ03s/state", State, c.SQ03stateCB)
+    # rospy.Subscriber("SQ04s/state", State, c.SQ04stateCB)
+    # rospy.Subscriber("SQ05s/state", State, c.SQ05stateCB)
+    # rospy.Subscriber("SQ06s/state", State, c.SQ06stateCB)
+    rospy.Timer(rospy.Duration(0.01), c.collisionDetect)
+    rospy.spin()
 
 if __name__ == '__main__':
-
-    # rosbag name
-
-    # Dont use ~ like this
-    cd = "50" # [ms] communication delay
-
-    is_oldmader = False # change here 
-    
-    if is_oldmader:
-        dc_list = [0, 170, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-    else:
-        # dc_list = [170, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        dc_list = [51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-
-
-    for dc in dc_list:
-
-        if is_oldmader:
-            source_dir = "/home/kota/data/bags/oldmader/cd"+cd+"ms" # change the source dir accordingly #10 agents
-        else:
-            source_dir = "/home/kota/data/bags/rmader/cd"+cd+"msdc"+str(dc)+"ms" # change the source dir accordingly #10 agents
-        
-        source_len = len(source_dir)
-        source_bags = source_dir + "/*.bag" # change the source dir accordingly
-
-        rosbag_list = glob.glob(source_bags)
-        rosbag_list.sort() #alphabetically order
-        rosbag = []
-
-        for bag in rosbag_list:
-            rosbag.append(bag)
-
-        for i in range(len(rosbag)):
-
-            b = bagreader(rosbag[i], verbose=False)
-            sim_id = rosbag[i][source_len+5:source_len+7]
-            
-            log_data = b.message_by_topic("/is_collided")
-            if (log_data == None):
-                print("sim " + sim_id + ": no collision" )
-                os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'/collision_status.txt')
-            else:
-                print("sim " + sim_id + ": ******collision******" )
-                os.system('echo "simulation '+sim_id+': ***collision***" >> '+source_dir+'/collision_status.txt')
-
-        os.system('paste '+source_dir+'/collision_status.txt '+source_dir+'/status.txt >> '+source_dir+'/complete_status.txt')
-
-        is_oldmader = False
+    rospy.init_node('CollisionDetector')
+    startNode()
