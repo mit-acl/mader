@@ -40,8 +40,9 @@ if __name__ == '__main__':
     is_oldmader=False
     num_of_sims=60
     num_of_agents=10
+    how_long_to_wait = 40 #[s]
     if is_oldmader:
-        dc_list = [0, 170, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        dc_list = [0, 170, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
     else:
         dc_list = [170, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         # dc_list = [170] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
@@ -140,7 +141,7 @@ if __name__ == '__main__':
             tic = time.perf_counter()
             toc = time.perf_counter()
 
-            while (toc - tic < 50 and not is_goal_reached):
+            while (toc - tic < how_long_to_wait and not is_goal_reached):
                 toc = time.perf_counter()
                 if(checkGoalReached(num_of_agents)):
                     print('all the agents reached the goal')
