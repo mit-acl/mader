@@ -533,8 +533,8 @@ struct dynTraj
   int id;
   double time_received;  // time at which this trajectory was received from an agent
   double time_created;   // for delay check
-  double time_sent;      // to measure comm delay
-  bool is_agent;         // true for a trajectory of an agent, false for an obstacle
+  // double time_sent;      // to measure comm delay (not much different from time_created)
+  bool is_agent;  // true for a trajectory of an agent, false for an obstacle
   mt::PieceWisePol pwp;
   bool is_committed;
 };
@@ -546,8 +546,8 @@ struct dynTrajCompiled
   int id;
   double time_received;  // time at which this trajectory was received from an agent
   double time_created;   // for delay check
-  double time_sent;      // to measure comm delay
-  bool is_agent;         // true for a trajectory of an agent, false for an obstacle
+  // double time_sent;      // to measure comm delay (not much different from time_created)
+  bool is_agent;  // true for a trajectory of an agent, false for an obstacle
   bool is_static;
   bool is_committed;
   mt::PieceWisePol pwp;

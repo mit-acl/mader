@@ -332,7 +332,7 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   tmp.is_agent = msg.is_agent;
 
-  tmp.time_sent = msg.time_sent;
+  // tmp.time_sent = msg.time_sent;
 
   tmp.time_created = msg.time_created;
 
@@ -401,7 +401,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   }
 
   double time_now = ros::Time::now().toSec();
-  double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_sent;
+  double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_created;
 
   // supposedly_simulated_time_delay should be simulated_comm_delay_
   if (supposedly_simulated_comm_delay > delay_check_ && is_delaycheck_)
@@ -455,7 +455,7 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_commit
 
   msg.time_created = headsup_time;
 
-  msg.time_sent = ros::Time::now().toSec();  // to measure comm delay between agents
+  // msg.time_sent = ros::Time::now().toSec();  // to measure comm delay between agents
 
   msg.is_committed = is_committed;
 
