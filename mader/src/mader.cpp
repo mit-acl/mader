@@ -761,6 +761,11 @@ void Mader::setTerminalGoal(mt::state& term_goal)
   mtx_planner_status_.unlock();
 }
 
+mt::state Mader::getGterm()
+{
+  return G_term_;
+}
+
 void Mader::getG(mt::state& G)
 {
   G = G_;
