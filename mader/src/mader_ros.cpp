@@ -514,15 +514,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
   if (ros::ok() && published_initial_position_ == true && is_mader_running_)
   {
     // introduce random wait time in the beginning
-    // if (!is_replanCB_called_)
-    // {
-    //   // to avoid initial path search congestions add some random sleep here
-    //   std::random_device rd;
-    //   std::default_random_engine eng(rd());
-    //   std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
-    //   ros::Duration(distr(eng)).sleep();
-    //   is_replanCB_called_ = true;
-    // }
+    if (!is_replanCB_called_)
+    {
+      // to avoid initial path search congestions add some random sleep here
+      std::random_device rd;
+      std::default_random_engine eng(rd());
+      std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
+      ros::Duration(distr(eng)).sleep();
+      is_replanCB_called_ = true;
+    }
 
     // when reached goal, publish how many msgs, which we supposedly should have considered
     if (is_replanCB_initialized_)
