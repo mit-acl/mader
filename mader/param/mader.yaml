@@ -54,7 +54,7 @@ j_max: [30.0, 30.0, 30.0]   #[m/s3]  #Right now it's only used for Gurobi, not f
 # a_max: [3.0, 3.0, 3.0]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
 # j_max: [4.0, 4.0, 4.0]   #[m/s3]  #Right now it's only used for Gurobi, not for NLOPT
 
-factor_alpha: 1.5 #[-] DeltaT = factor_alpha*States_took_previous_replan
+factor_alpha: 2.5 #[-] DeltaT = factor_alpha*States_took_previous_replan
 
 #Parameters for NLOPT
 num_pol: 4

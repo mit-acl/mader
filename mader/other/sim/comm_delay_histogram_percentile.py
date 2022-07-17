@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     cd = "50" # [ms] communication delay
 
-    dc_list = [0, 170, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+    dc_list = [0, 170, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     # you wanna get histogram or know the value at q-th percentile
     is_histogram = True
