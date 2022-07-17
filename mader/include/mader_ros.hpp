@@ -170,7 +170,6 @@ private:
 
   bool is_replanCB_called_ = false;
 
-  bool is_missed_msgs_cnt_published_ = false;
   bool is_replanCB_initialized_ = false;
 
   bool is_mader_running_ = false;

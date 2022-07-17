@@ -222,6 +222,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
     sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
     pubCBTimer_.start();
     replanCBTimer_.start();
+    is_mader_running_ = true;
     std::cout << on_blue << "**************MADER STARTED" << reset << std::endl;
   }
 
@@ -528,12 +529,12 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     {
       mt::state G_term = mader_ptr_->getGterm();
       double dist_to_goal = (state_.pos - G_term.pos).norm();
-      if (dist_to_goal < par_.goal_radius && !is_missed_msgs_cnt_published_)
+      if (dist_to_goal < par_.goal_radius)
       {
         mader_msgs::MissedMsgsCnt msg;
         msg.missed_msgs_cnt = missed_msgs_cnt_;
         pub_missed_msgs_cnt_.publish(msg);
-        is_missed_msgs_cnt_published_ = true;  // make sure this is going to be publish only once
+        is_mader_running_ = false;  // make sure this is going to be publish only once
       }
     }
 
@@ -825,11 +826,13 @@ void MaderRos::publishPoly(const vec_E<Polyhedron<3>>& poly)
   poly_safe_pub_.publish(poly_msg);
 }
 
+// this function won't be called in simulations
+
 void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
 {
   if (msg.value != msg.MADER)
   {  // MADER does nothing
-    is_mader_running_ = false;
+    is_mader_running_ = true;
     sub_state_.shutdown();
     sub_term_goal_.shutdown();
     pubCBTimer_.stop();
@@ -839,7 +842,7 @@ void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
   }
   else
   {  // MADER is the one who plans now (this happens when the take-off is finished)
-    is_mader_running_ = true;
+    is_mader_running_ = false;
     sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
     sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
     pubCBTimer_.start();
