@@ -23,7 +23,7 @@ Ra: 15.0           # [m] Radius of my planning sphere (planning horizon). Should
 
 delay_check: 0.0 # seconds
 simulated_comm_delay: 0.05 #seconds
-comm_delay_param: 6.5
+comm_delay_param: 1.5
 
 x_min: -1000000000.0  # [m] don't forget the .0
 x_max: 10000000000.0  # [m] don't forget the .0
