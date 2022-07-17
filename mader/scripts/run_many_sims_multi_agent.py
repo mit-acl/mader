@@ -62,9 +62,11 @@ if __name__ == '__main__':
         if is_oldmader:
             folder_bags="/home/kota/data/bags/oldmader/cd50ms"
             folder_txts="/home/kota/data/txt_files/oldmader/cd50ms"
+            folder_csv="/home/kota/data/csv/oldmader/cd50ms"
         else:
             folder_bags="/home/kota/data/bags/rmader/cd50msdc"+str(dc)+"ms"
             folder_txts="/home/kota/data/txt_files/rmader/cd50msdc"+str(dc)+"ms"
+            folder_csv="/home/kota/data/csv/rmader/cd50msdc"+str(dc)+"ms"
 
         # create directy if not exists
         if (not os.path.exists(folder_bags)):

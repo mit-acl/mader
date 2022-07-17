@@ -20,8 +20,10 @@ from mader_msgs.msg import Collision
 import numpy as np
 from random import *
 import tf2_ros
+from numpy import linalg as LA
+import pandas as pd 
 
-class CollisionDetector:
+class AveDistance:
 
     def __init__(self):
 
@@ -30,82 +32,52 @@ class CollisionDetector:
 
         rospy.sleep(3) #Important, if not it won't work
 
-        # tolerance
-        self.tol = 0.00
-
         # bbox size
-        self.bbox_x = rospy.get_param('~bbox_x', 0.25) - self.tol #default value is 1.0 
-        self.bbox_y = rospy.get_param('~bbox_y', 0.25) - self.tol #default value is 1.0 
-        self.bbox_z = rospy.get_param('~bbox_z', 0.25) - self.tol #default value is 1.5
         self.num_of_agents = rospy.get_param('~num_of_agents')
+
+        # matrix that saves sum of distance
+        self.dist_matrix = np.zeros([self.num_of_agents, self.num_of_agents])
+
+        # count how many dist we get
+        self.cnt = 0
+
+        # folder location
+        self.folder_loc = sys.argv[1]
+
+        # sim number
+        self.sim = sys.argv[2]
 
         self.initialized = True
 
-        # self.state_pos = np.empty([self.num_of_agents,3])
-
-        # publisher init
-        self.collision=Collision()
-        self.pubIsCollided = rospy.Publisher('is_collided', Collision, queue_size=1, latch=True)
+    def __del__(self):
+        for i in range(self.num_of_agents):
+            for j in range(i,self.num_of_agents+1):
+                self.dist_matrix[i,j] = self.dist_matrix[i,j] / self.cnt
+        pd.DataFrame(self.dist_matrix).to_csv(str(self.folder_loc)+'sim_'+str(self.sim)+'csv')
 
     # collision detection
-    def collisionDetect(self, timer):
+    def AveDistanceCalculate(self, timer):
         
         if self.initialized:
-            for i in range(1,self.num_of_agents):
-                for j in range(i+1,self.num_of_agents+1):
+            for i in range(self.num_of_agents):
+                for j in range(i,self.num_of_agents+1):
 
                     if i<=9:
-                        agent1 = "SQ0" + str(i) + "s" 
+                        agent1 = "SQ0" + str(i+1) + "s" 
                     else:
-                        agent1 = "SQ" + str(i) + "s" 
+                        agent1 = "SQ" + str(i+1) + "s" 
 
                     if j<=9:
-                        agent2 = "SQ0" + str(j) + "s" 
+                        agent2 = "SQ0" + str(j+1) + "s" 
                     else:
-                        agent2 = "SQ" + str(j) + "s" 
+                        agent2 = "SQ" + str(j+1) + "s" 
                     
                     trans = self.get_transformation(agent1, agent2)
 
                     if trans is not None:
 
-                        # print(str(agent1) + " and " + str(agent2) + ": " + str(trans.transform.translation.x))
-                    
-                        if (abs(trans.transform.translation.x) < self.bbox_x
-                            and abs(trans.transform.translation.y) < self.bbox_y
-                            and abs(trans.transform.translation.z) < self.bbox_z):
-                            
-                            self.collision.is_collided = True
-                            self.collision.agent1 = trans.header.frame_id
-                            self.collision.agent2 = trans.child_frame_id
-                            self.pubIsCollided.publish(self.collision)
-
-                            print("collision btwn " + trans.header.frame_id + " and " + trans.child_frame_id)
-
-                            max_dist = max(abs(trans.transform.translation.x), abs(trans.transform.translation.y), abs(trans.transform.translation.z))
-
-                            print("violation dist is " + str(max_dist))
-
-                        # if (abs(self.state_pos[i,0] - self.state_pos[j,0]) < self.bbox_x 
-                        #     and abs(self.state_pos[i,1] - self.state_pos[j,1]) < self.bbox_y 
-                        #     and abs(self.state_pos[i,2] - self.state_pos[j,2]) < self.bbox_z):
-                        #     print("difference in x is " + str(abs(self.state_pos[i,0] - self.state_pos[j,0])))
-                        #     print("difference in y is " + str(abs(self.state_pos[i,1] - self.state_pos[j,1])))
-                        #     print("difference in z is " + str(abs(self.state_pos[i,2] - self.state_pos[j,2])))
-                        #     print("agent" + str(i+1) + " and " + str(j+1) + " collide")
-
-    # def SQ01stateCB(self, data):
-    #     self.state_pos[0,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
-    #     self.initialized = True
-    # def SQ02stateCB(self, data):
-    #     self.state_pos[1,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
-    # def SQ03stateCB(self, data):
-    #     self.state_pos[2,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
-    # def SQ04stateCB(self, data):
-    #     self.state_pos[3,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
-    # def SQ05stateCB(self, data):
-    #     self.state_pos[4,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
-    # def SQ06stateCB(self, data):
-    #     self.state_pos[5,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+                        self.dist_matrix[i,j] = self.dist_matrix[i,j] + LA.norm(np.array([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z]))
+                        self.cnt = self.cnt + 1
 
     def get_transformation(self, source_frame, target_frame):
 
@@ -118,16 +90,16 @@ class CollisionDetector:
             # rospy.logerr("Unable to find the transformation")
 
 def startNode():
-    c = CollisionDetector()
+    c = AveDistance()
     # rospy.Subscriber("SQ01s/state", State, c.SQ01stateCB)
     # rospy.Subscriber("SQ02s/state", State, c.SQ02stateCB)
     # rospy.Subscriber("SQ03s/state", State, c.SQ03stateCB)
     # rospy.Subscriber("SQ04s/state", State, c.SQ04stateCB)
     # rospy.Subscriber("SQ05s/state", State, c.SQ05stateCB)
     # rospy.Subscriber("SQ06s/state", State, c.SQ06stateCB)
-    rospy.Timer(rospy.Duration(0.01), c.collisionDetect)
+    rospy.Timer(rospy.Duration(0.01), c.AveDistanceCalculate)
     rospy.spin()
 
 if __name__ == '__main__':
-    rospy.init_node('CollisionDetector')
+    rospy.init_node('AveDistance')
     startNode()
