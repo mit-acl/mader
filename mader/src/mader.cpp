@@ -1496,10 +1496,11 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   total_replannings_++;
   if (result == false)
   {
-    int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) +
-                                  par_.delay_check * par_.comm_delay_param / par_.dc);  // Number of states that
-                                                                                        // would have been needed for
-                                                                                        // the last replan
+    int states_last_replan =
+        ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) +
+             par_.delay_check * par_.comm_delay_param / (par_.dc * 1000));  // Number of states that
+                                                                            // would have been needed for
+                                                                            // the last replan
     deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
     deltaT_ = std::min(1.0 * deltaT_, 2.0 / par_.dc);
     std::cout << "solver couldn't find optimal path" << std::endl;
@@ -1592,9 +1593,9 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   mtx_offsets.lock();
 
   int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) +
-                                par_.delay_check * par_.comm_delay_param / par_.dc);  // Number of states that
-                                                                                      // would have been needed for
-                                                                                      // the last replan
+                                par_.delay_check * par_.comm_delay_param / (par_.dc * 1000));  // Number of states that
+                                                                                               // would have been needed
+                                                                                               // for the last replan
   deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
   mtx_offsets.unlock();
 
