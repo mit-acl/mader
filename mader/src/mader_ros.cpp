@@ -519,7 +519,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       // to avoid initial path search congestions add some random sleep here
       std::random_device rd;
       std::default_random_engine eng(rd());
-      std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
+      std::uniform_real_distribution<float> distr(0, 2);  // sleep between 0 and 1 sec
       ros::Duration(distr(eng)).sleep();
       is_replanCB_called_ = true;
     }
@@ -535,6 +535,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         msg.missed_msgs_cnt = missed_msgs_cnt_;
         pub_missed_msgs_cnt_.publish(msg);
         is_mader_running_ = false;  // make sure this is going to be publish only once
+        return;
       }
     }
 
