@@ -37,7 +37,7 @@ def myhook():
 if __name__ == '__main__':
 
     # parameters
-    is_oldmader=False
+    is_oldmader=True
     num_of_sims=60
     num_of_agents=10
     how_long_to_wait = 50 #[s]
@@ -74,7 +74,11 @@ if __name__ == '__main__':
 
         # create directy if not exists
         if (not os.path.exists(folder_txts)):
-            os.makedirs(folder_txts)        
+            os.makedirs(folder_txts)
+
+         # create directy if not exists
+        if (not os.path.exists(folder_csv)):
+            os.makedirs(folder_csv)        
 
         # name_node_record="bag_recorder"
         kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
@@ -91,7 +95,7 @@ if __name__ == '__main__':
 
             commands = []
             name_node_record="bag_recorder"
-            commands.append("roscore");
+            commands.append("roscore")
 
             for num in range(1,num_of_agents+1):
                 if num <= 9:
@@ -110,6 +114,7 @@ if __name__ == '__main__':
             commands.append("sleep 3.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
             commands.append("sleep 3.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
             commands.append("sleep 3.0 && roslaunch mader goal_reached.launch")
+            commands.append("sleep 3.0 && roslaunch mader ave_distance.launch num_of_agents:="+str(num_of_agents)+" folder_loc:="+folder_csv+" sim:="+sim_id)
 
             #publishing the goal should be the last command
             commands.append("sleep 10.0 && roslaunch mader many_drones.launch action:=send_goal")
@@ -147,6 +152,7 @@ if __name__ == '__main__':
                 toc = time.perf_counter()
                 if(checkGoalReached(num_of_agents)):
                     print('all the agents reached the goal')
+                    time.sleep(2) # gives us time to write csv file for ave distance
                     is_goal_reached = True
                 time.sleep(0.1)
 

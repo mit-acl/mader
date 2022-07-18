@@ -77,7 +77,6 @@ if __name__ == '__main__':
 
         # print percentile
 
-        comm_delay = [x for x in a if x <= 1]
         comm_delay_arr = numpy.array(comm_delay)
 
         if is_histogram:

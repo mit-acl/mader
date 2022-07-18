@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+	<arg name="num_of_agents" default="10"/>
+	<arg name="folder_loc" default="/home/kota/data/csv/rmader/cd50msdc170ms"/>
+	<arg name="sim" default="00"/>
+
+	<node name="ave_distance" pkg="mader" type="ave_distance.py" output="screen">
+		<param name="num_of_agents" value="$(arg num_of_agents)"/>
+		<param name="folder_loc" value="$(arg folder_loc)"/>
+		<param name="sim" value="$(arg sim)"/>
+	</node>
+
+</launch>
