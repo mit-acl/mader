@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # Dont use ~ like this
     cd = "50" # [ms] communication delay
 
-    is_oldmader = False # change here 
+    is_oldmader = True # change here 
     
     if is_oldmader:
         dc_list = [0, 170, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)

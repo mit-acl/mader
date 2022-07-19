@@ -34,9 +34,9 @@ class CollisionDetector:
         self.tol = 0.00
 
         # bbox size
-        self.bbox_x = rospy.get_param('~bbox_x', 0.25) - self.tol #default value is 1.0 
-        self.bbox_y = rospy.get_param('~bbox_y', 0.25) - self.tol #default value is 1.0 
-        self.bbox_z = rospy.get_param('~bbox_z', 0.25) - self.tol #default value is 1.5
+        self.bbox_x = rospy.get_param('~bbox_x', 0.15) - self.tol #default value is 1.0 
+        self.bbox_y = rospy.get_param('~bbox_y', 0.15) - self.tol #default value is 1.0 
+        self.bbox_z = rospy.get_param('~bbox_z', 0.15) - self.tol #default value is 1.5
         self.num_of_agents = rospy.get_param('~num_of_agents')
 
         self.initialized = True

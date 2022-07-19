@@ -3,7 +3,7 @@
 
 	<arg name="bbox_x" default="0.15"/>
 	<arg name="bbox_y" default="0.15"/>
-	<arg name="bbox_z" default="0.5"/>
+	<arg name="bbox_z" default="0.15"/>
 	<arg name="num_of_agents" default="10"/>
 
 
