@@ -114,8 +114,8 @@ In the path [`/mader/mader/other/hw_experiments`](https://github.com/mit-acl/mad
 
 
 ## Hardware experiments procedure
-check if `sim` in `mader.yaml` is `false`
-check if `max_agent_number` is appropriate
+- check if `sim` in `mader.yaml` is `false`
+- check if `max_agent_number` is appropriate
 
 1. `./goal pos/ran` (argument pos: position exchange, ran: random waypoints)
 2. `./mader_fly true` (set argment to true if you wanna delete all the bags recored on voxl)
