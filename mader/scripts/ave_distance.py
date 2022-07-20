@@ -25,7 +25,6 @@ import pandas as pd
 
 class AveDistance:
     
-
     def __init__(self):
 
         self.tfBuffer = tf2_ros.Buffer()
@@ -40,7 +39,7 @@ class AveDistance:
         self.dist_matrix = np.zeros([self.num_of_agents, self.num_of_agents])
 
         # count how many dist we get
-        self.cnt = 0
+        self.cnt = np.zeros([self.num_of_agents, self.num_of_agents])
 
         # folder location
         self.folder_loc = rospy.get_param('~folder_loc')
@@ -58,8 +57,8 @@ class AveDistance:
 
     def GoalReachedCB(self, data):
         for i in range(self.num_of_agents):
-            for j in range(i,self.num_of_agents):
-                self.dist_matrix[i,j] = self.dist_matrix[i,j] / self.cnt
+            for j in range(i+1,self.num_of_agents):
+                self.dist_matrix[i,j] = self.dist_matrix[i,j] / self.cnt[i,j]
         # print(self.dist_matrix)
         pd.DataFrame(self.dist_matrix).to_csv(str(self.folder_loc)+'/sim_'+str(self.sim)+'.csv')
         os.system("rosnode kill ave_distance");
@@ -88,9 +87,7 @@ class AveDistance:
                         # print(LA.norm(np.array([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z])))
 
                         self.dist_matrix[i,j] = self.dist_matrix[i,j] + LA.norm(np.array([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z]))
-                        
-            self.cnt = self.cnt + 1
-
+                        self.cnt[i,j] = self.cnt[i,j] + 1
 
     def get_transformation(self, source_frame, target_frame):
 
@@ -110,7 +107,7 @@ def startNode():
     # rospy.Subscriber("SQ04s/state", State, c.SQ04stateCB)
     # rospy.Subscriber("SQ05s/state", State, c.SQ05stateCB)
     # rospy.Subscriber("SQ06s/state", State, c.SQ06stateCB)
-    rospy.Timer(rospy.Duration(0.01), c.AveDistanceCalculate)
+    rospy.Timer(rospy.Duration(0.1), c.AveDistanceCalculate)
     rospy.spin()
 
 if __name__ == '__main__':
