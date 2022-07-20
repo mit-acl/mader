@@ -2,6 +2,7 @@
 sim: true
 # use delay check or not?
 #########is_delaycheck: false
+max_agent_number: 7
 
 use_ff: true # use feedforward
 visual: true #publish visualization stuff
