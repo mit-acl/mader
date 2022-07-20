@@ -104,6 +104,7 @@ tmux send-keys -t $SESSION:$w.9 "(roscd mader && git rev-parse HEAD && git diff 
 tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX07) 2>&1 | tee ~/Research/bags/nx07_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 
 # run the nuc connection command and fly command (fly script record related rostopics so the below command should be sent at last)
+sleep 5 
 for i in 0 2 4 6 8 10 
 do
 	if [[ $ifDELETE == 'true' ]]; then
@@ -111,7 +112,6 @@ do
 		sleep 1
 	fi
 	# tmux send-keys -t $SESSION:$w.$i "tmux kill-server" C-m
-	# sleep 1
 	tmux send-keys -t $SESSION:$w.$i "fly" C-m
 done
 
