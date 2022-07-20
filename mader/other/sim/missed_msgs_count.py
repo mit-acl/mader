@@ -26,8 +26,10 @@ if __name__ == '__main__':
     # Dont use ~ like this
     cd = "50" # [ms] communication delay
 
-    is_oldmader = True # change here 
-    
+    is_oldmader = True # change here
+
+    n_agents = 10
+
     if is_oldmader:
         dc_list = [0, 170, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
     else:
@@ -66,14 +68,20 @@ if __name__ == '__main__':
                     topic_name = "/SQ"+str(j)+"s/mader/missed_msgs_cnt"
             
                 log_data = b.message_by_topic(topic_name)
-                log = pd.read_csv(log_data)
-                missed_msgs_list_per_sim.append(log.missed_msgs_cnt)
+
+                if (log_data == None):
+                    pass
+                else:
+                    log = pd.read_csv(log_data)
+                    missed_msgs_list_per_sim.append(log.missed_msgs_cnt[0])
+                    # print(log.missed_msgs_cnt[0])
 
             ave_missed_msgs_cnt = sum(missed_msgs_list_per_sim)/len(missed_msgs_list_per_sim)
             missed_msgs_list.append(ave_missed_msgs_cnt)
             # os.system('echo "simulation '+sim_id+': missed_msgs_cnt'+ave_missed_msgs_cnt+'" >> '+source_dir+'/missed_msgs_cnt.txt')
 
         ave_per_dc = sum(missed_msgs_list)/len(missed_msgs_list)
-        os.system('echo "'+source_dir+': missed_msgs_cnt '+ave_missed_msgs_cnt+'" >> '+source_dir+'/missed_msgs_cnt.txt')
+        print(ave_per_dc)
+        os.system('echo "'+source_dir+': missed_msgs_cnt '+str(ave_per_dc)+'" >> '+source_dir+'/missed_msgs_cnt.txt')
 
         is_oldmader = False
