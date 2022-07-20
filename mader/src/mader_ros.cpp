@@ -161,7 +161,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   // TODO:: make more general/robust
   if (sim)
   {
-    for (int i = 1; i < max_agent_number; ++i)
+    for (int i = 1; i <= max_agent_number; ++i)
     {
       std::string agent = "SQ0" + std::to_string(i) + "s";
       if (myns != agent)
@@ -173,7 +173,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   }
   else
   {  // if it's hardware
-    for (int i = 1; i < max_agent_number; ++i)
+    for (int i = 1; i <= max_agent_number; ++i)
     {
       std::string agent;
       if (i <= 9)
