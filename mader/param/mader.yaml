@@ -1,8 +1,7 @@
-# if simulatin or hex?
+# SQ or NX?
 sim: false
 
 # use decentralized traj_ or not?
-is_decentralized_traj: true
 max_agent_number: 7
 
 
