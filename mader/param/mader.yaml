@@ -1,5 +1,5 @@
 # SQ or NX?
-sim: true
+sim: false
 
 # use decentralized traj_ or not?
 max_agent_number: 7
