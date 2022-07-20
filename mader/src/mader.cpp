@@ -921,30 +921,30 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     return false;
   }
 
-  if (is_z_max_increased_ && !is_going_back_to_normal_z_max_){
-    // following popped up trajectory and haven't yet reached to pop_up_last_state_in_plan_ 
-    Eigen::Vector3d diff = state_.pos - pop_up_last_state_in_plan_.pos;
-    pwp_out = mu::constPosition2pwp(pop_up_last_state_in_plan_.pos);
-    if (diff.norm() > 0.1){
-      return true;
-    }
-    std::cout << "reached pop_up_last_state_in_plan_" << "\n";
-    is_going_back_to_normal_z_max_ = true;
-  } 
+  // if (is_z_max_increased_ && !is_going_back_to_normal_z_max_){
+  //   // following popped up trajectory and haven't yet reached to pop_up_last_state_in_plan_ 
+  //   Eigen::Vector3d diff = state_.pos - pop_up_last_state_in_plan_.pos;
+  //   pwp_out = mu::constPosition2pwp(pop_up_last_state_in_plan_.pos);
+  //   if (diff.norm() > 0.1){
+  //     return true;
+  //   }
+  //   std::cout << "reached pop_up_last_state_in_plan_" << "\n";
+  //   is_going_back_to_normal_z_max_ = true;
+  // } 
 
-  if (is_z_max_increased_ && is_going_back_to_normal_z_max_){
-    // once you reached pop_up_last_state_in_plan_, then you start planning new traj in extended z_max space
-    // std::cout << "state_.pos[2] " << state_.pos[2] << "\n";
-    // std::cout << "par_.z_max_ " << par_.z_max << "\n";
-    // std::cout << "par_for_solver.z_max " << solver_->printZmax() << "\n";
-    std::cout << "going back to the nominal space" << "\n";
-    if (state_.pos[2] < par_.z_max - 0.3){ // if you go back to the nominal z_max, then put z_max back. 0.3 is a buffer
-      std::cout << "got back to the nomial space!!" << "\n";
-      solver_->changeZmax(par_.z_max); // put the z_max back to the nominal value
-      is_z_max_increased_ = false;
-      is_going_back_to_normal_z_max_ = false;
-    }
-  }
+  // if (is_z_max_increased_ && is_going_back_to_normal_z_max_){
+  //   // once you reached pop_up_last_state_in_plan_, then you start planning new traj in extended z_max space
+  //   // std::cout << "state_.pos[2] " << state_.pos[2] << "\n";
+  //   // std::cout << "par_.z_max_ " << par_.z_max << "\n";
+  //   // std::cout << "par_for_solver.z_max " << solver_->printZmax() << "\n";
+  //   std::cout << "going back to the nominal space" << "\n";
+  //   if (state_.pos[2] < par_.z_max - 0.3){ // if you go back to the nominal z_max, then put z_max back. 0.3 is a buffer
+  //     std::cout << "got back to the nomial space!!" << "\n";
+  //     solver_->changeZmax(par_.z_max); // put the z_max back to the nominal value
+  //     is_z_max_increased_ = false;
+  //     is_going_back_to_normal_z_max_ = false;
+  //   }
+  // }
   // std::cout << "par_for_solver.z_max " << solver_->printZmax() << "\n";
 
   MyTimer replanCB_t(true);
@@ -1017,49 +1017,49 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   // double detour_max_time = 5; //seconds, how long want to detour
   
-  if (par_.is_stuck || if_detour_ || is_A_star_failed_30_){
+  // if (par_.is_stuck || if_detour_ || is_A_star_failed_30_){
     
-    if (par_.is_stuck && !if_detour_){
-      // timer_detour_.Reset();
-      stuck_state_ = state_;
-      A_when_stuck_ = A;
-      G_when_stuck_ = G;
-    }
+  //   if (par_.is_stuck && !if_detour_){
+  //     // timer_detour_.Reset();
+  //     stuck_state_ = state_;
+  //     A_when_stuck_ = A;
+  //     G_when_stuck_ = G;
+  //   }
 
-    dist_prog = state_.pos - stuck_state_.pos;
-    dist_to_goal = detoured_G_.pos - stuck_state_.pos;
-    dist_from_state__to_goal = detoured_G_.pos - state_.pos;
+  //   dist_prog = state_.pos - stuck_state_.pos;
+  //   dist_to_goal = detoured_G_.pos - stuck_state_.pos;
+  //   dist_from_state__to_goal = detoured_G_.pos - state_.pos;
 
-    // std::cout << "dist_prog is " << dist_prog << std::endl;
-    // std::cout << "state_.pos is " << state_.pos << std::endl;
-    // std::cout << "stuck_state_.pos is " << stuck_state_.pos << std::endl;
+  //   // std::cout << "dist_prog is " << dist_prog << std::endl;
+  //   // std::cout << "state_.pos is " << state_.pos << std::endl;
+  //   // std::cout << "stuck_state_.pos is " << stuck_state_.pos << std::endl;
 
-    //if (timer_detour_.ElapsedMs() < detour_max_time * 1000){
-    if (state_.vel.norm() < vel_stuck_detect &&
-     dist_from_state__to_goal.norm() > reached_goal_dist &&
-     dist_prog.norm() < unstuck_dist && 
-     dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
+  //   //if (timer_detour_.ElapsedMs() < detour_max_time * 1000){
+  //   if (state_.vel.norm() < vel_stuck_detect &&
+  //    dist_from_state__to_goal.norm() > reached_goal_dist &&
+  //    dist_prog.norm() < unstuck_dist && 
+  //    dist_prog.norm() < how_much_to_detoured_G * dist_to_goal.norm()){
       
-      getDetourG(G); // if stuck, make a new G for detour
-      // if (!if_A_moveback_){
-      //   moveAtowardG(A, G);
-      //   if_A_moveback_ = true;
-      // }
-      std::cout << "using detoured G" << std::endl;
-      stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
-      if_detour_ = true;
-      if (stuck_count_for_detour_ > 10){
-        if_detour_ = false; // maybe the detour G is also causing stuck, so go back to the original one
-        if_A_moveback_ = false;
-      }
-    } else {
-      stuck_count_for_detour_ = 0;
-      if_detour_ = false;
-      if_A_moveback_ = false;
-    //   std::cout << "stop using detoured G" << std::endl;
-    //   std::cout << "dist_prog.norm() is " << dist_prog.norm() << std::endl;
-    } 
-  }
+  //     getDetourG(G); // if stuck, make a new G for detour
+  //     // if (!if_A_moveback_){
+  //     //   moveAtowardG(A, G);
+  //     //   if_A_moveback_ = true;
+  //     // }
+  //     std::cout << "using detoured G" << std::endl;
+  //     stuck_count_for_detour_ = stuck_count_for_detour_ + 1;
+  //     if_detour_ = true;
+  //     if (stuck_count_for_detour_ > 10){
+  //       if_detour_ = false; // maybe the detour G is also causing stuck, so go back to the original one
+  //       if_A_moveback_ = false;
+  //     }
+  //   } else {
+  //     stuck_count_for_detour_ = 0;
+  //     if_detour_ = false;
+  //     if_A_moveback_ = false;
+  //   //   std::cout << "stop using detoured G" << std::endl;
+  //   //   std::cout << "dist_prog.norm() is " << dist_prog.norm() << std::endl;
+  //   } 
+  // }
 
   mt::state initial = A;
   mt::state final = G;
@@ -1128,36 +1128,36 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   // right after taking off, sometims drones cannot find a path
   // sometimes the very initial path search takes more than how_many_A_star_failure counts and fails
-  if (planner_initialized_){
+  // if (planner_initialized_){
 
-    // check if A_star is failed and see if the previous plan is feasible
-    if (is_A_star_failed && !is_pwp_prev_feasible_){
-      A_star_fail_count_ += 1;
-      is_A_star_failed_30_ = (A_star_fail_count_ > 30);
-      // need to check if my previous traj collides with others. and if that's the case pop it up
-      std::cout << "A_star is failing\n";
-      std::cout << "A_star_fail_count_ is " << A_star_fail_count_ << "\n"; 
-      if (is_A_star_failed_30_){
-        if(!safetyCheck_for_A_star_failure(pwp_prev_)){
-          std::cout << "previous pwp collide!" << "\n";
-          // if previous pwp is not feasible pop up the drone 
-          // this only happens when two agents commit traj at the very same time (or in Recheck period)
-          is_pop_up_ = true;
-          A_star_fail_count_ = 0;
-          return false; //abort mader
-        } else {
-          // std::cout << "previous pwp doesn't collide!\n";
-          is_pwp_prev_feasible_ = true;
-          is_pop_up_ = false;
-          A_star_fail_count_ = 0;
-        }
-      }
-    } else {
-      is_pop_up_ = false;
-      A_star_fail_count_ = 0;
-    }
+  //   // check if A_star is failed and see if the previous plan is feasible
+  //   if (is_A_star_failed && !is_pwp_prev_feasible_){
+  //     A_star_fail_count_ += 1;
+  //     is_A_star_failed_30_ = (A_star_fail_count_ > 30);
+  //     // need to check if my previous traj collides with others. and if that's the case pop it up
+  //     std::cout << "A_star is failing\n";
+  //     std::cout << "A_star_fail_count_ is " << A_star_fail_count_ << "\n"; 
+  //     if (is_A_star_failed_30_){
+  //       if(!safetyCheck_for_A_star_failure(pwp_prev_)){
+  //         std::cout << "previous pwp collide!" << "\n";
+  //         // if previous pwp is not feasible pop up the drone 
+  //         // this only happens when two agents commit traj at the very same time (or in Recheck period)
+  //         is_pop_up_ = true;
+  //         A_star_fail_count_ = 0;
+  //         return false; //abort mader
+  //       } else {
+  //         // std::cout << "previous pwp doesn't collide!\n";
+  //         is_pwp_prev_feasible_ = true;
+  //         is_pop_up_ = false;
+  //         A_star_fail_count_ = 0;
+  //       }
+  //     }
+  //   } else {
+  //     is_pop_up_ = false;
+  //     A_star_fail_count_ = 0;
+  //   }
 
-  }
+  // }
 
   // check if drones are stuck or not
   if (is_stuck){
@@ -1378,33 +1378,33 @@ bool Mader::getNextGoal(mt::state& next_goal)
   next_goal.setZero();
   next_goal = plan_.front();
 
-  if (is_pop_up_ && !is_z_max_increased_){
-    // we need to pop up the drone
-    std::cout << "pop up!!!!" << std::endl;
-    double pop_up_alt = par_.drone_bbox[2] + 0.1;
-    pop_up_state_ = state_;
-    std::cout << "plan_.size() is " << plan_.size() << "\n";
-    if (plan_.size() != 0){
-      for (int i = 0; i < plan_.size(); i++){
-      // increment z axis value
-      double pop_up_increment = pop_up_alt / plan_.size();
-      plan_.content[i].pos[2] = plan_.content[i].pos[2] + i * pop_up_increment;
-      } 
-    } else {
-      double pop_up_increment = pop_up_alt / 400;
-      for (int i = 0; i < 400; i++){
-        mt::state temporaty_state = state_;
-        temporaty_state.pos[2] += i * pop_up_increment;
-        plan_.push_back(temporaty_state);
-      }
-    }
+  // if (is_pop_up_ && !is_z_max_increased_){
+  //   // we need to pop up the drone
+  //   std::cout << "pop up!!!!" << std::endl;
+  //   double pop_up_alt = par_.drone_bbox[2] + 0.1;
+  //   pop_up_state_ = state_;
+  //   std::cout << "plan_.size() is " << plan_.size() << "\n";
+  //   if (plan_.size() != 0){
+  //     for (int i = 0; i < plan_.size(); i++){
+  //     // increment z axis value
+  //     double pop_up_increment = pop_up_alt / plan_.size();
+  //     plan_.content[i].pos[2] = plan_.content[i].pos[2] + i * pop_up_increment;
+  //     } 
+  //   } else {
+  //     double pop_up_increment = pop_up_alt / 400;
+  //     for (int i = 0; i < 400; i++){
+  //       mt::state temporaty_state = state_;
+  //       temporaty_state.pos[2] += i * pop_up_increment;
+  //       plan_.push_back(temporaty_state);
+  //     }
+  //   }
     
-    is_pop_up_ = false;
-    pop_up_last_state_in_plan_ = plan_.back();
-    double new_zmax = par_.z_max + pop_up_alt;
-    solver_->changeZmax(new_zmax);
-    is_z_max_increased_ = true;
-  }
+  //   is_pop_up_ = false;
+  //   pop_up_last_state_in_plan_ = plan_.back();
+  //   double new_zmax = par_.z_max + pop_up_alt;
+  //   solver_->changeZmax(new_zmax);
+  //   is_z_max_increased_ = true;
+  // }
 
   if (plan_.size() > 1)
   {
