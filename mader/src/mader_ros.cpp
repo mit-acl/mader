@@ -24,8 +24,10 @@ typedef MADER_timers::Timer MyTimer;
 // this object is created in the mader_ros_node
 MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3) : nh1_(nh1), nh2_(nh2), nh3_(nh3)
 {
-  bool sim; // if this is simulation or hardware. Used to check if we need SQ or HX
+  bool sim;  // if this is simulation or hardware. Used to check if we need SQ or HX
   mu::safeGetParam(nh1_, "sim", sim);
+  int max_agent_number;  // used to subscribe to /traj
+  mu::safeGetParam(nh1_, "max_agent_number", max_agent_number);
 
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
   mu::safeGetParam(nh1_, "visual", par_.visual);
@@ -146,7 +148,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pub_fov_ = nh1_.advertise<visualization_msgs::Marker>("fov", 1);
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
   pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("trajs", 1, true);  // The last boolean is latched or not
-  
+
   // Subscribers
   sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
   // sub_mode_ = nh1_.subscribe("mode", 1, &MaderRos::modeCB, this);
@@ -157,23 +159,38 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   // if it's simulation SQ01s to SQ06s
   // TODO:: make more general/robust
-  if (sim) {
-    for (int i = 1; i < 7; ++i)
-     {
+  if (sim)
+  {
+    for (int i = 1; i < max_agent_number; ++i)
+    {
       std::string agent = "SQ0" + std::to_string(i) + "s";
-      if (myns != agent){ // if my namespace is the same as the agent, then it's you
-        sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
+      if (myns != agent)
+      {  // if my namespace is the same as the agent, then it's you
+        sub_traj_.push_back(
+            nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
       }
-     } 
-  } else { // if it's simulation HX15 to HX20
-    for (int i = 1; i < 7; ++i)
-     {
-      int j = i + 14;
-      std::string agent = "HX" + std::to_string(i);
-      if (myns != agent){ // if my namespace is the same as the agent, then it's you
-        sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
+    }
+  }
+  else
+  {  // if it's hardware
+    for (int i = 1; i < max_agent_number; ++i)
+    {
+      std::string agent;
+      if (i <= 9)
+      {
+        agent = "NX0" + std::to_string(i);
       }
-     } 
+      else
+      {
+        agent = "NX" + std::to_string(i);
+      }
+
+      if (myns != agent)
+      {  // if my namespace is the same as the agent, then it's you
+        sub_traj_.push_back(
+            nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
+      }
+    }
   }
 
   // Timers
@@ -385,11 +402,9 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     // std::cout << "[Callback] Leaving replanCB" << std::endl;
   }
 
-
   mt::state G;  // projected goal
   mader_ptr_->getG(G);
   pubState(G, pub_point_G_);
-
 }
 
 void MaderRos::publishText()

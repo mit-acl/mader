@@ -1,10 +1,15 @@
 # if simulatin or hex?
-sim: true
+sim: false
+
+# use decentralized traj_ or not?
+is_decentralized_traj: true
+max_agent_number: 7
+
 
 use_ff: true # use feedforward
 visual: true #publish visualization stuff
 color_type: "vel" #"vel" or "plain"
-n_agents: 16 #only used for the color in the trajectory
+n_agents: 16 
 
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
