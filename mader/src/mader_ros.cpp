@@ -33,6 +33,8 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "is_delaycheck", is_delaycheck_);
   int max_agent_number;
   mu::safeGetParam(nh1_, "max_agent_number", max_agent_number);
+  bool is_take_off;
+  mu::safeGetParam(nh1_, "is_take_off", is_take_off);
 
   mu::safeGetParam(nh1_, "delay_check", par_.delay_check);
   delay_check_ = par_.delay_check;
@@ -228,7 +230,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pubCBTimer_.stop();
   replanCBTimer_.stop();
 
-  if (sim_)
+  if (is_take_off)
   {                                                                                    // no need to take off
     sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
     sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
@@ -845,21 +847,21 @@ void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
 {
   if (msg.value != msg.MADER)
   {  // MADER does nothing
-    is_mader_running_ = true;
     sub_state_.shutdown();
     sub_term_goal_.shutdown();
     pubCBTimer_.stop();
     replanCBTimer_.stop();
     mader_ptr_->resetInitialization();
+    is_mader_running_ = false;
     std::cout << on_blue << "**************MADER STOPPED" << reset << std::endl;
   }
   else
   {  // MADER is the one who plans now (this happens when the take-off is finished)
-    is_mader_running_ = false;
     sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
     sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
     pubCBTimer_.start();
     replanCBTimer_.start();
+    is_mader_running_ = true;
     std::cout << on_blue << "**************MADER STARTED" << reset << std::endl;
   }
 }
