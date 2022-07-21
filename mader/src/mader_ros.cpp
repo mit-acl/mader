@@ -31,6 +31,8 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   bool sim;  // if this is simulation or hardware. Used to check if we need SQ or HX
   mu::safeGetParam(nh1_, "sim", sim_);
   mu::safeGetParam(nh1_, "is_delaycheck", is_delaycheck_);
+  int max_agent_number;
+  mu::safeGetParam(nh1_, "max_agent_number", max_agent_number);
 
   mu::safeGetParam(nh1_, "delay_check", par_.delay_check);
   delay_check_ = par_.delay_check;
@@ -170,18 +172,21 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   // Subscribers for each agents
 
-  // if it's simulation SQ01s to SQxxs
+  // if it's simulation
   // TODO:: make more general/robust
-  if (sim_)
+  if (sim)
   {
-    for (int i = 1; i < par_.n_agents + 1; ++i)
+    for (int i = 1; i <= max_agent_number; ++i)
     {
-      std::string agent = "SQ0" + std::to_string(i) + "s";
-      if (i >= 10)
+      std::string agent;
+      if (i <= 9)
+      {
+        agent = "SQ0" + std::to_string(i) + "s";
+      }
+      else
       {
         agent = "SQ" + std::to_string(i) + "s";
       }
-
       if (myns != agent)
       {  // if my namespace is the same as the agent, then it's you
         sub_traj_.push_back(
@@ -190,11 +195,18 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
     }
   }
   else
-  {  // if it's simulation HX15 to HX20
-    for (int i = 1; i < 7; ++i)
+  {  // if it's hardware
+    for (int i = 1; i <= max_agent_number; ++i)
     {
-      int j = i + 14;
-      std::string agent = "HX" + std::to_string(i);
+      std::string agent;
+      if (i <= 9)
+      {
+        agent = "NX0" + std::to_string(i);
+      }
+      else
+      {
+        agent = "NX" + std::to_string(i);
+      }
       if (myns != agent)
       {  // if my namespace is the same as the agent, then it's you
         sub_traj_.push_back(
