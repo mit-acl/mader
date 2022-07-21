@@ -65,7 +65,7 @@ if __name__ == '__main__':
             dist_matrix = dist_matrix.to_numpy()
             dist_matrix = dist_matrix[:,1:]
 
-            print(dist_matrix)
+            # print(dist_matrix)
 
             # going through the agents
             dist_matrix_dc = np.add(dist_matrix_dc, dist_matrix)
