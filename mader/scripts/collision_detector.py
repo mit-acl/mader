@@ -30,8 +30,8 @@ class CollisionDetector:
 
         rospy.sleep(3) #Important, if not it won't work
 
-        # tolerance
-        self.tol = 0.00
+        # numerical tolerance
+        self.tol = 0.0
 
         # bbox size
         self.bbox_x = rospy.get_param('~bbox_x', 0.15) - self.tol #default value is 1.0 
