@@ -42,9 +42,9 @@ if __name__ == '__main__':
     num_of_agents=10
     how_long_to_wait = 50 #[s]
     if is_oldmader:
-        dc_list = [0, 200, 170, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        dc_list = [0, 200, 170, 120, 100, 78, 63, 55, 51, 45, 20] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
     else:
-        dc_list = [200, 170, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        dc_list = [200, 170, 120, 100, 78, 63, 55, 51, 45, 20] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         # dc_list = [170] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     # folder initialization
