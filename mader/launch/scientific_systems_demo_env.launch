@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+	<!-- Start Behaviour Selector-->
+	<!-- <node pkg="behavior_selector" type="behavior_selector_node.py" name="behavior_selector" output="screen" /> -->
+
+	<!-- Don't run this, for instance, for ssh connections -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mader)/rviz_cfgs/ssd_mader.rviz"/>
+
+	<node name="ssde" pkg="mader" type="scientific_systems_demo_env.py" output="screen" args="80"/>	<!--  args is not used in dynamic_forest (TODO)-->
+
+</launch>

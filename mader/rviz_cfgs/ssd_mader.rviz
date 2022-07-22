@@ -1,0 +1,892 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 0
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Grid1
+        - /TF1/Frames1
+        - /Setpoint1
+        - /Obstacles1
+        - /Console1
+        - /Marker2
+        - /Image1
+      Splitter Ratio: 0.3382789194583893
+    Tree Height: 1157
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: ""
+  - Class: rviz/Displays
+    Help Height: 0
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Grid1
+        - /TF1
+        - /TF1/Frames1
+      Splitter Ratio: 0.652466356754303
+    Tree Height: 441
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 1
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 300
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 1000
+      Frames:
+        All Enabled: true
+      Marker Alpha: 1
+      Marker Scale: 2
+      Name: TF
+      Show Arrows: false
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 0; 255; 0
+      Enabled: true
+      History Length: 1
+      Name: GTerm
+      Queue Size: 10
+      Radius: 0.20000000298023224
+      Topic: /SQ01s/mader/point_G
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 0; 255; 0
+      Enabled: true
+      History Length: 1
+      Name: GTerm
+      Queue Size: 10
+      Radius: 0.20000000298023224
+      Topic: /SQ02s/mader/point_G_term
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 0; 255; 0
+      Enabled: true
+      History Length: 1
+      Name: GTerm
+      Queue Size: 10
+      Radius: 0.20000000298023224
+      Topic: /SQ03s/mader/point_G_term
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 0; 255; 0
+      Enabled: true
+      History Length: 1
+      Name: GTerm
+      Queue Size: 10
+      Radius: 0.20000000298023224
+      Topic: /SQ04s/mader/point_G_term
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/PointStamped
+      Color: 204; 41; 204
+      Enabled: true
+      History Length: 1
+      Name: G
+      Queue Size: 10
+      Radius: 0.20000000298023224
+      Topic: /SQ01s/cvx/point_G
+      Unreliable: false
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ01s/setpoint
+      Name: Setpoint
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ01s/cvx/actual_traj
+      Name: RealTrajectory
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Alpha: 0.20000000298023224
+      BoundColor: 61; 255; 116
+      Class: decomp_rviz_plugins/PolyhedronArray
+      Enabled: false
+      MeshColor: 255; 255; 0
+      Name: PolySafe
+      Queue Size: 10
+      Scale: 0.009999999776482582
+      State: Both
+      Topic: /SQ03s/mader/poly_safe
+      Unreliable: false
+      Value: false
+      VsColor: 0; 255; 0
+      VsScale: 1
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ01s/mader/obstacles
+      Name: Obstacles
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ01s/mader/fov
+      Name: FOV
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /shapes_static
+      Name: RViz_Static_Obstacles
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /shapes_dynamic
+      Name: RViz_Dynamic_Obstacles
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /shapes_static_mesh
+      Name: Static_Obstacles_Mesh
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /shapes_dynamic_mesh
+      Name: Dynamic_Obstacles_Mesh
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /rviz_visual_tools
+      Name: Planes
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ01s/cvx/point_E
+      Name: PointE
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ01s/cvx/point_A
+      Name: PointA
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Align Bottom: false
+      Background Alpha: 0.800000011920929
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: false
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 25; 255; 240
+      Invert Shadow: false
+      Name: OpsProblemRun
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
+      Overtake Position Properties: false
+      Topic: /SQ01s/mader/text
+      Value: false
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
+    - Align Bottom: false
+      Background Alpha: 0.800000011920929
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: false
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 25; 255; 240
+      Invert Shadow: false
+      Name: Console
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
+      Overtake Position Properties: false
+      Topic: /SQ04s/rosconsole_overlay_text/output
+      Value: false
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ01s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ02s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ03s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ04s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ05s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ06s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ07s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SQ08s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SQ09s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SQ010s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SQ011s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SQ012s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SQ013s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SQ014s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SQ015s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SQ016s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: false
+      Name: TFTrajectory
+      Value: false
+      color: 25; 255; 240
+      duration: 10
+      frame: SQ01s
+      line_width: 0.009999999776482582
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: false
+      Name: TFTrajectory
+      Value: false
+      color: 25; 255; 240
+      duration: 10
+      frame: SQ02s
+      line_width: 0.10000000149011612
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: false
+      Name: TFTrajectory
+      Value: false
+      color: 239; 41; 41
+      duration: 10
+      frame: SQ03s
+      line_width: 0.10000000149011612
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: false
+      Name: TFTrajectory
+      Value: false
+      color: 115; 210; 22
+      duration: 10
+      frame: SQ04s
+      line_width: 0.10000000149011612
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: false
+      Name: TFTrajectory
+      Value: false
+      color: 117; 80; 123
+      duration: 10
+      frame: SQ05s
+      line_width: 0.10000000149011612
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: false
+      Name: TFTrajectory
+      Value: false
+      color: 193; 125; 17
+      duration: 10
+      frame: SQ06s
+      line_width: 0.10000000149011612
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: false
+      Name: TFTrajectory
+      Value: false
+      color: 252; 233; 79
+      duration: 10
+      frame: SQ07s
+      line_width: 0.10000000149011612
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: false
+      Name: TFTrajectory
+      Value: false
+      color: 238; 238; 236
+      duration: 10
+      frame: SQ08s
+      line_width: 0.10000000149011612
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ01s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ02s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ03s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ04s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ05s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ06s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ07s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ08s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ06s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ07s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ08s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ09s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ010s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ011s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ012s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ013s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ014s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ015s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ016s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ017s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ018s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ019s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ020s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ021s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ022s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ023s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ024s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ025s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ026s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ027s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ028s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ029s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ030s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ031s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ032s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ033s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ034s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ035s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ036s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /SQ01s/marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /demo_space
+      Name: Marker
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Image
+      Enabled: false
+      Image Topic: /rviz1/camera1/image
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /helipad
+      Name: Marker
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 238; 238; 236
+    Default Light: true
+    Fixed Frame: world
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
+      Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
+    - Class: rviz/SetGoal
+      Topic: /SQ01s/term_goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Class: rviz/ThirdPersonFollower
+      Distance: 33.15312194824219
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Field of View: 0.7853981852531433
+      Focal Point:
+        X: 10.770125389099121
+        Y: -5.985215187072754
+        Z: 1.3999888324178755e-05
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.6947967410087585
+      Target Frame: <Fixed Frame>
+      Yaw: 4.709989547729492
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 1376
+  Hide Left Dock: false
+  Hide Right Dock: false
+  Image:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd000000040000000000000256000004c2fc020000000ffb0000001200530065006c0065006300740069006f006e000000003d000004c20000005c00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730200000b4b00000293000002b300000152fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000028000003960000000000000000fb000000100044006900730070006c006100790073010000003d000004c2000000c900fffffffb0000000a0049006d00610067006500000003d3000001350000001600fffffffb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000002f4000000ca0000000000000000fb0000000a0049006d00610067006501000001530000012c0000000000000000fb0000000c00430061006d0065007200610100000285000001390000000000000000fb0000000a0049006d00610067006501000002dd0000022b0000000000000000000000010000016a000004c2fc0200000004fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000004c2000000a400fffffffb000000100044006900730070006c00610079007300000000db000002e3000000c900fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009b80000003efc0100000002fb0000000800540069006d00650100000000000009b8000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000005ec000004c200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 2488
+  X: 72
+  Y: 27
