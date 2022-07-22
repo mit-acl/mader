@@ -230,7 +230,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pubCBTimer_.stop();
   replanCBTimer_.stop();
 
-  if (is_take_off)
+  if (!is_take_off)
   {                                                                                    // no need to take off
     sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
     sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
