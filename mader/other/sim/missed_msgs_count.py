@@ -55,12 +55,14 @@ if __name__ == '__main__':
 
         # going through the rosbags
         missed_msgs_list = [] # size will be num of sims
+        msgs_list = [] # size will be num of sims
         for i in range(len(rosbag)):
             b = bagreader(rosbag[i], verbose=False)
             sim_id = rosbag[i][source_len+5:source_len+7]
 
             # going through the agents
             missed_msgs_list_per_sim = [] # size will be num_of_agents
+            msgs_list_per_sim = [] # size will be num_of_agents
             for j in range(1,n_agents+1):
                 if j <= 9:
                     topic_name = "/SQ0"+str(j)+"s/mader/missed_msgs_cnt"
@@ -74,14 +76,21 @@ if __name__ == '__main__':
                 else:
                     log = pd.read_csv(log_data)
                     missed_msgs_list_per_sim.append(log.missed_msgs_cnt[0])
+                    msgs_list_per_sim.append(log.msgs_cnt[0])
                     # print(log.missed_msgs_cnt[0])
 
             ave_missed_msgs_cnt = sum(missed_msgs_list_per_sim)/len(missed_msgs_list_per_sim)
+            ave_msgs_cnt = sum(msgs_list_per_sim)/len(msgs_list_per_sim)
+
             missed_msgs_list.append(ave_missed_msgs_cnt)
+            msgs_list.append(ave_msgs_cnt)
             # os.system('echo "simulation '+sim_id+': missed_msgs_cnt'+ave_missed_msgs_cnt+'" >> '+source_dir+'/missed_msgs_cnt.txt')
 
-        ave_per_dc = sum(missed_msgs_list)/len(missed_msgs_list)
-        print(ave_per_dc)
-        os.system('echo "'+source_dir+': missed_msgs_cnt '+str(ave_per_dc)+'" >> '+source_dir+'/missed_msgs_cnt.txt')
+        ave_missed_per_dc = sum(missed_msgs_list)/len(missed_msgs_list)
+        ave_per_dc = sum(msgs_list)/len(msgs_list)
+        # print(ave_per_dc)
+        os.system('echo "'+source_dir+': msgs_cnt '+str(ave_per_dc)+'" >> '+source_dir+'/missed_msgs_cnt.txt')
+        os.system('echo "'+source_dir+': missed_msgs_cnt '+str(ave_missed_per_dc)+'" >> '+source_dir+'/missed_msgs_cnt.txt')
+        os.system('echo "'+source_dir+': missed/total '+str(ave_missed_per_dc/ave_per_dc)+'" >> '+source_dir+'/missed_msgs_cnt.txt')
 
         is_oldmader = False

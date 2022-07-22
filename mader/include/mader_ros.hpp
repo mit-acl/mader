@@ -174,6 +174,7 @@ private:
 
   bool is_mader_running_ = false;
 
+  int msgs_cnt_ = 0;
   int missed_msgs_cnt_ = 0;
 
   Eigen::Affine3d W_T_B_;

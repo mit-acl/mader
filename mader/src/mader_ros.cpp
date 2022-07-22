@@ -429,6 +429,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
                 << std::endl;
       missed_msgs_cnt_++;
     }
+    msgs_cnt_++;
 
     mader_msgs::CommDelay msg;
     msg.comm_delay = supposedly_simulated_comm_delay;
@@ -547,6 +548,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       {
         mader_msgs::MissedMsgsCnt msg;
         msg.missed_msgs_cnt = missed_msgs_cnt_;
+        msg.msgs_cnt = msgs_cnt_;
         pub_missed_msgs_cnt_.publish(msg);
         is_mader_running_ = false;  // make sure this is going to be publish only once
         return;
