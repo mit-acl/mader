@@ -29,15 +29,19 @@ if __name__ == '__main__':
 
     cd = "50" # [ms] communication delay
 
-    dc_list = [0, 170, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     # you wanna get histogram or know the value at q-th percentile
     is_histogram = True
     # q-th percentile
     q = 75
 
-    is_oldmader = True
+    is_oldmader = False
     num_of_agents = 10
+
+    if is_oldmader:
+        dc_list = [0, 200, 170, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+    else:
+        dc_list = [200, 170, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     for dc in dc_list:
 
@@ -59,6 +63,8 @@ if __name__ == '__main__':
 
         for bag in rosbag_list:
             rosbag.append(bag)
+
+        print(rosbag)
 
         for i in range(len(rosbag)):
 
