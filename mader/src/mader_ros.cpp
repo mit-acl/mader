@@ -538,6 +538,13 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     //   is_replanCB_called_ = true;
     // }
 
+    if (mader_ptr_->isGoalSeen())
+    {
+      std::cout << "goal is seen so no need to replan" << std::endl;
+      is_mader_running_ = false;
+      return;
+    }
+
     // when reached goal, publish how many msgs, which we supposedly should have considered
     if (is_replanCB_initialized_)
     {

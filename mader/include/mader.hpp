@@ -74,6 +74,7 @@ public:
   mt::state moveAoutOfBbox(const mt::state& A);
   int getMissedMsgsCnt();
   mt::state getGterm();
+  bool isGoalSeen();
 
 private:
   mt::state M_;

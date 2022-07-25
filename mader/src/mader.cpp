@@ -1202,6 +1202,18 @@ bool Mader::isReplanningNeeded()
   return true;
 }
 
+bool Mader::isGoalSeen()
+{
+  if (drone_status_ == DroneStatus::GOAL_SEEN)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
 bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<mt::state>& headsup_plan,
                                    std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
                                    mt::PieceWisePol& pwp_now, double& headsup_time)
