@@ -2,7 +2,7 @@
 	<arg name="gui" default="false"/>
 	<arg name="rviz" default="true"/>
 	<arg name="environment" default="true"/>
-	<arg name="type_of_environment" default="dynamic_corridor"/>  <!-- dynamic_corridor or dynamic_forest -->
+	<arg name="type_of_environment" default="scientific_systems_demo_env"/>  <!-- dynamic_corridor or dynamic_forest or scientific_systems_demo_env-->
 
 <!-- Start Behaviour Selector-->
 <node pkg="behavior_selector" type="behavior_selector_node.py" name="behavior_selector" output="screen" />
@@ -10,7 +10,7 @@
 
 <!-- Don't run this, for instance, for ssh connections -->
 <group if="$(arg rviz)">
-	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mader)/rviz_cfgs/mader.rviz"/>
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mader)/rviz_cfgs/ssd_mader.rviz"/>
 </group>
 
 <!-- Don't run this, for instance, for ssh connections -->
