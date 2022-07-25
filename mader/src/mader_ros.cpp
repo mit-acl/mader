@@ -610,8 +610,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           ros::Duration(0.01).sleep();
           if (delay_check_result_ == false)
           {
-            is_in_DC_ = false;
-            return;
+            break;
           }
         }
         // ros::Duration(delay_check_).sleep();
