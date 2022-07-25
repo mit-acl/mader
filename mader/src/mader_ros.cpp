@@ -29,7 +29,6 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   : nh1_(nh1), nh2_(nh2), nh3_(nh3), nh4_(nh4), nh5_(nh5)
 {
   bool sim;  // if this is simulation or hardware. Used to check if we need SQ or HX
-  mu::safeGetParam(nh1_, "sim", sim_);
   mu::safeGetParam(nh1_, "is_delaycheck", is_delaycheck_);
   int max_agent_number;
   mu::safeGetParam(nh1_, "max_agent_number", max_agent_number);
@@ -176,7 +175,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   // if it's simulation
   // TODO:: make more general/robust
-  if (sim)
+  if (sim_)
   {
     for (int i = 1; i <= max_agent_number; ++i)
     {
