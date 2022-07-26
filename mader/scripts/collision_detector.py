@@ -77,13 +77,15 @@ class CollisionDetector:
                             self.collision.is_collided = True
                             self.collision.agent1 = trans.header.frame_id
                             self.collision.agent2 = trans.child_frame_id
-                            self.pubIsCollided.publish(self.collision)
 
                             print("collision btwn " + trans.header.frame_id + " and " + trans.child_frame_id)
 
                             max_dist = max(abs(trans.transform.translation.x), abs(trans.transform.translation.y), abs(trans.transform.translation.z))
 
                             print("violation dist is " + str(max_dist))
+
+                            self.dist = max_dist 
+                            self.pubIsCollided.publish(self.collision)
 
                         # if (abs(self.state_pos[i,0] - self.state_pos[j,0]) < self.bbox_x 
                         #     and abs(self.state_pos[i,1] - self.state_pos[j,1]) < self.bbox_y 
