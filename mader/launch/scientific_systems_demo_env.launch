@@ -1,7 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+	<arg name="quad1" default="SQ01s"/>
+	<arg name="quad2" default="SQ02s"/>
+	<arg name="x1" default="0" />
+	<arg name="y1" default="0" />
+	<arg name="z1" default="0.0" />
+	<arg name="yaw1" default="0.0" />
+
+	<arg name="x2" default="1" />
+	<arg name="y2" default="-1" />
+	<arg name="z2" default="0.0" />
+	<arg name="yaw2" default="0.0" />
+
 	<!-- Start Behaviour Selector-->
 	<!-- <node pkg="behavior_selector" type="behavior_selector_node.py" name="behavior_selector" output="screen" /> -->
+
+	<!-- Start mader commands -->
+	<node ns="$(arg quad1)" name="mader_commands" pkg="mader" type="mader_commands.py" output="screen"/>
+	<node ns="$(arg quad2)" name="mader_commands" pkg="mader" type="mader_commands.py" output="screen"/>
+
+	<include file="$(find mader)/launch/mader.launch">
+      <arg name="quad" value="$(arg quad1)"/>
+  	</include> 
+
+  	<include file="$(find mader)/launch/mader.launch">
+      <arg name="quad" value="$(arg quad2)"/>
+  	</include> 
+
+  	<include file="$(find mader)/launch/perfect_tracker_and_sim.launch">
+  		<arg name="quad" value="$(arg quad1)"/>
+  		<arg name="gazebo" value="false"/>
+        <arg name="x" value="$(arg x1)"/>
+        <arg name="y" value="$(arg y1)"/>
+        <arg name="z" value="$(arg z1)"/>
+        <arg name="yaw" default="$(arg yaw1)"/>
+        <!-- <arg name="perfect_tracker" default="false"/> -->
+ 	</include> 
+
+ 	<include file="$(find mader)/launch/perfect_tracker_and_sim.launch">
+  		<arg name="quad" value="$(arg quad2)"/>
+  		<arg name="gazebo" value="false"/>
+        <arg name="x" value="$(arg x2)"/>
+        <arg name="y" value="$(arg y2)"/>
+        <arg name="z" value="$(arg z2)"/>
+        <arg name="yaw" default="$(arg yaw2)"/>
+        <!-- <arg name="perfect_tracker" default="false"/> -->
+	</include> 
 
 	<!-- Don't run this, for instance, for ssh connections -->
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mader)/rviz_cfgs/ssd_mader.rviz"/>
