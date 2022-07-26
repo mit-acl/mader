@@ -368,8 +368,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
     //****** Communication delay introduced in the simulation
     // save all the trajectories into alltrajs_ and create a timer corresponding to that
     // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
-    mtx_alltrajs_.lock();
-    mtx_alltrajsTimers_.lock();
+    // mtx_alltrajs_.lock();
+    // mtx_alltrajsTimers_.lock();
     // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
 
     alltrajs_.push_back(tmp);
@@ -378,8 +378,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
     alltrajsTimers_.push_back(alltrajs_timer);
 
     // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in TrajCB" << std::endl;
-    mtx_alltrajs_.unlock();
-    mtx_alltrajsTimers_.unlock();
+    // mtx_alltrajs_.unlock();
+    // mtx_alltrajsTimers_.unlock();
     // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in TrajCB" << std::endl;
   }
   else
@@ -402,13 +402,14 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   // } else {
   //   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_new_, is_in_DC_, headsup_time_, delay_check_result_);
   // }
-  mtx_alltrajs_.lock();
-  mtx_alltrajsTimers_.lock();
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
   // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
 
   if (is_mader_running_)
   {
+    // mtx_alltrajs_.lock();
+    // mtx_alltrajsTimers_.lock();
+
     if (is_delaycheck_)
     {
       mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
@@ -417,6 +418,12 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
     {
       mader_ptr_->updateTrajObstacles(alltrajs_[0]);
     }
+
+    alltrajs_.pop_front();
+    alltrajsTimers_.pop_front();
+
+    // mtx_alltrajs_.unlock();
+    // mtx_alltrajsTimers_.unlock();
 
     double time_now = ros::Time::now().toSec();
     double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_created;
@@ -435,12 +442,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
     pub_comm_delay_.publish(msg);
   }
 
-  alltrajs_.pop_front();
-  alltrajsTimers_.pop_front();
-
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in allTrajsTimerCB" << std::endl;
-  mtx_alltrajs_.unlock();
-  mtx_alltrajsTimers_.unlock();
   // std::cout << "aft alltrajs_ and alltrajsTimers_ are unlocked() in allTrajsTimerCB" << std::endl;
 }
 
