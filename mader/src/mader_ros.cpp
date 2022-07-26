@@ -473,14 +473,7 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_commit
 
   msg.pwp = mu::pwp2PwpMsg(pwp);
 
-  if (headsup_time < 1)  // can be headsup_time == 0.0 but for safety we do this
-  {
-    msg.time_created = ros::Time::now().toSec();
-  }
-  else
-  {
-    msg.time_created = headsup_time;
-  }
+  msg.time_created = ros::Time::now().toSec();
 
   // msg.time_sent = ros::Time::now().toSec();  // to measure comm delay between agents
 

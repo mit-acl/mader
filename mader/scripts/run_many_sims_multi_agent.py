@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     # parameters
     is_oldmader=True
-    num_of_sims=60
+    num_of_sims=5
     num_of_agents=10
     how_long_to_wait = 50 #[s]
     if is_oldmader:
