@@ -183,8 +183,6 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     have_received_trajectories_while_checking_ = true;
   }
 
-  mtx_trajs_.lock();
-
   // std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
   //     std::find_if(trajs_.begin(), trajs_.end(),
   //                  [=](const mt::dynTrajCompiled& traj_compiled) { return traj_compiled.id == traj.id; });
@@ -201,7 +199,8 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     {
       if (!traj_compiled.is_committed)
       {
-        if (headsup_time < traj_compiled.time_created)
+        // if (headsup_time < traj_compiled.time_created)
+        if (traj_compiled.time_created - headsup_time > 0.001)  // tol:1ms
         {
           // Do nothing. They will change their traj.
         }
@@ -246,6 +245,8 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
       }
     }
   }
+
+  mtx_trajs_.lock();
 
   // if (exists_in_local_map && traj.is_committed)
   if (traj.is_committed)
