@@ -589,7 +589,10 @@ void Mader::changeBBox(Eigen::Vector3d& drone_boundarybox)
 // See https://doc.cgal.org/Manual/3.7/examples/Convex_hull_3/quickhull_3.cpp
 CGAL_Polyhedron_3 Mader::convexHullOfInterval(mt::dynTrajCompiled& traj, double t_start, double t_end)
 {
+  std::cout << "1.1.4" << std::endl;
+
   std::vector<Eigen::Vector3d> points = vertexesOfInterval(traj, t_start, t_end);
+  std::cout << "1.1.5" << std::endl;
 
   std::vector<Point_3> points_cgal;
   for (auto point_i : points)
@@ -597,6 +600,7 @@ CGAL_Polyhedron_3 Mader::convexHullOfInterval(mt::dynTrajCompiled& traj, double 
     points_cgal.push_back(Point_3(point_i.x(), point_i.y(), point_i.z()));
   }
 
+  std::cout << "1.1.6" << std::endl;
   return cu::convexHullOfPoints(points_cgal);
 }
 
@@ -707,6 +711,8 @@ ConvexHullsOfCurve Mader::convexHullsOfCurve(mt::dynTrajCompiled& traj, double t
   ConvexHullsOfCurve convexHulls;
   double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
 
+  std::cout << "1.1.3" << std::endl;
+
   for (int i = 0; i < par_.num_pol; i++)
   {
     convexHulls.push_back(convexHullOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT));
@@ -718,6 +724,8 @@ ConvexHullsOfCurve Mader::convexHullsOfCurve(mt::dynTrajCompiled& traj, double t
 ConvexHullsOfCurves Mader::convexHullsOfCurves(double t_start, double t_end)
 {
   ConvexHullsOfCurves result;
+
+  std::cout << "1.1.2" << std::endl;
 
   for (auto traj : trajs_)
   {
@@ -1417,9 +1425,9 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   std::cout << "1" << std::endl;
 
   ////////////////
-  std::cout << "bef mtx_trajs_.lock() in replan" << std::endl;
+  // std::cout << "bef mtx_trajs_.lock() in replan" << std::endl;
   mtx_trajs_.lock();
-  std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
+  // std::cout << "aft mtx_trajs_.lock() in replan" << std::endl;
 
   time_init_opt_ = ros::Time::now().toSec();
   removeTrajsThatWillNotAffectMe(A, t_start, t_final);
@@ -1428,16 +1436,16 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   ConvexHullsOfCurves hulls = convexHullsOfCurves(t_start, t_final);
 
-  std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
+  // std::cout << "bef mtx_trajs_.unlock() in replan" << std::endl;
   mtx_trajs_.unlock();
-  std::cout << "aft mtx_trajs_.unlock() in replan" << std::endl;
+  // std::cout << "aft mtx_trajs_.unlock() in replan" << std::endl;
 
   mt::ConvexHullsOfCurves_Std hulls_std = cu::vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = cu::vectorGCALPol2vectorJPSPol(hulls);
-  std::cout << "1.2" << std::endl;
+  // std::cout << "1.2" << std::endl;
   edges_obstacles_out = cu::vectorGCALPol2edges(hulls);
 
-  std::cout << "2" << std::endl;
+  // std::cout << "2" << std::endl;
 
   solver_->setHulls(hulls_std);
 
