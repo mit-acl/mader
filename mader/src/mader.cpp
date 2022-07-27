@@ -183,7 +183,7 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     have_received_trajectories_while_checking_ = true;
   }
 
-  mtx_trajs_.lock(); // this should be above is_in_DC block, otherwise gives a pointer-related error
+  mtx_trajs_.lock();  // this should be above is_in_DC block, otherwise gives a pointer-related error
 
   // std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
   //     std::find_if(trajs_.begin(), trajs_.end(),
@@ -1414,6 +1414,8 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
     return false;
   }
 
+  std::cout << "1" << std::endl;
+
   ////////////////
   // std::cout << "bef mtx_trajs_.lock() in replan" << std::endl;
   mtx_trajs_.lock();
@@ -1431,6 +1433,8 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   mt::ConvexHullsOfCurves_Std hulls_std = cu::vectorGCALPol2vectorStdEigen(hulls);
   // poly_safe_out = cu::vectorGCALPol2vectorJPSPol(hulls);
   edges_obstacles_out = cu::vectorGCALPol2edges(hulls);
+
+  std::cout << "2" << std::endl;
 
   solver_->setHulls(hulls_std);
 
@@ -1498,6 +1502,8 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   //   par_.is_stuck = false;
   // }
 
+  std::cout << "3" << std::endl;
+
   num_of_LPs_run = solver_->getNumOfLPsRun();
   num_of_QCQPs_run = solver_->getNumOfQCQPsRun();
 
@@ -1557,6 +1563,8 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   MyTimer check_t(true);
 
+  std::cout << "4" << std::endl;
+
   // std::cout << "bef mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
   mtx_trajs_.lock();
   // std::cout << "aft mtx_trajs_.lock() in replan (safetyCheckAfterOpt)" << std::endl;
@@ -1598,6 +1606,8 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
     ROS_ERROR_STREAM("safetyCheckAfterOpt is not satisfied, returning");
     return false;
   }
+
+  std::cout << "5" << std::endl;
 
   ///////////////////////////////////////////////////////////
   ///////////////       OTHER STUFF    //////////////////////
