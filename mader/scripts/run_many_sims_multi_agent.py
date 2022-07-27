@@ -37,15 +37,15 @@ def myhook():
 if __name__ == '__main__':
 
     # parameters
-    is_oldmader=True
-    num_of_sims=60
+    is_oldmader=False
+    num_of_sims=10
     num_of_agents=10
     how_long_to_wait = 40 #[s]
     if is_oldmader:
         dc_list = [0, 160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
     else:
-        dc_list = [160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        # dc_list = [170] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        # dc_list = [160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        dc_list = [160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     # folder initialization
     folder_bags_list = []
