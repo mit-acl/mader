@@ -168,6 +168,8 @@ private:
   std::mutex mtx_G_term;
   std::mutex mtx_t_;
 
+  std::mutex mtx_hrtwch_;
+
   mt::state stateA_;  // It's the initial condition for the solver
 
   mt::state state_;

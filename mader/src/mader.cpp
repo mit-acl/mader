@@ -178,10 +178,16 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
 
   MyTimer tmp_t(true);
 
+  mtx_hrtwch_.lock();
   if (started_check_ == true && traj.is_agent == true)
   {
     have_received_trajectories_while_checking_ = true;
   }
+  else
+  {
+    have_received_trajectories_while_checking_ = false;
+  }
+  mtx_hrtwch_.unlock();
 
   mtx_trajs_.lock();  // this should be above is_in_DC block, otherwise gives a pointer-related error
 
@@ -238,6 +244,13 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
       {
         ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
         delay_check_result = false;  // will have to redo the optimization
+      }
+    }
+    else
+    {  // if traj_compiled.is_agent == false
+      if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      {
+        delay_check_result = false;
       }
     }
   }
@@ -312,7 +325,6 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
 
   mtx_trajs_.unlock();
 
-  have_received_trajectories_while_checking_ = false;
   return delay_check_result;
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
@@ -321,10 +333,12 @@ void Mader::updateTrajObstacles(mt::dynTraj traj)
 {
   MyTimer tmp_t(true);
 
+  mtx_hrtwch_.lock();
   if (started_check_ == true && traj.is_agent == true)
   {
     have_received_trajectories_while_checking_ = true;
   }
+  mtx_hrtwch_.unlock();
 
   mtx_trajs_.lock();
 
@@ -392,7 +406,9 @@ void Mader::updateTrajObstacles(mt::dynTraj traj)
 
   mtx_trajs_.unlock();
 
+  mtx_hrtwch_.lock();
   have_received_trajectories_while_checking_ = false;
+  mtx_hrtwch_.unlock();
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
 
@@ -1044,11 +1060,13 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, bool& is_q0_fail
 
   // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
   // This is Recheck
+  mtx_hrtwch_.lock();
   if (have_received_trajectories_while_checking_ == true)
   {
     ROS_ERROR_STREAM("Recvd traj while checking ");
     result = false;
   }
+  mtx_hrtwch_.unlock();
 
   started_check_ = false;
 
@@ -1075,11 +1093,14 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
   }
 
   // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
+  mtx_hrtwch_.lock();
   if (have_received_trajectories_while_checking_ == true)
   {
     ROS_ERROR_STREAM("Recvd traj while checking ");
     result = false;
   }
+  mtx_hrtwch_.unlock();
+
   started_check_ = false;
 
   return result;
