@@ -218,7 +218,8 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   // Timers
   pubCBTimer_ = nh2_.createTimer(ros::Duration(par_.dc), &MaderRos::pubCB, this);
-  replanCBTimer_ = nh3_.createTimer(ros::Duration(par_.dc), &MaderRos::replanCB, this);
+  // replanCBTimer_ = nh3_.createTimer(ros::Duration(par_.dc), &MaderRos::replanCB, this);
+  replanCBTimer_ = nh3_.createTimer(ros::Duration(0.1), &MaderRos::replanCB, this);
 
   // For now stop all these subscribers/timers until we receive GO
   // // sub_state_.shutdown();
@@ -421,7 +422,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
 
     double time_now = ros::Time::now().toSec();
     double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_created;
-    
+
     alltrajs_.pop_front();
     alltrajsTimers_.pop_front();
 
@@ -431,8 +432,8 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
     // supposedly_simulated_time_delay should be simulated_comm_delay_
     if (supposedly_simulated_comm_delay > delay_check_ && is_delaycheck_)
     {
-      std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s"
-                << std::endl;
+      // std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s"
+      << std::endl;
       missed_msgs_cnt_++;
     }
     msgs_cnt_++;
