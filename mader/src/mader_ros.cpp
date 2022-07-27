@@ -412,7 +412,7 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
 
     if (is_delaycheck_)
     {
-      mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, delay_check_result_, headsup_time_);
+      delay_check_result_ = mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, headsup_time_);
     }
     else
     {
@@ -427,7 +427,6 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
 
     // mtx_alltrajs_.unlock();
     // mtx_alltrajsTimers_.unlock();
-
 
     // supposedly_simulated_time_delay should be simulated_comm_delay_
     if (supposedly_simulated_comm_delay > delay_check_ && is_delaycheck_)
@@ -583,6 +582,9 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
       if (replanned)
       {
+        MyTimer delay_check_t(true);
+        is_in_DC_ = true;
+
         // let others know my new trajectory
         publishOwnTraj(pwp_now_, false, headsup_time_);
 
@@ -601,9 +603,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
         // delay check *******************************************************
         // start
-        MyTimer delay_check_t(true);
-        is_in_DC_ = true;
-        delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
+        // delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
         while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
         {
           // wait while trajCB() is checking new trajs

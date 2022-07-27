@@ -171,10 +171,10 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
 }
 // Note that we need to compile the trajectories inside mader.cpp because t_ is in mader.hpp
 
-void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC,
-                                bool& delay_check_result, const double& headsup_time)
+bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC,
+                                const double& headsup_time)
 {
-  delay_check_result = true;
+  bool delay_check_result = true;
 
   MyTimer tmp_t(true);
 
@@ -182,6 +182,8 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
   {
     have_received_trajectories_while_checking_ = true;
   }
+
+  mtx_trajs_.lock(); // this should be above is_in_DC block, otherwise gives a pointer-related error
 
   // std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
   //     std::find_if(trajs_.begin(), trajs_.end(),
@@ -199,8 +201,7 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     {
       if (!traj_compiled.is_committed)
       {
-        // if (headsup_time < traj_compiled.time_created)
-        if (traj_compiled.time_created - headsup_time > 0.001)  // tol:1ms
+        if (headsup_time < traj_compiled.time_created)
         {
           // Do nothing. They will change their traj.
         }
@@ -209,7 +210,6 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
         {
           ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
           delay_check_result = false;  // will have to redo the optimization
-          have_received_trajectories_while_checking_ = false;
         }
         else if (traj_compiled.time_created == headsup_time &&
                  trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(),
@@ -221,17 +221,14 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
           if (center_obs[0] > state_.pos[0])
           {
             delay_check_result = false;
-            have_received_trajectories_while_checking_ = false;
           }
           else if (center_obs[1] > state_.pos[1])
           {
             delay_check_result = false;
-            have_received_trajectories_while_checking_ = false;
           }
           else if (center_obs[2] > state_.pos[2])
           {
             delay_check_result = false;
-            have_received_trajectories_while_checking_ = false;
           }
           // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
           // happen bc it's the same position and collision
@@ -241,12 +238,9 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
       {
         ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
         delay_check_result = false;  // will have to redo the optimization
-        have_received_trajectories_while_checking_ = false;
       }
     }
   }
-
-  mtx_trajs_.lock();
 
   // if (exists_in_local_map && traj.is_committed)
   if (traj.is_committed)
@@ -319,6 +313,7 @@ void Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
   mtx_trajs_.unlock();
 
   have_received_trajectories_while_checking_ = false;
+  return delay_check_result;
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
 
@@ -1594,12 +1589,12 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
 
   if (is_safe_after_opt == false)
   {
-    int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) +
-                                  par_.delay_check * par_.comm_delay_param / par_.dc);  // Number of states that
-                                                                                        // would have been needed for
-                                                                                        // the last replan
-    deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
-    deltaT_ = std::min(1.0 * deltaT_, 2.0 / par_.dc);
+    // int states_last_replan = ceil(replanCB_t.ElapsedMs() / (par_.dc * 1000) +
+    //                               par_.delay_check * par_.comm_delay_param / par_.dc);  // Number of states that
+    //                                                                                     // would have been needed for
+    //                                                                                     // the last replan
+    // deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
+    // deltaT_ = std::min(1.0 * deltaT_, 2.0 / par_.dc);
     ROS_ERROR_STREAM("safetyCheckAfterOpt is not satisfied, returning");
     return false;
   }
