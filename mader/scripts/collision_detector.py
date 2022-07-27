@@ -84,7 +84,7 @@ class CollisionDetector:
 
                             print("violation dist is " + str(max_dist))
 
-                            self.dist = max_dist 
+                            self.collision.dist = max_dist 
                             self.pubIsCollided.publish(self.collision)
 
                         # if (abs(self.state_pos[i,0] - self.state_pos[j,0]) < self.bbox_x 
