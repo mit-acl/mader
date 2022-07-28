@@ -89,6 +89,6 @@ else
 fi
 
 # base station
-tmux send-keys -t $SESSION:$w.13 "roslaunch mader base_station.launch" C-m
+tmux send-keys -t $SESSION:$w.0 "roslaunch mader base_station.launch" C-m
 
 tmux -2 attach-session -t $SESSION
