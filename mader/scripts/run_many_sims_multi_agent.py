@@ -42,138 +42,147 @@ if __name__ == '__main__':
     num_of_agents=10
     how_long_to_wait = 40 #[s]
     if is_oldmader:
+        cd_list = [0, 50, 100, 150, 200, 300, 400, 500]
         # dc_list = [0, 160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         dc_list = [0] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
     else:
+        cd_list = [50, 100, 150, 200, 300, 400, 500]
         dc_list = [160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     # folder initialization
     folder_bags_list = []
     folder_txts_list = []
 
-    for dc in dc_list:
+    for cd in cd_list:
 
-        dc_in_ms = dc/1000;
+        is_oldmader=True
 
-        # mader.yaml modification. comment out delay_check param and is_delaycheck param
-        os.system("sed -i '/delay_check/s/^/#/g' $(rospack find mader)/param/mader.yaml")
-        os.system("sed -i '/is_delaycheck/s/^/#/g' $(rospack find mader)/param/mader.yaml")
+        for dc in dc_list:
 
-        if is_oldmader:
-            folder_bags="/home/kota/data/bags/oldmader/cd50ms"
-            folder_txts="/home/kota/data/txt_files/oldmader/cd50ms"
-            folder_csv="/home/kota/data/csv/oldmader/cd50ms"
-        else:
-            folder_bags="/home/kota/data/bags/rmader/cd50msdc"+str(dc)+"ms"
-            folder_txts="/home/kota/data/txt_files/rmader/cd50msdc"+str(dc)+"ms"
-            folder_csv="/home/kota/data/csv/rmader/cd50msdc"+str(dc)+"ms"
+            dc_in_ms = dc/1000;
+            cd_in_ms = cd/1000;
 
-        # create directy if not exists
-        if (not os.path.exists(folder_bags)):
-            os.makedirs(folder_bags)
+            # mader.yaml modification. comment out delay_check param and is_delaycheck param
+            os.system("sed -i '/delay_check/s/^/#/g' $(rospack find mader)/param/mader.yaml")
+            os.system("sed -i '/is_delaycheck/s/^/#/g' $(rospack find mader)/param/mader.yaml")
+            os.system("sed -i '/simulated_comm_delay/s/^/#/g' $(rospack find mader)/param/mader.yaml")
 
-        # create directy if not exists
-        if (not os.path.exists(folder_txts)):
-            os.makedirs(folder_txts)
-
-         # create directy if not exists
-        if (not os.path.exists(folder_csv)):
-            os.makedirs(folder_csv)        
-
-        # name_node_record="bag_recorder"
-        kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
-
-        #make sure ROS (and related stuff) is not running
-        os.system(kill_all)
-
-        for k in range(num_of_sims):
-
-            if k <= 9:
-                sim_id = "0"+str(k)
+            if is_oldmader:
+                folder_bags="/home/kota/data/bags/oldmader/cd"+str(cd)+"msdc"+str(dc)+"ms"
+                folder_txts="/home/kota/data/txt_files/oldmader/cd"+str(cd)+"ms"+str(dc)+"ms"
+                folder_csv="/home/kota/data/csv/oldmader/cd"+str(cd)+"ms"+str(dc)+"ms"
             else:
-                sim_id = str(k)
+                folder_bags="/home/kota/data/bags/rmader/cd"+str(cd)+"msdc"+str(dc)+"ms"
+                folder_txts="/home/kota/data/txt_files/rmader/cd"+str(cd)+"msdc"+str(dc)+"ms"
+                folder_csv="/home/kota/data/csv/rmader/cd"+str(cd)+"msdc"+str(dc)+"ms"
 
-            commands = []
-            name_node_record="bag_recorder"
-            commands.append("roscore")
+            # create directy if not exists
+            if (not os.path.exists(folder_bags)):
+                os.makedirs(folder_bags)
 
-            for num in range(1,num_of_agents+1):
-                if num <= 9:
-                    agent_id = "0"+str(num)
-                else:
-                    agent_id = str(num)
+            # create directy if not exists
+            if (not os.path.exists(folder_txts)):
+                os.makedirs(folder_txts)
 
-                commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+str(dc_in_ms))
-                if is_oldmader:
-                    commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck false")
-                else:
-                    commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck true")
+             # create directy if not exists
+            if (not os.path.exists(folder_csv)):
+                os.makedirs(folder_csv)        
 
-            commands.append("sleep 3.0 && roslaunch mader many_drones.launch action:=controller")
-            commands.append("sleep 3.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts)
-            commands.append("sleep 3.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
-            commands.append("sleep 3.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
-            commands.append("sleep 3.0 && roslaunch mader goal_reached.launch")
-            commands.append("sleep 3.0 && roslaunch mader ave_distance.launch num_of_agents:="+str(num_of_agents)+" folder_loc:="+folder_csv+" sim:="+sim_id)
+            # name_node_record="bag_recorder"
+            kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
 
-            #publishing the goal should be the last command
-            commands.append("sleep 10.0 && roslaunch mader many_drones.launch action:=send_goal")
-            commands.append("sleep 10.0 && tmux detach")
-
-            # print("len(commands)= " , len(commands))
-            session_name="run_many_sims_multi_agent_session"
-            os.system("tmux kill-session -t" + session_name)
-            os.system("tmux new-session -d -s "+str(session_name)+" -x 300 -y 300")
-
-            # tmux splitting
-            for i in range(len(commands)):
-                # print('splitting ',i)
-                os.system('tmux new-window -t ' + str(session_name))
-           
-            time.sleep(3.0)
-
-            for i in range(len(commands)):
-                os.system('tmux send-keys -t '+str(session_name)+':'+str(i) +'.0 "'+ commands[i]+'" '+' C-m')
-
-            os.system("tmux attach")
-            print("Commands sent")
-
-            # rospy.init_node('goalReachedCheck_in_sims', anonymous=True)
-            # c = GoalReachedCheck_sim()
-            # rospy.Subscriber("goal_reached", GoalReached, c.goal_reachedCB)
-            # rospy.on_shutdown(myhook)
-
-            # check if all the agents reached the goal
-            is_goal_reached = False
-            tic = time.perf_counter()
-            toc = time.perf_counter()
-
-            while (toc - tic < how_long_to_wait and not is_goal_reached):
-                toc = time.perf_counter()
-                if(checkGoalReached(num_of_agents)):
-                    print('all the agents reached the goal')
-                    time.sleep(2) # gives us time to write csv file for ave distance
-                    is_goal_reached = True
-                time.sleep(0.1)
-
-            if (not is_goal_reached):
-                os.system('echo "simulation '+sim_id+': not goal reached" >> '+folder_bags+'/status.txt')
-            else:
-                os.system('echo "simulation '+sim_id+': goal reached" >> '+folder_bags+'/status.txt')
-
-            os.system("rosnode kill "+name_node_record);
-            # os.system("rosnode kill goalReachedCheck_in_sims")
-            # os.system("rosnode kill -a")
-            time.sleep(1.0)
+            #make sure ROS (and related stuff) is not running
             os.system(kill_all)
-            time.sleep(1.0)
 
-        # uncomment delay_check param
-        os.system("sed -i '/delay_check/s/^#//g' $(rospack find mader)/param/mader.yaml")
-        os.system("sed -i '/is_delaycheck/s/^#//g' $(rospack find mader)/param/mader.yaml")
+            for k in range(num_of_sims):
 
-        # use old mader only once
-        if is_oldmader:
-            is_oldmader=False
+                if k <= 9:
+                    sim_id = "0"+str(k)
+                else:
+                    sim_id = str(k)
 
-        time.sleep(3.0)
+                commands = []
+                name_node_record="bag_recorder"
+                commands.append("roscore")
+
+                for num in range(1,num_of_agents+1):
+                    if num <= 9:
+                        agent_id = "0"+str(num)
+                    else:
+                        agent_id = str(num)
+
+                    commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+str(dc_in_ms))
+                    commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/simulated_comm_delay "+str(cd_in_ms))
+                    if is_oldmader:
+                        commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck false")
+                    else:
+                        commands.append("sleep 3.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck true")
+
+                commands.append("sleep 3.0 && roslaunch mader many_drones.launch action:=controller")
+                commands.append("sleep 3.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts)
+                commands.append("sleep 3.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
+                commands.append("sleep 3.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
+                commands.append("sleep 3.0 && roslaunch mader goal_reached.launch")
+                commands.append("sleep 3.0 && roslaunch mader ave_distance.launch num_of_agents:="+str(num_of_agents)+" folder_loc:="+folder_csv+" sim:="+sim_id)
+
+                #publishing the goal should be the last command
+                commands.append("sleep 10.0 && roslaunch mader many_drones.launch action:=send_goal")
+                commands.append("sleep 10.0 && tmux detach")
+
+                # print("len(commands)= " , len(commands))
+                session_name="run_many_sims_multi_agent_session"
+                os.system("tmux kill-session -t" + session_name)
+                os.system("tmux new-session -d -s "+str(session_name)+" -x 300 -y 300")
+
+                # tmux splitting
+                for i in range(len(commands)):
+                    # print('splitting ',i)
+                    os.system('tmux new-window -t ' + str(session_name))
+               
+                time.sleep(3.0)
+
+                for i in range(len(commands)):
+                    os.system('tmux send-keys -t '+str(session_name)+':'+str(i) +'.0 "'+ commands[i]+'" '+' C-m')
+
+                os.system("tmux attach")
+                print("Commands sent")
+
+                # rospy.init_node('goalReachedCheck_in_sims', anonymous=True)
+                # c = GoalReachedCheck_sim()
+                # rospy.Subscriber("goal_reached", GoalReached, c.goal_reachedCB)
+                # rospy.on_shutdown(myhook)
+
+                # check if all the agents reached the goal
+                is_goal_reached = False
+                tic = time.perf_counter()
+                toc = time.perf_counter()
+
+                while (toc - tic < how_long_to_wait and not is_goal_reached):
+                    toc = time.perf_counter()
+                    if(checkGoalReached(num_of_agents)):
+                        print('all the agents reached the goal')
+                        time.sleep(2) # gives us time to write csv file for ave distance
+                        is_goal_reached = True
+                    time.sleep(0.1)
+
+                if (not is_goal_reached):
+                    os.system('echo "simulation '+sim_id+': not goal reached" >> '+folder_bags+'/status.txt')
+                else:
+                    os.system('echo "simulation '+sim_id+': goal reached" >> '+folder_bags+'/status.txt')
+
+                os.system("rosnode kill "+name_node_record);
+                # os.system("rosnode kill goalReachedCheck_in_sims")
+                # os.system("rosnode kill -a")
+                time.sleep(1.0)
+                os.system(kill_all)
+                time.sleep(1.0)
+
+            # uncomment delay_check param
+            os.system("sed -i '/delay_check/s/^#//g' $(rospack find mader)/param/mader.yaml")
+            os.system("sed -i '/is_delaycheck/s/^#//g' $(rospack find mader)/param/mader.yaml")
+
+            # use old mader only once
+            if is_oldmader:
+                is_oldmader=False
+
+            time.sleep(3.0)
