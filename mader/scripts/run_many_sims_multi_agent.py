@@ -38,9 +38,9 @@ if __name__ == '__main__':
 
     # parameters
     is_oldmader=True
-    num_of_sims=60
+    num_of_sims=100
     num_of_agents=10
-    how_long_to_wait = 40 #[s]
+    how_long_to_wait = 30 #[s]
     if is_oldmader:
         cd_list = [0, 50, 100, 150, 200, 300, 400, 500]
         # dc_list = [0, 160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
@@ -68,9 +68,9 @@ if __name__ == '__main__':
             os.system("sed -i '/simulated_comm_delay/s/^/#/g' $(rospack find mader)/param/mader.yaml")
 
             if is_oldmader:
-                folder_bags="/home/kota/data/bags/oldmader/cd"+str(cd)+"msdc"+str(dc)+"ms"
-                folder_txts="/home/kota/data/txt_files/oldmader/cd"+str(cd)+"ms"+str(dc)+"ms"
-                folder_csv="/home/kota/data/csv/oldmader/cd"+str(cd)+"ms"+str(dc)+"ms"
+                folder_bags="/home/kota/data/bags/oldmader/cd"+str(cd)+"ms"
+                folder_txts="/home/kota/data/txt_files/oldmader/cd"+str(cd)+"ms"
+                folder_csv="/home/kota/data/csv/oldmader/cd"+str(cd)+"ms"
             else:
                 folder_bags="/home/kota/data/bags/rmader/cd"+str(cd)+"msdc"+str(dc)+"ms"
                 folder_txts="/home/kota/data/txt_files/rmader/cd"+str(cd)+"msdc"+str(dc)+"ms"
