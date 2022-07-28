@@ -218,8 +218,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   // Timers
   pubCBTimer_ = nh2_.createTimer(ros::Duration(par_.dc), &MaderRos::pubCB, this);
-  // replanCBTimer_ = nh3_.createTimer(ros::Duration(par_.dc), &MaderRos::replanCB, this);
-  replanCBTimer_ = nh3_.createTimer(ros::Duration(0.1), &MaderRos::replanCB, this);
+  replanCBTimer_ = nh3_.createTimer(ros::Duration(par_.dc), &MaderRos::replanCB, this);
 
   // For now stop all these subscribers/timers until we receive GO
   // // sub_state_.shutdown();
@@ -261,7 +260,10 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   std::string id = name_drone_;
   id.erase(0, 2);  // Erase SQ or HX i.e. SQ12 --> 12  HX8621 --> 8621 # TODO Hard-coded for this this convention
   id_ = std::stoi(id);
+
+  // mtx_mader_ptr_.lock();
   mader_ptr_->getID(id_);
+  // mtx_mader_ptr_.unlock();
 
   timer_stop_.Reset();
 
@@ -385,7 +387,9 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
   }
   else
   {
+    // mtx_mader_ptr_.lock();
     mader_ptr_->updateTrajObstacles(tmp);
+    // mtx_mader_ptr_.unlock();
   }
 }
 
@@ -413,11 +417,15 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
 
     if (is_delaycheck_)
     {
+      // mtx_mader_ptr_.lock();
       delay_check_result_ = mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, headsup_time_);
+      // mtx_mader_ptr_.unlock();
     }
     else
     {
+      // mtx_mader_ptr_.lock();
       mader_ptr_->updateTrajObstacles(alltrajs_[0]);
+      // mtx_mader_ptr_.unlock();
     }
 
     double time_now = ros::Time::now().toSec();
@@ -524,27 +532,32 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
   if (ros::ok() && published_initial_position_ == true && is_mader_running_)
   {
     // introduce random wait time in the beginning
-    // if (!is_replanCB_called_)
-    // {
-    //   // to avoid initial path search congestions add some random sleep here
-    //   std::random_device rd;
-    //   std::default_random_engine eng(rd());
-    //   std::uniform_real_distribution<float> distr(0, 2);  // sleep between 0 and 1 sec
-    //   ros::Duration(distr(eng)).sleep();
-    //   is_replanCB_called_ = true;
-    // }
+    if (!is_replanCB_called_)
+    {
+      // to avoid initial path search congestions add some random sleep here
+      std::random_device rd;
+      std::default_random_engine eng(rd());
+      std::uniform_real_distribution<float> distr(0, 2);  // sleep between 0 and 1 sec
+      ros::Duration(distr(eng)).sleep();
+      is_replanCB_called_ = true;
+    }
 
+    // mtx_mader_ptr_.lock();
     if (mader_ptr_->isGoalSeen())
     {
       std::cout << "goal is seen so no need to replan" << std::endl;
       is_mader_running_ = false;
+      // mtx_mader_ptr_.unlock();
       return;
     }
+    // mtx_mader_ptr_.unlock();
 
     // when reached goal, publish how many msgs, which we supposedly should have considered
     if (is_replanCB_initialized_)
     {
+      // mtx_mader_ptr_.lock();
       mt::state G_term = mader_ptr_->getGterm();
+      // mtx_mader_ptr_.unlock();
       double dist_to_goal = (state_.pos - G_term.pos).norm();
       if (dist_to_goal < par_.goal_radius)
       {
@@ -567,8 +580,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
     if (is_delaycheck_)
     {
+      // mtx_mader_ptr_.lock();
       replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_,
                                                      num_of_QCQPs_run_, pwp_now_, headsup_time_);
+      // mtx_mader_ptr_.unlock();
 
       if (par_.visual)
       {
@@ -584,7 +599,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       if (replanned)
       {
         MyTimer delay_check_t(true);
-        is_in_DC_ = true;
+        // is_in_DC_ = true;
 
         // let others know my new trajectory
         publishOwnTraj(pwp_now_, false, headsup_time_);
@@ -610,7 +625,9 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           // wait while trajCB() is checking new trajs
           // TODO make this as a timer so that i can move onto the next optimization
           // std::cout << "waiting in DC" << std::endl;
-          // delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
+          // mtx_mader_ptr_.lock();
+          delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
+          // mtx_mader_ptr_.unlock();
           ros::Duration(0.01).sleep();
           if (delay_check_result_ == false)
           {
@@ -618,7 +635,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           }
         }
         // ros::Duration(delay_check_).sleep();
-        is_in_DC_ = false;
+        // is_in_DC_ = false;
         // end of delay check *******************************************************
 
         // std::cout << "after delay check" << std::endl;
@@ -633,7 +650,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           //   return;
           // }
 
-          if (mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now_))
+          // mtx_mader_ptr_.lock();
+          bool successful_to_add_to_plan = mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now_);
+          // mtx_mader_ptr_.unlock();
+          if (successful_to_add_to_plan)
           {
             // successful
 
@@ -710,7 +730,9 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     {
       // // std::cout << "I'm using old mader!!!!!" << std::endl;
 
+      // mtx_mader_ptr_.lock();
       replanned = mader_ptr_->replan(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
+      // mtx_mader_ptr_.unlock();
 
       if (par_.visual)
       {
@@ -780,7 +802,9 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
   }
 
   mt::state G;  // projected goal
+  // mtx_mader_ptr_.lock();
   mader_ptr_->getG(G);
+  // mtx_mader_ptr_.unlock();
   pubState(G, pub_point_G_);
 }
 
@@ -856,7 +880,9 @@ void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
     sub_term_goal_.shutdown();
     pubCBTimer_.stop();
     replanCBTimer_.stop();
+    // mtx_mader_ptr_.lock();
     mader_ptr_->resetInitialization();
+    // mtx_mader_ptr_.unlock();
     is_mader_running_ = false;
     std::cout << on_blue << "**************MADER STOPPED" << reset << std::endl;
   }
@@ -887,7 +913,9 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   // std::cout << "Updating state to" << std::endl;
   // state_tmp.print();
 
+  // mtx_mader_ptr_.lock();
   mader_ptr_->updateState(state_tmp);  // this updates state //mader_ptr_ is a pointer to mader object
+  // mtx_mader_ptr_.unlock();
 
   W_T_B_ = Eigen::Translation3d(msg.pos.x, msg.pos.y, msg.pos.z) *
            Eigen::Quaterniond(msg.quat.w, msg.quat.x, msg.quat.y, msg.quat.z);
@@ -898,10 +926,12 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
     publishOwnTraj(pwp_last_, true);
     published_initial_position_ = true;
   }
+  // mtx_mader_ptr_.lock();
   if (mader_ptr_->IsTranslating() == true && par_.visual)
   {
     pubActualTraj();
   }
+  // mtx_mader_ptr_.unlock();
 
   // publishFOV();
 }
@@ -930,6 +960,7 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
 void MaderRos::pubCB(const ros::TimerEvent& e)
 {
   mt::state next_goal;
+  // mtx_mader_ptr_.lock();
   if (mader_ptr_->getNextGoal(next_goal))
   {
     snapstack_msgs::Goal quadGoal;
@@ -967,6 +998,7 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
 
     pub_setpoint_.publish(setpoint_);
   }
+  // mtx_mader_ptr_.unlock();
 }
 
 void MaderRos::clearMarkerArray(visualization_msgs::MarkerArray* tmp, ros::Publisher* publisher)
@@ -1045,7 +1077,9 @@ void MaderRos::pubActualTraj()
   static geometry_msgs::Point p_last = mu::pointOrigin();
 
   mt::state current_state;
+  // mtx_mader_ptr_.lock();
   mader_ptr_->getState(current_state);
+  // mtx_mader_ptr_.unlock();
   Eigen::Vector3d act_pos = current_state.pos;
 
   visualization_msgs::Marker m;
@@ -1146,7 +1180,9 @@ void MaderRos::terminalGoalCB(const geometry_msgs::PoseStamped& msg)
   }
 
   G_term.setPos(msg.pose.position.x, msg.pose.position.y, z);
+  // mtx_mader_ptr_.lock();
   mader_ptr_->setTerminalGoal(G_term);
+  // mtx_mader_ptr_.unlock();
 
   pubState(G_term, pub_point_G_term_);
 

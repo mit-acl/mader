@@ -174,6 +174,9 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
 bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC,
                                 const double& headsup_time)
 {
+  
+  // std::cout << "in updateTrajObstacles" << std::endl;
+
   bool delay_check_result = true;
 
   MyTimer tmp_t(true);
@@ -189,7 +192,7 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
   }
   mtx_hrtwch_.unlock();
 
-  mtx_trajs_.lock();  // this should be above is_in_DC block, otherwise gives a pointer-related error
+
 
   // std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
   //     std::find_if(trajs_.begin(), trajs_.end(),
@@ -254,6 +257,10 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
       }
     }
   }
+
+  // std::cout << "bef mtx_trajs_.lock() in updateTrajObstacles" << std::endl;
+  mtx_trajs_.lock();
+  // std::cout << "aft mtx_trajs_.lock() in updateTrajObstacles" << std::endl; 
 
   // if (exists_in_local_map && traj.is_committed)
   if (traj.is_committed)
@@ -323,9 +330,14 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
 
   trajs_ = local_trajs;
 
+  // std::cout << "bef mtx_trajs_.unlock() in updateTrajObstacles" << std::endl;
   mtx_trajs_.unlock();
+  // std::cout << "aft mtx_trajs_.unlock() in updateTrajObstacles" << std::endl;
+
+  // std::cout << "out updateTrajObstacles" << std::endl;
 
   return delay_check_result;
+
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
 

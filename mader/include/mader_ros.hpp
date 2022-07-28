@@ -164,6 +164,7 @@ private:
 
   std::mutex mtx_alltrajs_;
   std::mutex mtx_alltrajsTimers_;
+  std::mutex mtx_mader_ptr_;
 
   std::deque<mt::dynTraj> alltrajs_;
   std::deque<ros::Timer> alltrajsTimers_;
