@@ -171,8 +171,6 @@ private:
 
   bool is_replanCB_called_ = false;
 
-  bool is_replanCB_initialized_ = false;
-
   bool is_mader_running_ = false;
 
   int msgs_cnt_ = 0;
