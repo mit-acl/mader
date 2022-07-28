@@ -547,28 +547,14 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     {
       std::cout << "goal is seen so no need to replan" << std::endl;
       is_mader_running_ = false;
+      mader_msgs::MissedMsgsCnt msg;
+      msg.missed_msgs_cnt = missed_msgs_cnt_;
+      msg.msgs_cnt = msgs_cnt_;
+      pub_missed_msgs_cnt_.publish(msg);
       // mtx_mader_ptr_.unlock();
       return;
     }
     // mtx_mader_ptr_.unlock();
-
-    // when reached goal, publish how many msgs, which we supposedly should have considered
-    if (is_replanCB_initialized_)
-    {
-      // mtx_mader_ptr_.lock();
-      mt::state G_term = mader_ptr_->getGterm();
-      // mtx_mader_ptr_.unlock();
-      double dist_to_goal = (state_.pos - G_term.pos).norm();
-      if (dist_to_goal < par_.goal_radius)
-      {
-        mader_msgs::MissedMsgsCnt msg;
-        msg.missed_msgs_cnt = missed_msgs_cnt_;
-        msg.msgs_cnt = msgs_cnt_;
-        pub_missed_msgs_cnt_.publish(msg);
-        is_mader_running_ = false;  // make sure this is going to be publish only once
-        return;
-      }
-    }
 
     // initialization
     mt::Edges edges_obstacles;
@@ -795,11 +781,6 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       }
     }
   }  // std::cout << "[Callback] Leaving replanCB" << std::endl;
-
-  if (!is_replanCB_initialized_)
-  {
-    is_replanCB_initialized_ = true;
-  }
 
   mt::state G;  // projected goal
   // mtx_mader_ptr_.lock();
