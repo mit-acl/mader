@@ -1,9 +1,8 @@
 # SQ or NX?
-sim: false
+sim: true
 
 # use decentralized traj_ or not?
-max_agent_number: 7
-
+max_agent_number: 10
 
 use_ff: true # use feedforward
 visual: true #publish visualization stuff
