@@ -62,6 +62,8 @@ tmux send-keys -t $SESSION:$w.5 "ssh nuc3@192.168.17.2" C-m
 tmux send-keys -t $SESSION:$w.7 "ssh nuc4@192.168.18.2" C-m
 tmux send-keys -t $SESSION:$w.9 "ssh nuc5@192.168.19.2" C-m
 tmux send-keys -t $SESSION:$w.11 "ssh nuc6@192.168.20.2" C-m
+# tmux send-keys -t $SESSION:$w.11 "ssh nuc@192.168.21.2" C-m
+# tmux send-keys -t $SESSION:$w.11 "ssh nuc08@192.168.22.2" C-m
 
 sleep 1
 
