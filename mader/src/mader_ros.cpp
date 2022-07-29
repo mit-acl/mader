@@ -30,6 +30,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 {
   bool sim;  // if this is simulation or hardware. Used to check if we need SQ or HX
   mu::safeGetParam(nh1_, "sim", sim);
+  sim_ = sim;
   mu::safeGetParam(nh1_, "is_delaycheck", is_delaycheck_);
   int max_agent_number;
   mu::safeGetParam(nh1_, "max_agent_number", max_agent_number);
@@ -367,7 +368,7 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
   //   std::cout << "comm delay is huge!!!!" << std::endl;
   // }
 
-  if (sim && is_term_goal_initialized_)
+  if (sim_ && is_term_goal_initialized_)
   {
     //****** Communication delay introduced in the simulation
     // save all the trajectories into alltrajs_ and create a timer corresponding to that
