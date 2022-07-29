@@ -1,5 +1,5 @@
 # if simulatin or hex?
-sim: true
+sim: false
 # need take off?
 is_take_off: false
 # use delay check or not?
