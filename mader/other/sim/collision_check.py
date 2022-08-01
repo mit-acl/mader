@@ -30,18 +30,36 @@ if __name__ == '__main__':
     is_oldmader = True # change here 
     
     if is_oldmader:
-        cd_list = [0, 50, 100, 150, 200, 300, 400, 500]
+        cd_list = [0, 50, 100]
         # dc_list = [0, 160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        dc_list = [0] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
     else:
-        cd_list = [50, 100, 150, 200, 300, 400, 500]
+        # cd_list = [50, 100, 150, 200, 300, 400, 500]
+        cd_list = [50, 100]
         dc_list = [160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     for cd in cd_list:
 
         is_oldmader=True
 
+        if cd == 50:
+            # dc_list = [160, 100, 60, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 100:
+            # dc_list = [230, 210, 150, 110, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        else:
+            dc_list =[0]
+            
         for dc in dc_list:
+
+            if dc == 50.5:
+                dc = 50_5
+            elif dc == 50.1:
+                dc = 50_1
+            elif dc == 100.5:
+                dc = 100_5
+            elif dc == 100.1:
+                dc = 100_1
 
             if is_oldmader:
                 source_dir = "/home/kota/data/bags/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
