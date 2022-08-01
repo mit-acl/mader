@@ -1015,7 +1015,7 @@ bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol
   double d_i;
 
   double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
-  for (int i = 0; i < par_.num_pol; i++)                     // for each interval
+  for (int i = 0; i <= par_.num_pol; i++)                    // for each interval
   {
     // This is my trajectory (no inflation)
     std::vector<Eigen::Vector3d> pointsA =
