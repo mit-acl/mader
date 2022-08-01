@@ -37,30 +37,49 @@ def myhook():
 if __name__ == '__main__':
 
     # parameters
-    is_oldmader=True
-    num_of_sims=100
+    is_oldmader=False
+    num_of_sims=60
     num_of_agents=10
-    how_long_to_wait = 30 #[s]
+    how_long_to_wait = 40 #[s]
     if is_oldmader:
-        cd_list = [0, 50, 100, 150, 200, 300, 400, 500]
+        cd_list = [0, 50, 100, 150, 200]
         # dc_list = [0, 160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        dc_list = [0] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        # dc_list = [0] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
     else:
-        cd_list = [50, 100, 150, 200, 300, 400, 500]
+        # cd_list = [50, 100, 150, 200, 300, 400, 500]
+        cd_list = [50, 100]
         dc_list = [160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-
+        
     # folder initialization
     folder_bags_list = []
     folder_txts_list = []
 
     for cd in cd_list:
 
-        is_oldmader=True
+        is_oldmader=False
+
+        if cd == 50:
+            # dc_list = [0, 160, 100, 60, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 100:
+            # dc_list = [230, 210, 150, 110, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        else:
+            dc_list =[0]
 
         for dc in dc_list:
 
             dc_in_ms = dc/1000;
             cd_in_ms = cd/1000;
+
+            if dc == 50.5:
+                dc = 50_5
+            elif dc == 50.1:
+                dc = 50_1
+            elif dc == 100.5:
+                dc = 100_5
+            elif dc == 100.1:
+                dc = 100_1
 
             # mader.yaml modification. comment out delay_check param and is_delaycheck param
             os.system("sed -i '/delay_check/s/^/#/g' $(rospack find mader)/param/mader.yaml")
