@@ -174,7 +174,6 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
 bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC,
                                 const double& headsup_time)
 {
-  
   // std::cout << "in updateTrajObstacles" << std::endl;
 
   bool delay_check_result = true;
@@ -191,8 +190,6 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
     have_received_trajectories_while_checking_ = false;
   }
   mtx_hrtwch_.unlock();
-
-
 
   // std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
   //     std::find_if(trajs_.begin(), trajs_.end(),
@@ -260,7 +257,7 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
 
   // std::cout << "bef mtx_trajs_.lock() in updateTrajObstacles" << std::endl;
   mtx_trajs_.lock();
-  // std::cout << "aft mtx_trajs_.lock() in updateTrajObstacles" << std::endl; 
+  // std::cout << "aft mtx_trajs_.lock() in updateTrajObstacles" << std::endl;
 
   // if (exists_in_local_map && traj.is_committed)
   if (traj.is_committed)
@@ -976,7 +973,7 @@ bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol
   double d_i;
 
   double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
-  for (int i = 0; i < par_.num_pol; i++)                     // for each interval
+  for (int i = 0; i <= par_.num_pol; i++)                    // for each interval
   {
     // This is my trajectory (no inflation)
     std::vector<Eigen::Vector3d> pointsA =
