@@ -533,7 +533,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 {
   if (ros::ok() && published_initial_position_ == true && is_mader_running_)
   {
-    replanCBTimer_.stop()  // to avoid blockage
+    replanCBTimer_.stop();  // to avoid blockage
         // introduce random wait time in the beginning
         // if (!is_replanCB_called_)
         // {
