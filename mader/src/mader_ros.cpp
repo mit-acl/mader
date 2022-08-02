@@ -533,19 +533,20 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 {
   if (ros::ok() && published_initial_position_ == true && is_mader_running_)
   {
-    // introduce random wait time in the beginning
-    // if (!is_replanCB_called_)
-    // {
-    //   // to avoid initial path search congestions add some random sleep here
-    //   std::random_device rd;
-    //   std::default_random_engine eng(rd());
-    //   std::uniform_real_distribution<float> distr(0, 2);  // sleep between 0 and 1 sec
-    //   ros::Duration(distr(eng)).sleep();
-    //   is_replanCB_called_ = true;
-    // }
+    replanCBTimer_.stop()  // to avoid blockage
+        // introduce random wait time in the beginning
+        // if (!is_replanCB_called_)
+        // {
+        //   // to avoid initial path search congestions add some random sleep here
+        //   std::random_device rd;
+        //   std::default_random_engine eng(rd());
+        //   std::uniform_real_distribution<float> distr(0, 2);  // sleep between 0 and 1 sec
+        //   ros::Duration(distr(eng)).sleep();
+        //   is_replanCB_called_ = true;
+        // }
 
-    // mtx_mader_ptr_.lock();
-    if (mader_ptr_->isGoalSeen())
+        // mtx_mader_ptr_.lock();
+        if (mader_ptr_->isGoalSeen())
     {
       std::cout << "goal is seen so no need to replan" << std::endl;
       is_mader_running_ = false;
@@ -782,6 +783,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         }
       }
     }
+    replanCBTimer_.start();
   }  // std::cout << "[Callback] Leaving replanCB" << std::endl;
 
   mt::state G;  // projected goal
