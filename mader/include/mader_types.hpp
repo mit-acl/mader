@@ -566,10 +566,12 @@ struct parameters
   std::string color_type;
   int n_agents;
 
+  bool using_pop_up;
+
   double dc;
   double goal_radius;
   double drone_radius;
-  Eigen::Vector3d drone_bbox;  
+  Eigen::Vector3d drone_bbox;
 
   double Ra;
 

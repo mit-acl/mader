@@ -1,6 +1,9 @@
 # SQ or NX?
 sim: true
 
+# using pop_up
+using_pop_up: true
+
 # use decentralized traj_ or not?
 max_agent_number: 10
 
@@ -41,9 +44,9 @@ z_min: 0.9  # [m] don't forget the .0
 z_max: 2.0  # [m] don't forget the .0
 
 #For single-agent simulations
-v_max: [1.0, 1.0, 1.0]   #[m/s]  7.0
-a_max: [2.0, 2.0, 2.0]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
-j_max: [3.0, 3.0, 3.0]   #[m/s3]  #Right now it's only used for Gurobi, not for NLOPT
+v_max: [2.0, 2.0, 2.0]   #[m/s]  7.0
+a_max: [3.0, 3.0, 3.0]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
+j_max: [4.0, 4.0, 4.0]   #[m/s3]  #Right now it's only used for Gurobi, not for NLOPT
 
 factor_alpha: 1.5 #[-] DeltaT = factor_alpha*States_took_previous_replan
 

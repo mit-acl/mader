@@ -28,6 +28,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "sim", sim);
   int max_agent_number;  // used to subscribe to /traj
   mu::safeGetParam(nh1_, "max_agent_number", max_agent_number);
+  mu::safeGetParam(nh1_, "using_pop_up", par_.using_pop_up);
 
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
   mu::safeGetParam(nh1_, "visual", par_.visual);
@@ -261,7 +262,8 @@ void MaderRos::pubObstacles(mt::Edges edges_obstacles)
 void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 {
   // test pop_up scheme (SQ06 doesn't listen /trajs)
-  // if (id_ == 6){
+  // if (id_ == 6)
+  // {
   //   return;
   // }
 
