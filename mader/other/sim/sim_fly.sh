@@ -18,7 +18,7 @@ cmd="new-session -d -s $SESSION -x- -y-; rename-window $WINDOW"
 tmux -2 $cmd
 
 # window number
-w=1
+w=0
 
 #split tmux into 2x6
 for i in {1..6}
@@ -90,6 +90,6 @@ else
 fi
 
 # base station
-tmux send-keys -t $SESSION:$w.13 "roslaunch mader base_station.launch" C-m
+tmux send-keys -t $SESSION:$w.0 "roslaunch mader base_station.launch" C-m
 
 tmux -2 attach-session -t $SESSION

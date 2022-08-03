@@ -13,7 +13,7 @@ cmd="new-session -d -s $SESSION ; rename-window $WINDOW"
 tmux -2 $cmd
 
 # window number
-w=1
+w=0
 
 # split tmux into 4x2
 for i in {1..3}
