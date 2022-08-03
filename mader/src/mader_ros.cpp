@@ -149,6 +149,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pub_fov_ = nh1_.advertise<visualization_msgs::Marker>("fov", 1);
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
   pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("trajs", 1, true);  // The last boolean is latched or not
+  pub_comm_delay_ = nh1_.advertise<mader_msgs::CommDelay>("comm_delay", 1);
 
   // Subscribers
   sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
@@ -312,6 +313,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   tmp.is_agent = msg.is_agent;
 
+  tmp.time_created = msg.time_created;
+
   if (msg.is_agent)
   {
     tmp.pwp = mu::pwpMsg2Pwp(msg.pwp);
@@ -319,7 +322,13 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
 
   tmp.time_received = ros::Time::now().toSec();
 
+  double time_now = ros::Time::now().toSec();
+  double supposedly_simulated_comm_delay = time_now - tmp.time_created;
   mader_ptr_->updateTrajObstacles(tmp);
+
+  mader_msgs::CommDelay comm_msg;
+  comm_msg.comm_delay = supposedly_simulated_comm_delay;
+  pub_comm_delay_.publish(comm_msg);
 }
 
 // This trajectory contains all the future trajectory (current_pos --> A --> final_point_of_traj), because it's the
@@ -348,6 +357,8 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
   msg.is_agent = true;
 
   msg.pwp = mu::pwp2PwpMsg(pwp);
+
+  msg.time_created = ros::Time::now().toSec();
 
   // std::cout<<"msg.pwp.times[0]= "<<msg.pwp.times[0]
 

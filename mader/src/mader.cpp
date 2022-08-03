@@ -156,6 +156,7 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
   traj_compiled.bbox = traj.bbox;
   traj_compiled.id = traj.id;
   traj_compiled.time_received = traj.time_received;  // ros::Time::now().toSec();
+  traj_compiled.time_created = traj.time_created;
 
   traj_compiled.is_static =
       ((traj.is_agent == false) &&                           // is an obstacle and

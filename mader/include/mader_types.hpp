@@ -532,6 +532,7 @@ struct dynTraj
   Eigen::Vector3d bbox;
   int id;
   double time_received;  // time at which this trajectory was received from an agent
+  double time_created;   // for delay check
   bool is_agent;         // true for a trajectory of an agent, false for an obstacle
   mt::PieceWisePol pwp;
 };
@@ -542,6 +543,7 @@ struct dynTrajCompiled
   Eigen::Vector3d bbox;
   int id;
   double time_received;  // time at which this trajectory was received from an agent
+  double time_created;   // for delay check
   bool is_agent;         // true for a trajectory of an agent, false for an obstacle
   bool is_static;
   mt::PieceWisePol pwp;
