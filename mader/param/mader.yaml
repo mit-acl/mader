@@ -1,5 +1,5 @@
 # SQ or NX?
-sim: true
+sim: false
 
 # using pop_up
 using_pop_up: true
