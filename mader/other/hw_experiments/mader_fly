@@ -100,7 +100,7 @@ tmux send-keys -t $SESSION:$w.3 "(roscd mader && git rev-parse HEAD && git diff 
 tmux send-keys -t $SESSION:$w.5 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc3/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX03) 2>&1 | tee ~/Research/bags/nx03_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 tmux send-keys -t $SESSION:$w.7 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc4/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX04) 2>&1 | tee ~/Research/bags/nx04_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 tmux send-keys -t $SESSION:$w.9 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc5/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX05) 2>&1 | tee ~/Research/bags/nx05_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
-# tmux send-keys -t $SESSION:$w.9 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc6/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX06) 2>&1 | tee ~/Research/bags/nx05_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+# tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc6/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX06) 2>&1 | tee ~/Research/bags/nx05_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX07) 2>&1 | tee ~/Research/bags/nx07_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 
 # run the nuc connection command and fly command (fly script record related rostopics so the below command should be sent at last)

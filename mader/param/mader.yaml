@@ -35,7 +35,7 @@ Ra: 10.0           # [m] Radius of my planning sphere (planning horizon). Should
 
 # highbay
 x_min: -4.1  # [m] don't forget the .0
-x_max: 4.1  # [m] don't forget the .0
+x_max: 4.3  # [m] don't forget the .0
 
 y_min: -4.1  # [m] don't forget the .0
 y_max: 4.1   # [m] don't forget the .0
