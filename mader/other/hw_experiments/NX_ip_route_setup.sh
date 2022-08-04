@@ -11,4 +11,6 @@ sudo ip route add 192.168.20.0/24 via 192.168.0.206  #NUC6
 sudo ip route add 192.168.21.0/24 via 192.168.0.207  #NUC7
 sudo ip route add 192.168.22.0/24 via 192.168.0.208  #NUC8
 sudo ip route add 192.168.23.0/24 via 192.168.0.209  #NUC9
+sudo ip route add 192.168.24.0/24 via 192.168.0.210  #NUC10
+sudo ip route add 192.168.25.0/24 via 192.168.0.211  #NUC11
 
