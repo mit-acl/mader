@@ -21,6 +21,7 @@ import time
 from numpy import linalg as LA
 import struct
 from mader_msgs.msg import GoalReached
+from mader_msgs.msg import CompletionTime
 
 def checkGoalReached(num_of_agents):
     try:
@@ -37,18 +38,14 @@ def myhook():
 if __name__ == '__main__':
 
     # parameters
-    is_oldmader=False
-    num_of_sims=60
+    is_oldmader=True
+    num_of_sims=3
     num_of_agents=10
-    how_long_to_wait = 40 #[s]
+    how_long_to_wait = 30 #[s]
     if is_oldmader:
-        cd_list = [0, 50, 100, 150, 200]
-        # dc_list = [0, 160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        # dc_list = [0] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        cd_list = [50, 100, 200, 300]
     else:
-        # cd_list = [50, 100, 150, 200, 300, 400, 500]
         cd_list = [50, 100]
-        dc_list = [160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         
     # folder initialization
     folder_bags_list = []
@@ -56,14 +53,14 @@ if __name__ == '__main__':
 
     for cd in cd_list:
 
-        is_oldmader=False
+        is_oldmader=True
 
         if cd == 50:
-            # dc_list = [0, 160, 100, 60, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            dc_list = [160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 160, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            # dc_list = [230, 210, 150, 110, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            dc_list = [210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         else:
             dc_list =[0]
 
@@ -73,13 +70,13 @@ if __name__ == '__main__':
             cd_in_ms = cd/1000;
 
             if dc == 50.5:
-                dc = 50_5
+                str_dc = "50_5"
             elif dc == 50.1:
-                dc = 50_1
+                str_dc = "50_1"
             elif dc == 100.5:
-                dc = 100_5
+                str_dc = "100_5"
             elif dc == 100.1:
-                dc = 100_1
+                str_dc = "100_1"
 
             # mader.yaml modification. comment out delay_check param and is_delaycheck param
             os.system("sed -i '/delay_check/s/^/#/g' $(rospack find mader)/param/mader.yaml")
@@ -91,9 +88,9 @@ if __name__ == '__main__':
                 folder_txts="/home/kota/data/txt_files/oldmader/cd"+str(cd)+"ms"
                 folder_csv="/home/kota/data/csv/oldmader/cd"+str(cd)+"ms"
             else:
-                folder_bags="/home/kota/data/bags/rmader/cd"+str(cd)+"msdc"+str(dc)+"ms"
-                folder_txts="/home/kota/data/txt_files/rmader/cd"+str(cd)+"msdc"+str(dc)+"ms"
-                folder_csv="/home/kota/data/csv/rmader/cd"+str(cd)+"msdc"+str(dc)+"ms"
+                folder_bags="/home/kota/data/bags/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms"
+                folder_txts="/home/kota/data/txt_files/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms"
+                folder_csv="/home/kota/data/csv/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms"
 
             # create directy if not exists
             if (not os.path.exists(folder_bags)):
@@ -141,12 +138,12 @@ if __name__ == '__main__':
                 commands.append("sleep 3.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts)
                 commands.append("sleep 3.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
                 commands.append("sleep 3.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
-                commands.append("sleep 3.0 && roslaunch mader goal_reached.launch")
                 commands.append("sleep 3.0 && roslaunch mader ave_distance.launch num_of_agents:="+str(num_of_agents)+" folder_loc:="+folder_csv+" sim:="+sim_id)
 
                 #publishing the goal should be the last command
                 commands.append("sleep 10.0 && roslaunch mader many_drones.launch action:=send_goal")
-                commands.append("sleep 10.0 && tmux detach")
+                commands.append("sleep 10.0 && roslaunch mader goal_reached.launch") #we are calculating completion time here so sleep time needs to be the same as send_goal
+                commands.append("sleep 12.0 && tmux detach")
 
                 # print("len(commands)= " , len(commands))
                 session_name="run_many_sims_multi_agent_session"
@@ -175,6 +172,7 @@ if __name__ == '__main__':
                 is_goal_reached = False
                 tic = time.perf_counter()
                 toc = time.perf_counter()
+                os.system('tmux new-window -t ' + str(session_name))
 
                 while (toc - tic < how_long_to_wait and not is_goal_reached):
                     toc = time.perf_counter()
@@ -205,3 +203,12 @@ if __name__ == '__main__':
                 is_oldmader=False
 
             time.sleep(3.0)
+
+
+    # After the simulations 
+    commands = []
+    commands.append("sleep 3.0 && roscd mader && cd other/sim && python collision_check.py")
+    commands.append("sleep 3.0 && roscd mader && cd other/sim && python completion_time.py")
+    commands.append("sleep 3.0 && roscd mader && cd other/sim && python comm_delay_histogram_percentile.py")
+    commands.append("sleep 3.0 && roscd mader && cd other/sim && python ave_distance_csv2txt.py")
+    commands.append("sleep 3.0 && roscd mader && cd other/sim && python missed_msgs_count.py")
