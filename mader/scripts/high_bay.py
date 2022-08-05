@@ -140,11 +140,11 @@ class FakeSim:
         marker.action = marker.ADD
 
         #high bay scale https://gitlab.com/mit-acl/fsw/mocap/-/blob/master/param/vicon.yaml
-        x_max = 4.0
-        x_min = -4.0
-        y_max = 4.0
-        y_min = -4.0
-        z_max = 5.0 #in the above url it's 2 but it's just for safety
+        x_max = 4.8
+        x_min = -4.3
+        y_max = 4.3
+        y_min = -3.5
+        z_max = 3.0 #in the above url it's 2 but it's just for safety
         z_min = 0.0
         marker.scale.x = x_max - x_min
         marker.scale.y = y_max - y_min
