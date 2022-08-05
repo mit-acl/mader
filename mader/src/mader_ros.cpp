@@ -431,7 +431,6 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
     alltrajs_.pop_front();
     alltrajsTimers_.pop_front();
 
-
     // supposedly_simulated_time_delay should be simulated_comm_delay_
     if (supposedly_simulated_comm_delay > delay_check_ && is_delaycheck_)
     {
@@ -526,7 +525,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 {
   if (ros::ok() && published_initial_position_ == true && is_mader_running_)
   {
-    replanCBTimer_.stop(); // to avoid blockage
+    replanCBTimer_.stop();  // to avoid blockage
 
     // introduce random wait time in the beginning
     if (!is_replanCB_called_)
@@ -778,9 +777,9 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         }
       }
     }
-  
-    replanCBTimer_.start(); // to avoid blockage
-  }  // std::cout << "[Callback] Leaving replanCB" << std::endl;
+
+    replanCBTimer_.start();  // to avoid blockage
+  }                          // std::cout << "[Callback] Leaving replanCB" << std::endl;
 
   mt::state G;  // projected goal
   // mtx_mader_ptr_.lock();

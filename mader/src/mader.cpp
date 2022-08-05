@@ -217,7 +217,8 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
   //       }
   //       else if (traj_compiled.time_created == headsup_time &&
   //                trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(),
-  //                                          pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
+  //                                          pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one
+  //                                          wins
   //       {
   //         Eigen::Vector3d center_obs;
   //         center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(),
@@ -234,7 +235,8 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
   //         {
   //           delay_check_result = false;
   //         }
-  //         // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
+  //         // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2]
+  //         won't
   //         // happen bc it's the same position and collision
   //       }
   //     }
@@ -676,7 +678,7 @@ void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, d
     else
     {                                                            // DYNAMIC OBSTACLES/AGENTS
       double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
-      for (int i = 0; i <= par_.num_pol; i++)                     // for each interval
+      for (int i = 0; i <= par_.num_pol; i++)                    // for each interval
       {
         std::vector<Eigen::Vector3d> pointsA =
             vertexesOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT);
