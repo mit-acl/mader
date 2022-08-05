@@ -180,7 +180,6 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
 
   MyTimer tmp_t(true);
 
-  mtx_hrtwch_.lock();
   if (started_check_ == true && traj.is_agent == true)
   {
     have_received_trajectories_while_checking_ = true;
@@ -189,7 +188,6 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
   {
     have_received_trajectories_while_checking_ = false;
   }
-  mtx_hrtwch_.unlock();
 
   // std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
   //     std::find_if(trajs_.begin(), trajs_.end(),
@@ -200,60 +198,60 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
   mt::dynTrajCompiled traj_compiled;
   dynTraj2dynTrajCompiled(traj, traj_compiled);
 
-  if (is_in_DC)
-  {
-    // do delay check for the new traj
-    if (traj_compiled.is_agent == true)
-    {
-      if (!traj_compiled.is_committed)
-      {
-        if (headsup_time < traj_compiled.time_created)
-        {
-          // Do nothing. They will change their traj.
-        }
-        else if (headsup_time > traj_compiled.time_created &&
-                 trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
-        {
-          ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
-          delay_check_result = false;  // will have to redo the optimization
-        }
-        else if (traj_compiled.time_created == headsup_time &&
-                 trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(),
-                                           pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
-        {
-          Eigen::Vector3d center_obs;
-          center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(),
-              traj_compiled.function[2].value();
-          if (center_obs[0] > state_.pos[0])
-          {
-            delay_check_result = false;
-          }
-          else if (center_obs[1] > state_.pos[1])
-          {
-            delay_check_result = false;
-          }
-          else if (center_obs[2] > state_.pos[2])
-          {
-            delay_check_result = false;
-          }
-          // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
-          // happen bc it's the same position and collision
-        }
-      }
-      else if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
-      {
-        ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
-        delay_check_result = false;  // will have to redo the optimization
-      }
-    }
-    else
-    {  // if traj_compiled.is_agent == false
-      if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
-      {
-        delay_check_result = false;
-      }
-    }
-  }
+  // if (is_in_DC)
+  // {
+  //   // do delay check for the new traj
+  //   if (traj_compiled.is_agent == true)
+  //   {
+  //     if (!traj_compiled.is_committed)
+  //     {
+  //       if (headsup_time < traj_compiled.time_created)
+  //       {
+  //         // Do nothing. They will change their traj.
+  //       }
+  //       else if (headsup_time > traj_compiled.time_created &&
+  //                trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+  //       {
+  //         ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
+  //         delay_check_result = false;  // will have to redo the optimization
+  //       }
+  //       else if (traj_compiled.time_created == headsup_time &&
+  //                trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(),
+  //                                          pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
+  //       {
+  //         Eigen::Vector3d center_obs;
+  //         center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(),
+  //             traj_compiled.function[2].value();
+  //         if (center_obs[0] > state_.pos[0])
+  //         {
+  //           delay_check_result = false;
+  //         }
+  //         else if (center_obs[1] > state_.pos[1])
+  //         {
+  //           delay_check_result = false;
+  //         }
+  //         else if (center_obs[2] > state_.pos[2])
+  //         {
+  //           delay_check_result = false;
+  //         }
+  //         // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
+  //         // happen bc it's the same position and collision
+  //       }
+  //     }
+  //     else if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+  //     {
+  //       ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
+  //       delay_check_result = false;  // will have to redo the optimization
+  //     }
+  //   }
+  //   else
+  //   {  // if traj_compiled.is_agent == false
+  //     if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+  //     {
+  //       delay_check_result = false;
+  //     }
+  //   }
+  // }
 
   // std::cout << "bef mtx_trajs_.lock() in updateTrajObstacles" << std::endl;
   mtx_trajs_.lock();
@@ -342,12 +340,10 @@ void Mader::updateTrajObstacles(mt::dynTraj traj)
 {
   MyTimer tmp_t(true);
 
-  mtx_hrtwch_.lock();
   if (started_check_ == true && traj.is_agent == true)
   {
     have_received_trajectories_while_checking_ = true;
   }
-  mtx_hrtwch_.unlock();
 
   mtx_trajs_.lock();
 
@@ -415,9 +411,7 @@ void Mader::updateTrajObstacles(mt::dynTraj traj)
 
   mtx_trajs_.unlock();
 
-  mtx_hrtwch_.lock();
   have_received_trajectories_while_checking_ = false;
-  mtx_hrtwch_.unlock();
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
 
@@ -682,7 +676,7 @@ void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, d
     else
     {                                                            // DYNAMIC OBSTACLES/AGENTS
       double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
-      for (int i = 0; i < par_.num_pol; i++)                     // for each interval
+      for (int i = 0; i <= par_.num_pol; i++)                     // for each interval
       {
         std::vector<Eigen::Vector3d> pointsA =
             vertexesOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT);
@@ -740,7 +734,7 @@ ConvexHullsOfCurve Mader::convexHullsOfCurve(mt::dynTrajCompiled& traj, double t
 
   // std::cout << "1.1.3" << std::endl;
 
-  for (int i = 0; i < par_.num_pol; i++)
+  for (int i = 0; i <= par_.num_pol; i++)
   {
     convexHulls.push_back(convexHullOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT));
   }
@@ -1069,13 +1063,11 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, bool& is_q0_fail
 
   // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
   // This is Recheck
-  mtx_hrtwch_.lock();
   if (have_received_trajectories_while_checking_ == true)
   {
     ROS_ERROR_STREAM("Recvd traj while checking ");
     result = false;
   }
-  mtx_hrtwch_.unlock();
 
   started_check_ = false;
 
@@ -1102,36 +1094,75 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
   }
 
   // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
-  mtx_hrtwch_.lock();
   if (have_received_trajectories_while_checking_ == true)
   {
     ROS_ERROR_STREAM("Recvd traj while checking ");
     result = false;
   }
-  mtx_hrtwch_.unlock();
 
   started_check_ = false;
 
   return result;
 }
 
-// Delay check
-bool Mader::everyTrajCheck(mt::PieceWisePol pwp_optimized)
+/// Delay check
+bool Mader::everyTrajCheck(mt::PieceWisePol pwp_now, const double headsup_time)
 {
   // std::cout << "bef mtx_trajs_.lock() in delayCheck" << std::endl;
   mtx_trajs_.lock();  // this function is called in mader_ros.cpp so need to lock in the function
   // std::cout << "aft mtx_trajs_.lock() in delayCheck" << std::endl;
 
   bool result = true;
-  for (auto& traj : trajs_)
+  for (auto& traj_compiled : trajs_)
   {
-    if (traj.is_agent == true)
+    if (traj_compiled.is_agent == true)
     {
-      if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back()))
+      if (!traj_compiled.is_committed)
       {
-        ROS_ERROR_STREAM("[First Delay Check] In delay check traj collides with " << traj.id);
+        if (headsup_time < traj_compiled.time_created)
+        {
+          // Do nothing. They will change their traj.
+        }
+        else if (headsup_time > traj_compiled.time_created &&
+                 trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+        {
+          ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
+          result = false;  // will have to redo the optimization
+        }
+        else if (traj_compiled.time_created == headsup_time &&
+                 trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(),
+                                           pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
+        {
+          Eigen::Vector3d center_obs;
+          center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(),
+              traj_compiled.function[2].value();
+          if (center_obs[0] > state_.pos[0])
+          {
+            result = false;
+          }
+          else if (center_obs[1] > state_.pos[1])
+          {
+            result = false;
+          }
+          else if (center_obs[2] > state_.pos[2])
+          {
+            result = false;
+          }
+          // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
+          // happen bc it's the same position and collision
+        }
+      }
+      else if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      {
+        ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
         result = false;  // will have to redo the optimization
-        break;
+      }
+    }
+    else
+    {  // if traj_compiled.is_agent == false
+      if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      {
+        result = false;
       }
     }
   }
@@ -1241,6 +1272,18 @@ bool Mader::isReplanningNeeded()
 bool Mader::isGoalSeen()
 {
   if (drone_status_ == DroneStatus::GOAL_SEEN)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool Mader::isGoalReached()
+{
+  if (drone_status_ == DroneStatus::GOAL_REACHED)
   {
     return true;
   }
