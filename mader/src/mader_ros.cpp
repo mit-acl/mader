@@ -193,7 +193,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
       if (myns != agent)
       {  // if my namespace is the same as the agent, then it's you
         sub_traj_.push_back(
-            nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
+            nh5_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
       }
     }
   }
@@ -213,7 +213,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
       if (myns != agent)
       {  // if my namespace is the same as the agent, then it's you
         sub_traj_.push_back(
-            nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
+            nh5_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
       }
     }
   }
@@ -373,8 +373,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
     //****** Communication delay introduced in the simulation
     // save all the trajectories into alltrajs_ and create a timer corresponding to that
     // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
-    // mtx_alltrajs_.lock();
-    // mtx_alltrajsTimers_.lock();
+    mtx_alltrajs_.lock();
+    mtx_alltrajsTimers_.lock();
     // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
 
     alltrajs_.push_back(tmp);
@@ -383,8 +383,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
     alltrajsTimers_.push_back(alltrajs_timer);
 
     // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in TrajCB" << std::endl;
-    // mtx_alltrajs_.unlock();
-    // mtx_alltrajsTimers_.unlock();
+    mtx_alltrajs_.unlock();
+    mtx_alltrajsTimers_.unlock();
     // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in TrajCB" << std::endl;
   }
   else
@@ -414,30 +414,22 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
 
   if (is_mader_running_)
   {
-    // mtx_alltrajs_.lock();
-    // mtx_alltrajsTimers_.lock();
+    mtx_alltrajs_.lock();
+    mtx_alltrajsTimers_.lock();
 
-    if (is_delaycheck_)
-    {
-      // mtx_mader_ptr_.lock();
-      delay_check_result_ = mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_now_, is_in_DC_, headsup_time_);
-      // mtx_mader_ptr_.unlock();
-    }
-    else
-    {
-      // mtx_mader_ptr_.lock();
-      mader_ptr_->updateTrajObstacles(alltrajs_[0]);
-      // mtx_mader_ptr_.unlock();
-    }
+    mt::dynTraj tmp = alltrajs_[0];
+
+    mtx_alltrajs_.unlock();
+    mtx_alltrajsTimers_.unlock();
+    // mtx_mader_ptr_.lock();
+    mader_ptr_->updateTrajObstacles(tmp);
+    // mtx_mader_ptr_.unlock();
 
     double time_now = ros::Time::now().toSec();
-    double supposedly_simulated_comm_delay = time_now - alltrajs_[0].time_created;
+    double supposedly_simulated_comm_delay = time_now - tmp.time_created;
 
     alltrajs_.pop_front();
     alltrajsTimers_.pop_front();
-
-    // mtx_alltrajs_.unlock();
-    // mtx_alltrajsTimers_.unlock();
 
     // supposedly_simulated_time_delay should be simulated_comm_delay_
     if (supposedly_simulated_comm_delay > delay_check_ && is_delaycheck_)
@@ -534,21 +526,22 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
   if (ros::ok() && published_initial_position_ == true && is_mader_running_)
   {
     replanCBTimer_.stop();  // to avoid blockage
+
     // introduce random wait time in the beginning
-    // if (!is_replanCB_called_)
-    // {
-    //   // to avoid initial path search congestions add some random sleep here
-    //   std::random_device rd;
-    //   std::default_random_engine eng(rd());
-    //   std::uniform_real_distribution<float> distr(0, 2);  // sleep between 0 and 1 sec
-    //   ros::Duration(distr(eng)).sleep();
-    //   is_replanCB_called_ = true;
-    // }
+    if (!is_replanCB_called_)
+    {
+      // to avoid initial path search congestions add some random sleep here
+      std::random_device rd;
+      std::default_random_engine eng(rd());
+      std::uniform_real_distribution<float> distr(0, 2);  // sleep between 0 and 1 sec
+      ros::Duration(distr(eng)).sleep();
+      is_replanCB_called_ = true;
+    }
 
     // mtx_mader_ptr_.lock();
     if (mader_ptr_->isGoalSeen())
     {
-      std::cout << "goal is seen so no need to replan" << std::endl;
+      std::cout << "goal is reached so no need to replan" << std::endl;
       is_mader_running_ = false;
       mader_msgs::MissedMsgsCnt msg;
       msg.missed_msgs_cnt = missed_msgs_cnt_;
@@ -615,7 +608,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           // TODO make this as a timer so that i can move onto the next optimization
           // std::cout << "waiting in DC" << std::endl;
           // mtx_mader_ptr_.lock();
-          delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
+          delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_, headsup_time_);
           // mtx_mader_ptr_.unlock();
           ros::Duration(0.01).sleep();
           if (delay_check_result_ == false)
@@ -623,6 +616,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             break;
           }
         }
+        delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_, headsup_time_);
         // ros::Duration(delay_check_).sleep();
         // is_in_DC_ = false;
         // end of delay check *******************************************************
@@ -665,7 +659,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         {
           // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-          if (timer_stop_.ElapsedMs() > delay_check_)
+          if (timer_stop_.ElapsedMs() > 500.0)
           {
             publishOwnTraj(pwp_last_, true,
                            headsup_time_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing
@@ -691,7 +685,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       {
         // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-        if (timer_stop_.ElapsedMs() > delay_check_)
+        if (timer_stop_.ElapsedMs() > 500.0)
         {
           publishOwnTraj(pwp_last_, true,
                          headsup_time_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing
@@ -755,7 +749,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       {
         // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-        if (timer_stop_.ElapsedMs() > delay_check_)
+        if (timer_stop_.ElapsedMs() > 500.0)
         {
           publishOwnTraj(pwp_last_,
                          true);  // This is needed because is drone DRONE1 stops, it needs to keep
@@ -783,8 +777,9 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         }
       }
     }
-    replanCBTimer_.start();
-  }  // std::cout << "[Callback] Leaving replanCB" << std::endl;
+
+    replanCBTimer_.start();  // to avoid blockage
+  }                          // std::cout << "[Callback] Leaving replanCB" << std::endl;
 
   mt::state G;  // projected goal
   // mtx_mader_ptr_.lock();
