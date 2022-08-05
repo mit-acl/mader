@@ -31,7 +31,12 @@ class GoalReachedCheck:
         # number of agents
         self.num_of_agents = 10
 
+        # is initialized?
         self.initialized = False
+
+        # starting time to calculate completion time
+        now = rospy.get_rostime()
+        self.starting_time = now.secs + now.nsecs / 1e9
 
         # state and term_goal
         self.state_pos = np.empty([self.num_of_agents,3])
@@ -41,28 +46,39 @@ class GoalReachedCheck:
         self.goal_reached = GoalReached()
         self.pubIsGoalReached = rospy.Publisher('goal_reached', GoalReached, queue_size=1, latch=True)
 
+        # is goal reached
+        self.is_goal_reached = False
+
+        # keep track of which drone has already got to the goal
+        self.is_goal_reached_cnt = 0
+        self.is_goal_reached_mat = [False for i in range(self.num_of_agents)]
         # rospy.sleep(10) #term_goal is published after 10 seconds
 
     # collision detection
     def goalReachedCheck(self, timer):
-        is_goal_reached = True
-        if self.initialized:
+        if not self.is_goal_reached and self.initialized:
             for i in range(self.num_of_agents):
-                if (LA.norm(self.state_pos[i,:] - self.term_goal_pos[i,:]) > self.goal_radius):
-                    print(i)
-                    print(self.state_pos)
-                    print(self.term_goal_pos[i,:])
-                    # print(LA.norm(self.state_pos[i,:] - self.term_goal_pos[i,:]))
-                    is_goal_reached = False
-                    break
+                if self.is_goal_reached_mat[i] == False:
+                    if (LA.norm(self.state_pos[i,:] - self.term_goal_pos[i,:]) > self.goal_radius):
+                        # print(i)
+                        # print(self.state_pos)
+                        # print(self.term_goal_pos[i,:])
+                        # print(LA.norm(self.state_pos[i,:] - self.term_goal_pos[i,:]))
+                        return
+                    else:
+                        self.is_goal_reached_mat[i] = True
+                        self.is_goal_reached_cnt = self.is_goal_reached_cnt + 1
+                        # print(self.is_goal_reached_cnt)
+                        # print(i)
+                        # print(self.state_pos[i,:])
+                        # print(self.term_goal_pos[i,:])
 
-            if is_goal_reached:
-            # print('here')
-                now = rospy.get_rostime()
-                self.goal_reached.secs = now.secs
-                self.goal_reached.nsecs = now.nsecs
-                self.goal_reached.is_goal_reached = True
-                self.pubIsGoalReached.publish(self.goal_reached)
+                        if self.is_goal_reached_cnt == self.num_of_agents:
+                            self.is_goal_reached = True
+                            now = rospy.get_rostime()
+                            self.goal_reached.completion_time = now.secs + now.nsecs / 1e9 - self.starting_time
+                            self.goal_reached.is_goal_reached = True
+                            self.pubIsGoalReached.publish(self.goal_reached)
 
     def SQ01stateCB(self, data):
         self.state_pos[0,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
@@ -129,7 +145,7 @@ def startNode():
     rospy.Subscriber("SQ08s/term_goal", PoseStamped, c.SQ08term_goalCB)
     rospy.Subscriber("SQ09s/term_goal", PoseStamped, c.SQ09term_goalCB)
     rospy.Subscriber("SQ10s/term_goal", PoseStamped, c.SQ10term_goalCB)
-    rospy.Timer(rospy.Duration(1), c.goalReachedCheck)
+    rospy.Timer(rospy.Duration(0.01), c.goalReachedCheck)
     rospy.spin()
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+
 	<node name="goal_reached" pkg="mader" type="goal_reached.py" output="screen">
 	</node>
 
