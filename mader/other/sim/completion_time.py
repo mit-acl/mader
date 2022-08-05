@@ -31,108 +31,125 @@ if __name__ == '__main__':
     is_oldmader = True # change here 
     
     if is_oldmader:
-        dc_list = [0, 160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        cd_list = [50, 100, 200, 300]
     else:
-        dc_list = [160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        cd_list = [50, 100]
 
-    # this gives you 2d array, row gives you each sims data in corresponding dc
-    box_plot_list = [] 
 
-    for dc in dc_list:
+    for cd in cd_list:
 
-        home_dir = "/home/kota/data/bags"
+        is_oldmader=True
 
-        # source directory
-        if is_oldmader:
-            source_dir = "/home/kota/data/bags/oldmader/cd"+cd+"ms" # change the source dir accordingly #10 agents
-            is_oldmader = False
+        if cd == 50:
+            dc_list = [0, 160, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 100:
+            dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         else:
-            source_dir = "/home/kota/data/bags/rmader/cd"+cd+"msdc"+str(dc)+"ms" # change the source dir accordingly #10 agents
-        
-        source_len = len(source_dir)
-        source_bags = source_dir + "/*.bag" # change the source dir accordingly
-        rosbag_list = glob.glob(source_bags)
-        rosbag_list.sort() #alphabetically order
-        rosbag = []
+            dc_list =[0] 
 
-        for bag in rosbag_list:
-            rosbag.append(bag)
+        # this gives you 2d array, row gives you each sims data in corresponding dc
+        box_plot_list = [] 
 
-        # read ros bags
-        completion_time_per_sim_list = []
-        completion_time_per_sim = 0.0
-        for i in range(len(rosbag)):
-            print('rosbag ' + str(rosbag[i]))
-            b = bagreader(rosbag[i], verbose=False)
-            sim_id = rosbag[i][source_len+5:source_len+7]
+        for dc in dc_list:
+
+            if dc == 50.5:
+                str_dc = "50_5"
+            elif dc == 50.1:
+                str_dc = "50_1"
+            elif dc == 100.5:
+                str_dc = "100_5"
+            elif dc == 100.1:
+                str_dc = "100_1"
+
+            home_dir = "/home/kota/data/bags"
+
+            # source directory
+            if is_oldmader:
+                source_dir = "/home/kota/data/bags/oldmader/cd"+cd+"ms" # change the source dir accordingly #10 agents
+                is_oldmader = False
+            else:
+                source_dir = "/home/kota/data/bags/rmader/cd"+cd+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
             
-            # introduced goal_reached topic so no need t check actual_traj
+            source_len = len(source_dir)
+            source_bags = source_dir + "/*.bag" # change the source dir accordingly
+            rosbag_list = glob.glob(source_bags)
+            rosbag_list.sort() #alphabetically order
+            rosbag = []
 
-            # try:
-            #     log_data = b.message_by_topic("/goal_reached")
-            #     log = pd.read_csv(log_data, usecols=["secs", "nsecs"])
-            #     start_index = 0
-            #     while log.secs[start_index] == 0 or log.secs[start_index] == 0:
-            #         start_index = start_index + 1
+            for bag in rosbag_list:
+                rosbag.append(bag)
 
-            #     start_time = log.secs[start_index] + log.nsecs[start_index] / 10**9 # [0] is actually 0. You can check that with print(log)
-            #     # print('start time ' + str(start_time_agent))
-            #     completion_time = log.secs.iloc[-1] + log.nsecs.iloc[-1] / 10**9 - start_time
-            #     # print('completion time ' + str(completion_time_agent))
-            #     completion_time_per_sim_list.append(completion_time)
-            # except:
-            #     print("agents didn't reach goals")
+            # read ros bags
+            completion_time_per_sim_list = []
+            completion_time_per_sim = 0.0
+            for i in range(len(rosbag)):
+                print('rosbag ' + str(rosbag[i]))
+                b = bagreader(rosbag[i], verbose=False)
+                sim_id = rosbag[i][source_len+5:source_len+7]
+                
+                # introduced goal_reached topic so no need to check actual_traj
+
+                try:
+                    log_data = b.message_by_topic("/goal_reached")
+                    log = pd.read_csv(log_data, usecols=["completion_time", "is_goal_reached"])
+                    completion_time = log.completion_time.iloc[0]
+                    # print('completion time ' + str(completion_time_agent))
+                    completion_time_per_sim_list.append(completion_time)
+                except:
+                    print("agents didn't reach goals")
 
 
-            # # get all the agents' actual_traj topic ( this topic publishes as long as it is tranlating, meaning as soon as the agent reaches the goal this topic stop publishing)
-            completion_time_per_agent_list = [] 
-            for j in range(1,n_agents+1):
-                if j <= 9:
-                    topic_name = "/SQ0"+str(j)+"s/mader/actual_traj"
-                else:
-                    topic_name = "/SQ"+str(j)+"s/mader/actual_traj"
+                # # get all the agents' actual_traj topic ( this topic publishes as long as it is tranlating, meaning as soon as the agent reaches the goal this topic stop publishing)
+                # completion_time_per_agent_list = [] 
+                # for j in range(1,n_agents+1):
+                #     if j <= 9:
+                #         topic_name = "/SQ0"+str(j)+"s/mader/actual_traj"
+                #     else:
+                #         topic_name = "/SQ"+str(j)+"s/mader/actual_traj"
 
-                log_data = b.message_by_topic(topic_name)
-                log = pd.read_csv(log_data, usecols=["header.stamp.secs", "header.stamp.nsecs"])
-                log = log.rename(columns={"header.stamp.secs": "secs", "header.stamp.nsecs": "nsecs"})
+                #     log_data = b.message_by_topic(topic_name)
+                #     log = pd.read_csv(log_data, usecols=["header.stamp.secs", "header.stamp.nsecs"])
+                #     log = log.rename(columns={"header.stamp.secs": "secs", "header.stamp.nsecs": "nsecs"})
 
-                start_index = 0
-                while log.secs[start_index] == 0 or log.secs[start_index] == 0:
-                    start_index = start_index + 1
+                #     start_index = 0
+                #     while log.secs[start_index] == 0 or log.secs[start_index] == 0:
+                #         start_index = start_index + 1
 
-                start_time_agent = log.secs[start_index] + log.nsecs[start_index] / 10**9 # [0] is actually 0. You can check that with print(log)
-                # print('start time ' + str(start_time_agent))
-                completion_time_agent = log.secs.iloc[-1] + log.nsecs.iloc[-1] / 10**9 - start_time_agent
-                # print('completion time ' + str(completion_time_agent))
-                completion_time_per_agent_list.append(completion_time_agent)
+                #     start_time_agent = log.secs[start_index] + log.nsecs[start_index] / 10**9 # [0] is actually 0. You can check that with print(log)
+                #     # print('start time ' + str(start_time_agent))
+                #     completion_time_agent = log.secs.iloc[-1] + log.nsecs.iloc[-1] / 10**9 - start_time_agent
+                #     # print('completion time ' + str(completion_time_agent))
+                #     completion_time_per_agent_list.append(completion_time_agent)
 
-            completion_time_per_sim_list.append(max(completion_time_per_agent_list))
+                # completion_time_per_sim_list.append(max(completion_time_per_agent_list))
 
-            # print('sim '+str(sim_id)+': '+str(completion_time_per_sim_list[-1])+' [s]')
+                # # print('sim '+str(sim_id)+': '+str(completion_time_per_sim_list[-1])+' [s]')
 
-        box_plot_list.append(completion_time_per_sim_list)
-        os.system('echo "'+source_dir+' : max is '+str(max(completion_time_per_sim_list))+'" >> '+home_dir+'/completion_time.txt')
-        os.system('echo "'+source_dir+' : ave is '+str(statistics.mean(completion_time_per_sim_list))+'" >> '+home_dir+'/completion_time.txt')
+            box_plot_list.append(completion_time_per_sim_list)
+            os.system('echo "'+source_dir+' : max is '+str(max(completion_time_per_sim_list))+'" >> '+home_dir+'/completion_time.txt')
+            os.system('echo "'+source_dir+' : ave is '+str(statistics.mean(completion_time_per_sim_list))+'" >> '+home_dir+'/completion_time.txt')
         
 
-    # save data into csv file
-    dict = {'oldmader': box_plot_list[0], 'rmader 250': box_plot_list[1], 'rmader 87': box_plot_list[2], 'rmader 78': box_plot_list[3], 'rmader 63': box_plot_list[4], 'rmader 55': box_plot_list[5]}  
-    print(len(box_plot_list[0]))
-    print(len(box_plot_list[1]))
-    print(len(box_plot_list[2]))
-    print(len(box_plot_list[3]))
-    print(len(box_plot_list[4]))
-    print(len(box_plot_list[5]))
-    df = pd.DataFrame(dict) 
-    # saving the dataframe 
-    df.to_csv(home_dir+'/completion_time.csv') 
+        # # save data into csv file
+        # dict = {'oldmader': box_plot_list[0], 'rmader 250': box_plot_list[1], 'rmader 87': box_plot_list[2], 'rmader 78': box_plot_list[3], 'rmader 63': box_plot_list[4], 'rmader 55': box_plot_list[5]}  
+        # print(len(box_plot_list[0]))
+        # print(len(box_plot_list[1]))
+        # print(len(box_plot_list[2]))
+        # print(len(box_plot_list[3]))
+        # print(len(box_plot_list[4]))
+        # print(len(box_plot_list[5]))
+        # df = pd.DataFrame(dict) 
+        # # saving the dataframe 
+        # df.to_csv(home_dir+'/completion_time.csv') 
 
-    # plot
-    fig = plt.figure()
-    # Creating axes instance
-    ax = fig.add_axes([0, 0, 1, 1])
-    # Creating plot
-    bp = ax.boxplot(box_plot_list)
-    plt.savefig(home_dir+'/completion_time.png')
-    # show plot
-    # plt.show()
+        # plot
+        fig = plt.figure()
+        # Creating axes instance
+        ax = fig.add_axes([0, 0, 1, 1])
+        # Creating plot
+        bp = ax.boxplot(box_plot_list)
+        plt.savefig('/home/kota/data/images/completion_time.png')
+        # show plot
+        # plt.show()
