@@ -32,27 +32,26 @@ if __name__ == '__main__':
     # q-th percentile
     q = 75
 
-    is_oldmader = False # always False bc oldmader doesn't have comm_delay
+    is_oldmader = True # always False bc oldmader doesn't have comm_delay
     num_of_agents = 10
 
     if is_oldmader:
-        cd_list = [50, 100]
-        # dc_list = [0, 160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        cd_list = [50, 100, 200, 300]
     else:
         cd_list = [50, 100]
-        # dc_list = [160, 120, 100, 78, 63, 55, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
 
     for cd in cd_list:
 
-        # is_oldmader=True
+        is_oldmader=True
 
         if cd == 50:
-            dc_list = [160, 100, 60, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 160, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            # dc_list = [230, 210, 150, 110, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            dc_list = [210, 150, 110, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         else:
-            dc_list =[]
+            dc_list =[0]
             
         for dc in dc_list:
             
@@ -60,21 +59,21 @@ if __name__ == '__main__':
             input_comm_delay = dc/1000
 
             if dc == 50.5:
-                dc = 50_5
+                str_dc = "50_5"
             elif dc == 50.1:
-                dc = 50_1
+                str_dc = "50_1"
             elif dc == 100.5:
-                dc = 100_5
+                str_dc = "100_5"
             elif dc == 100.1:
-                dc = 100_1
+                str_dc = "100_1"
 
-            figname = 'cd'+str(cd)+'dc'+str(dc)+'_rmader_comm_delay_histogram.png'
+            figname = 'cd'+str(cd)+'dc'+str_dc+'_rmader_comm_delay_histogram.png'
             source_dir = "/home/kota/data/bags" # change the source dir accordingly #10 agents 
             if is_oldmader:
                 source_bags = source_dir + "/oldmader/cd"+str(cd)+"ms/*.bag" # change the source dir accordingly #10 agents
                 is_oldmader = False
             else:
-                source_bags = source_dir + "/rmader/cd"+str(cd)+"msdc"+str(dc)+"ms/*.bag" # change the source dir accordingly #10 agents
+                source_bags = source_dir + "/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms/*.bag" # change the source dir accordingly #10 agents
 
             rosbag_list = glob.glob(source_bags)
             rosbag_list.sort() #alphabetically order
