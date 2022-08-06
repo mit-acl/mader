@@ -56,10 +56,10 @@ if __name__ == '__main__':
         is_oldmader=True
 
         if cd == 50:
-            dc_list = [0, 160, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 190, 73, 57, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 210, 120, 107, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 200:
             dc_list = [0, 300]
@@ -209,7 +209,11 @@ if __name__ == '__main__':
             time.sleep(3.0)
 
 
-    # After the simulations 
+    # After the simulations
+    session_name="data"
+    os.system("tmux kill-session -t" + session_name)
+    os.system("tmux new-session -d -s "+str(session_name)+" -x 300 -y 300")
+    
     commands = []
     commands.append("sleep 3.0 && roscd mader && cd other/sim && python collision_check.py")
     commands.append("sleep 3.0 && roscd mader && cd other/sim && python completion_time.py")

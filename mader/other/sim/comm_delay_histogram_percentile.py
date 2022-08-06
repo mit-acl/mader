@@ -28,7 +28,7 @@ import numpy
 if __name__ == '__main__':
 
     # you wanna get histogram or know the value at q-th percentile
-    is_histogram = True
+    is_histogram = False
     # q-th percentile
     q = 75
 
@@ -45,10 +45,10 @@ if __name__ == '__main__':
         is_oldmader=True
 
         if cd == 50:
-            dc_list = [0, 160, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 190, 73, 57, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 210, 120, 107, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 200:
             dc_list = [0, 300]
@@ -90,7 +90,8 @@ if __name__ == '__main__':
 
             # print(rosbag)
 
-            for i in range(len(rosbag)):
+            # for i in range(len(rosbag)):
+            for i in range(10):
 
                 b = bagreader(rosbag[i], verbose=False);
                 
@@ -130,6 +131,7 @@ if __name__ == '__main__':
                 # plt.show()
             else:
                 # in case you wanna calculate the value of q-th percentile
+                print(source_bags)
                 print(str(q) + "-th percentile value is " + str(numpy.percentile(comm_delay_arr, q)))
                 if q > 0:
                     q = q -25

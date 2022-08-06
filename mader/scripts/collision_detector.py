@@ -82,7 +82,7 @@ class CollisionDetector:
                     # trans = self.get_transformation(agent1, agent2)
                     # if trans is not None:
 
-                    print("here")
+                    # print("here")
 
                     if (abs(self.state_pos[i-1,0] - self.state_pos[j-1,0]) < self.bbox_x 
                         and abs(self.state_pos[i-1,1] - self.state_pos[j-1,1]) < self.bbox_y 
