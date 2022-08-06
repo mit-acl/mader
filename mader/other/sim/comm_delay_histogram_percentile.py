@@ -50,8 +50,10 @@ if __name__ == '__main__':
         elif cd == 100:
             dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        else:
-            dc_list =[0]
+        elif cd == 200:
+            dc_list = [0, 300]
+        elif cd == 300:
+            dc_list = [0, 400]
             
         for dc in dc_list:
             
@@ -66,6 +68,8 @@ if __name__ == '__main__':
                 str_dc = "100_5"
             elif dc == 100.1:
                 str_dc = "100_1"
+            else:
+                str_dc = str(dc)
 
             figname = 'cd'+str(cd)+'dc'+str_dc+'_rmader_comm_delay_histogram.png'
             source_dir = "/home/kota/data/bags" # change the source dir accordingly #10 agents 
@@ -113,13 +117,13 @@ if __name__ == '__main__':
 
                 fig = plt.figure()
                 ax = fig.add_subplot()
-                n, bins, patches = plt.hist(x=comm_delay, color="blue")
+                n, bins, patches = plt.hist(x=comm_delay, color="blue", edgecolor = 'black')
                 plt.axvline(x=dc/1000, color="red")
                 ax.set_xticks(np.arange(0.05,0.250,0.025))
                 ax.set_xticklabels(np.arange(50,250,25))
                 # plt.rcParams["font.family"] = "Times New Roman"
                 plt.grid(axis='y', color='black', alpha=0.2)
-                plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay*1000))+' [ms]')
+                plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay*1000))+' [ms] and '+str(dc)+'ms delay check')
                 plt.xlabel("comm delay [ms]")
                 plt.ylabel("count")
                 plt.savefig('/home/kota/ws/src/mader/mader/other/sim/data/'+figname)

@@ -36,14 +36,16 @@ if __name__ == '__main__':
 
         is_oldmader=True
 
-       if cd == 50:
+        if cd == 50:
             dc_list = [0, 160, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
             dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        else:
-            dc_list =[0]
+        elif cd == 200:
+            dc_list = [0, 300]
+        elif cd == 300:
+            dc_list = [0, 400]
 
         for dc in dc_list:
 
@@ -57,6 +59,8 @@ if __name__ == '__main__':
                 str_dc = "100_5"
             elif dc == 100.1:
                 str_dc = "100_1"
+            else:
+                str_dc = str(dc)
 
             if is_oldmader:
                 source_dir = "/home/kota/data/bags/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
@@ -87,8 +91,8 @@ if __name__ == '__main__':
                     print("sim " + sim_id + ": ******collision******" )
                     os.system('echo "simulation '+sim_id+': ***collision***" >> '+source_dir+'/collision_status.txt')
 
-            collision_per = collision_cnt / len(rosbag)
+            collision_per = collision_cnt / len(rosbag) * 100
             os.system('paste '+source_dir+'/collision_status.txt '+source_dir+'/status.txt >> '+source_dir+'/complete_status.txt')
-            os.system('echo "'+source_dir+': '+str(collision_cnt)+' collisions/'+str(len(rosbag))+' - '+str(collision_per)+'%" >> home/kota/data/collision_count.txt')
+            os.system('echo "'+source_dir+': '+str(collision_cnt)+'/'+str(len(rosbag))+' - '+str(collision_per)+'%" >> /home/kota/data/collision_count.txt')
 
             is_oldmader = False

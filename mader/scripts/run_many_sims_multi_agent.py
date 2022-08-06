@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     # parameters
     is_oldmader=True
-    num_of_sims=1
+    num_of_sims=110
     num_of_agents=10
     how_long_to_wait = 30 #[s]
     if is_oldmader:
@@ -61,8 +61,10 @@ if __name__ == '__main__':
         elif cd == 100:
             dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        else:
-            dc_list =[0]
+        elif cd == 200:
+            dc_list = [0, 300]
+        elif cd == 300:
+            dc_list = [0, 400]
 
         for dc in dc_list:
 
@@ -77,6 +79,8 @@ if __name__ == '__main__':
                 str_dc = "100_5"
             elif dc == 100.1:
                 str_dc = "100_1"
+            else:
+                str_dc = str(dc)
 
             # mader.yaml modification. comment out delay_check param and is_delaycheck param
             os.system("sed -i '/delay_check/s/^/#/g' $(rospack find mader)/param/mader.yaml")

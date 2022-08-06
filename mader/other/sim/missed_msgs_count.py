@@ -46,8 +46,10 @@ if __name__ == '__main__':
         elif cd == 100:
             dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        else:
-            dc_list =[0]
+        elif cd == 200:
+            dc_list = [0, 300]
+        elif cd == 300:
+            dc_list = [0, 400]
 
         for dc in dc_list:
 
@@ -62,11 +64,13 @@ if __name__ == '__main__':
                 str_dc = "100_5"
             elif dc == 100.1:
                 str_dc = "100_1"
+            else:
+                str_dc = str(dc)
 
             if is_oldmader:
-                source_dir = "/home/kota/data/bags/oldmader/cd"+cd+"ms" # change the source dir accordingly #10 agents
+                source_dir = "/home/kota/data/bags/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
             else:
-                source_dir = "/home/kota/data/bags/rmader/cd"+cd+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
+                source_dir = "/home/kota/data/bags/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
             
             source_len = len(source_dir)
             source_bags = source_dir + "/*.bag" # change the source dir accordingly
@@ -115,8 +119,8 @@ if __name__ == '__main__':
             ave_missed_per_dc = sum(missed_msgs_list)/len(missed_msgs_list)
             ave_per_dc = sum(msgs_list)/len(msgs_list)
             # print(ave_per_dc)
-            os.system('echo "'+source_dir+': msgs_cnt '+str(ave_per_dc)+'" >> '+source_dir+'/missed_msgs_cnt.txt')
-            os.system('echo "'+source_dir+': missed_msgs_cnt '+str(ave_missed_per_dc)+'" >> '+source_dir+'/missed_msgs_cnt.txt')
-            os.system('echo "'+source_dir+': missed/total '+str(ave_missed_per_dc/ave_per_dc)+'" >> '+source_dir+'/missed_msgs_cnt.txt')
-
+            os.system('echo "'+source_dir+': msgs_cnt '+str(ave_per_dc)+'" >> /home/kota/data/missed_msgs_cnt.txt')
+            os.system('echo "'+source_dir+': missed_msgs_cnt '+str(ave_missed_per_dc)+'" >> /home/kota/data/missed_msgs_cnt.txt')
+            os.system('echo "'+source_dir+': missed/total '+str(ave_missed_per_dc/ave_per_dc)+'" >> /home/kota/data/missed_msgs_cnt.txt')
+            
             is_oldmader = False
