@@ -432,10 +432,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
   // // and up points to "6" (up - pwp.times.begin() is 5)
 
   int index_first_interval = low - pwp.times.begin() - 1;  // index of the interval [1,2]
-  // Kota memo
-  // the below line is wrong. It's already pointing times[5]. no need to subtract 1 again
-  // int index_last_interval = up - pwp.times.begin() - 1;    // index of the interval [5,6]
-  int index_last_interval = up - pwp.times.begin();  // index of the interval [5,6]
+  int index_last_interval = up - pwp.times.begin() - 1;    // index of the interval [5,6]
 
   mu::saturate(index_first_interval, 0, (int)(pwp.coeff_x.size() - 1));
   mu::saturate(index_last_interval, 0, (int)(pwp.coeff_x.size() - 1));
@@ -468,14 +465,34 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
       else
       {
         // points.push_back(Eigen::Vector3d(V(1, j), V(2, j), V(3, j)));  // x,y,z
-        points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z + delta.z()));
-        points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z + delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z + delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z + delta.z()));
+
+        // we see many deadlock issue when they stop (meaning, the end point of plan_ might be violating bbox)
+        // Ad-hoc solution to this is to increase delta at the final point in plan_
+        Eigen::Vector3d inflation = delta;
+        if (i == index_last_interval)
+        {
+          inflation.x() = delta.x() + 0.01;
+          inflation.y() = delta.y() + 0.01;
+          inflation.z() = delta.z() + 0.01;
+        }
+
+        // points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z + delta.z()));
+        // points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z - delta.z()));
+        // points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z - delta.z()));
+        // points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z + delta.z()));
+        // points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z - delta.z()));
+        // points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z + delta.z()));
+        // points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z - delta.z()));
+        // points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z + delta.z()));
+
+        points.push_back(Eigen::Vector3d(x + inflation.x(), y + inflation.y(), z + inflation.z()));
+        points.push_back(Eigen::Vector3d(x + inflation.x(), y - inflation.y(), z - inflation.z()));
+        points.push_back(Eigen::Vector3d(x + inflation.x(), y + inflation.y(), z - inflation.z()));
+        points.push_back(Eigen::Vector3d(x + inflation.x(), y - inflation.y(), z + inflation.z()));
+        points.push_back(Eigen::Vector3d(x - inflation.x(), y - inflation.y(), z - inflation.z()));
+        points.push_back(Eigen::Vector3d(x - inflation.x(), y + inflation.y(), z + inflation.z()));
+        points.push_back(Eigen::Vector3d(x - inflation.x(), y + inflation.y(), z - inflation.z()));
+        points.push_back(Eigen::Vector3d(x - inflation.x(), y - inflation.y(), z + inflation.z()));
       }
     }
   }
