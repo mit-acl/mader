@@ -1065,11 +1065,11 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, bool& is_q0_fail
 
   // and now do another check in case I've received anything while I was checking. Note that mtx_trajs_ is locked!
   // This is Recheck
-  if (have_received_trajectories_while_checking_ == true)
-  {
-    ROS_ERROR_STREAM("Recvd traj while checking ");
-    result = false;
-  }
+  // if (have_received_trajectories_while_checking_ == true)
+  // {
+  //   ROS_ERROR_STREAM("Recvd traj while checking ");
+  //   result = false;
+  // }
 
   started_check_ = false;
 
