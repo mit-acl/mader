@@ -180,14 +180,14 @@ bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_no
 
   MyTimer tmp_t(true);
 
-  if (started_check_ == true && traj.is_agent == true)
-  {
-    have_received_trajectories_while_checking_ = true;
-  }
-  else
-  {
-    have_received_trajectories_while_checking_ = false;
-  }
+  // if (started_check_ == true && traj.is_agent == true)
+  // {
+  //   have_received_trajectories_while_checking_ = true;
+  // }
+  // else
+  // {
+  //   have_received_trajectories_while_checking_ = false;
+  // }
 
   // std::vector<mt::dynTrajCompiled>::iterator obs_ptr =
   //     std::find_if(trajs_.begin(), trajs_.end(),
@@ -432,10 +432,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
   // // and up points to "6" (up - pwp.times.begin() is 5)
 
   int index_first_interval = low - pwp.times.begin() - 1;  // index of the interval [1,2]
-  // Kota memo
-  // the below line is wrong. It's already pointing times[5]. no need to subtract 1 again
-  // int index_last_interval = up - pwp.times.begin() - 1;    // index of the interval [5,6]
-  int index_last_interval = up - pwp.times.begin();  // index of the interval [5,6]
+  int index_last_interval = up - pwp.times.begin() - 1;    // index of the interval [5,6]
 
   mu::saturate(index_first_interval, 0, (int)(pwp.coeff_x.size() - 1));
   mu::saturate(index_last_interval, 0, (int)(pwp.coeff_x.size() - 1));
@@ -1049,7 +1046,7 @@ bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol
 // Check period and Recheck period is defined here
 bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, bool& is_q0_fail)
 {
-  started_check_ = true;
+  // started_check_ = true;
 
   bool result = true;
   for (auto& traj : trajs_)
@@ -1074,7 +1071,7 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, bool& is_q0_fail
   //   result = false;
   // }
 
-  started_check_ = false;
+  // started_check_ = false;
 
   return result;
 }
@@ -1111,7 +1108,7 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
 }
 
 /// Delay check
-bool Mader::everyTrajCheck(mt::PieceWisePol pwp_now, const double headsup_time)
+bool Mader::everyTrajCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
 {
   // std::cout << "bef mtx_trajs_.lock() in delayCheck" << std::endl;
   mtx_trajs_.lock();  // this function is called in mader_ros.cpp so need to lock in the function
@@ -1124,17 +1121,18 @@ bool Mader::everyTrajCheck(mt::PieceWisePol pwp_now, const double headsup_time)
     {
       if (!traj_compiled.is_committed)
       {
-        if (headsup_time < traj_compiled.time_created)
+        // if (headsup_time < traj_compiled.time_created)
+        if (traj_compiled.time_created - headsup_time > 1e-3)
         {
           // Do nothing. They will change their traj.
         }
-        else if (headsup_time > traj_compiled.time_created &&
+        else if (headsup_time - traj_compiled.time_created > 1e-3 &&
                  trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
         {
           ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
           result = false;  // will have to redo the optimization
         }
-        else if (traj_compiled.time_created == headsup_time &&
+        else if (abs(traj_compiled.time_created - headsup_time) < 1e-3 &&
                  trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(),
                                            pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
         {
