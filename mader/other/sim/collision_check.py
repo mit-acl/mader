@@ -79,17 +79,19 @@ if __name__ == '__main__':
 
             for i in range(len(rosbag)):
 
-                b = bagreader(rosbag[i], verbose=False)
-                sim_id = rosbag[i][source_len+5:source_len+7]
-                
-                log_data = b.message_by_topic("/is_collided")
-                if (log_data == None):
-                    print("sim " + sim_id + ": no collision" )
-                    os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'/collision_status.txt')
-                else:
-                    collision_cnt = collision_cnt + 1
-                    print("sim " + sim_id + ": ******collision******" )
-                    os.system('echo "simulation '+sim_id+': ***collision***" >> '+source_dir+'/collision_status.txt')
+                try:
+                    b = bagreader(rosbag[i], verbose=False)
+                    sim_id = rosbag[i][source_len+5:source_len+7]
+                    log_data = b.message_by_topic("/is_collided")
+                    if (log_data == None):
+                        print("sim " + sim_id + ": no collision" )
+                        os.system('echo "simulation '+sim_id+': no collision" >> '+source_dir+'/collision_status.txt')
+                    else:
+                        collision_cnt = collision_cnt + 1
+                        print("sim " + sim_id + ": ******collision******" )
+                        os.system('echo "simulation '+sim_id+': ***collision***" >> '+source_dir+'/collision_status.txt')
+                except:
+                    pass
 
             collision_per = collision_cnt / len(rosbag) * 100
             os.system('paste '+source_dir+'/collision_status.txt '+source_dir+'/status.txt >> '+source_dir+'/complete_status.txt')

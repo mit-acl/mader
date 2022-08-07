@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     # parameters
     is_oldmader=True
-    num_of_sims=110
+    num_of_sims=60
     num_of_agents=10
     how_long_to_wait = 30 #[s]
     if is_oldmader:
@@ -213,7 +213,7 @@ if __name__ == '__main__':
     session_name="data"
     os.system("tmux kill-session -t" + session_name)
     os.system("tmux new-session -d -s "+str(session_name)+" -x 300 -y 300")
-    
+
     commands = []
     commands.append("sleep 3.0 && roscd mader && cd other/sim && python collision_check.py")
     commands.append("sleep 3.0 && roscd mader && cd other/sim && python completion_time.py")
@@ -231,5 +231,4 @@ if __name__ == '__main__':
     for i in range(len(commands)):
         os.system('tmux send-keys -t '+str(session_name)+':'+str(i) +'.0 "'+ commands[i]+'" '+' C-m')
 
-    os.system("tmux attach")
     print("Commands sent")

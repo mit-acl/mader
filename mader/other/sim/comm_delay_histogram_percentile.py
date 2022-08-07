@@ -28,7 +28,7 @@ import numpy
 if __name__ == '__main__':
 
     # you wanna get histogram or know the value at q-th percentile
-    is_histogram = False
+    is_histogram = True
     # q-th percentile
     q = 75
 

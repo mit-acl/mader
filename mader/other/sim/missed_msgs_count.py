@@ -119,8 +119,9 @@ if __name__ == '__main__':
             ave_missed_per_dc = sum(missed_msgs_list)/len(missed_msgs_list)
             ave_per_dc = sum(msgs_list)/len(msgs_list)
             # print(ave_per_dc)
-            os.system('echo "'+source_dir+': msgs_cnt '+str(ave_per_dc)+'" >> /home/kota/data/missed_msgs_cnt.txt')
-            os.system('echo "'+source_dir+': missed_msgs_cnt '+str(ave_missed_per_dc)+'" >> /home/kota/data/missed_msgs_cnt.txt')
-            os.system('echo "'+source_dir+': missed/total '+str(ave_missed_per_dc/ave_per_dc)+'" >> /home/kota/data/missed_msgs_cnt.txt')
+            os.system('echo "'+source_dir+': msgs_cnt '+str(round(ave_per_dc,2))+'" >> /home/kota/data/missed_msgs_cnt.txt')
+            os.system('echo "'+source_dir+': missed_msgs_cnt '+str(round(ave_missed_per_dc,2))+'" >> /home/kota/data/missed_msgs_cnt.txt')
+            os.system('echo "'+source_dir+': missed/total '+str(round(ave_missed_per_dc/ave_per_dc,2))+'" >> /home/kota/data/missed_msgs_cnt.txt')
+            os.system('echo "" >> /home/kota/data/missed_msgs_cnt.txt')
             
             is_oldmader = False
