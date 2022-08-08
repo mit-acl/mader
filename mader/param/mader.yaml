@@ -3,7 +3,7 @@ sim: true
 # need take off?
 is_take_off: false
 # use delay check or not?
-######is_delaycheck: true
+is_delaycheck: true
 max_agent_number: 10
 
 use_ff: true # use feedforward
@@ -15,17 +15,17 @@ n_agents: 10
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
 drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced by drone_bbox
-drone_bbox: [0.25, 0.25, 0.25] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
+drone_bbox: [0.5, 0.5, 0.5] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
 #w_max: 0.4           # [rd/s] Maximum angular velocity. 0.4 for Hardware
 w_max: 0.0
 
 alpha_filter_dyaw: 0.99 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
 
-Ra: 20.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
+Ra: 25.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
-######delay_check: 0.05 # seconds
-############################################################################simulated_comm_delay: 0.0 #seconds
+delay_check: 0.05 # seconds
+##########################################simulated_comm_delay: 0.0 #seconds
 comm_delay_param: 1.0
 
 x_min: -1000000000.0  # [m] don't forget the .0

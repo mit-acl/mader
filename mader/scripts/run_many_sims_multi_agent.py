@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     # parameters
     is_oldmader=True
-    num_of_sims=60
+    num_of_sims=55
     num_of_agents=10
     how_long_to_wait = 30 #[s]
     if is_oldmader:
@@ -56,29 +56,25 @@ if __name__ == '__main__':
         is_oldmader=True
 
         if cd == 50:
-            dc_list = [0, 190, 73, 57, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 120, 60, 51.3, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 210, 120, 107, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 170, 105, 101.3, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 200:
-            dc_list = [0, 300]
+            dc_list = [0, 250]
         elif cd == 300:
-            dc_list = [0, 400]
+            dc_list = [0, 360]
 
         for dc in dc_list:
 
             dc_in_ms = dc/1000;
             cd_in_ms = cd/1000;
 
-            if dc == 50.5:
-                str_dc = "50_5"
-            elif dc == 50.1:
-                str_dc = "50_1"
-            elif dc == 100.5:
-                str_dc = "100_5"
-            elif dc == 100.1:
-                str_dc = "100_1"
+            if dc == 51.3:
+                str_dc = "51_3"
+            elif dc == 101.3:
+                str_dc = "101_3"
             else:
                 str_dc = str(dc)
 

@@ -30,7 +30,7 @@ if __name__ == '__main__':
     # you wanna get histogram or know the value at q-th percentile
     is_histogram = True
     # q-th percentile
-    q = 75
+    q = 100
 
     is_oldmader = True # always False bc oldmader doesn't have comm_delay
     num_of_agents = 10
@@ -45,29 +45,25 @@ if __name__ == '__main__':
         is_oldmader=True
 
         if cd == 50:
-            dc_list = [0, 190, 73, 57, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 120, 60, 51.3, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 210, 120, 107, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 170, 105, 101.3, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 200:
-            dc_list = [0, 300]
+            dc_list = [0, 250]
         elif cd == 300:
-            dc_list = [0, 400]
+            dc_list = [0, 360]
             
         for dc in dc_list:
             
             # comm_delay you use
             input_comm_delay = dc/1000
 
-            if dc == 50.5:
-                str_dc = "50_5"
-            elif dc == 50.1:
-                str_dc = "50_1"
-            elif dc == 100.5:
-                str_dc = "100_5"
-            elif dc == 100.1:
-                str_dc = "100_1"
+            if dc == 51.3:
+                str_dc = "51_3"
+            elif dc == 101.3:
+                str_dc = "101_3"
             else:
                 str_dc = str(dc)
 
@@ -90,8 +86,8 @@ if __name__ == '__main__':
 
             # print(rosbag)
 
-            # for i in range(len(rosbag)):
-            for i in range(10):
+            for i in range(len(rosbag)):
+            # for i in range(10):
 
                 b = bagreader(rosbag[i], verbose=False);
                 
@@ -131,9 +127,6 @@ if __name__ == '__main__':
                 # plt.show()
             else:
                 # in case you wanna calculate the value of q-th percentile
-                print(source_bags)
-                print(str(q) + "-th percentile value is " + str(numpy.percentile(comm_delay_arr, q)))
-                if q > 0:
-                    q = q -25
-                else:
-                    sys.exit()
+                for q in range(100,0,-25):
+                    print(source_bags)
+                    print(str(q) + "-th percentile value is " + str(numpy.percentile(comm_delay_arr, q)))

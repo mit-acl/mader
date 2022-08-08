@@ -174,7 +174,7 @@ def startNode():
     rospy.Subscriber("SQ10s/state", State, c.SQ10stateCB)
     rospy.Subscriber("SQ01s/state", State, c.SQ01stateCB)
 
-    rospy.Timer(rospy.Duration(0.01), c.AveDistanceCalculate)
+    rospy.Timer(rospy.Duration(0.1), c.AveDistanceCalculate)
     rospy.spin()
 
 if __name__ == '__main__':
