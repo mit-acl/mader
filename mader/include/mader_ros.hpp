@@ -24,6 +24,7 @@
 #include <mader_msgs/DynTraj.h>
 #include <mader_msgs/CommDelay.h>
 #include <mader_msgs/MissedMsgsCnt.h>
+#include <mader_msgs/Trajs.h>
 
 #include "utils.hpp"
 #include "mader.hpp"
@@ -79,6 +80,8 @@ private:
 
   void verify(bool cond, std::string info_if_false);
 
+  void publishTrajs();
+
   bool sim_;
   bool is_delaycheck_ = true;
   double headsup_time_ = 0.0;
@@ -116,6 +119,7 @@ private:
 
   ros::Publisher pub_text_;
   ros::Publisher pub_traj_;
+  ros::Publisher pub_trajs_;
 
   ros::Publisher poly_safe_pub_;
 

@@ -57,6 +57,7 @@ add_message_files(
   Collision.msg
   GoalReached.msg
   MissedMsgsCnt.msg
+  Trajs.msg
 )
 
 ## Generate services in the 'srv' folder

@@ -980,6 +980,17 @@ bool Mader::initialized()
   return true;
 }
 
+std::vector<mt::dynTrajCompiled> Mader::getTrajs()
+{
+  std::vector<mt::dynTrajCompiled> trajs;
+
+  mtx_trajs_.lock();
+  trajs = trajs_;
+  mtx_trajs_.unlock();
+  return trajs;
+
+}
+
 // check wheter a mt::dynTrajCompiled and a pwp_optimized are in collision in the interval [t_start, t_end]
 bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
                                       double t_end, bool& is_q0_fail)

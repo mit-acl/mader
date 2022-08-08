@@ -164,6 +164,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pub_fov_ = nh1_.advertise<visualization_msgs::Marker>("fov", 1);
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
   pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("trajs", 1, true);  // The last boolean is latched or not
+  pub_trajs_ = nh1_.advertise<mader_msgs::DynTraj>("list_trajs", 1, true);  // The last boolean is latched or not
   pub_comm_delay_ = nh1_.advertise<mader_msgs::CommDelay>("comm_delay", 1);
   pub_missed_msgs_cnt_ = nh1_.advertise<mader_msgs::MissedMsgsCnt>("missed_msgs_cnt", 1);
 
@@ -519,6 +520,19 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_commit
   pub_traj_.publish(msg);
 }
 
+
+void MaderRos::publishTrajs()
+{
+  std::vector<mt::dynTrajCompiled> trajs = mader_ptr_->getTrajs();
+  mader_msgs::Trajs msg;
+  for (auto &traj : trajs)
+  {
+    msg.id.push_back(traj.id); // id is vehcle identification number
+    msg.time_created.push_back(traj.time_created); // this can be used to identify which traj msg has been received
+  }
+  pub_trajs_.publish(msg);
+}
+
 void MaderRos::replanCB(const ros::TimerEvent& e)
 {
   if (ros::ok() && published_initial_position_ == true && is_mader_running_)
@@ -526,21 +540,21 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     replanCBTimer_.stop();  // to avoid blockage
 
     // introduce random wait time in the beginning
-    if (!is_replanCB_called_)
-    {
-      // to avoid initial path search congestions add some random sleep here
-      std::random_device rd;
-      std::default_random_engine eng(rd());
-      std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
-      ros::Duration(distr(eng)).sleep();
-      is_replanCB_called_ = true;
-    }
+    // if (!is_replanCB_called_)
+    // {
+    //   // to avoid initial path search congestions add some random sleep here
+    //   std::random_device rd;
+    //   std::default_random_engine eng(rd());
+    //   std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
+    //   ros::Duration(distr(eng)).sleep();
+    //   is_replanCB_called_ = true;
+    // }
 
     // mtx_mader_ptr_.lock();
     if (mader_ptr_->isGoalSeen())
     {
       std::cout << "goal is reached so no need to replan" << std::endl;
-      is_mader_running_ = false;
+      // is_mader_running_ = false;
       mader_msgs::MissedMsgsCnt msg;
       msg.missed_msgs_cnt = missed_msgs_cnt_;
       msg.msgs_cnt = msgs_cnt_;
@@ -582,6 +596,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
         // let others know my new trajectory
         publishOwnTraj(pwp_now_, false, headsup_time_);
+        publishTrajs();
 
         // visualization
         if (par_.visual)
@@ -638,6 +653,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             // successful
 
             publishOwnTraj(pwp_now_, true, headsup_time_);
+            publishTrajs();
             pwp_last_ = pwp_now_;
             // std::cout << "Success!" << std::endl;
             if (par_.visual)
@@ -650,6 +666,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
               // last_traj_plan_ = traj_plan;
               // last_edges_obstacles_ = edges_obstacles;
             }
+            timer_stop_.Reset();
           }
           else
           {

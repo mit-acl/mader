@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
             if is_histogram:
                 percentile = scipy.stats.percentileofscore(comm_delay_arr, input_comm_delay, kind='mean')
-                os.system('echo "cd='+str(cd)+', dc='+str(dc)+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> '+source_dir+'/comm_delay_percentile.txt')
+                os.system('echo "cd='+str(cd)+', dc='+str(dc)+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> /home/kota/data/comm_delay_percentile.txt')
                 # print(comm_delay)
                 max_comm_delay = max(comm_delay)
 

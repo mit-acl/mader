@@ -76,6 +76,8 @@ public:
   bool isGoalSeen();
   bool isGoalReached();
 
+  std::vector<mt::dynTrajCompiled> getTrajs();
+
 private:
   mt::state M_;
   mt::committedTrajectory plan_;
