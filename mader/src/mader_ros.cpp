@@ -434,15 +434,14 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   {
     // std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s"
     // << std::endl;
-    missed_msgs_cnt_++;
+    missed_msgs_cnt_ = missed_msgs_cnt_ + 1;
   }
 
-  msgs_cnt_++;
+  msgs_cnt_ = msgs_cnt_ + 1;
 
   mader_msgs::CommDelay msg;
   msg.comm_delay = supposedly_simulated_comm_delay;
   pub_comm_delay_.publish(msg);
-
 
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in allTrajsTimerCB" << std::endl;
   // std::cout << "aft alltrajs_ and alltrajsTimers_ are unlocked() in allTrajsTimerCB" << std::endl;

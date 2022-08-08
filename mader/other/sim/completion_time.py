@@ -93,14 +93,14 @@ if __name__ == '__main__':
                     # print('completion time ' + str(completion_time_agent))
                     completion_time_per_sim_list.append(completion_time)
                     box_plot_list.append(completion_time_per_sim_list)
-                    os.system('echo "'+source_dir+'" >> /home/kota/data/completion_time.txt')
-                    os.system('echo "max is '+str(round(max(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
-                    os.system('echo "ave is '+str(round(statistics.mean(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
-                    os.system('echo "------------------------------------------------------------" >> /home/kota/data/completion_time.txt')
 
                 except:
                     print("agents didn't reach goals")
 
+            os.system('echo "'+source_dir+'" >> /home/kota/data/completion_time.txt')
+            os.system('echo "max is '+str(round(max(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
+            os.system('echo "ave is '+str(round(statistics.mean(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
+            os.system('echo "------------------------------------------------------------" >> /home/kota/data/completion_time.txt')
 
                 # # get all the agents' actual_traj topic ( this topic publishes as long as it is tranlating, meaning as soon as the agent reaches the goal this topic stop publishing)
                 # completion_time_per_agent_list = [] 
