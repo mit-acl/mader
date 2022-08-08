@@ -464,14 +464,34 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
       else
       {
         // points.push_back(Eigen::Vector3d(V(1, j), V(2, j), V(3, j)));  // x,y,z
-        points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z + delta.z()));
-        points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z + delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z + delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z + delta.z()));
+
+        // we see many deadlock issue when they stop (meaning, the end point of plan_ might be violating bbox)
+        // Ad-hoc solution to this is to increase delta at the final point in plan_
+        Eigen::Vector3d inflation = delta;
+        if (i == index_last_interval)
+        {
+          inflation.x() = delta.x() + 0.01;
+          inflation.y() = delta.y() + 0.01;
+          inflation.z() = delta.z() + 0.01;
+        }
+
+        // points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z + delta.z()));
+        // points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z - delta.z()));
+        // points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z - delta.z()));
+        // points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z + delta.z()));
+        // points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z - delta.z()));
+        // points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z + delta.z()));
+        // points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z - delta.z()));
+        // points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z + delta.z()));
+
+        points.push_back(Eigen::Vector3d(x + inflation.x(), y + inflation.y(), z + inflation.z()));
+        points.push_back(Eigen::Vector3d(x + inflation.x(), y - inflation.y(), z - inflation.z()));
+        points.push_back(Eigen::Vector3d(x + inflation.x(), y + inflation.y(), z - inflation.z()));
+        points.push_back(Eigen::Vector3d(x + inflation.x(), y - inflation.y(), z + inflation.z()));
+        points.push_back(Eigen::Vector3d(x - inflation.x(), y - inflation.y(), z - inflation.z()));
+        points.push_back(Eigen::Vector3d(x - inflation.x(), y + inflation.y(), z + inflation.z()));
+        points.push_back(Eigen::Vector3d(x - inflation.x(), y + inflation.y(), z - inflation.z()));
+        points.push_back(Eigen::Vector3d(x - inflation.x(), y - inflation.y(), z + inflation.z()));
       }
     }
   }
@@ -1107,7 +1127,7 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
 }
 
 /// Delay check
-bool Mader::everyTrajCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
+bool Mader::delayCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
 {
   // std::cout << "bef mtx_trajs_.lock() in delayCheck" << std::endl;
   mtx_trajs_.lock();  // this function is called in mader_ros.cpp so need to lock in the function

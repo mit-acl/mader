@@ -599,7 +599,6 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
         // delay check *******************************************************
         // start
-        // delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
         MyTimer delay_check_t(true);
         while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
         {
@@ -607,7 +606,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           // TODO make this as a timer so that i can move onto the next optimization
           // std::cout << "waiting in DC" << std::endl;
           // mtx_mader_ptr_.lock();
-          delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_, headsup_time_);
+          delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
           // mtx_mader_ptr_.unlock();
           ros::Duration(0.01).sleep();
           if (delay_check_result_ == false)
@@ -615,7 +614,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             break;
           }
         }
-        delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_, headsup_time_);
+        delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
         // ros::Duration(delay_check_).sleep();
         // is_in_DC_ = false;
         // end of delay check *******************************************************

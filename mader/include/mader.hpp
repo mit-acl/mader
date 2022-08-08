@@ -52,7 +52,7 @@ public:
                               std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
                               mt::PieceWisePol& pwp_now, double& headsup_time);
   bool addTrajToPlan_with_delaycheck(mt::PieceWisePol& pwp);
-  bool everyTrajCheck(mt::PieceWisePol pwp_optimized, const double& headsup_time);
+  bool delayCheck(mt::PieceWisePol pwp_optimized, const double& headsup_time);
 
   void updateState(mt::state data);
 
