@@ -65,8 +65,7 @@ public:
   void resetInitialization();
 
   bool IsTranslating();
-  bool updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC,
-                           const double& headsup_time);
+  bool updateTrajObstacles_with_delaycheck(mt::dynTraj traj);
   void updateTrajObstacles(mt::dynTraj traj);
 
   Eigen::Vector2d RotationMatrix(Eigen::Vector2d& vec, const double& angle);

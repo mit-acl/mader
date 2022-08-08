@@ -171,8 +171,7 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
 }
 // Note that we need to compile the trajectories inside mader.cpp because t_ is in mader.hpp
 
-bool Mader::updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC,
-                                const double& headsup_time)
+bool Mader::updateTrajObstacles_with_delaycheck(mt::dynTraj traj)
 {
   // std::cout << "in updateTrajObstacles" << std::endl;
 

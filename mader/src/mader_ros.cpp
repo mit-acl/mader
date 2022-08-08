@@ -373,8 +373,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
     //****** Communication delay introduced in the simulation
     // save all the trajectories into alltrajs_ and create a timer corresponding to that
     // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
-    mtx_alltrajs_.lock();
-    mtx_alltrajsTimers_.lock();
+    // mtx_alltrajs_.lock();
+    // mtx_alltrajsTimers_.lock();
     // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
 
     alltrajs_.push_back(tmp);
@@ -383,8 +383,8 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
     alltrajsTimers_.push_back(alltrajs_timer);
 
     // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in TrajCB" << std::endl;
-    mtx_alltrajs_.unlock();
-    mtx_alltrajsTimers_.unlock();
+    // mtx_alltrajs_.unlock();
+    // mtx_alltrajsTimers_.unlock();
     // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in TrajCB" << std::endl;
   }
   else
@@ -412,38 +412,37 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
   // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
 
-  if (is_mader_running_)
+  // mtx_alltrajs_.lock();
+  // mtx_alltrajsTimers_.lock();
+
+  mt::dynTraj tmp = alltrajs_[0];
+
+  alltrajs_.pop_front();
+  alltrajsTimers_.pop_front();
+
+  // mtx_alltrajs_.unlock();
+  // mtx_alltrajsTimers_.unlock();
+  // mtx_mader_ptr_.lock();
+  mader_ptr_->updateTrajObstacles_with_delaycheck(tmp);
+  // mtx_mader_ptr_.unlock();
+
+  double time_now = ros::Time::now().toSec();
+  double supposedly_simulated_comm_delay = time_now - tmp.time_created;
+
+  // supposedly_simulated_time_delay should be simulated_comm_delay_
+  if (supposedly_simulated_comm_delay > delay_check_)
   {
-    mtx_alltrajs_.lock();
-    mtx_alltrajsTimers_.lock();
-
-    mt::dynTraj tmp = alltrajs_[0];
-
-    mtx_alltrajs_.unlock();
-    mtx_alltrajsTimers_.unlock();
-    // mtx_mader_ptr_.lock();
-    mader_ptr_->updateTrajObstacles(tmp);
-    // mtx_mader_ptr_.unlock();
-
-    double time_now = ros::Time::now().toSec();
-    double supposedly_simulated_comm_delay = time_now - tmp.time_created;
-
-    alltrajs_.pop_front();
-    alltrajsTimers_.pop_front();
-
-    // supposedly_simulated_time_delay should be simulated_comm_delay_
-    if (supposedly_simulated_comm_delay > delay_check_)
-    {
-      // std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s"
-      // << std::endl;
-      missed_msgs_cnt_++;
-    }
-    msgs_cnt_++;
-
-    mader_msgs::CommDelay msg;
-    msg.comm_delay = supposedly_simulated_comm_delay;
-    pub_comm_delay_.publish(msg);
+    // std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s"
+    // << std::endl;
+    missed_msgs_cnt_++;
   }
+
+  msgs_cnt_++;
+
+  mader_msgs::CommDelay msg;
+  msg.comm_delay = supposedly_simulated_comm_delay;
+  pub_comm_delay_.publish(msg);
+
 
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in allTrajsTimerCB" << std::endl;
   // std::cout << "aft alltrajs_ and alltrajsTimers_ are unlocked() in allTrajsTimerCB" << std::endl;
@@ -528,15 +527,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     replanCBTimer_.stop();  // to avoid blockage
 
     // introduce random wait time in the beginning
-    // if (!is_replanCB_called_)
-    // {
-    //   // to avoid initial path search congestions add some random sleep here
-    //   std::random_device rd;
-    //   std::default_random_engine eng(rd());
-    //   std::uniform_real_distribution<float> distr(0, 2);  // sleep between 0 and 1 sec
-    //   ros::Duration(distr(eng)).sleep();
-    //   is_replanCB_called_ = true;
-    // }
+    if (!is_replanCB_called_)
+    {
+      // to avoid initial path search congestions add some random sleep here
+      std::random_device rd;
+      std::default_random_engine eng(rd());
+      std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
+      ros::Duration(distr(eng)).sleep();
+      is_replanCB_called_ = true;
+    }
 
     // mtx_mader_ptr_.lock();
     if (mader_ptr_->isGoalSeen())
@@ -580,7 +579,6 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
       if (replanned)
       {
-        MyTimer delay_check_t(true);
         // is_in_DC_ = true;
 
         // let others know my new trajectory
@@ -602,6 +600,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         // delay check *******************************************************
         // start
         // delay_check_result_ = mader_ptr_->everyTrajCheck(pwp_now_);
+        MyTimer delay_check_t(true);
         while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
         {
           // wait while trajCB() is checking new trajs
@@ -653,6 +652,32 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
               // last_traj_plan_ = traj_plan;
               // last_edges_obstacles_ = edges_obstacles;
             }
+          }
+          else
+          {
+            // int time_ms = int(ros::Time::now().toSec() * 1000);
+
+            if (timer_stop_.ElapsedMs() > 500.0)
+            {
+              publishOwnTraj(pwp_last_, true,
+                             headsup_time_);  // This is needed because is drone DRONE1 stops, it needs to keep publishing
+                                              // his last planned trajectory, so that other drones can avoid it (even if
+                                              // DRONE1 was very far from the other drones with it last successfully
+                                              // planned a trajectory). Note that these trajectories are time-indexed, and
+                                              // the last position is taken if t>times.back(). See eval() function in the
+                                              // pwp struct
+              timer_stop_.Reset();
+            }
+            // visualization
+            if (par_.visual)
+            {
+              // Delete markers to publish stuff
+              // visual_tools_->deleteAllMarkers();
+              // visual_tools_->enableBatchPublishing();
+              // if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
+              // pubTraj(traj_plan, true);
+            }
+
           }
         }
         else
