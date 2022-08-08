@@ -116,8 +116,18 @@ if __name__ == '__main__':
                 ax = fig.add_subplot()
                 n, bins, patches = plt.hist(x=comm_delay, color="blue", edgecolor = 'black')
                 plt.axvline(x=dc/1000, color="red")
-                ax.set_xticks(np.arange(0.05,0.250,0.025))
-                ax.set_xticklabels(np.arange(50,250,25))
+                if cd == 50:
+                    ax.set_xticks(np.arange(0,0.125,0.025))
+                    ax.set_xticklabels(np.arange(0,125,25))
+                elif cd == 100:
+                    ax.set_xticks(np.arange(0,0.175,0.025))
+                    ax.set_xticklabels(np.arange(0,175,25))
+                elif cd == 200:
+                    ax.set_xticks(np.arange(0,0.250,0.025))
+                    ax.set_xticklabels(np.arange(0,250,25))
+                elif cd == 500:
+                    ax.set_xticks(np.arange(0,0.375,0.025))
+                    ax.set_xticklabels(np.arange(0,375,25))
                 # plt.rcParams["font.family"] = "Times New Roman"
                 plt.grid(axis='y', color='black', alpha=0.2)
                 plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay*1000))+' [ms] and '+str(dc)+'ms delay check')
