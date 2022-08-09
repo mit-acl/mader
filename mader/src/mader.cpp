@@ -988,7 +988,7 @@ bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol
 
     // This is my trajectory (with inflation)
     Eigen::Vector3d inflation;
-    inflation << 0.1, 0.1, 0.1;
+    inflation << 0.01, 0.01, 0.01;
     std::vector<Eigen::Vector3d> pointsA =
         vertexesOfInterval(pwp_optimized, t_start + i * deltaT, t_start + (i + 1) * deltaT, inflation);
 

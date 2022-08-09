@@ -39,8 +39,8 @@ int main(int argc, char **argv)
   ros::AsyncSpinner spinner1(5, &custom_queue1);  // 1 thread for the custom_queue1 // 0 means threads= # of CPU cores
   ros::AsyncSpinner spinner2(1, &custom_queue2);  // 1 thread for the custom_queue2 // 0 means threads= # of CPU cores
   ros::AsyncSpinner spinner3(1, &custom_queue3);  // 1 thread for the custom_queue3 // 0 means threads= # of CPU cores
-  ros::AsyncSpinner spinner4(1, &custom_queue4);  // 1 thread for the custom_queue4 // 0 means threads= # of CPU cores
-  ros::AsyncSpinner spinner5(1, &custom_queue5);  // 1 thread for the custom_queue5 // 0 means threads= # of CPU cores
+  ros::AsyncSpinner spinner4(5, &custom_queue4);  // 1 thread for the custom_queue4 // 0 means threads= # of CPU cores
+  ros::AsyncSpinner spinner5(5, &custom_queue5);  // 1 thread for the custom_queue5 // 0 means threads= # of CPU cores
 
   spinner1.start();  // start spinner of the custom queue 1
   spinner2.start();  // start spinner of the custom queue 2

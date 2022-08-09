@@ -485,13 +485,13 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_commit
   // std::cout<<"msg.pwp.times[0]= "<<msg.pwp.times[0]
 
   msg.traj_id = traj_id_;
-  std::cout << "my traj_id is " << traj_id_ << std::endl;
-  traj_id_++;
+  // std::cout << "my traj_id is " << traj_id_ << std::endl;
+  // traj_id_++;
 
-  for (auto &traj : trajs)
-  {
-    std::cout << "veh " << traj.id << " id " << traj.traj_id << std::endl;
-  }
+  // for (auto &traj : trajs)
+  // {
+  //   std::cout << "veh " << traj.id << " id " << traj.traj_id << std::endl;
+  // }
 
   pub_traj_.publish(msg);
 }
@@ -548,7 +548,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       // std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
       // ros::Duration(distr(eng)).sleep();
 
-      ros::Duration(0.1*id_).sleep();
+      // ros::Duration(0.1*id_).sleep();
       is_replanCB_called_ = true;
     }
 
@@ -582,7 +582,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       // mtx_mader_ptr_.lock();
       replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_,
                                                      num_of_QCQPs_run_, pwp_now_, headsup_time_);
-      trajs = mader_ptr_->getTrajs();
+      // trajs = mader_ptr_->getTrajs();
       // mtx_mader_ptr_.unlock();
 
       if (par_.visual)
@@ -607,39 +607,26 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         if (par_.visual)
         {
           // Delete markers to publish stuff
-          // visual_tools_->deleteAllMarkers();
-          // visual_tools_->enableBatchPublishing();
-          // if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
+          visual_tools_->deleteAllMarkers();
+          visual_tools_->enableBatchPublishing();
+          if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
           pubTraj(traj_plan, false);
         }
 
-        // std::cout << "headsup" << std::endl;
-        // for (auto state : traj_plan) {state.print();}
-
         // delay check *******************************************************
-        // start
         MyTimer delay_check_t(true);
         while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
         {
-          // wait while trajCB() is checking new trajs
-          // TODO make this as a timer so that i can move onto the next optimization
-          // std::cout << "waiting in DC" << std::endl;
-          // mtx_mader_ptr_.lock();
           delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
-          // mtx_mader_ptr_.unlock();
-          ros::Duration(0.01).sleep();
+          // ros::Duration(0.01).sleep();
           if (delay_check_result_ == false)
           {
             break;
           }
         }
-        trajs = mader_ptr_->getTrajs();
+        // trajs = mader_ptr_->getTrajs();
         delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
-        // ros::Duration(delay_check_).sleep();
-        // is_in_DC_ = false;
         // end of delay check *******************************************************
-
-        // std::cout << "after delay check" << std::endl;
 
         if (delay_check_result_)
         {
@@ -657,19 +644,17 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           if (successful_to_add_to_plan)
           {
             // successful
-
             publishOwnTraj(pwp_now_, true, trajs);
             pwp_last_ = pwp_now_;
-            // std::cout << "Success!" << std::endl;
             if (par_.visual)
             {
               // Delete markers to publish stuff
-              // visual_tools_->deleteAllMarkers();
-              // visual_tools_->enableBatchPublishing();
-              // if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
+              visual_tools_->deleteAllMarkers();
+              visual_tools_->enableBatchPublishing();
+              if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
               pubTraj(traj_plan, true);
-              // last_traj_plan_ = traj_plan;
-              // last_edges_obstacles_ = edges_obstacles;
+              last_traj_plan_ = traj_plan;
+              last_edges_obstacles_ = edges_obstacles;
             }
             timer_stop_.Reset();
           }
@@ -692,10 +677,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             if (par_.visual)
             {
               // Delete markers to publish stuff
-              // visual_tools_->deleteAllMarkers();
-              // visual_tools_->enableBatchPublishing();
-              // if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
-              // pubTraj(traj_plan, true);
+              visual_tools_->deleteAllMarkers();
+              visual_tools_->enableBatchPublishing();
+              if (edges_obstacles.size() > 0){pubObstacles(last_edges_obstacles_);}
+              pubTraj(last_traj_plan_, true);
             }
 
           }
@@ -719,10 +704,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           if (par_.visual)
           {
             // Delete markers to publish stuff
-            // visual_tools_->deleteAllMarkers();
-            // visual_tools_->enableBatchPublishing();
-            // if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
-            // pubTraj(traj_plan, true);
+            visual_tools_->deleteAllMarkers();
+            visual_tools_->enableBatchPublishing();
+            if (edges_obstacles.size() > 0){pubObstacles(last_edges_obstacles_);}
+            pubTraj(last_traj_plan_, true);
           }
         }
       }
@@ -746,11 +731,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           // Delete markers to publish stuff
           visual_tools_->deleteAllMarkers();
           visual_tools_->enableBatchPublishing();
-          if (edges_obstacles.size() > 0)
-          {
-            pubObstacles(edges_obstacles);
-          }
-          // pubTraj(traj_plan, true);
+          if (edges_obstacles.size() > 0){pubObstacles(last_edges_obstacles_);}
+          pubTraj(last_traj_plan_, true);
         }
       }
     }
