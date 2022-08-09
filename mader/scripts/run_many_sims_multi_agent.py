@@ -21,7 +21,6 @@ import time
 from numpy import linalg as LA
 import struct
 from mader_msgs.msg import GoalReached
-from mader_msgs.msg import CompletionTime
 
 def checkGoalReached(num_of_agents):
     try:
@@ -41,7 +40,7 @@ if __name__ == '__main__':
     is_oldmader=True
     num_of_sims=1
     num_of_agents=10
-    how_long_to_wait = 20 #[s]
+    how_long_to_wait = 30 #[s]
     if is_oldmader:
         cd_list = [50, 100, 200, 300]
     else:
@@ -141,9 +140,9 @@ if __name__ == '__main__':
                 commands.append("sleep 3.0 && roslaunch mader ave_distance.launch num_of_agents:="+str(num_of_agents)+" folder_loc:="+folder_csv+" sim:="+sim_id)
 
                 #publishing the goal should be the last command
-                commands.append("sleep 10.0 && roslaunch mader many_drones.launch action:=send_goal")
-                commands.append("sleep 10.0 && roslaunch mader goal_reached.launch") #we are calculating completion time here so sleep time needs to be the same as send_goal
-                commands.append("sleep 12.0 && tmux detach")
+                commands.append("sleep 8.0 && roslaunch mader many_drones.launch action:=send_goal")
+                commands.append("sleep 8.0 && roslaunch mader goal_reached.launch") #we are calculating completion time here so sleep time needs to be the same as send_goal
+                commands.append("sleep 10.0 && tmux detach")
 
                 # print("len(commands)= " , len(commands))
                 session_name="run_many_sims_multi_agent_session"

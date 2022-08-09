@@ -537,6 +537,7 @@ struct dynTraj
   bool is_agent;  // true for a trajectory of an agent, false for an obstacle
   mt::PieceWisePol pwp;
   bool is_committed;
+  int traj_id;
 };
 
 struct dynTrajCompiled
@@ -551,6 +552,8 @@ struct dynTrajCompiled
   bool is_static;
   bool is_committed;
   mt::PieceWisePol pwp;
+  int traj_id;
+  
 };
 
 // struct mt::PieceWisePolWithInfo
