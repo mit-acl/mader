@@ -1,2 +1,2 @@
-int32[] id
-float64[] time_created
+uint16[] traj_id
+
