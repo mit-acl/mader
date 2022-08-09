@@ -3,7 +3,7 @@ sim: true
 # need take off?
 is_take_off: false
 # use delay check or not?
-#is_delaycheck: true
+is_delaycheck: true
 max_agent_number: 10
 
 use_ff: true # use feedforward
@@ -24,28 +24,28 @@ alpha_filter_dyaw: 0.99 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> Mo
 
 Ra: 25.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
-#delay_check: 0.15 # seconds
-#################simulated_comm_delay: 0.0 #seconds
+delay_check: 0.05 # seconds
+simulated_comm_delay: 0.0 #seconds
 comm_delay_param: 1.0
 
-x_min: -1000000000.0  # [m] don't forget the .0
-x_max: 1000000000.0  # [m] don't forget the .0
+# x_min: -1000000000.0  # [m] don't forget the .0
+# x_max: 1000000000.0  # [m] don't forget the .0
 
-y_min: -1000000000.0  # [m] don't forget the .0
-y_max: 1000000000.0   # [m] don't forget the .0
+# y_min: -1000000000.0  # [m] don't forget the .0
+# y_max: 1000000000.0   # [m] don't forget the .0
 
-z_min: -1000000000.0  # [m] points below this are considered ground
-z_max: 1000000000.0   # [m] JPS is not allowed to give a solution that goes higher than this height
+# z_min: -1000000000.0  # [m] points below this are considered ground
+# z_max: 1000000000.0   # [m] JPS is not allowed to give a solution that goes higher than this height
 
 # highbay
-# x_min: -4.1  # [m] don't forget the .0
-# x_max: 4.1  # [m] don't forget the .0
+x_min: -4.1  # [m] don't forget the .0
+x_max: 4.1  # [m] don't forget the .0
 
-# y_min: -4.1  # [m] don't forget the .0
-# y_max: 4.1   # [m] don't forget the .0
+y_min: -4.1  # [m] don't forget the .0
+y_max: 4.1   # [m] don't forget the .0
 
-# z_min: 0.0  # [m] don't forget the .0
-# z_max: 2.0  # [m] don't forget the .0
+z_min: 0.0  # [m] don't forget the .0
+z_max: 2.0  # [m] don't forget the .0
 
 #For single-agent simulations
 
@@ -57,7 +57,7 @@ j_max: [30.0, 30.0, 30.0]   #[m/s3]  #Right now it's only used for Gurobi, not f
 # a_max: [3.0, 3.0, 3.0]   #[m/s2] Note that if a_max.z() > 9.81, the drone may flip
 # j_max: [4.0, 4.0, 4.0]   #[m/s3]  #Right now it's only used for Gurobi, not for NLOPT
 
-factor_alpha: 3.5 #[-] DeltaT = factor_alpha*States_took_previous_replan
+factor_alpha: 2.5 #[-] DeltaT = factor_alpha*States_took_previous_replan
 
 #Parameters for NLOPT
 num_pol: 4
