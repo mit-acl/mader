@@ -451,7 +451,8 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
 
 // This trajectory contains all the future trajectory (current_pos --> A --> final_point_of_traj), because it's the
 // composition of pwp
-void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_committed, std::vector<mt::dynTrajCompiled>& trajs)
+void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_committed,
+                              std::vector<mt::dynTrajCompiled>& trajs)
 {
   std::vector<std::string> s;  // mu::pieceWisePol2String(pwp); The rest of the agents will use the pwp field, not the
                                // string
@@ -488,7 +489,7 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_commit
   std::cout << "my traj_id is " << traj_id_ << std::endl;
   traj_id_++;
 
-  for (auto &traj : trajs)
+  for (auto& traj : trajs)
   {
     std::cout << "veh " << traj.id << " id " << traj.traj_id << std::endl;
   }
@@ -540,30 +541,30 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     replanCBTimer_.stop();  // to avoid blockage
 
     // introduce random wait time in the beginning
-    if (!is_replanCB_called_)
-    {
-      // to avoid initial path search congestions add some random sleep here
-      // std::random_device rd;
-      // std::default_random_engine eng(rd());
-      // std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
-      // ros::Duration(distr(eng)).sleep();
+    // if (!is_replanCB_called_)
+    // {
+    //   // to avoid initial path search congestions add some random sleep here
+    //   // std::random_device rd;
+    //   // std::default_random_engine eng(rd());
+    //   // std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
+    //   // ros::Duration(distr(eng)).sleep();
 
-      ros::Duration(0.1*id_).sleep();
-      is_replanCB_called_ = true;
-    }
+    //   ros::Duration(0.1 * id_).sleep();
+    //   is_replanCB_called_ = true;
+    // }
 
     // mtx_mader_ptr_.lock();
-    if (mader_ptr_->isGoalSeen())
-    {
-      std::cout << "goal is reached so no need to replan" << std::endl;
-      is_mader_running_ = false;
-      mader_msgs::MissedMsgsCnt msg;
-      msg.missed_msgs_cnt = missed_msgs_cnt_;
-      msg.msgs_cnt = msgs_cnt_;
-      pub_missed_msgs_cnt_.publish(msg);
-      // mtx_mader_ptr_.unlock();
-      return;
-    }
+    // if (mader_ptr_->isGoalSeen())
+    // {
+    //   std::cout << "goal is reached so no need to replan" << std::endl;
+    //   // is_mader_running_ = false;
+    //   mader_msgs::MissedMsgsCnt msg;
+    //   msg.missed_msgs_cnt = missed_msgs_cnt_;
+    //   msg.msgs_cnt = msgs_cnt_;
+    //   pub_missed_msgs_cnt_.publish(msg);
+    //   // mtx_mader_ptr_.unlock();
+    //   return;
+    // }
     // mtx_mader_ptr_.unlock();
 
     // initialization
@@ -576,7 +577,6 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
 
     if (is_delaycheck_)
     {
-
       std::vector<mt::dynTrajCompiled> trajs;
 
       // mtx_mader_ptr_.lock();
@@ -681,11 +681,11 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             {
               publishOwnTraj(pwp_last_, true,
                              trajs);  // This is needed because is drone DRONE1 stops, it needs to keep publishing
-                                              // his last planned trajectory, so that other drones can avoid it (even if
-                                              // DRONE1 was very far from the other drones with it last successfully
-                                              // planned a trajectory). Note that these trajectories are time-indexed, and
-                                              // the last position is taken if t>times.back(). See eval() function in the
-                                              // pwp struct
+                                      // his last planned trajectory, so that other drones can avoid it (even if
+                                      // DRONE1 was very far from the other drones with it last successfully
+                                      // planned a trajectory). Note that these trajectories are time-indexed, and
+                                      // the last position is taken if t>times.back(). See eval() function in the
+                                      // pwp struct
               timer_stop_.Reset();
             }
             // visualization
@@ -697,7 +697,6 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
               // if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
               // pubTraj(traj_plan, true);
             }
-
           }
         }
         else
@@ -708,11 +707,11 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           {
             publishOwnTraj(pwp_last_, true,
                            trajs);  // This is needed because is drone DRONE1 stops, it needs to keep publishing
-                                            // his last planned trajectory, so that other drones can avoid it (even if
-                                            // DRONE1 was very far from the other drones with it last successfully
-                                            // planned a trajectory). Note that these trajectories are time-indexed, and
-                                            // the last position is taken if t>times.back(). See eval() function in the
-                                            // pwp struct
+                                    // his last planned trajectory, so that other drones can avoid it (even if
+                                    // DRONE1 was very far from the other drones with it last successfully
+                                    // planned a trajectory). Note that these trajectories are time-indexed, and
+                                    // the last position is taken if t>times.back(). See eval() function in the
+                                    // pwp struct
             timer_stop_.Reset();
           }
           // visualization
@@ -734,10 +733,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         {
           publishOwnTraj(pwp_last_, true,
                          trajs);  // This is needed because is drone DRONE1 stops, it needs to keep publishing
-                                          // his last planned trajectory, so that other drones can avoid it (even if
-                                          // DRONE1 was very far from the other drones with it last successfully planned
-                                          // a trajectory). Note that these trajectories are time-indexed, and the last
-                                          // position is taken if t>times.back(). See eval() function in the pwp struct
+                                  // his last planned trajectory, so that other drones can avoid it (even if
+                                  // DRONE1 was very far from the other drones with it last successfully planned
+                                  // a trajectory). Note that these trajectories are time-indexed, and the last
+                                  // position is taken if t>times.back(). See eval() function in the pwp struct
           timer_stop_.Reset();
         }
         // visualization
