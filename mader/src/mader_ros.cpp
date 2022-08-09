@@ -540,7 +540,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     replanCBTimer_.stop();  // to avoid blockage
 
     // introduce random wait time in the beginning
-    // if (!is_replanCB_called_)
+    if (!is_replanCB_called_)
     {
       // to avoid initial path search congestions add some random sleep here
       // std::random_device rd;
@@ -556,7 +556,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     if (mader_ptr_->isGoalSeen())
     {
       std::cout << "goal is reached so no need to replan" << std::endl;
-      // is_mader_running_ = false;
+      is_mader_running_ = false;
       mader_msgs::MissedMsgsCnt msg;
       msg.missed_msgs_cnt = missed_msgs_cnt_;
       msg.msgs_cnt = msgs_cnt_;
