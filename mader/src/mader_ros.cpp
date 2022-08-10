@@ -29,6 +29,8 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   int max_agent_number;  // used to subscribe to /traj
   mu::safeGetParam(nh1_, "max_agent_number", max_agent_number);
   mu::safeGetParam(nh1_, "using_pop_up", par_.using_pop_up);
+  bool is_centralized = true;
+  mu::safeGetParam(nh1_, "is_centralized", is_centralized);
 
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
   mu::safeGetParam(nh1_, "visual", par_.visual);
@@ -148,7 +150,14 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pub_text_ = nh1_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
   pub_fov_ = nh1_.advertise<visualization_msgs::Marker>("fov", 1);
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
-  pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("trajs", 1, true);  // The last boolean is latched or not
+  if (is_centralized)
+  {
+    pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("/trajs", 1, true);  // The last boolean is latched or not
+  }
+  else
+  {
+    pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("trajs", 1, true);  // The last boolean is latched or not
+  }
   pub_comm_delay_ = nh1_.advertise<mader_msgs::CommDelay>("comm_delay", 1);
 
   // Subscribers
@@ -158,39 +167,45 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);
 
   // Subscribers for each agents
-
-  // if it's simulation SQ01s to SQ06s
   // TODO:: make more general/robust
-  if (sim)
+
+  if (is_centralized)
   {
-    for (int i = 1; i <= max_agent_number; ++i)
-    {
-      std::string agent = "SQ0" + std::to_string(i) + "s";
-      if (myns != agent)
-      {  // if my namespace is the same as the agent, then it's you
-        sub_traj_.push_back(
-            nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
-      }
-    }
+    sub_cent_traj_ = nh1_.subscribe("/trajs", 20, &MaderRos::trajCB, this);  // The number is the queue size
   }
   else
-  {  // if it's hardware
-    for (int i = 1; i <= max_agent_number; ++i)
+  {
+    if (sim)
     {
-      std::string agent;
-      if (i <= 9)
+      for (int i = 1; i <= max_agent_number; ++i)
       {
-        agent = "NX0" + std::to_string(i);
+        std::string agent = "SQ0" + std::to_string(i) + "s";
+        if (myns != agent)
+        {  // if my namespace is the same as the agent, then it's you
+          sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB,
+                                             this));  // The number is the queue size
+        }
       }
-      else
+    }
+    else
+    {  // if it's hardware
+      for (int i = 1; i <= max_agent_number; ++i)
       {
-        agent = "NX" + std::to_string(i);
-      }
+        std::string agent;
+        if (i <= 9)
+        {
+          agent = "NX0" + std::to_string(i);
+        }
+        else
+        {
+          agent = "NX" + std::to_string(i);
+        }
 
-      if (myns != agent)
-      {  // if my namespace is the same as the agent, then it's you
-        sub_traj_.push_back(
-            nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB, this));  // The number is the queue size
+        if (myns != agent)
+        {  // if my namespace is the same as the agent, then it's you
+          sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB,
+                                             this));  // The number is the queue size
+        }
       }
     }
   }

@@ -1,8 +1,11 @@
 # SQ or NX?
-sim: false
+sim: true
 
 # using pop_up
 using_pop_up: true
+
+# using centralized or decentralized trajs?
+is_centralized: true
 
 # use decentralized traj_ or not?
 max_agent_number: 10
@@ -15,7 +18,7 @@ n_agents: 16
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
 drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced by drone_bbox
-drone_bbox: [1.0, 1.0, 1.5] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
+drone_bbox: [0.8, 0.8, 1.0] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
 #w_max: 0.4           # [rd/s] Maximum angular velocity. 0.4 for Hardware
 w_max: 0.0
@@ -73,7 +76,7 @@ mu: 0.4    #% of time spent to solve the optimization
 # Samples in velocity for the A* guess used in the nlopt optimization problem
 a_star_samp_x: 5 # odd number
 a_star_samp_y: 5 # odd number
-a_star_samp_z: 3 # odd number
+a_star_samp_z: 5 # odd number
 a_star_fraction_voxel_size: 0.5 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
 allow_infeasible_guess: true  #whether allow infeasible guesses to be used for the optimization. If false, straight line guess will be used in the case of an infeasible guess
 
