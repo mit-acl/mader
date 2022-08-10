@@ -554,17 +554,17 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     // }
 
     // mtx_mader_ptr_.lock();
-    // if (mader_ptr_->isGoalSeen())
-    // {
-    //   std::cout << "goal is reached so no need to replan" << std::endl;
-    //   // is_mader_running_ = false;
-    //   mader_msgs::MissedMsgsCnt msg;
-    //   msg.missed_msgs_cnt = missed_msgs_cnt_;
-    //   msg.msgs_cnt = msgs_cnt_;
-    //   pub_missed_msgs_cnt_.publish(msg);
-    //   // mtx_mader_ptr_.unlock();
-    //   return;
-    // }
+    if (mader_ptr_->isGoalSeen())
+    {
+      std::cout << "goal is reached so no need to replan" << std::endl;
+      is_mader_running_ = false;
+      mader_msgs::MissedMsgsCnt msg;
+      msg.missed_msgs_cnt = missed_msgs_cnt_;
+      msg.msgs_cnt = msgs_cnt_;
+      pub_missed_msgs_cnt_.publish(msg);
+      // mtx_mader_ptr_.unlock();
+      return;
+    }
     // mtx_mader_ptr_.unlock();
 
     // initialization
@@ -618,7 +618,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
         {
           delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
-          // ros::Duration(0.01).sleep();
+          ros::Duration(delay_check_/5).sleep();
           if (delay_check_result_ == false)
           {
             break;

@@ -38,13 +38,13 @@ if __name__ == '__main__':
 
     # parameters
     is_oldmader=True
-    num_of_sims=5
+    num_of_sims=60
     num_of_agents=10
     how_long_to_wait = 20 #[s]
     if is_oldmader:
-        cd_list = [50, 100, 200, 300]
+        cd_list = [0, 50, 100, 200, 300]
     else:
-        cd_list = [50, 100]
+        cd_list = [50, 100, 100, 200, 300]
         
     # folder initialization
     folder_bags_list = []
@@ -54,16 +54,18 @@ if __name__ == '__main__':
 
         is_oldmader=True
 
-        if cd == 50:
-            dc_list = [0, 120, 60, 51.3, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        if cd == 0:
+            dc_list = [0, 75, 15, 5, 1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 50:
+            dc_list = [0, 120, 58, 52, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 120] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 170, 105, 101.3, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 190, 105, 101.3, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 170] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 200:
-            dc_list = [0, 250]
+            dc_list = [0, 270]
         elif cd == 300:
-            dc_list = [0, 360]
+            dc_list = [0, 370]
 
         for dc in dc_list:
 
@@ -138,7 +140,7 @@ if __name__ == '__main__':
                 commands.append("sleep 2.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
                 commands.append("sleep 2.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
                 commands.append("sleep 2.0 && roslaunch mader ave_distance.launch num_of_agents:="+str(num_of_agents)+" folder_loc:="+folder_csv+" sim:="+sim_id)
-                commands.append("sleep 2.0 && rvmd")
+                # commands.append("sleep 2.0 && rvmd")
 
                 #publishing the goal should be the last command
                 commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=send_goal")

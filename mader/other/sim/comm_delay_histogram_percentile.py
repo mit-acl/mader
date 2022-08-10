@@ -27,33 +27,30 @@ import numpy
 
 if __name__ == '__main__':
 
-    # you wanna get histogram or know the value at q-th percentile
-    is_histogram = True
-    # q-th percentile
-    q = 100
-
     is_oldmader = True # always False bc oldmader doesn't have comm_delay
     num_of_agents = 10
 
     if is_oldmader:
-        cd_list = [50, 100, 200, 300]
+        cd_list = [0, 50, 100, 200, 300]
     else:
-        cd_list = [50, 100]
+        cd_list = [50, 100, 100, 200, 300]
 
     for cd in cd_list:
 
         is_oldmader=True
 
-        if cd == 50:
-            dc_list = [0, 120, 60, 51.3, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        if cd == 0:
+            dc_list = [0, 75, 15, 5, 1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 50:
+            dc_list = [0, 120, 58, 52, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 120] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 170, 105, 101.3, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 190, 105, 101.3, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 170] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 200:
-            dc_list = [0, 250]
+            dc_list = [0, 270]
         elif cd == 300:
-            dc_list = [0, 360]
+            dc_list = [0, 370]
             
         for dc in dc_list:
             
@@ -106,10 +103,13 @@ if __name__ == '__main__':
 
             comm_delay_arr = numpy.array(comm_delay)
 
-            if is_histogram:
-                percentile = scipy.stats.percentileofscore(comm_delay_arr, input_comm_delay, kind='mean')
-                os.system('echo "cd='+str(cd)+', dc='+str(dc)+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> /home/kota/data/comm_delay_percentile.txt')
-                # print(comm_delay)
+            percentile = scipy.stats.percentileofscore(comm_delay_arr, input_comm_delay, kind='mean')
+            os.system('echo "----------------------------------------------------------------------------------" >> /home/kota/data/comm_delay_percentile.txt')
+            os.system('echo "'+source_bags+'" >> /home/kota/data/comm_delay_percentile.txt')
+            os.system('echo "cd='+str(cd)+', dc='+str(dc)+':   '+str(input_comm_delay) + ' is ' + str(round(percentile,1)) + '-th percentile" >> /home/kota/data/comm_delay_percentile.txt')
+            # print(comm_delay)
+
+            try:
                 max_comm_delay = max(comm_delay)
 
                 fig = plt.figure()
@@ -135,8 +135,13 @@ if __name__ == '__main__':
                 plt.ylabel("count")
                 plt.savefig('/home/kota/ws/src/mader/mader/other/sim/data/'+figname)
                 # plt.show()
-            else:
-                # in case you wanna calculate the value of q-th percentile
-                for q in range(100,0,-25):
-                    print(source_bags)
-                    print(str(q) + "-th percentile value is " + str(numpy.percentile(comm_delay_arr, q)))
+            except:
+                pass
+
+            # in case you wanna calculate the value of q-th percentile
+            # print("----------------------------------------------------------------------------------")
+            for q in range(100,0,-25):
+                try:
+                    os.system('echo "'+str(q)+'-th : '+ str(round(numpy.percentile(comm_delay_arr, q)*1000,2)) + 'ms" >> /home/kota/data/comm_delay_percentile.txt')
+                except:
+                    pass

@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 
   MaderRos MaderRos(nh1, nh2, nh3, nh4, nh5);
 
-  ros::AsyncSpinner spinner1(5, &custom_queue1);  // 1 thread for the custom_queue1 // 0 means threads= # of CPU cores
+  ros::AsyncSpinner spinner1(1, &custom_queue1);  // 1 thread for the custom_queue1 // 0 means threads= # of CPU cores
   ros::AsyncSpinner spinner2(1, &custom_queue2);  // 1 thread for the custom_queue2 // 0 means threads= # of CPU cores
   ros::AsyncSpinner spinner3(1, &custom_queue3);  // 1 thread for the custom_queue3 // 0 means threads= # of CPU cores
   ros::AsyncSpinner spinner4(1, &custom_queue4);  // 1 thread for the custom_queue4 // 0 means threads= # of CPU cores
