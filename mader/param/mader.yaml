@@ -8,7 +8,7 @@ using_pop_up: true
 is_centralized: true
 
 # use decentralized traj_ or not?
-max_agent_number: 10
+max_agent_number: 6
 
 use_ff: true # use feedforward
 visual: true #publish visualization stuff
@@ -18,7 +18,7 @@ n_agents: 16
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
 drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced by drone_bbox
-drone_bbox: [0.8, 0.8, 1.0] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
+drone_bbox: [1.0, 1.0, 1.5] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
 #w_max: 0.4           # [rd/s] Maximum angular velocity. 0.4 for Hardware
 w_max: 0.0
@@ -44,7 +44,7 @@ y_min: -4.1  # [m] don't forget the .0
 y_max: 4.1   # [m] don't forget the .0
 
 z_min: 0.9  # [m] don't forget the .0
-z_max: 2.0  # [m] don't forget the .0
+z_max: 3.0  # [m] don't forget the .0
 
 #For single-agent simulations
 v_max: [2.0, 2.0, 2.0]   #[m/s]  7.0
