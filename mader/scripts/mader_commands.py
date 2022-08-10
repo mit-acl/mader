@@ -113,7 +113,7 @@ class Mader_Commands:
         # while( abs(self.pose.position.z-alt_taken_off)>0.1 ): 
         alt_taken_off = 1.8; #Altitude when hovering after taking off
          
-        self.takeoff_goal.p.z = min(self.takeoff_goal.p.z+0.00035, alt_taken_off);
+        self.takeoff_goal.p.z = min(self.takeoff_goal.p.z+0.003, alt_taken_off);
         rospy.loginfo_throttle(0.5, "Taking off..., error={}".format(self.pose.position.z-alt_taken_off) )
         self.sendGoal(self.takeoff_goal)
 
