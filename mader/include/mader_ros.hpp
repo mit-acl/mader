@@ -124,6 +124,9 @@ private:
 
   mt::parameters par_;  // where all the parameters are
 
+  std::mutex mtx_traj_id_;
+  std::vector<int> traj_id_{ 0, 0, 0, 0, 0, 0 };
+
   std::string name_drone_;
 
   std::vector<std::string> traj_;  // trajectory of the dynamic obstacle

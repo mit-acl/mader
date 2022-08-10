@@ -16,14 +16,14 @@ tmux -2 $cmd
 w=0
 
 # split tmux into 4x2
-for i in {1..3}
+for i in 0 1 2
 do
 	tmux select-pane -t $SESSION:$w.$i
 	tmux split-window -v
 	tmux select-layout -t $SESSION:$w.$i even-vertical
 done
 
-for i in 1 3 5 7
+for i in 0 2 4 6
 do
 	tmux select-pane -t $SESSION:$w.$i	
 	tmux split-window -h
@@ -59,6 +59,6 @@ elif [ "$1" == "ran" ]; then
 	tmux send-keys -t $SESSION:$w.5 "roslaunch mader random_goal.launch quad:=SQ06s" C-m
 fi
 
-tmux send-keys -t $SESSION:$w.8 "tmux kill-server"
+tmux send-keys -t $SESSION:$w.7 "tmux kill-server"
 
 tmux -2 attach-session -t $SESSION

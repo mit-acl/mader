@@ -5,6 +5,8 @@ geometry_msgs/Vector3 pos  #current position (x,y,z)
 int32 id                   #id of the dynamic obstacle
 bool is_agent              #1 if is an agent, and 0 if it is a static or dynamic obstacle
 float64 time_created
+int32 traj_id
+int32[] trajs
 
 #These fields are only used by the agents(i.e. when is_agent==true)
 PieceWisePolTraj pwp

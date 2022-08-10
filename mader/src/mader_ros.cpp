@@ -341,6 +341,10 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
   double supposedly_simulated_comm_delay = time_now - tmp.time_created;
   mader_ptr_->updateTrajObstacles(tmp);
 
+  mtx_traj_id_.lock();
+  traj_id_[msg.id - 1] = msg.traj_id;
+  mtx_traj_id_.unlock();
+
   mader_msgs::CommDelay comm_msg;
   comm_msg.comm_delay = supposedly_simulated_comm_delay;
   pub_comm_delay_.publish(comm_msg);
@@ -374,6 +378,17 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
   msg.pwp = mu::pwp2PwpMsg(pwp);
 
   msg.time_created = ros::Time::now().toSec();
+
+  static int traj_id = 0;
+  msg.traj_id = traj_id;
+  traj_id++;
+
+  mtx_traj_id_.lock();
+  for (auto& id : traj_id_)
+  {
+    msg.trajs.push_back(id);
+  }
+  mtx_traj_id_.unlock();
 
   // std::cout<<"msg.pwp.times[0]= "<<msg.pwp.times[0]
 
