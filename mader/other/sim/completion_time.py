@@ -36,24 +36,24 @@ if __name__ == '__main__':
         is_oldmader=True
 
         if cd == 0:
-            dc_list = [0, 75, 15, 5, 1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 100, 20, 8, 1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 50:
-            dc_list = [0, 120, 58, 52, 51] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 120, 56, 51, 50.8, 35, 15] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 120] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 190, 105, 101.3, 101] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [0, 190, 105, 101.3, 101, 75, 25] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 170] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 200:
-            dc_list = [0, 270]
+            dc_list = [0, 300]
         elif cd == 300:
-            dc_list = [0, 370]
+            dc_list = [0, 400]
 
         # this gives you 2d array, row gives you each sims data in corresponding dc
         box_plot_list = [] 
 
         for dc in dc_list:
 
-            if dc == 51.3:
+            if dc == 50.8:
                 str_dc = "51_3"
             elif dc == 101.3:
                 str_dc = "101_3"

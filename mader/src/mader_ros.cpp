@@ -19,8 +19,8 @@
 
 #include <jsk_rviz_plugins/OverlayText.h>
 
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
+#include <stdlib.h> /* srand, rand */
+#include <time.h>   /* time */
 
 typedef MADER_timers::Timer MyTimer;
 
@@ -438,9 +438,12 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
     // std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s"
     // << std::endl;
     missed_msgs_cnt_ = missed_msgs_cnt_ + 1;
+    msgs_cnt_ = msgs_cnt_ + 1;
   }
-
-  msgs_cnt_ = msgs_cnt_ + 1;
+  else
+  {
+    msgs_cnt_ = msgs_cnt_ + 1;
+  }
 
   mader_msgs::CommDelay msg;
   msg.comm_delay = supposedly_simulated_comm_delay;
@@ -611,7 +614,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           // Delete markers to publish stuff
           visual_tools_->deleteAllMarkers();
           visual_tools_->enableBatchPublishing();
-          if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
+          if (edges_obstacles.size() > 0)
+          {
+            pubObstacles(edges_obstacles);
+          }
           pubTraj(traj_plan, false);
         }
 
@@ -620,7 +626,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
         {
           delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
-          ros::Duration(delay_check_/5).sleep();
+          ros::Duration(delay_check_ / 5).sleep();
           if (delay_check_result_ == false)
           {
             break;
@@ -653,7 +659,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
               // Delete markers to publish stuff
               visual_tools_->deleteAllMarkers();
               visual_tools_->enableBatchPublishing();
-              if (edges_obstacles.size() > 0){pubObstacles(edges_obstacles);}
+              if (edges_obstacles.size() > 0)
+              {
+                pubObstacles(edges_obstacles);
+              }
               pubTraj(traj_plan, true);
               last_traj_plan_ = traj_plan;
               last_edges_obstacles_ = edges_obstacles;
@@ -681,7 +690,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
               // Delete markers to publish stuff
               visual_tools_->deleteAllMarkers();
               visual_tools_->enableBatchPublishing();
-              if (edges_obstacles.size() > 0){pubObstacles(last_edges_obstacles_);}
+              if (edges_obstacles.size() > 0)
+              {
+                pubObstacles(last_edges_obstacles_);
+              }
               pubTraj(last_traj_plan_, true);
             }
           }
@@ -707,7 +719,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
             // Delete markers to publish stuff
             visual_tools_->deleteAllMarkers();
             visual_tools_->enableBatchPublishing();
-            if (edges_obstacles.size() > 0){pubObstacles(last_edges_obstacles_);}
+            if (edges_obstacles.size() > 0)
+            {
+              pubObstacles(last_edges_obstacles_);
+            }
             pubTraj(last_traj_plan_, true);
           }
         }
@@ -732,7 +747,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           // Delete markers to publish stuff
           visual_tools_->deleteAllMarkers();
           visual_tools_->enableBatchPublishing();
-          if (edges_obstacles.size() > 0){pubObstacles(last_edges_obstacles_);}
+          if (edges_obstacles.size() > 0)
+          {
+            pubObstacles(last_edges_obstacles_);
+          }
           pubTraj(last_traj_plan_, true);
         }
       }
