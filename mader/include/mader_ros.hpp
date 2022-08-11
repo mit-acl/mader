@@ -23,6 +23,7 @@
 #include <mader_msgs/WhoPlans.h>
 #include <mader_msgs/DynTraj.h>
 #include <mader_msgs/CommDelay.h>
+#include <mader_msgs/PopUp.h>
 
 #include "utils.hpp"
 #include "mader.hpp"
@@ -97,6 +98,7 @@ private:
   ros::Publisher pub_setpoint_;
   ros::Publisher pub_actual_traj_;
   ros::Publisher pub_comm_delay_;
+  ros::Publisher pub_pop_up_;
 
   ros::Publisher pub_point_A_;
 

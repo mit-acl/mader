@@ -54,6 +54,7 @@ add_message_files(
   PieceWisePolTraj.msg
   CoeffPoly3.msg
   CommDelay.msg
+  PopUp.msg
 )
 
 ## Generate services in the 'srv' folder

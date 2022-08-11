@@ -931,7 +931,7 @@ bool Mader::isReplanningNeeded()
 
 bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
                    std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
-                   mt::PieceWisePol& pwp_out)
+                   mt::PieceWisePol& pwp_out, bool& is_pop_up_activated)
 {
   if (isReplanningNeeded() == false)
   {
@@ -1169,6 +1169,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
             // if previous pwp is not feasible pop up the drone
             // this only happens when two agents commit traj at the very same time (or in Recheck period)
             is_pop_up_ = true;
+            is_pop_up_activated = true;
             A_star_fail_count_ = 0;
             return false;  // abort mader
           }

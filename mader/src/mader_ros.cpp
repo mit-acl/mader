@@ -159,6 +159,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
     pub_traj_ = nh1_.advertise<mader_msgs::DynTraj>("trajs", 1, true);  // The last boolean is latched or not
   }
   pub_comm_delay_ = nh1_.advertise<mader_msgs::CommDelay>("comm_delay", 1);
+  pub_pop_up_ = nh1_.advertise<mader_msgs::PopUp>("pop_up", 1);
 
   // Subscribers
   sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
@@ -405,7 +406,16 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     std::vector<Hyperplane3D> planes;
     mt::PieceWisePol pwp;
 
-    bool replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
+    bool is_pop_up_activated = false;
+    bool replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp,
+                                        is_pop_up_activated);
+
+    if (is_pop_up_activated)
+    {
+      mader_msgs::PopUp msg;
+      msg.is_pop_up = true;
+      pub_pop_up_.publish(msg);
+    }
 
     if (par_.visual)
     {

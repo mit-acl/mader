@@ -47,14 +47,14 @@ class Mader
 public:
   Mader(mt::parameters par);
   bool replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out, std::vector<Hyperplane3D>& planes,
-              int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out);
+              int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out, bool& is_pop_up_activated);
   void updateState(mt::state data);
 
   bool getNextGoal(mt::state& next_goal);
   void getState(mt::state& data);
   void getG(mt::state& G);
   void getDetourG(mt::state& G);
-  void moveAtowardG(mt::state& A, mt::state&G);
+  void moveAtowardG(mt::state& A, mt::state& G);
   void setTerminalGoal(mt::state& term_goal);
   void resetInitialization();
 
