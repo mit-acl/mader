@@ -59,7 +59,7 @@ if __name__ == '__main__':
             cd_in_ms = cd/1000;
 
             if dc == 50.8:
-                str_dc = "51_3"
+                str_dc = "51_8"
             elif dc == 101.3:
                 str_dc = "101_3"
             else:
@@ -80,7 +80,6 @@ if __name__ == '__main__':
             for bag in rosbag_list:
                 rosbag.append(bag)
 
-
             # going through the rosbags
             missed_msgs_list = [] # size will be num of sims
             msgs_list = [] # size will be num of sims
@@ -91,21 +90,25 @@ if __name__ == '__main__':
                 # going through the agents
                 missed_msgs_list_per_sim = [] # size will be num_of_agents
                 msgs_list_per_sim = [] # size will be num_of_agents
-                for j in range(1,n_agents+1):
-                    if j <= 9:
-                        topic_name = "/SQ0"+str(j)+"s/mader/missed_msgs_cnt"
-                    else:
-                        topic_name = "/SQ"+str(j)+"s/mader/missed_msgs_cnt"
                 
-                    log_data = b.message_by_topic(topic_name)
+                # using missed_msgs_cnt has a racing problem 
+                # for j in range(1,n_agents+1):
+                #     if j <= 9:
+                #         topic_name = "/SQ0"+str(j)+"s/mader/missed_msgs_cnt"
+                #     else:
+                #         topic_name = "/SQ"+str(j)+"s/mader/missed_msgs_cnt"
+                
+                #     log_data = b.message_by_topic(topic_name)
 
-                    if (log_data == None):
-                        pass
-                    else:
-                        log = pd.read_csv(log_data)
-                        missed_msgs_list_per_sim.append(log.missed_msgs_cnt[0])
-                        msgs_list_per_sim.append(log.msgs_cnt[0])
-                        # print(log.missed_msgs_cnt[0])
+                #     if (log_data == None):
+                #         pass
+                #     else:
+                #         log = pd.read_csv(log_data)
+                #         missed_msgs_list_per_sim.append(log.missed_msgs_cnt[0])
+                #         msgs_list_per_sim.append(log.msgs_cnt[0])
+                #         # print(log.missed_msgs_cnt[0])
+
+                
 
                 ave_missed_msgs_cnt = sum(missed_msgs_list_per_sim)/len(missed_msgs_list_per_sim)
                 ave_msgs_cnt = sum(msgs_list_per_sim)/len(msgs_list_per_sim)

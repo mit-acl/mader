@@ -54,7 +54,7 @@ if __name__ == '__main__':
         for dc in dc_list:
 
             if dc == 50.8:
-                str_dc = "51_3"
+                str_dc = "51_8"
             elif dc == 101.3:
                 str_dc = "101_3"
             else:

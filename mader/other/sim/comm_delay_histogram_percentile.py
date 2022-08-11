@@ -58,7 +58,7 @@ if __name__ == '__main__':
             input_comm_delay = dc/1000
 
             if dc == 50.8:
-                str_dc = "51_3"
+                str_dc = "51_8"
             elif dc == 101.3:
                 str_dc = "101_3"
             else:
@@ -94,10 +94,13 @@ if __name__ == '__main__':
                     else:
                         log_data = b.message_by_topic("/SQ" + str(i) + "s/mader/comm_delay")
 
-                    log = pd.read_csv(log_data)
+                    try:
+                        log = pd.read_csv(log_data)
 
-                    for j in range(len(log.comm_delay)):
-                        comm_delay.append(log.comm_delay[j])
+                        for j in range(len(log.comm_delay)):
+                            comm_delay.append(log.comm_delay[j])
+                    except:
+                        pass
 
             # print percentile
 
@@ -134,6 +137,7 @@ if __name__ == '__main__':
                 plt.xlabel("comm delay [ms]")
                 plt.ylabel("count")
                 plt.savefig('/home/kota/ws/src/mader/mader/other/sim/data/'+figname)
+                plt.close('all')
                 # plt.show()
             except:
                 pass

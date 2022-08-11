@@ -56,7 +56,7 @@ if __name__ == '__main__':
             cd_in_ms = cd/1000;
 
             if dc == 50.8:
-                str_dc = "51_3"
+                str_dc = "51_8"
             elif dc == 101.3:
                 str_dc = "101_3"
             else:

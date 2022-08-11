@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     # parameters
     is_oldmader=True
-    num_of_sims=1
+    num_of_sims=5
     num_of_agents=10
     how_long_to_wait = 20 #[s]
     if is_oldmader:
@@ -73,7 +73,7 @@ if __name__ == '__main__':
             cd_in_ms = cd/1000;
 
             if dc == 50.8:
-                str_dc = "51_3"
+                str_dc = "51_8"
             elif dc == 101.3:
                 str_dc = "101_3"
             else:
