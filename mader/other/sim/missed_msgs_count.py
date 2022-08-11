@@ -55,6 +55,7 @@ if __name__ == '__main__':
 
         for dc in dc_list:
 
+
             dc_in_ms = dc/1000;
             cd_in_ms = cd/1000;
 
@@ -81,8 +82,7 @@ if __name__ == '__main__':
                 rosbag.append(bag)
 
             # going through the rosbags
-            missed_msgs_list = [] # size will be num of sims
-            msgs_list = [] # size will be num of sims
+            ave_list = [] # size will be num of sims
             for i in range(len(rosbag)):
                 b = bagreader(rosbag[i], verbose=False)
                 sim_id = rosbag[i][source_len+5:source_len+7]
@@ -107,24 +107,36 @@ if __name__ == '__main__':
                 #         missed_msgs_list_per_sim.append(log.missed_msgs_cnt[0])
                 #         msgs_list_per_sim.append(log.msgs_cnt[0])
                 #         # print(log.missed_msgs_cnt[0])
-
                 
+                msgs_cnt = 0
+                missed_msgs_cnt = 0
+                ave = 0
 
-                ave_missed_msgs_cnt = sum(missed_msgs_list_per_sim)/len(missed_msgs_list_per_sim)
-                ave_msgs_cnt = sum(msgs_list_per_sim)/len(msgs_list_per_sim)
+                for i in range(1,num_of_agents+1):
+                    if i < 10:
+                        log_data = b.message_by_topic("/SQ0" + str(i) + "s/mader/comm_delay")
+                    else:
+                        log_data = b.message_by_topic("/SQ" + str(i) + "s/mader/comm_delay")
 
-                missed_msgs_list.append(ave_missed_msgs_cnt)
-                msgs_list.append(ave_msgs_cnt)
+                    try:
+                        log = pd.read_csv(log_data)
+
+                        for j in range(len(log.comm_delay)):
+                            comm_delay.append(log.comm_delay[j])
+                            msgs_cnt = msgs_cnt + 1
+                            if log.comm_delay > dc:
+                                missed_msgs_cnt = missed_msgs_cnt + 1
+                    except:
+                        pass
+
+                ave = missed_msgs_cnt/msgs_cnt
+                ave_list.append(ave)
                 # os.system('echo "simulation '+sim_id+': missed_msgs_cnt'+ave_missed_msgs_cnt+'" >> '+source_dir+'/missed_msgs_cnt.txt')
 
-            ave_missed_per_dc = sum(missed_msgs_list)/len(missed_msgs_list)
-            ave_per_dc = sum(msgs_list)/len(msgs_list)
-            # print(ave_per_dc)
+            ave_missed_per_dc = sum(ave_list)/len(ave_list)
 
             os.system('echo "'+source_dir+'" >> /home/kota/data/missed_msgs_cnt.txt')
-            os.system('echo " msgs_cnt '+str(round(ave_per_dc,2))+'" >> /home/kota/data/missed_msgs_cnt.txt')
-            os.system('echo " missed_msgs_cnt '+str(round(ave_missed_per_dc,2))+'" >> /home/kota/data/missed_msgs_cnt.txt')
-            os.system('echo " missed/total '+str(round(ave_missed_per_dc/ave_per_dc*100,2))+'%" >> /home/kota/data/missed_msgs_cnt.txt')
+            os.system('echo " missed/total '+str(round(ave_missed_per_dc*100,2))+'%" >> /home/kota/data/missed_msgs_cnt.txt')
             os.system('echo "------------------------------------------------------------" >> /home/kota/data/missed_msgs_cnt.txt')
             
             is_oldmader = False
