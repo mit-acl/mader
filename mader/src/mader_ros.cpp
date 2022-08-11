@@ -19,7 +19,8 @@
 
 #include <jsk_rviz_plugins/OverlayText.h>
 
-#include <random>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 typedef MADER_timers::Timer MyTimer;
 
@@ -549,7 +550,8 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     //   // std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
     //   // ros::Duration(distr(eng)).sleep();
 
-    //   ros::Duration(0.1 * id_).sleep();
+    //   srand (time(NULL));
+    //   ros::Duration(0.25*id_).sleep(); // random wait time between 0 to 3
     //   is_replanCB_called_ = true;
     // }
 

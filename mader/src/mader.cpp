@@ -1136,47 +1136,52 @@ bool Mader::delayCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
   {
     if (traj_compiled.is_agent == true)
     {
-      if (!traj_compiled.is_committed)
+      if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
       {
-        // if (headsup_time < traj_compiled.time_created)
-        if (traj_compiled.time_created - headsup_time > 1e-2)
-        {
-          // Do nothing. They will change their traj.
-        }
-        else if (headsup_time - traj_compiled.time_created > 1e-2 &&
-                 trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
-        {
-          ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
-          result = false;  // will have to redo the optimization
-        }
-        else if (abs(traj_compiled.time_created - headsup_time) < 1e-2 &&
-                 trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(),
-                                           pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
-        {
-          Eigen::Vector3d center_obs;
-          center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(),
-              traj_compiled.function[2].value();
-          if (center_obs[0] > state_.pos[0])
-          {
-            result = false;
-          }
-          else if (center_obs[1] > state_.pos[1])
-          {
-            result = false;
-          }
-          else if (center_obs[2] > state_.pos[2])
-          {
-            result = false;
-          }
-          // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
-          // happen bc it's the same position and collision
-        }
+        result = false;
       }
-      else if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
-      {
-        ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
-        result = false;  // will have to redo the optimization
-      }
+
+      // if (!traj_compiled.is_committed)
+      // {
+      //   // if (headsup_time < traj_compiled.time_created)
+      //   if (traj_compiled.time_created > headsup_time)
+      //   {
+      //     // Do nothing. They will change their traj.
+      //   }
+      //   else if (headsup_time - traj_compiled.time_created > 1e-2 &&
+      //            trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      //   {
+      //     ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
+      //     result = false;  // will have to redo the optimization
+      //   }
+      //   else if (abs(traj_compiled.time_created - headsup_time) < 1e-2 &&
+      //            trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(),
+      //                                      pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
+      //   {
+      //     Eigen::Vector3d center_obs;
+      //     center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(),
+      //         traj_compiled.function[2].value();
+      //     if (center_obs[0] > state_.pos[0])
+      //     {
+      //       result = false;
+      //     }
+      //     else if (center_obs[1] > state_.pos[1])
+      //     {
+      //       result = false;
+      //     }
+      //     else if (center_obs[2] > state_.pos[2])
+      //     {
+      //       result = false;
+      //     }
+      //     // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
+      //     // happen bc it's the same position and collision
+      //   }
+      // }
+      // else if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      // {
+      //   ROS_ERROR_STREAM("In delay check traj_compiled collides with " << traj_compiled.id);
+      //   result = false;  // will have to redo the optimization
+      // }
     }
     else
     {  // if traj_compiled.is_agent == false
