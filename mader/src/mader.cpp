@@ -969,7 +969,6 @@ std::vector<mt::dynTrajCompiled> Mader::getTrajs()
   trajs = trajs_;
   mtx_trajs_.unlock();
   return trajs;
-
 }
 
 // check wheter a mt::dynTrajCompiled and a pwp_optimized are in collision in the interval [t_start, t_end]
@@ -980,7 +979,7 @@ bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol
   double d_i;
 
   double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
-  for (int i = 0; i < par_.num_pol; i++)                    // for each interval
+  for (int i = 0; i < par_.num_pol; i++)                     // for each interval
   {
     // This is my trajectory (no inflation)
     // std::vector<Eigen::Vector3d> pointsA =
@@ -1028,7 +1027,7 @@ bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol
   double d_i;
 
   double deltaT = (t_end - t_start) / (1.0 * par_.num_pol);  // num_pol is the number of intervals
-  for (int i = 0; i < par_.num_pol; i++)                    // for each interval
+  for (int i = 0; i < par_.num_pol; i++)                     // for each interval
   {
     // This is my trajectory (no inflation)
     std::vector<Eigen::Vector3d> pointsA =
@@ -1156,7 +1155,8 @@ bool Mader::delayCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
       //   }
       //   else if (abs(traj_compiled.time_created - headsup_time) < 1e-2 &&
       //            trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(),
-      //                                      pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one wins
+      //                                      pwp_now.times.back()))  // tie breaking: compare x, y, z and bigger one
+      //                                      wins
       //   {
       //     Eigen::Vector3d center_obs;
       //     center_obs << traj_compiled.function[0].value(), traj_compiled.function[1].value(),
@@ -1173,7 +1173,8 @@ bool Mader::delayCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
       //     {
       //       result = false;
       //     }
-      //     // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2] won't
+      //     // center_obs[0] == state_.pos[0] &&  center_obs[1] == state_.pos[1] &&  center_obs[2] == state_.pos[2]
+      //     won't
       //     // happen bc it's the same position and collision
       //   }
       // }
@@ -2311,20 +2312,41 @@ void Mader::resetInitialization()
 
 void Mader::yaw(double diff, mt::state& next_goal)
 {
-  mu::saturate(diff, -par_.dc * par_.w_max, par_.dc * par_.w_max);
-  double dyaw_not_filtered;
+  // bang-buffer-bang control
+  if (abs(diff) < 3 * M_PI / 180)
+  {
+    next_goal.dyaw = 0.0;
+    next_goal.yaw = previous_yaw_;
+  }
+  else
+  {
+    mu::saturate(diff, -par_.dc * par_.w_max, par_.dc * par_.w_max);
+    double dyaw_not_filtered;
 
-  dyaw_not_filtered = copysign(1, diff) * par_.w_max;
+    dyaw_not_filtered = copysign(1, diff) * par_.w_max;
 
-  dyaw_filtered_ = (1 - par_.alpha_filter_dyaw) * dyaw_not_filtered + par_.alpha_filter_dyaw * dyaw_filtered_;
-  next_goal.dyaw = dyaw_filtered_;
-  next_goal.yaw = previous_yaw_ + dyaw_filtered_ * par_.dc;
+    dyaw_filtered_ = (1 - par_.alpha_filter_dyaw) * dyaw_not_filtered + par_.alpha_filter_dyaw * dyaw_filtered_;
+    next_goal.dyaw = dyaw_filtered_;
+    next_goal.yaw = previous_yaw_ + dyaw_filtered_ * par_.dc;
+  }
 }
 
 void Mader::getDesiredYaw(mt::state& next_goal)
 {
-  next_goal.dyaw = 0.0;
-  next_goal.yaw = initial_yaw_;
+  if (par_.is_camera_yawing)
+  {
+    // looking at the center of highbay
+    double desired_yaw = atan2(state_.pos[1], state_.pos[0]) -
+                         M_PI / 2;  // - M_PI / 2 is because the camera is mounted pointing at y-axis
+    double diff = desired_yaw - state_.yaw;
+    mu::angle_wrap(diff);
+    yaw(diff, next_goal);
+  }
+  else
+  {
+    next_goal.dyaw = 0.0;
+    next_goal.yaw = initial_yaw_;
+  }
   // next_goal.yaw = state_.yaw;
   /*
   switch (drone_status_)
@@ -2399,9 +2421,9 @@ bool Mader::getNextGoal(mt::state& next_goal)
   {
     plan_.pop_front();
   }
-  getDesiredYaw(next_goal);  // we don't need to control yaw
 
-  // previous_yaw_ = next_goal.yaw;
+  getDesiredYaw(next_goal);  // we don't need to control yaw
+  previous_yaw_ = next_goal.yaw;
 
   mtx_goals.unlock();
   mtx_plan_.unlock();

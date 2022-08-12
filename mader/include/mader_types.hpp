@@ -553,7 +553,6 @@ struct dynTrajCompiled
   bool is_committed;
   mt::PieceWisePol pwp;
   int traj_id;
-  
 };
 
 // struct mt::PieceWisePolWithInfo
@@ -578,6 +577,8 @@ struct parameters
 
   std::string color_type;
   int n_agents;
+
+  bool is_camera_yawing;
 
   double dc;
   double goal_radius;
