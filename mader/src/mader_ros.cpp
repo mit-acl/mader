@@ -54,18 +54,36 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
     par_.is_camera_yawing = true;
   }
 
+  // vel, acc, jerk
+  std::vector<double> v_max_tmp;
+  std::vector<double> a_max_tmp;
+  std::vector<double> j_max_tmp;
+
+  // obstacle related
   std::string obstacle1, obstacle2;
   mu::safeGetParam(nh1_, "obstacle1", obstacle1);
   mu::safeGetParam(nh1_, "obstacle2", obstacle2);
 
   if (id == obstacle1 || id == obstacle2)
   {
+    mu::safeGetParam(nh1_, "obs_v_max", v_max_tmp);
+    mu::safeGetParam(nh1_, "obs_a_max", a_max_tmp);
+    mu::safeGetParam(nh1_, "obs_j_max", j_max_tmp);
+    mu::safeGetParam(nh1_, "obs_Ra", par_.Ra);
     par_.is_agent = false;
   }
   else
   {
+    mu::safeGetParam(nh1_, "v_max", v_max_tmp);
+    mu::safeGetParam(nh1_, "a_max", a_max_tmp);
+    mu::safeGetParam(nh1_, "j_max", j_max_tmp);
+    mu::safeGetParam(nh1_, "Ra", par_.Ra);
     par_.is_agent = true;
   }
+
+  par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
+  par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
+  par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
 
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
   mu::safeGetParam(nh1_, "visual", par_.visual);
@@ -81,8 +99,6 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "drone_bbox", drone_bbox_tmp);
   par_.drone_bbox << drone_bbox_tmp[0], drone_bbox_tmp[1], drone_bbox_tmp[2];
 
-  mu::safeGetParam(nh1_, "Ra", par_.Ra);
-
   mu::safeGetParam(nh1_, "w_max", par_.w_max);
   mu::safeGetParam(nh1_, "alpha_filter_dyaw", par_.alpha_filter_dyaw);
 
@@ -94,18 +110,6 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   mu::safeGetParam(nh1_, "z_min", par_.z_min);
   mu::safeGetParam(nh1_, "z_max", par_.z_max);
-
-  std::vector<double> v_max_tmp;
-  std::vector<double> a_max_tmp;
-  std::vector<double> j_max_tmp;
-
-  mu::safeGetParam(nh1_, "v_max", v_max_tmp);
-  mu::safeGetParam(nh1_, "a_max", a_max_tmp);
-  mu::safeGetParam(nh1_, "j_max", j_max_tmp);
-
-  par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
-  par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
-  par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
 
   mu::safeGetParam(nh1_, "factor_alloc", par_.factor_alloc);
   mu::safeGetParam(nh1_, "factor_alloc_close", par_.factor_alloc_close);

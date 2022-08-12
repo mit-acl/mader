@@ -54,11 +54,11 @@ class TermGoalSender:
 
         # for obstacles
         self.obwpidx = 0
-        self.obwp = np.array([
-            [-2.0, 0, 2.0],
-            [2.0, 0, 2.0],
-            [0, -2.0, 2.0],
-            [0, 0, 2.0]
+        self.obwps = np.array([
+            [-2.5, 0, 2.0],
+            [0, 2.5, 2.0],
+            [2.5, 0, 2.0],
+            [0, -2.5, 2.0]
             ])
 
         # waypoints
