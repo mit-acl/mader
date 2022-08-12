@@ -1328,14 +1328,23 @@ void Mader::resetInitialization()
 
 void Mader::yaw(double diff, mt::state& next_goal)
 {
-  mu::saturate(diff, -par_.dc * par_.w_max, par_.dc * par_.w_max);
-  double dyaw_not_filtered;
+  // bang-buffer-bang control
+  if (abs(diff) < 3 * M_PI / 180)
+  {
+    next_goal.dyaw = 0.0;
+    next_goal.yaw = previous_yaw_;
+  }
+  else
+  {
+    mu::saturate(diff, -par_.dc * par_.w_max, par_.dc * par_.w_max);
+    double dyaw_not_filtered;
 
-  dyaw_not_filtered = copysign(1, diff) * par_.w_max;
+    dyaw_not_filtered = copysign(1, diff) * par_.w_max;
 
-  dyaw_filtered_ = (1 - par_.alpha_filter_dyaw) * dyaw_not_filtered + par_.alpha_filter_dyaw * dyaw_filtered_;
-  next_goal.dyaw = dyaw_filtered_;
-  next_goal.yaw = previous_yaw_ + dyaw_filtered_ * par_.dc;
+    dyaw_filtered_ = (1 - par_.alpha_filter_dyaw) * dyaw_not_filtered + par_.alpha_filter_dyaw * dyaw_filtered_;
+    next_goal.dyaw = dyaw_filtered_;
+    next_goal.yaw = previous_yaw_ + dyaw_filtered_ * par_.dc;
+  }
 }
 
 void Mader::getDesiredYaw(mt::state& next_goal)
@@ -1343,8 +1352,8 @@ void Mader::getDesiredYaw(mt::state& next_goal)
   if (par_.is_camera_yawing)
   {
     // looking at the center of highbay
-    double desired_yaw =
-        atan2(state_.pos[1], state_.pos[0]) - M_PI / 2;  // M_PI is because the camera is mounted pointing at y-axis
+    double desired_yaw = atan2(state_.pos[1], state_.pos[0]) -
+                         M_PI / 2;  // - M_PI / 2 is because the camera is mounted pointing at y-axis
     double diff = desired_yaw - state_.yaw;
     mu::angle_wrap(diff);
     yaw(diff, next_goal);
