@@ -54,6 +54,19 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
     par_.is_camera_yawing = true;
   }
 
+  std::string obstacle1, obstacle2;
+  mu::safeGetParam(nh1_, "obstacle1", obstacle1);
+  mu::safeGetParam(nh1_, "obstacle2", obstacle2);
+
+  if (id == obstacle1 || id == obstacle2)
+  {
+    par_.is_agent = false;
+  }
+  else
+  {
+    par_.is_agent = true;
+  }
+
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
   mu::safeGetParam(nh1_, "visual", par_.visual);
   mu::safeGetParam(nh1_, "color_type", par_.color_type);
@@ -192,42 +205,45 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   // Subscribers for each agents
   // TODO:: make more general/robust
 
-  if (is_centralized)
+  if (par_.is_agent)
   {
-    sub_cent_traj_ = nh1_.subscribe("/trajs", 20, &MaderRos::trajCB, this);  // The number is the queue size
-  }
-  else
-  {
-    if (sim)
+    if (is_centralized)
     {
-      for (int i = 1; i <= max_agent_number; ++i)
-      {
-        std::string agent = "SQ0" + std::to_string(i) + "s";
-        if (myns != agent)
-        {  // if my namespace is the same as the agent, then it's you
-          sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB,
-                                             this));  // The number is the queue size
-        }
-      }
+      sub_cent_traj_ = nh1_.subscribe("/trajs", 20, &MaderRos::trajCB, this);  // The number is the queue size
     }
     else
-    {  // if it's hardware
-      for (int i = 1; i <= max_agent_number; ++i)
+    {
+      if (sim)
       {
-        std::string agent;
-        if (i <= 9)
+        for (int i = 1; i <= max_agent_number; ++i)
         {
-          agent = "NX0" + std::to_string(i);
+          std::string agent = "SQ0" + std::to_string(i) + "s";
+          if (myns != agent)
+          {  // if my namespace is the same as the agent, then it's you
+            sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB,
+                                               this));  // The number is the queue size
+          }
         }
-        else
+      }
+      else
+      {  // if it's hardware
+        for (int i = 1; i <= max_agent_number; ++i)
         {
-          agent = "NX" + std::to_string(i);
-        }
+          std::string agent;
+          if (i <= 9)
+          {
+            agent = "NX0" + std::to_string(i);
+          }
+          else
+          {
+            agent = "NX" + std::to_string(i);
+          }
 
-        if (myns != agent)
-        {  // if my namespace is the same as the agent, then it's you
-          sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB,
-                                             this));  // The number is the queue size
+          if (myns != agent)
+          {  // if my namespace is the same as the agent, then it's you
+            sub_traj_.push_back(nh1_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB,
+                                               this));  // The number is the queue size
+          }
         }
       }
     }
@@ -398,7 +414,14 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp)
   msg.pos.z = state_.pos.z();
   msg.id = id_;
 
-  msg.is_agent = true;
+  if (par_.is_agent)
+  {
+    msg.is_agent = true;
+  }
+  else
+  {
+    msg.is_agent = false;
+  }
 
   msg.pwp = mu::pwp2PwpMsg(pwp);
 

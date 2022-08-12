@@ -38,7 +38,7 @@ class TermGoalSender:
         self.state_pos=np.array([0.0, 0.0, 0.0])
 
         # define waypoints in highbay
-
+        # for drones
         self.wp1 = np.array([-2.7+1.9*0, 3.6-2.06*0])
         self.wp2 = np.array([-2.7+1.9*1, 3.6-2.06*0])
         self.wp3 = np.array([-2.7+1.9*2, 3.6-2.06*0])
@@ -51,6 +51,15 @@ class TermGoalSender:
         self.wp10 = np.array([-2.7+1.9*1, 3.6-2.06*3])
         self.wp11 = np.array([-2.7+1.9*2, 3.6-2.06*3])
         self.wp12 = np.array([-2.7+1.9*3, 3.6-2.06*3])
+
+        # for obstacles
+        self.obwpidx = 0
+        self.obwp = np.array([
+            [-2.0, 0, 2.0],
+            [2.0, 0, 2.0],
+            [0, -2.0, 2.0],
+            [0, 0, 2.0]
+            ])
 
         # waypoints
         self.wpidx = 0
@@ -169,6 +178,8 @@ class TermGoalSender:
             #     self.term_goal.pose.position.z = self.wps[self.wpidx,2]
             #     self.wpidx = (self.wpidx + 1) % len(self.wps)
 
+            self.term_goal.pose.position.z = 1.0 + 1.0 * random()
+            
             # for demos
             if self.mode == 1:
                 if self.if_arrived:
@@ -212,8 +223,12 @@ class TermGoalSender:
                 else:
                     self.term_goal.pose.position.x = self.wp8[0]
                     self.term_goal.pose.position.y = self.wp8[1]
+            elif self.mode == 8:
+                self.term_goal.pose.position.x = self.obwps[self.obwpidx,0]
+                self.term_goal.pose.position.y = self.obwps[self.obwpidx,1]
+                self.term_goal.pose.position.z = self.obwps[self.obwpidx,2]
+                self.obwpidx = (self.obwpidx + 1) % len(self.obwps)
 
-            self.term_goal.pose.position.z = 1.0 + 1.0 * random()
 
             self.if_arrived = not self.if_arrived
             self.sign = self.sign * (-1)

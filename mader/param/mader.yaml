@@ -8,7 +8,7 @@ using_pop_up: true
 is_centralized: true
 
 # use decentralized traj_ or not?
-max_agent_number: 7
+max_agent_number: 10
 
 # camera yawing?
 is_camera_yawing: false
@@ -16,6 +16,10 @@ is_camera_yawing: false
 # who's the camera man? (if you are camera man is_camera_yawing will be true in mader_ros.cpp)
 camera1: "05"
 camera2: "07"
+
+# who's the obstacle?
+obstacle1: "08"
+obstacle2: "09"
 
 w_max: 0.6           # [rd/s] Maximum angular velocity. 0.6 for Hardware
 alpha_filter_dyaw: 0.99 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
