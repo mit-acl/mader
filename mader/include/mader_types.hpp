@@ -570,6 +570,8 @@ struct parameters
 
   bool using_pop_up;
 
+  bool is_camera_yawing;
+
   double dc;
   double goal_radius;
   double drone_radius;

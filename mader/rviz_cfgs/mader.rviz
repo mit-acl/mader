@@ -73,10 +73,24 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 1000
       Frames:
         All Enabled: true
+        SQ01s:
+          Value: true
+        SQ02s:
+          Value: true
+        SQ03s:
+          Value: true
+        SQ04s:
+          Value: true
+        SQ05s:
+          Value: true
+        SQ06s:
+          Value: true
+        world:
+          Value: true
       Marker Alpha: 1
       Marker Scale: 2
       Name: TF
@@ -84,9 +98,21 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        world:
+          SQ01s:
+            {}
+          SQ02s:
+            {}
+          SQ03s:
+            {}
+          SQ04s:
+            {}
+          SQ05s:
+            {}
+          SQ06s:
+            {}
       Update Interval: 0
-      Value: false
+      Value: true
     - Alpha: 1
       Class: rviz/PointStamped
       Color: 0; 255; 0
@@ -958,7 +984,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -966,7 +992,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -974,7 +1000,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -982,7 +1008,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -990,7 +1016,7 @@ Visualization Manager:
       Marker Topic: /SQ05s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -998,7 +1024,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1006,7 +1032,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ01s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1014,7 +1040,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ02s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1022,7 +1048,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ03s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1030,7 +1056,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ04s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1038,7 +1064,7 @@ Visualization Manager:
       Marker Topic: /SQ05s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ05s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1046,7 +1072,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ06s: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -1216,4 +1242,4 @@ Window Geometry:
     collapsed: false
   Width: 1829
   X: 101
-  Y: 582
+  Y: 545

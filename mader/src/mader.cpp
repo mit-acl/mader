@@ -1340,8 +1340,21 @@ void Mader::yaw(double diff, mt::state& next_goal)
 
 void Mader::getDesiredYaw(mt::state& next_goal)
 {
-  next_goal.dyaw = 0.0;
-  next_goal.yaw = initial_yaw_;
+  if (par_.is_camera_yawing)
+  {
+    // looking at the center of highbay
+    double desired_yaw =
+        atan2(state_.pos[1], state_.pos[0]) + M_PI / 2;  // M_PI is because the camera is mounted pointing at y-axis
+    double diff = desired_yaw - state_.yaw;
+    mu::angle_wrap(diff);
+    yaw(diff, next_goal);
+  }
+  else
+  {
+    next_goal.dyaw = 0.0;
+    next_goal.yaw = initial_yaw_;
+  }
+
   // next_goal.yaw = state_.yaw;
   /*
   switch (drone_status_)
@@ -1422,9 +1435,9 @@ bool Mader::getNextGoal(mt::state& next_goal)
   {
     plan_.pop_front();
   }
-  getDesiredYaw(next_goal);  // we don't need to control yaw
 
-  // previous_yaw_ = next_goal.yaw;
+  getDesiredYaw(next_goal);
+  previous_yaw_ = next_goal.yaw;
 
   mtx_goals.unlock();
   mtx_plan_.unlock();

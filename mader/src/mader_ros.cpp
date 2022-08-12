@@ -31,6 +31,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "using_pop_up", par_.using_pop_up);
   bool is_centralized = true;
   mu::safeGetParam(nh1_, "is_centralized", is_centralized);
+  mu::safeGetParam(nh1_, "is_camera_yawing", par_.is_camera_yawing);
 
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
   mu::safeGetParam(nh1_, "visual", par_.visual);
@@ -622,8 +623,10 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
     quadGoal.a = mu::eigen2rosvector(next_goal.accel);
     quadGoal.j = mu::eigen2rosvector(next_goal.jerk);
 
-    quadGoal.dpsi = next_goal.dyaw;  // no need to control dyaw
-    quadGoal.psi = next_goal.yaw;    // no need to contol yaw
+    quadGoal.dpsi = next_goal.dyaw;
+    // std::cout << next_goal.dyaw << std::endl;
+    quadGoal.psi = next_goal.yaw;
+    // std::cout << next_goal.yaw << std::endl;
 
     quadGoal.header.stamp = ros::Time::now();
     quadGoal.header.frame_id = world_name_;
