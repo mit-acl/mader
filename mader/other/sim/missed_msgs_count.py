@@ -21,12 +21,7 @@ import glob
 
 if __name__ == '__main__':
 
-    # rosbag name
-
-    # Dont use ~ like this
-    cd = "50" # [ms] communication delay
-
-    is_oldmader = False # change here
+    is_oldmader = True # change here
 
     n_agents = 10
 
@@ -56,8 +51,8 @@ if __name__ == '__main__':
         for dc in dc_list:
 
 
-            dc_in_ms = dc/1000;
-            cd_in_ms = cd/1000;
+            dc_in_s = dc/1000;
+            cd_in_s = cd/1000;
 
             if dc == 50.8:
                 str_dc = "51_8"
@@ -112,31 +107,37 @@ if __name__ == '__main__':
                 missed_msgs_cnt = 0
                 ave = 0
 
-                for i in range(1,num_of_agents+1):
+                for i in range(1,n_agents+1):
                     if i < 10:
                         log_data = b.message_by_topic("/SQ0" + str(i) + "s/mader/comm_delay")
                     else:
                         log_data = b.message_by_topic("/SQ" + str(i) + "s/mader/comm_delay")
 
+                    # print(log_data)
                     try:
                         log = pd.read_csv(log_data)
 
                         for j in range(len(log.comm_delay)):
-                            comm_delay.append(log.comm_delay[j])
                             msgs_cnt = msgs_cnt + 1
-                            if log.comm_delay > dc:
+                            # print(log.comm_delay[j])
+                            if log.comm_delay[j] > dc_in_s:
                                 missed_msgs_cnt = missed_msgs_cnt + 1
                     except:
                         pass
 
-                ave = missed_msgs_cnt/msgs_cnt
-                ave_list.append(ave)
-                # os.system('echo "simulation '+sim_id+': missed_msgs_cnt'+ave_missed_msgs_cnt+'" >> '+source_dir+'/missed_msgs_cnt.txt')
+                try:
+                    ave = missed_msgs_cnt/msgs_cnt
+                    ave_list.append(ave)
+                    # os.system('echo "simulation '+sim_id+': missed_msgs_cnt'+ave_missed_msgs_cnt+'" >> '+source_dir+'/missed_msgs_cnt.txt')
+                except:
+                    pass
 
-            ave_missed_per_dc = sum(ave_list)/len(ave_list)
-
-            os.system('echo "'+source_dir+'" >> /home/kota/data/missed_msgs_cnt.txt')
-            os.system('echo " missed/total '+str(round(ave_missed_per_dc*100,2))+'%" >> /home/kota/data/missed_msgs_cnt.txt')
-            os.system('echo "------------------------------------------------------------" >> /home/kota/data/missed_msgs_cnt.txt')
+            try:      
+                ave_missed_per_dc = sum(ave_list)/len(ave_list)
+                os.system('echo "'+source_dir+'" >> /home/kota/data/missed_msgs_cnt.txt')
+                os.system('echo " missed/total '+str(round(ave_missed_per_dc*100,2))+'%" >> /home/kota/data/missed_msgs_cnt.txt')
+                os.system('echo "------------------------------------------------------------" >> /home/kota/data/missed_msgs_cnt.txt')
+            except:
+                pass
             
             is_oldmader = False
