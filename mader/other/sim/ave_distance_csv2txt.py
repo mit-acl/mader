@@ -23,52 +23,51 @@ if __name__ == '__main__':
 
     # rosbag name
 
-    # Dont use ~ like this
-    cd = "50" # [ms] communication delay
-
     is_oldmader = True # change here
 
     # number of agents
     num_of_agents = 10 
     
     if is_oldmader:
-        cd_list = [50, 100, 200, 300]
+        cd_list = [0, 50, 100, 200, 300]
     else:
-        cd_list = [50, 100]
+        cd_list = [50, 100, 100, 200, 300]
 
     for cd in cd_list:
 
         is_oldmader=True
 
-        if cd == 50:
-            dc_list = [0, 160, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        if cd == 0:
+            dc_list = [0, 100, 20, 8, 1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 50:
+            dc_list = [0, 120, 56, 51, 50.8, 35, 15] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 120] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        else:
-            dc_list =[0]
+            dc_list = [0, 190, 105, 101.3, 101, 75, 25] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 170] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 200:
+            dc_list = [0, 300]
+        elif cd == 300:
+            dc_list = [0, 400]
 
         for dc in dc_list:
 
             dc_in_ms = dc/1000;
             cd_in_ms = cd/1000;
 
-            if dc == 50.5:
-                str_dc = "50_5"
-            elif dc == 50.1:
-                str_dc = "50_1"
-            elif dc == 100.5:
-                str_dc = "100_5"
-            elif dc == 100.1:
-                str_dc = "100_1"
+            if dc == 50.8:
+                str_dc = "51_8"
+            elif dc == 101.3:
+                str_dc = "101_3"
+            else:
+                str_dc = str(dc)
 
             dist_matrix_dc = np.zeros([num_of_agents, num_of_agents])
 
             if is_oldmader:
-                source_dir = "/home/kota/data/csv/oldmader/cd"+cd+"ms" # change the source dir accordingly #10 agents
+                source_dir = "/home/kota/data/csv/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
             else:
-                source_dir = "/home/kota/data/csv/rmader/cd"+cd+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
+                source_dir = "/home/kota/data/csv/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
             
             source_len = len(source_dir)
             source_csvs = source_dir + "/*.csv" # change the source dir accordingly
@@ -83,6 +82,7 @@ if __name__ == '__main__':
             # print(csv)
 
             num_of_sims = len(csv)
+            print(num_of_sims)
 
             # going through the csvs (sims)
             for i in range(len(csv)):
@@ -113,15 +113,16 @@ if __name__ == '__main__':
             ave_per_dc = sum_of_rows / ((num_of_agents-1)*np.ones(num_of_agents)) #num_of_agents-1 is becasue you don't calcuate the distance from itself to itself 
             # print(ave_per_dc)
 
-            os.system('echo "'+source_dir+'" >> '+source_dir+'/ave_distance.txt')
+            os.system('echo "'+source_dir+'" >> /home/kota/data/ave_distance.txt')
             for i in range(num_of_agents):
                 if i<=9:
                     sim_id = "0"+str(i)
                 else:
                     sim_id = str(i)
-                os.system('echo "SQ'+sim_id+' '+str(ave_per_dc[i])+'" >> '+source_dir+'/ave_distance.txt')
+                # os.system('echo "SQ'+sim_id+' '+str(ave_per_dc[i])+'" >> /home/kota/data/ave_distance.txt')
 
             total_ave_dist = sum(ave_per_dc)/len(ave_per_dc)
-            os.system('echo "total distance '+str(total_ave_dist)+'" >> '+source_dir+'/ave_distance.txt')
+            os.system('echo "total distance '+str(round(total_ave_dist,2))+'m" >> /home/kota/data/ave_distance.txt')
+            os.system('echo "------------------------------------------------------------" >> /home/kota/data/ave_distance.txt')
 
             is_oldmader = False

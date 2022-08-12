@@ -53,7 +53,10 @@ class AveDistance:
         self.goal_reached = GoalReached()
         self.subGoalReached = rospy.Subscriber('goal_reached', GoalReached, self.GoalReachedCB)
 
-        self.initialized = True
+        self.initialized = False
+        self.initialized_mat = [False for i in range(self.num_of_agents)]
+
+        self.state_pos = np.empty([self.num_of_agents,3])
 
     def GoalReachedCB(self, data):
         for i in range(self.num_of_agents):
@@ -66,6 +69,15 @@ class AveDistance:
     # collision detection
     def AveDistanceCalculate(self, timer):
         
+        if not self.initialized:
+            initialized = True
+            for k in range(self.num_of_agents):
+                if not self.initialized_mat[k]:
+                    initialized = False
+                    break
+            self.initialized = initialized
+
+
         if self.initialized:
             for i in range(self.num_of_agents):
                 for j in range(i+1,self.num_of_agents):
@@ -80,14 +92,63 @@ class AveDistance:
                     else:
                         agent2 = "SQ" + str(j+1) + "s" 
                     
-                    trans = self.get_transformation(agent1, agent2)
+                    # trans = self.get_transformation(agent1, agent2)
 
-                    if trans is not None:
+                    x_diff = abs(self.state_pos[i,0] - self.state_pos[j,0])
+                    y_diff = abs(self.state_pos[i,1] - self.state_pos[j,1])
+                    z_diff = abs(self.state_pos[i,2] - self.state_pos[j,2])
 
-                        # print(LA.norm(np.array([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z])))
+                    self.dist_matrix[i,j] = self.dist_matrix[i,j] + LA.norm(np.array([x_diff, y_diff, z_diff]))
+                    self.cnt[i,j] = self.cnt[i,j] + 1                    
 
-                        self.dist_matrix[i,j] = self.dist_matrix[i,j] + LA.norm(np.array([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z]))
-                        self.cnt[i,j] = self.cnt[i,j] + 1
+                    # if trans is not None:
+
+                    #     # print(LA.norm(np.array([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z])))
+
+                    #     self.dist_matrix[i,j] = self.dist_matrix[i,j] + LA.norm(np.array([trans.transform.translation.x, trans.transform.translation.y, trans.transform.translation.z]))
+                    #     self.cnt[i,j] = self.cnt[i,j] + 1
+
+    def SQ01stateCB(self, data):
+        self.state_pos[0,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+        # print(LA.norm(self.state_pos))
+        if self.initialized_mat[0] == False and LA.norm(self.state_pos[0,0:3]) > 0.1: # make sure first [0, 0, 0] state info will not be used
+            self.initialized_mat[0] = True
+    def SQ02stateCB(self, data):
+        self.state_pos[1,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+        if self.initialized_mat[1] == False and LA.norm(self.state_pos[1,0:3]) > 0.1: # make sure first [0, 0, 0] state info will not be used
+            self.initialized_mat[1] = True
+    def SQ03stateCB(self, data):
+        self.state_pos[2,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+        if self.initialized_mat[2] == False and LA.norm(self.state_pos[2,0:3]) > 0.1: # make sure first [0, 0, 0] state info will not be used
+            self.initialized_mat[2] = True
+    def SQ04stateCB(self, data):
+        self.state_pos[3,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+        if self.initialized_mat[3] == False and LA.norm(self.state_pos[3,0:3]) > 0.1: # make sure first [0, 0, 0] state info will not be used
+            self.initialized_mat[3] = True
+    def SQ05stateCB(self, data):
+        self.state_pos[4,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+        if self.initialized_mat[4] == False and LA.norm(self.state_pos[4,0:3]) > 0.1: # make sure first [0, 0, 0] state info will not be used
+            self.initialized_mat[4] = True
+    def SQ06stateCB(self, data):
+        self.state_pos[5,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+        if self.initialized_mat[5] == False and LA.norm(self.state_pos[5,0:3]) > 0.1: # make sure first [0, 0, 0] state info will not be used
+            self.initialized_mat[5] = True
+    def SQ07stateCB(self, data):
+        self.state_pos[6,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+        if self.initialized_mat[6] == False and LA.norm(self.state_pos[6,0:3]) > 0.1: # make sure first [0, 0, 0] state info will not be used
+            self.initialized_mat[6] = True
+    def SQ08stateCB(self, data):
+        self.state_pos[7,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+        if self.initialized_mat[7] == False and LA.norm(self.state_pos[7,0:3]) > 0.1: # make sure first [0, 0, 0] state info will not be used
+            self.initialized_mat[7] = True
+    def SQ09stateCB(self, data):
+        self.state_pos[8,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+        if self.initialized_mat[8] == False and LA.norm(self.state_pos[8,0:3]) > 0.1: # make sure first [0, 0, 0] state info will not be used
+            self.initialized_mat[8] = True
+    def SQ10stateCB(self, data):
+        self.state_pos[9,0:3] = np.array([data.pos.x, data.pos.y, data.pos.z])
+        if self.initialized_mat[9] == False and LA.norm(self.state_pos[9,0:3]) > 0.1: # make sure first [0, 0, 0] state info will not be used
+            self.initialized_mat[9] = True
 
     def get_transformation(self, source_frame, target_frame):
 
@@ -101,12 +162,18 @@ class AveDistance:
 
 def startNode():
     c = AveDistance()
-    # rospy.Subscriber("SQ01s/state", State, c.SQ01stateCB)
-    # rospy.Subscriber("SQ02s/state", State, c.SQ02stateCB)
-    # rospy.Subscriber("SQ03s/state", State, c.SQ03stateCB)
-    # rospy.Subscriber("SQ04s/state", State, c.SQ04stateCB)
-    # rospy.Subscriber("SQ05s/state", State, c.SQ05stateCB)
-    # rospy.Subscriber("SQ06s/state", State, c.SQ06stateCB)
+    rospy.Subscriber("SQ01s/state", State, c.SQ01stateCB)
+    rospy.Subscriber("SQ02s/state", State, c.SQ02stateCB)
+    rospy.Subscriber("SQ03s/state", State, c.SQ03stateCB)
+    rospy.Subscriber("SQ04s/state", State, c.SQ04stateCB)
+    rospy.Subscriber("SQ05s/state", State, c.SQ05stateCB)
+    rospy.Subscriber("SQ06s/state", State, c.SQ06stateCB)
+    rospy.Subscriber("SQ07s/state", State, c.SQ07stateCB)
+    rospy.Subscriber("SQ08s/state", State, c.SQ08stateCB)
+    rospy.Subscriber("SQ09s/state", State, c.SQ09stateCB)
+    rospy.Subscriber("SQ10s/state", State, c.SQ10stateCB)
+    rospy.Subscriber("SQ01s/state", State, c.SQ01stateCB)
+
     rospy.Timer(rospy.Duration(0.1), c.AveDistanceCalculate)
     rospy.spin()
 

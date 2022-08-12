@@ -24,6 +24,7 @@
 #include <mader_msgs/DynTraj.h>
 #include <mader_msgs/CommDelay.h>
 #include <mader_msgs/MissedMsgsCnt.h>
+#include <mader_msgs/Trajs.h>
 
 #include "utils.hpp"
 #include "mader.hpp"
@@ -42,7 +43,7 @@ public:
 private:
   std::unique_ptr<Mader> mader_ptr_;
 
-  void publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_committed, const double& headsup_time);
+  void publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_committed, std::vector<mt::dynTrajCompiled>& trajs);
   void publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_committed);
   void publishPlanes(std::vector<Hyperplane3D>& planes);
 
@@ -83,7 +84,7 @@ private:
   bool is_delaycheck_ = true;
   double headsup_time_ = 0.0;
   bool is_in_DC_ = false;
-  bool delay_check_result_ = true;
+  bool delay_check_result_ = false;
 
   mt::PieceWisePol pwp_now_;
   mt::state state_;
@@ -128,6 +129,7 @@ private:
   // ros::Subscriber sub_mode_;
   ros::Subscriber sub_whoplans_;
   ros::Subscriber sub_state_;
+  ros::Subscriber sub_cent_traj_;
 
   // subscribers for each agent
   std::vector<ros::Subscriber> sub_traj_;
@@ -151,6 +153,8 @@ private:
   int num_of_QCQPs_run_ = 0;
 
   int id_;  // id of the drone
+
+  int traj_id_ = 0;
 
   bool published_initial_position_ = false;
 

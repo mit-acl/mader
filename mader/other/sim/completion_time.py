@@ -23,54 +23,51 @@ if __name__ == '__main__':
 
     n_agents = 10
 
-    # rosbag name
-
-    # Dont use ~ like this
-    cd = "50" # [ms] communication delay
-
     is_oldmader = True # change here 
     
     if is_oldmader:
-        cd_list = [50, 100, 200, 300]
+        cd_list = [0, 50, 100, 200, 300]
     else:
-        cd_list = [50, 100]
+        cd_list = [50, 100, 100, 200, 300]
 
 
     for cd in cd_list:
 
         is_oldmader=True
 
-        if cd == 50:
-            dc_list = [0, 160, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        if cd == 0:
+            dc_list = [0, 100, 20, 8, 1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 50:
+            dc_list = [0, 120, 56, 51, 50.8, 35, 15] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 120] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        else:
-            dc_list =[0] 
+            dc_list = [0, 190, 105, 101.3, 101, 75, 25] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 170] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 200:
+            dc_list = [0, 300]
+        elif cd == 300:
+            dc_list = [0, 400]
 
         # this gives you 2d array, row gives you each sims data in corresponding dc
         box_plot_list = [] 
 
         for dc in dc_list:
 
-            if dc == 50.5:
-                str_dc = "50_5"
-            elif dc == 50.1:
-                str_dc = "50_1"
-            elif dc == 100.5:
-                str_dc = "100_5"
-            elif dc == 100.1:
-                str_dc = "100_1"
+            if dc == 50.8:
+                str_dc = "51_8"
+            elif dc == 101.3:
+                str_dc = "101_3"
+            else:
+                str_dc = str(dc)
 
             home_dir = "/home/kota/data/bags"
 
             # source directory
             if is_oldmader:
-                source_dir = "/home/kota/data/bags/oldmader/cd"+cd+"ms" # change the source dir accordingly #10 agents
+                source_dir = "/home/kota/data/bags/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
                 is_oldmader = False
             else:
-                source_dir = "/home/kota/data/bags/rmader/cd"+cd+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
+                source_dir = "/home/kota/data/bags/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
             
             source_len = len(source_dir)
             source_bags = source_dir + "/*.bag" # change the source dir accordingly
@@ -97,9 +94,15 @@ if __name__ == '__main__':
                     completion_time = log.completion_time.iloc[0]
                     # print('completion time ' + str(completion_time_agent))
                     completion_time_per_sim_list.append(completion_time)
+                    box_plot_list.append(completion_time_per_sim_list)
+
                 except:
                     print("agents didn't reach goals")
 
+            os.system('echo "'+source_dir+'" >> /home/kota/data/completion_time.txt')
+            os.system('echo "max is '+str(round(max(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
+            os.system('echo "ave is '+str(round(statistics.mean(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
+            os.system('echo "------------------------------------------------------------" >> /home/kota/data/completion_time.txt')
 
                 # # get all the agents' actual_traj topic ( this topic publishes as long as it is tranlating, meaning as soon as the agent reaches the goal this topic stop publishing)
                 # completion_time_per_agent_list = [] 
@@ -127,29 +130,25 @@ if __name__ == '__main__':
 
                 # # print('sim '+str(sim_id)+': '+str(completion_time_per_sim_list[-1])+' [s]')
 
-            box_plot_list.append(completion_time_per_sim_list)
-            os.system('echo "'+source_dir+' : max is '+str(max(completion_time_per_sim_list))+'" >> '+home_dir+'/completion_time.txt')
-            os.system('echo "'+source_dir+' : ave is '+str(statistics.mean(completion_time_per_sim_list))+'" >> '+home_dir+'/completion_time.txt')
-        
+            # # save data into csv file
+            # dict = {'oldmader': box_plot_list[0], 'rmader 250': box_plot_list[1], 'rmader 87': box_plot_list[2], 'rmader 78': box_plot_list[3], 'rmader 63': box_plot_list[4], 'rmader 55': box_plot_list[5]}  
+            # print(len(box_plot_list[0]))
+            # print(len(box_plot_list[1]))
+            # print(len(box_plot_list[2]))
+            # print(len(box_plot_list[3]))
+            # print(len(box_plot_list[4]))
+            # print(len(box_plot_list[5]))
+            # df = pd.DataFrame(dict) 
+            # # saving the dataframe 
+            # df.to_csv(home_dir+'/completion_time.csv') 
 
-        # # save data into csv file
-        # dict = {'oldmader': box_plot_list[0], 'rmader 250': box_plot_list[1], 'rmader 87': box_plot_list[2], 'rmader 78': box_plot_list[3], 'rmader 63': box_plot_list[4], 'rmader 55': box_plot_list[5]}  
-        # print(len(box_plot_list[0]))
-        # print(len(box_plot_list[1]))
-        # print(len(box_plot_list[2]))
-        # print(len(box_plot_list[3]))
-        # print(len(box_plot_list[4]))
-        # print(len(box_plot_list[5]))
-        # df = pd.DataFrame(dict) 
-        # # saving the dataframe 
-        # df.to_csv(home_dir+'/completion_time.csv') 
-
-        # plot
-        fig = plt.figure()
-        # Creating axes instance
-        ax = fig.add_axes([0, 0, 1, 1])
-        # Creating plot
-        bp = ax.boxplot(box_plot_list)
-        plt.savefig('/home/kota/data/images/completion_time.png')
-        # show plot
-        # plt.show()
+            # plot
+            fig = plt.figure()
+            # Creating axes instance
+            ax = fig.add_axes([0, 0, 1, 1])
+            # Creating plot
+            bp = ax.boxplot(box_plot_list)
+            os.system("mkdir /home/kota/data/images/")        
+            plt.savefig('/home/kota/data/images/completion_time.png')
+            # show plot
+            # plt.show()

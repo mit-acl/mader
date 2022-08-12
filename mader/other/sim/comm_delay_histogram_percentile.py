@@ -27,45 +27,42 @@ import numpy
 
 if __name__ == '__main__':
 
-    # you wanna get histogram or know the value at q-th percentile
-    is_histogram = True
-    # q-th percentile
-    q = 75
-
     is_oldmader = True # always False bc oldmader doesn't have comm_delay
     num_of_agents = 10
 
     if is_oldmader:
-        cd_list = [50, 100, 200, 300]
+        cd_list = [0, 50, 100, 200, 300]
     else:
-        cd_list = [50, 100]
+        cd_list = [50, 100, 100, 200, 300]
 
     for cd in cd_list:
 
         is_oldmader=True
 
-        if cd == 50:
-            dc_list = [0, 160, 55, 51, 50.5, 50.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [0, 160] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        if cd == 0:
+            dc_list = [0, 100, 20, 8, 1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 50:
+            dc_list = [0, 120, 56, 51, 50.8, 35, 15] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 120] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 210, 105, 101, 100.5, 100.1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [0, 210] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-        else:
-            dc_list =[0]
+            dc_list = [0, 190, 105, 101.3, 101, 75, 25] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [0, 170] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        elif cd == 200:
+            dc_list = [0, 300]
+        elif cd == 300:
+            dc_list = [0, 400]
             
         for dc in dc_list:
             
             # comm_delay you use
             input_comm_delay = dc/1000
 
-            if dc == 50.5:
-                str_dc = "50_5"
-            elif dc == 50.1:
-                str_dc = "50_1"
-            elif dc == 100.5:
-                str_dc = "100_5"
-            elif dc == 100.1:
-                str_dc = "100_1"
+            if dc == 50.8:
+                str_dc = "51_8"
+            elif dc == 101.3:
+                str_dc = "101_3"
+            else:
+                str_dc = str(dc)
 
             figname = 'cd'+str(cd)+'dc'+str_dc+'_rmader_comm_delay_histogram.png'
             source_dir = "/home/kota/data/bags" # change the source dir accordingly #10 agents 
@@ -87,6 +84,7 @@ if __name__ == '__main__':
             # print(rosbag)
 
             for i in range(len(rosbag)):
+            # for i in range(10):
 
                 b = bagreader(rosbag[i], verbose=False);
                 
@@ -96,38 +94,58 @@ if __name__ == '__main__':
                     else:
                         log_data = b.message_by_topic("/SQ" + str(i) + "s/mader/comm_delay")
 
-                    log = pd.read_csv(log_data)
+                    try:
+                        log = pd.read_csv(log_data)
 
-                    for j in range(len(log.comm_delay)):
-                        comm_delay.append(log.comm_delay[j])
+                        for j in range(len(log.comm_delay)):
+                            comm_delay.append(log.comm_delay[j])
+                    except:
+                        pass
 
             # print percentile
 
             comm_delay_arr = numpy.array(comm_delay)
 
-            if is_histogram:
-                percentile = scipy.stats.percentileofscore(comm_delay_arr, input_comm_delay, kind='mean')
-                os.system('echo "cd='+str(cd)+', dc='+str(dc)+':   '+str(input_comm_delay) + ' is ' + str(percentile) + '-th percentile" >> '+source_dir+'/comm_delay_percentile.txt')
-                # print(comm_delay)
+            percentile = scipy.stats.percentileofscore(comm_delay_arr, input_comm_delay, kind='mean')
+            os.system('echo "----------------------------------------------------------------------------------" >> /home/kota/data/comm_delay_percentile.txt')
+            os.system('echo "'+source_bags+'" >> /home/kota/data/comm_delay_percentile.txt')
+            os.system('echo "cd='+str(cd)+', dc='+str(dc)+':   '+str(input_comm_delay) + ' is ' + str(round(percentile,1)) + '-th percentile" >> /home/kota/data/comm_delay_percentile.txt')
+            # print(comm_delay)
+
+            try:
                 max_comm_delay = max(comm_delay)
 
                 fig = plt.figure()
                 ax = fig.add_subplot()
-                n, bins, patches = plt.hist(x=comm_delay, color="blue")
+                n, bins, patches = plt.hist(x=comm_delay, color="blue", edgecolor = 'black')
                 plt.axvline(x=dc/1000, color="red")
-                ax.set_xticks(np.arange(0.05,0.250,0.025))
-                ax.set_xticklabels(np.arange(50,250,25))
+                if cd == 50:
+                    ax.set_xticks(np.arange(0,0.125,0.025))
+                    ax.set_xticklabels(np.arange(0,125,25))
+                elif cd == 100:
+                    ax.set_xticks(np.arange(0,0.175,0.025))
+                    ax.set_xticklabels(np.arange(0,175,25))
+                elif cd == 200:
+                    ax.set_xticks(np.arange(0,0.250,0.025))
+                    ax.set_xticklabels(np.arange(0,250,25))
+                elif cd == 500:
+                    ax.set_xticks(np.arange(0,0.375,0.025))
+                    ax.set_xticklabels(np.arange(0,375,25))
                 # plt.rcParams["font.family"] = "Times New Roman"
                 plt.grid(axis='y', color='black', alpha=0.2)
-                plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay*1000))+' [ms]')
+                plt.title('Comm delay histogram \n max comm_delay is '+str(round(max_comm_delay*1000))+' [ms] and '+str(dc)+'ms delay check')
                 plt.xlabel("comm delay [ms]")
                 plt.ylabel("count")
                 plt.savefig('/home/kota/ws/src/mader/mader/other/sim/data/'+figname)
+                plt.close('all')
                 # plt.show()
-            else:
-                # in case you wanna calculate the value of q-th percentile
-                print(str(q) + "-th percentile value is " + str(numpy.percentile(comm_delay_arr, q)))
-                if q > 0:
-                    q = q -25
-                else:
-                    sys.exit()
+            except:
+                pass
+
+            # in case you wanna calculate the value of q-th percentile
+            # print("----------------------------------------------------------------------------------")
+            for q in range(100,0,-25):
+                try:
+                    os.system('echo "'+str(q)+'-th : '+ str(round(numpy.percentile(comm_delay_arr, q)*1000,2)) + 'ms" >> /home/kota/data/comm_delay_percentile.txt')
+                except:
+                    pass

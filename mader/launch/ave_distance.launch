@@ -2,7 +2,7 @@
 <launch>
 
 	<arg name="num_of_agents" default="10"/>
-	<arg name="folder_loc" default="/home/kota/data/csv/rmader/cd50msdc170ms"/>
+	<arg name="folder_loc" default="/home/kota/data/csv/"/>
 	<arg name="sim" default="00"/>
 
 	<node name="ave_distance" pkg="mader" type="ave_distance.py" output="screen">

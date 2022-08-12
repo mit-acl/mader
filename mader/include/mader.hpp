@@ -52,7 +52,7 @@ public:
                               std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
                               mt::PieceWisePol& pwp_now, double& headsup_time);
   bool addTrajToPlan_with_delaycheck(mt::PieceWisePol& pwp);
-  bool everyTrajCheck(mt::PieceWisePol pwp_optimized, const double headsup_time);
+  bool delayCheck(mt::PieceWisePol pwp_optimized, const double& headsup_time);
 
   void updateState(mt::state data);
 
@@ -65,8 +65,7 @@ public:
   void resetInitialization();
 
   bool IsTranslating();
-  bool updateTrajObstacles(mt::dynTraj traj, const mt::PieceWisePol& pwp_now, const bool& is_in_DC,
-                           const double& headsup_time);
+  bool updateTrajObstacles_with_delaycheck(mt::dynTraj traj);
   void updateTrajObstacles(mt::dynTraj traj);
 
   Eigen::Vector2d RotationMatrix(Eigen::Vector2d& vec, const double& angle);
@@ -76,6 +75,8 @@ public:
   mt::state getGterm();
   bool isGoalSeen();
   bool isGoalReached();
+
+  std::vector<mt::dynTrajCompiled> getTrajs();
 
 private:
   mt::state M_;
