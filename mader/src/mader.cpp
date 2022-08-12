@@ -1344,7 +1344,7 @@ void Mader::getDesiredYaw(mt::state& next_goal)
   {
     // looking at the center of highbay
     double desired_yaw =
-        atan2(state_.pos[1], state_.pos[0]) + M_PI / 2;  // M_PI is because the camera is mounted pointing at y-axis
+        atan2(state_.pos[1], state_.pos[0]) - M_PI / 2;  // M_PI is because the camera is mounted pointing at y-axis
     double diff = desired_yaw - state_.yaw;
     mu::angle_wrap(diff);
     yaw(diff, next_goal);
