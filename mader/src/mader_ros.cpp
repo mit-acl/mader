@@ -31,7 +31,28 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "using_pop_up", par_.using_pop_up);
   bool is_centralized = true;
   mu::safeGetParam(nh1_, "is_centralized", is_centralized);
+
+  // determine who is the camera man
   mu::safeGetParam(nh1_, "is_camera_yawing", par_.is_camera_yawing);
+
+  // need these lines to get id
+  name_drone_ = ros::this_node::getNamespace();  // Return also the slashes (2 in Kinetic, 1 in Melodic)
+  name_drone_.erase(std::remove(name_drone_.begin(), name_drone_.end(), '/'), name_drone_.end());  // Remove the slashes
+  std::string id = name_drone_;
+  id.erase(0, 2);  // Erase SQ or HX i.e. SQ12s --> 12s  HX8621 --> 8621 # TODO Hard-coded for this this convention
+  id.erase(2, 2);
+  std::string camera1, camera2;
+  mu::safeGetParam(nh1_, "camera1", camera1);
+  mu::safeGetParam(nh1_, "camera2", camera2);
+
+  // std::cout << camera1 << std::endl;
+  // std::cout << camera2 << std::endl;
+  // std::cout << id << std::endl;
+
+  if (id == camera1 || id == camera2)
+  {
+    par_.is_camera_yawing = true;
+  }
 
   mu::safeGetParam(nh1_, "use_ff", par_.use_ff);
   mu::safeGetParam(nh1_, "visual", par_.visual);
@@ -240,11 +261,13 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   // If you want another thread for the replanCB: replanCBTimer_ = nh_.createTimer(ros::Duration(par_.dc),
   // &MaderRos::replanCB, this);
 
-  name_drone_ = ros::this_node::getNamespace();  // Return also the slashes (2 in Kinetic, 1 in Melodic)
-  name_drone_.erase(std::remove(name_drone_.begin(), name_drone_.end(), '/'), name_drone_.end());  // Remove the slashes
+  // these lines are moved above
+  // name_drone_ = ros::this_node::getNamespace();  // Return also the slashes (2 in Kinetic, 1 in Melodic)
+  // name_drone_.erase(std::remove(name_drone_.begin(), name_drone_.end(), '/'), name_drone_.end());  // Remove the
+  // slashes
 
-  std::string id = name_drone_;
-  id.erase(0, 2);  // Erase SQ or HX i.e. SQ12 --> 12  HX8621 --> 8621 # TODO Hard-coded for this this convention
+  // std::string id = name_drone_;
+  // id.erase(0, 2);  // Erase SQ or HX i.e. SQ12s --> 12s  HX8621 --> 8621 # TODO Hard-coded for this this convention
   id_ = std::stoi(id);
   mader_ptr_->getID(id_);
 

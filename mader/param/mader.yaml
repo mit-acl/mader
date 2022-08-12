@@ -11,9 +11,13 @@ is_centralized: true
 max_agent_number: 7
 
 # camera yawing?
-is_camera_yawing: true
+is_camera_yawing: false
 
-w_max: 0.6           # [rd/s] Maximum angular velocity. 0.4 for Hardware
+# who's the camera man? (if you are camera man is_camera_yawing will be true in mader_ros.cpp)
+camera1: "05"
+camera2: "07"
+
+w_max: 0.6           # [rd/s] Maximum angular velocity. 0.6 for Hardware
 alpha_filter_dyaw: 0.99 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
 
 use_ff: true # use feedforward
@@ -70,7 +74,7 @@ solver: "LD_MMA"
 # LD_TNEWTON_RESTART, LD_TNEWTON_PRECOND, LD_VAR1, LD_LBFGS_NOCEDAL, COBYLA
 
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
-upper_bound_runtime_snlopt: 0.35 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
+upper_bound_runtime_snlopt: 0.60 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
 lower_bound_runtime_snlopt: 0.05 #[seconds] snlopt (init guess + solver) will never take less than this amount of seconds
 kappa: 0.4 #% of time spent to find initial guess
 mu: 0.4    #% of time spent to solve the optimization
