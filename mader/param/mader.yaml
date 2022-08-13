@@ -8,10 +8,22 @@ is_take_off: false
 is_centralized: false
 
 # use delay check or not?
-#######is_delaycheck: true
+
+is_delaycheck: true
 
 # max number of agents (not the actual number. it's max number of id)
 max_agent_number: 10
+
+# camera yawing?
+is_camera_yawing: false
+
+# who's the camera man? (if you are camera man is_camera_yawing will be true in mader_ros.cpp)
+camera1: "20"
+camera2: "21"
+
+w_max: 0.6           # [rd/s] Maximum angular velocity. 0.4 for Hardware
+alpha_filter_dyaw: 0.99 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
+
 
 use_ff: true # use feedforward
 visual: true #publish visualization stuff
@@ -24,15 +36,10 @@ goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GO
 drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced by drone_bbox
 drone_bbox: [0.4, 0.4, 0.4] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
-#w_max: 0.4           # [rd/s] Maximum angular velocity. 0.4 for Hardware
-w_max: 0.0
-
-alpha_filter_dyaw: 0.99 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
-
 Ra: 30.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
-#######delay_check: 0.05 # seconds
-############################################################################################################################################################simulated_comm_delay: 0.0 #seconds
+delay_check: 0.05 # seconds
+simulated_comm_delay: 0.0 #seconds
 comm_delay_param: 1.0
 
 x_min: -1000000000.0  # [m] don't forget the .0
