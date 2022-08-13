@@ -200,7 +200,6 @@ def startNode():
     rospy.Subscriber("SQ08s/state", State, c.SQ08stateCB)
     rospy.Subscriber("SQ09s/state", State, c.SQ09stateCB)
     rospy.Subscriber("SQ10s/state", State, c.SQ10stateCB)
-    rospy.Subscriber("SQ01s/state", State, c.SQ01stateCB)
 
     rospy.Timer(rospy.Duration(0.001), c.collisionDetect)
     rospy.spin()

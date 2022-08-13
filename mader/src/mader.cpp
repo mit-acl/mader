@@ -972,8 +972,8 @@ std::vector<mt::dynTrajCompiled> Mader::getTrajs()
 }
 
 // check wheter a mt::dynTrajCompiled and a pwp_optimized are in collision in the interval [t_start, t_end]
-bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
-                                      double t_end, bool& is_q0_fail)
+bool Mader::trajsAndPwpAreInCollision_with_inflation(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized,
+                                                     double t_start, double t_end, bool& is_q0_fail)
 {
   Eigen::Vector3d n_i;
   double d_i;
@@ -987,7 +987,7 @@ bool Mader::trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol
 
     // This is my trajectory (with inflation)
     Eigen::Vector3d inflation;
-    inflation << 0.01, 0.01, 0.01;
+    inflation << 0.1, 0.1, 0.1;
     std::vector<Eigen::Vector3d> pointsA =
         vertexesOfInterval(pwp_optimized, t_start + i * deltaT, t_start + (i + 1) * deltaT, inflation);
 
@@ -1069,8 +1069,8 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized, bool& is_q0_fail
   {
     if (traj.is_agent == true)  // need to include the trajs that came in the last delay check
     {
-      if (trajsAndPwpAreInCollision(traj, pwp_optimized, pwp_optimized.times.front(), pwp_optimized.times.back(),
-                                    is_q0_fail))
+      if (trajsAndPwpAreInCollision_with_inflation(traj, pwp_optimized, pwp_optimized.times.front(),
+                                                   pwp_optimized.times.back(), is_q0_fail))
       {
         ROS_ERROR_STREAM("Traj collides with " << traj.id);
         result = false;  // will have to redo the optimization
@@ -1126,6 +1126,7 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
 /// Delay check
 bool Mader::delayCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
 {
+  bool is_q0_fail = false;  // just introduced to use trajsAndpwpAreInCollision_with_inflatoin();
   // std::cout << "bef mtx_trajs_.lock() in delayCheck" << std::endl;
   mtx_trajs_.lock();  // this function is called in mader_ros.cpp so need to lock in the function
   // std::cout << "aft mtx_trajs_.lock() in delayCheck" << std::endl;
@@ -1135,7 +1136,8 @@ bool Mader::delayCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
   {
     if (traj_compiled.is_agent == true)
     {
-      if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      if (trajsAndPwpAreInCollision_with_inflation(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back(),
+                                                   is_q0_fail))
       {
         result = false;
       }
@@ -1186,7 +1188,8 @@ bool Mader::delayCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
     }
     else
     {  // if traj_compiled.is_agent == false
-      if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      if (trajsAndPwpAreInCollision_with_inflation(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back(),
+                                                   is_q0_fail))
       {
         result = false;
       }

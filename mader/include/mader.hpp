@@ -97,8 +97,8 @@ private:
   bool safetyCheck_for_A_star_failure(mt::PieceWisePol pwp_prev);
   bool safetyCheck_for_A_star_failure_pwp_now(mt::PieceWisePol pwp_now);
 
-  bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start, double t_end,
-                                 bool& is_q0_fail);
+  bool trajsAndPwpAreInCollision_with_inflation(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized,
+                                                double t_start, double t_end, bool& is_q0_fail);
 
   bool trajsAndPwpAreInCollision(mt::dynTrajCompiled traj, mt::PieceWisePol pwp_optimized, double t_start,
                                  double t_end);
