@@ -1208,7 +1208,8 @@ bool Mader::delayCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
     }
     else
     {  // if traj_compiled.is_agent == false
-      if (trajsAndPwpAreInCollision(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back()))
+      if (trajsAndPwpAreInCollision_with_inflation(traj_compiled, pwp_now, pwp_now.times.front(), pwp_now.times.back(),
+                                                   is_q0_fail))
       {
         result = false;
       }
