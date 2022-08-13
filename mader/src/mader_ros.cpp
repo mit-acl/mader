@@ -411,35 +411,7 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
   //   std::cout << "comm delay is " << comm_delay << " [s]" << std::endl;
   //   std::cout << "comm delay is huge!!!!" << std::endl;
   // }
-  mader_ptr_->updateTrajObstacles(tmp);
 
-<<<<<<< HEAD
-  // if (sim_ && is_term_goal_initialized_)
-  // {
-  //   //****** Communication delay introduced in the simulation
-  //   // save all the trajectories into alltrajs_ and create a timer corresponding to that
-  //   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
-  //   mtx_alltrajs_.lock();
-  //   mtx_alltrajsTimers_.lock();
-  //   // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in TrajCB" << std::endl;
-
-  //   alltrajs_.push_back(tmp);
-  //   ros::Timer alltrajs_timer =
-  //       nh4_.createTimer(ros::Duration(simulated_comm_delay_), &MaderRos::allTrajsTimerCB, this, true);
-  //   alltrajsTimers_.push_back(alltrajs_timer);
-
-  //   // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in TrajCB" << std::endl;
-  //   mtx_alltrajs_.unlock();
-  //   mtx_alltrajsTimers_.unlock();
-  //   // std::cout << "bef alltrajs_ and alltrajsTimers_ are unlocked() in TrajCB" << std::endl;
-  // }
-  // else
-  // {
-  //   // mtx_mader_ptr_.lock();
-  //   mader_ptr_->updateTrajObstacles(tmp);
-  //   // mtx_mader_ptr_.unlock();
-  // }
-=======
   if (sim_ && is_term_goal_initialized_)
   {
     //****** Communication delay introduced in the simulation
@@ -465,7 +437,6 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
     mader_ptr_->updateTrajObstacles(tmp);
     // mtx_mader_ptr_.unlock();
   }
->>>>>>> b83b6201d790288396fc5086f868239450e0f864
 }
 
 void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
