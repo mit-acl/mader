@@ -5,9 +5,10 @@ sim: true
 is_take_off: false
 
 # using centralized or decentralized trajs?
-is_centralized: true
+is_centralized: false
 
 # use delay check or not?
+
 is_delaycheck: true
 
 # max number of agents (not the actual number. it's max number of id)
@@ -33,7 +34,7 @@ n_agents: 10
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
 drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced by drone_bbox
-drone_bbox: [0.5, 0.5, 0.5] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
+drone_bbox: [0.4, 0.4, 0.4] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
 Ra: 30.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
