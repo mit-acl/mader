@@ -32,7 +32,7 @@ n_agents: 10
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
 drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced by drone_bbox
-drone_bbox: [0.8, 0.8, 1.5] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
+drone_bbox: [0.8, 0.8, 0.8] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
 Ra: 8.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
