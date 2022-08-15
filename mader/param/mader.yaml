@@ -17,8 +17,8 @@ max_agent_number: 10
 is_camera_yawing: false
 
 # who's the camera man? (if you are camera man is_camera_yawing will be true in mader_ros.cpp)
-camera1: "20"
-camera2: "21"
+camera1: "05"
+camera2: "07"
 
 w_max: 0.6           # [rd/s] Maximum angular velocity. 0.4 for Hardware
 alpha_filter_dyaw: 0.99 # #[] Filter parameter for dyaw, \in [0,1]. Higher--> More aggressive filtering
@@ -50,11 +50,11 @@ comm_delay_param: 1.0
 # z_max: 1000000000.0   # [m] JPS is not allowed to give a solution that goes higher than this height
 
 # highbay
-x_min: -4.1  # [m] don't forget the .0
-x_max: 4.1  # [m] don't forget the .0
+x_min: -4.3  # [m] don't forget the .0
+x_max: 4.8  # [m] don't forget the .0
 
-y_min: -4.1  # [m] don't forget the .0
-y_max: 4.1   # [m] don't forget the .0
+y_min: -3.5  # [m] don't forget the .0
+y_max: 4.3   # [m] don't forget the .0
 
 z_min: 0.9  # [m] don't forget the .0
 z_max: 3.0  # [m] don't forget the .0

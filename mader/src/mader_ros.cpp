@@ -436,6 +436,26 @@ void MaderRos::trajCB(const mader_msgs::DynTraj& msg)
     // mtx_mader_ptr_.lock();
     mader_ptr_->updateTrajObstacles(tmp);
     // mtx_mader_ptr_.unlock();
+
+    double time_now = ros::Time::now().toSec();
+    double supposedly_simulated_comm_delay = time_now - tmp.time_created;
+
+    // supposedly_simulated_time_delay should be simulated_comm_delay_
+    if (supposedly_simulated_comm_delay > delay_check_)
+    {
+      // std::cout << "supposedly_simulated_comm_delay is too big " << supposedly_simulated_comm_delay << " s"
+      // << std::endl;
+      missed_msgs_cnt_ = missed_msgs_cnt_ + 1;
+      msgs_cnt_ = msgs_cnt_ + 1;
+    }
+    else
+    {
+      msgs_cnt_ = msgs_cnt_ + 1;
+    }
+
+    mader_msgs::CommDelay msg;
+    msg.comm_delay = supposedly_simulated_comm_delay;
+    pub_comm_delay_.publish(msg);
   }
 }
 
