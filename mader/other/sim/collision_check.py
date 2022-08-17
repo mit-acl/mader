@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
                 try:
                     b = bagreader(rosbag[i], verbose=False)
-                    sim_id = rosbag[i][source_len+5:source_len+7]
+                    sim_id = rosbag[i][source_len+5:source_len+8]
                     log_data = b.message_by_topic("/is_collided")
                     if (log_data == None):
                         print("sim " + sim_id + ": no collision" )

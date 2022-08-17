@@ -172,11 +172,11 @@ void Mader::dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled
 }
 // Note that we need to compile the trajectories inside mader.cpp because t_ is in mader.hpp
 
-bool Mader::updateTrajObstacles_with_delaycheck(mt::dynTraj traj)
+void Mader::updateTrajObstacles_with_delaycheck(mt::dynTraj traj)
 {
   // std::cout << "in updateTrajObstacles" << std::endl;
 
-  bool delay_check_result = true;
+  // bool delay_check_result = true;
 
   MyTimer tmp_t(true);
 
@@ -333,7 +333,7 @@ bool Mader::updateTrajObstacles_with_delaycheck(mt::dynTraj traj)
 
   // std::cout << "out updateTrajObstacles" << std::endl;
 
-  return delay_check_result;
+  // return delay_check_result;
 
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
@@ -465,14 +465,20 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
       else
       {
         // points.push_back(Eigen::Vector3d(V(1, j), V(2, j), V(3, j)));  // x,y,z
-        points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z + delta.z()));
-        points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z + delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z + delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z - delta.z()));
-        points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z + delta.z()));
+
+        if (j == V.cols()-1)
+        {
+          points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z + delta.z()));
+          points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z - delta.z()));
+          points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z - delta.z()));
+          points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z + delta.z()));
+          points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z - delta.z()));
+          points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z + delta.z()));
+          points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z - delta.z()));
+          points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z + delta.z()));
+        } else {
+          points.push_back(Eigen::Vector3d(x, y, z));
+        }
       }
     }
   }
@@ -987,7 +993,7 @@ bool Mader::trajsAndPwpAreInCollision_with_inflation(mt::dynTrajCompiled traj, m
 
     // This is my trajectory (with inflation)
     Eigen::Vector3d inflation;
-    inflation << 0.1, 0.1, 0.1;
+    inflation << 0.01, 0.01, 0.01;
     std::vector<Eigen::Vector3d> pointsA =
         vertexesOfInterval(pwp_optimized, t_start + i * deltaT, t_start + (i + 1) * deltaT, inflation);
 

@@ -42,9 +42,11 @@ if __name__ == '__main__':
     num_of_agents=10
     how_long_to_wait = 20 #[s]
     if is_oldmader:
-        cd_list = [0, 50, 100, 200, 300]
+        cd_list = [0, 50, 100, 100, 200, 300]
     else:
         cd_list = [50, 100, 100, 200, 300]
+
+    cd_list = []
         
     # folder initialization
     folder_bags_list = []
@@ -66,6 +68,19 @@ if __name__ == '__main__':
             dc_list = [0, 300]
         elif cd == 300:
             dc_list = [0, 400]
+
+        # if cd == 0:
+        #     dc_list = [0, 100] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        # elif cd == 50:
+        #     dc_list = [0, 130] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        #     # dc_list = [0, 130] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        # elif cd == 100:
+        #     dc_list = [0, 200] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        #     # dc_list = [0, 200] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+        # elif cd == 200:
+        #     dc_list = [0, 300]
+        # elif cd == 300:
+        #     dc_list = [0, 400]
 
         for dc in dc_list:
 
@@ -157,8 +172,6 @@ if __name__ == '__main__':
                     # print('splitting ',i)
                     os.system('tmux new-window -t ' + str(session_name))
                
-                time.sleep(3.0)
-
                 for i in range(len(commands)):
                     os.system('tmux send-keys -t '+str(session_name)+':'+str(i) +'.0 "'+ commands[i]+'" '+' C-m')
 

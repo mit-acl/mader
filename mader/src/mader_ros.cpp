@@ -586,18 +586,18 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     replanCBTimer_.stop();  // to avoid blockage
 
     // introduce random wait time in the beginning
-    // if (!is_replanCB_called_)
-    // {
-    //   // to avoid initial path search congestions add some random sleep here
-    //   // std::random_device rd;
-    //   // std::default_random_engine eng(rd());
-    //   // std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
-    //   // ros::Duration(distr(eng)).sleep();
+    if (!is_replanCB_called_)
+    {
+      // to avoid initial path search congestions add some random sleep here
+      // std::random_device rd;
+      // std::default_random_engine eng(rd());
+      // std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
+      // ros::Duration(distr(eng)).sleep();
 
-    //   srand (time(NULL));
-    //   ros::Duration(0.25*id_).sleep(); // random wait time between 0 to 3
-    //   is_replanCB_called_ = true;
-    // }
+      srand (time(NULL));
+      ros::Duration(0.25*id_).sleep(); // random wait time between 0 to 3
+      is_replanCB_called_ = true;
+    }
 
     // mtx_mader_ptr_.lock();
     if (mader_ptr_->isGoalSeen())
@@ -631,16 +631,16 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       // trajs = mader_ptr_->getTrajs();
       // mtx_mader_ptr_.unlock();
 
-      if (par_.visual)
-      {
-        // Delete markers to publish stuff
-        visual_tools_->deleteAllMarkers();
-        visual_tools_->enableBatchPublishing();
-        if (edges_obstacles.size() > 0)
-        {
-          pubObstacles(edges_obstacles);
-        }
-      }
+      // if (par_.visual)
+      // {
+      //   // Delete markers to publish stuff
+      //   visual_tools_->deleteAllMarkers();
+      //   visual_tools_->enableBatchPublishing();
+      //   if (edges_obstacles.size() > 0)
+      //   {
+      //     pubObstacles(edges_obstacles);
+      //   }
+      // }
 
       if (replanned)
       {
@@ -667,11 +667,11 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
         {
           delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
-          ros::Duration(delay_check_ / 5).sleep();
           if (delay_check_result_ == false)
           {
             break;
           }
+          ros::Duration(delay_check_ / 5).sleep();
         }
         // trajs = mader_ptr_->getTrajs();
         delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
@@ -714,7 +714,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           {
             // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-            if (timer_stop_.ElapsedMs() > 500.0)
+            if (timer_stop_.ElapsedMs() > 1000.0)
             {
               publishOwnTraj(pwp_last_, true,
                              trajs);  // This is needed because is drone DRONE1 stops, it needs to keep publishing
@@ -743,7 +743,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         {
           // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-          if (timer_stop_.ElapsedMs() > 500.0)
+          if (timer_stop_.ElapsedMs() > 1000.0)
           {
             publishOwnTraj(pwp_last_, true,
                            trajs);  // This is needed because is drone DRONE1 stops, it needs to keep publishing
@@ -772,7 +772,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       {
         // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-        if (timer_stop_.ElapsedMs() > 500.0)
+        if (timer_stop_.ElapsedMs() > 1000.0)
         {
           publishOwnTraj(pwp_last_, true,
                          trajs);  // This is needed because is drone DRONE1 stops, it needs to keep publishing
@@ -836,7 +836,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
       {
         // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-        if (timer_stop_.ElapsedMs() > 500.0)
+        if (timer_stop_.ElapsedMs() > 1000.0)
         {
           publishOwnTraj(pwp_last_,
                          true);  // This is needed because is drone DRONE1 stops, it needs to keep

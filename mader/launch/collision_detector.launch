@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
 
-	<arg name="bbox_x" default="0.5"/>
-	<arg name="bbox_y" default="0.5"/>
-	<arg name="bbox_z" default="0.5"/>
+	<arg name="bbox_x" default="0.25"/>
+	<arg name="bbox_y" default="0.25"/>
+	<arg name="bbox_z" default="0.25"/>
 	<arg name="num_of_agents" default="10"/>
 
 
