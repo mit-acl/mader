@@ -687,11 +687,11 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
         while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
         {
           delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
-          ros::Duration(delay_check_ / 5).sleep();
           if (delay_check_result_ == false)
           {
             break;
           }
+          ros::Duration(delay_check_ / 5).sleep();
         }
         // trajs = mader_ptr_->getTrajs();
         delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
