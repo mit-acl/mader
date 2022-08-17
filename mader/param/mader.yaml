@@ -32,9 +32,9 @@ n_agents: 10
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.15    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
 drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced by drone_bbox
-drone_bbox: [0.7, 0.7, 1.0] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
+drone_bbox: [0.7, 0.7, 0.8] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
-Ra: 8.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
+Ra: 15.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
 delay_check: 0.15 # seconds
 simulated_comm_delay: 0.0 #seconds
@@ -98,7 +98,7 @@ a_star_samp_z: 5 # odd number
 a_star_fraction_voxel_size: 0.5 #\in [0,1] The higher, the bigger the voxel size in A* is(i.e. more prunning)
 allow_infeasible_guess: true  #whether allow infeasible guesses to be used for the optimization. If false, straight line guess will be used in the case of an infeasible guess
 
-a_star_bias: 0.5 #Bias (cost=g+bias*h) in the A* search #default is 1.0
+a_star_bias: 0.1 #Bias (cost=g+bias*h) in the A* search #default is 1.0
 
 basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER.  This is the basis used for collision checking
 
