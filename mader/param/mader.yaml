@@ -57,7 +57,7 @@ y_min: -3.5  # [m] don't forget the .0
 y_max: 4.0   # [m] don't forget the .0
 
 z_min: 1.0  # [m] don't forget the .0
-z_max: 3.5  # [m] don't forget the .0
+z_max: 3.0  # [m] don't forget the .0
 
 #For single-agent simulations
 
