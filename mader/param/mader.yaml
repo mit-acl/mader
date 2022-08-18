@@ -36,7 +36,7 @@ drone_bbox: [0.7, 0.7, 0.8] #(m) Used for collision checking replacing drone_rad
 
 Ra: 15.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
-delay_check: 0.15 # seconds
+delay_check: 0.07 # seconds
 simulated_comm_delay: 0.0 #seconds
 comm_delay_param: 1.0
 

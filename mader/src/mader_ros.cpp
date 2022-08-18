@@ -694,7 +694,10 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           ros::Duration(delay_check_ / 5).sleep();
         }
         // trajs = mader_ptr_->getTrajs();
-        delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
+        if (!delay_check_result_)
+        {
+          delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
+        }
         // end of delay check *******************************************************
 
         if (delay_check_result_)
