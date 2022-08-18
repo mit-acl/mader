@@ -1,5 +1,5 @@
 use_ff: true # use feedforward
-visual: true #publish visualization stuff
+###visual: true #publish visualization stuff
 color_type: "vel" #"vel" or "plain"
 n_agents: 16 #only used for the color in the trajectory
 
@@ -63,7 +63,7 @@ allow_infeasible_guess: true  #whether allow infeasible guesses to be used for t
 
 a_star_bias: 1.0 #Bias (cost=g+bias*h) in the A* search 
 
-basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER.  This is the basis used for collision checking
+###basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER.  This is the basis used for collision checking
 
 res_plot_traj: 15.0  #Higher --> More resolution when plotting the trajectory 
 
