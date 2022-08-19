@@ -53,7 +53,7 @@ if __name__ == '__main__':
                 commands.append("sleep 3.0 && rosparam set /SQ01s/mader/visual false"); #Remember to comment the parameter "visual" in mader.yaml before running this file
 
                 commands.append("sleep 5.0 && roslaunch mader mader.launch");
-                commands.append("sleep 5.0 && cd "+folder_bags+" && rosbag record -o "+basis+"_obs_"+str(total_num_of_obs[k])+"_sim_"+str(s)+" /SQ01s/goal __name:="+name_node_record);
+                commands.append("sleep 5.0 && cd "+folder_bags+" && rosbag record -o "+basis+"_obs_"+str(total_num_of_obs[k])+"_sim_"+str(s)+" /SQ01s/term_goal /SQ01s/goal __name:="+name_node_record);
                 #publishing the goal should be the last command
                 commands.append("sleep 5.0 && rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped \'{header: {stamp: now, frame_id: \"world\"}, pose: {position: {x: 75, y: 0, z: 1}, orientation: {w: 1.0}}}\'");
 
