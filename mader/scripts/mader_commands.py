@@ -104,7 +104,7 @@ class Mader_Commands:
 
         # self.timer_take_off.run()
         # self.timer_take_off=rospy.Timer(rospy.Duration(0.004), self.timerTakeOffCB)
-        self.timer_take_off=rospy.Timer(rospy.Duration(0.001), self.timerTakeOffCB)
+        self.timer_take_off=rospy.Timer(rospy.Duration(0.002), self.timerTakeOffCB)
 
 
     def timerTakeOffCB(self, event):
@@ -115,7 +115,7 @@ class Mader_Commands:
         alt_taken_off = 1.8; #Altitude when hovering after taking off
          
         # self.takeoff_goal.p.z = min(self.takeoff_goal.p.z+0.00035, alt_taken_off);
-        self.takeoff_goal.p.z = min(self.takeoff_goal.p.z+0.001, alt_taken_off);
+        self.takeoff_goal.p.z = min(self.takeoff_goal.p.z+0.0005, alt_taken_off);
         rospy.loginfo_throttle(0.5, "Taking off..., error={}".format(self.pose.position.z-alt_taken_off) )
         self.sendGoal(self.takeoff_goal)
 
