@@ -21,7 +21,10 @@ import statistics
 
 if __name__ == '__main__':
 
-    n_agents = 10
+    num_of_agents = 10
+
+    # stop count torelance
+    stop_cnt_tol = 1e-7
 
     is_oldmader = True # change here 
     
@@ -79,8 +82,8 @@ if __name__ == '__main__':
                 rosbag.append(bag)
 
             # read ros bags
-            completion_time_per_sim_list = []
-            completion_time_per_sim = 0.0
+            total_dist_list = []
+            stop_cnt_list = []
             for i in range(len(rosbag)):
                 print('rosbag ' + str(rosbag[i]))
                 b = bagreader(rosbag[i], verbose=False)
@@ -88,22 +91,48 @@ if __name__ == '__main__':
                 
                 # introduced goal_reached topic so no need to check actual_traj
 
-                try:
-                    for i in range(1,num_of_agents+1):
-                        if i < 10:
-                            log_data = b.message_by_topic("/SQ0" + str(i) + "s/mader/comm_delay")
-                        else:
-                            log_data = b.message_by_topic("/SQ" + str(i) + "s/mader/comm_delay")
-                    # log = pd.read_csv(log_data, usecols=["completion_time", "is_goal_reached"])
-                    # completion_time = log.completion_time.iloc[0]
-                    # # print('completion time ' + str(completion_time_agent))
-                    # completion_time_per_sim_list.append(completion_time)
-                    # box_plot_list.append(completion_time_per_sim_list)
+                dist = 0
+                stop_cnt = 0
+                for i in range(1,num_of_agents+1):
+                    
+                    stopped = True # in the beginning it is stopped
 
-                except:
-                    print("agents didn't reach goals")
+                    if i < 10:
+                        log_data = b.message_by_topic("/SQ0" + str(i) + "s/goal")
+                    else:
+                        log_data = b.message_by_topic("/SQ" + str(i) + "s/goal")
+                
+                    log = pd.read_csv(log_data, usecols=["p.x", "p.y", "p.z", "v.x", "v.y", "v.z"])
+                    log.columns = ["px", "py", "pz", "vx", "vy", "vz"]
+                    
+                    ###### difference from the previous pos to the current pos
+                    # print(log.diff().to_numpy())
+                    diff_matrix = log.diff().to_numpy()
 
-            os.system('echo "'+source_dir+'" >> /home/kota/data/completion_time.txt')
-            os.system('echo "max is '+str(round(max(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
-            os.system('echo "ave is '+str(round(statistics.mean(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
-            os.system('echo "------------------------------------------------------------" >> /home/kota/data/completion_time.txt')
+                    # since the first row is NaN, starts 
+                    for i in range(1, len(log.diff())):
+                        dist += np.linalg.norm(log.diff().to_numpy()[i,0:2])
+                    dist /= num_of_agents
+
+                    ###### stop count
+                    for i in range(len(log.to_numpy())):
+                        if np.linalg.norm(log.to_numpy()[i,3:5]) > stop_cnt_tol:
+                            stopped = False
+                        elif np.linalg.norm(log.to_numpy()[i,3:5]) < stop_cnt_tol and not stopped:
+                            stop_cnt = stop_cnt + 1
+                            stopped = True
+                    stop_cnt /= num_of_agents
+
+                total_dist_list.append(dist)
+                stop_cnt_list.append(stop_cnt)
+
+            ave_total_dist = sum(total_dist_list)/len(total_dist_list)
+            ave_stop_cnt = sum(stop_cnt_list)/len(stop_cnt_list)
+                            
+            os.system('echo "'+source_dir+'" >> /home/kota/data/total_dist.txt')
+            os.system('echo "ave travel dist '+str(round(ave_total_dist,2))+'m" >> /home/kota/data/total_dist.txt')
+            os.system('echo "------------------------------------------------------------" >> /home/kota/data/total_dist.txt')
+
+            os.system('echo "'+source_dir+'" >> /home/kota/data/stop_cnt.txt')
+            os.system('echo "ave stop count '+str(round(ave_stop_cnt,2))+'" >> /home/kota/data/stop_cnt.txt')
+            os.system('echo "------------------------------------------------------------" >> /home/kota/data/stop_cnt.txt')
