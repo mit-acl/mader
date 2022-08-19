@@ -1,11 +1,15 @@
 #!/usr/bin/python
 
-# Jesus Tordesillas Torres, jtorde@mit.edu, April 2020
+# Kota Kondo, kkondo@mit.edu, Aug 19, 2022
 
-#Instructions:
-#roscore
-#rosrun tf static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 1.0 map world 10
-#python this_file.py
+# Instructions:
+# python statistics.py "...../*.bags"
+
+# Need to install tf_bag and termcolor
+# REF:https://github.com/IFL-CAMP/tf_bag
+#   git clone https://github.com/IFL-CAMP/tf_bag.git
+#   catkin build
+# pip install termcolor
 
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
@@ -103,6 +107,8 @@ for name_bag in list_of_bags:
     for index_agent in range(0, num_of_agents):
         for topic, msg, t in bag.read_messages(topics='/'+agents_names[index_agent]+'/term_goal'):
             t_go=min(t_go, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
+            print(t_go)
+            print(msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
 
     #Time when the last UAV reaches the goal terminal goal is sent to the UAVs  
     epsilon=1e-7 
@@ -117,6 +123,7 @@ for name_bag in list_of_bags:
         smoothness = 0
 
         for topic, msg, t in bag.read_messages(topics='/'+agents_names[index_agent]+'/goal'):
+            if goal_reached
             final_time=max(final_time, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
             vel=np.linalg.norm(np.array([msg.v.x, msg.v.y, msg.v.z]));
             acc=np.linalg.norm(np.array([msg.a.x, msg.a.y, msg.a.z]));
@@ -338,5 +345,5 @@ os.system('echo "---------------------------------------------------------------
 os.system('echo "'+sys.argv[1]+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
 os.system('echo " completion time[s] '+str(round(ave_completion_time,2))+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
 os.system('echo " stop counts '+str(ave_stop_counts)+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
-os.system('echo " total distance '+str(round(ave_total_distance,2))+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
+os.system('echo " total travel distance '+str(round(ave_total_distance,2))+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
 os.system('echo " smoothness '+str(round(ave_smoothness,2))+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
