@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # coding=utf-8
 
@@ -25,11 +26,11 @@ if __name__ == '__main__':
     os.system("sed -i '/visual/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment visual param
     os.system("sed -i '/basis/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment basis param
 
-    num_of_sims=120;
+    num_of_sims=1;
     total_num_of_obs=[250]#[1000]#[50,400,500,600,700]#[150, 200, 250, 300, 350] #[340,380,420,460,500]; #140,180,220,260,300
     commands = []
 
-    folder_bags="/home/kota/data/gurobi_nlopt/nlopt/bags" # change folder name if necessary
+    folder_bags="/home/kota/data/gurobi_nlopt/bags" # change folder name if necessary
 
     os.system("mkdir -p /home/kota/data/gurobi_nlopt/bags")
     all_basis=["MINVO"] #or"MINVO", "BEZIER", "B_SPLINE"
@@ -52,11 +53,12 @@ if __name__ == '__main__':
                 commands.append("sleep 1.0 &&rosrun mader dynamic_corridor.py "+str(total_num_of_obs[k]));
                 commands.append("sleep 3.0 && rosparam set /SQ01s/mader/basis "+basis); #Remember to comment the parameter "basis" in mader.yaml before running this file
                 commands.append("sleep 3.0 && rosparam set /SQ01s/mader/visual false"); #Remember to comment the parameter "visual" in mader.yaml before running this file
+                # commands.append("sleep 3.0 && rosrun rviz rviz -d  $(rospack find mader)/rviz_cfgs/mader.rviz")
 
                 commands.append("sleep 5.0 && roslaunch mader mader.launch");
                 commands.append("sleep 5.0 && cd "+folder_bags+" && rosbag record -o "+basis+"_obs_"+str(total_num_of_obs[k])+"_sim_"+str(s)+" /SQ01s/goal /SQ01s/term_goal __name:="+name_node_record);
                 #publishing the goal should be the last command
-                commands.append("sleep 5.0 && rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped \'{header: {stamp: now, frame_id: \"world\"}, pose: {position: {x: 75, y: 0, z: 1}, orientation: {w: 1.0}}}\'");
+                commands.append("sleep 15.0 && rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped \'{header: {stamp: now, frame_id: \"world\"}, pose: {position: {x: 75, y: 0, z: 1}, orientation: {w: 1.0}}}\'");
 
                 print("len(commands)= " , len(commands))
                 session_name="run_many_sims_single_agent_session"
@@ -74,7 +76,7 @@ if __name__ == '__main__':
                 print("Commands sent")
 
                 # kill after how_long
-                how_long = 45 #[s]
+                how_long = 60 #[s]
                 tic = time.perf_counter()
                 goal_reached = True
 
@@ -94,8 +96,10 @@ if __name__ == '__main__':
                 if goal_reached:
                     print("Currently at ",pos_string)
                     print("Goal is reached, killing the bag node")
+                    os.system('echo "sim'+str(s)+' goal reached" >> /home/kota/data/gurobi_nlopt/bags/status.txt')
                 else:
                     print("Time out")
+                    os.system('echo "sim'+str(s)+' not goal reached" >> /home/kota/data/gurobi_nlopt/bags/status.txt')
 
                 os.system("rosnode kill "+name_node_record);
                 time.sleep(0.5)
@@ -105,3 +109,5 @@ if __name__ == '__main__':
     time.sleep(3.0)
     os.system("sed -i '/visual/s/^#//g' $(rospack find mader)/param/mader.yaml") #comment out visual param
     os.system("sed -i '/basis/s/^#//g' $(rospack find mader)/param/mader.yaml") #comment out basis param
+
+    os.system('python $(rospack find mader)/scripts/statistics.py "/home/kota/data/gurobi_nlopt/bags/*.bag"')
