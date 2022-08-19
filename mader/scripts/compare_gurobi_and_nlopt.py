@@ -25,7 +25,7 @@ if __name__ == '__main__':
     os.system("sed -i '/visual/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment visual param
     os.system("sed -i '/basis/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment basis param
 
-    num_of_sims=1;
+    num_of_sims=120;
     total_num_of_obs=[250]#[1000]#[50,400,500,600,700]#[150, 200, 250, 300, 350] #[340,380,420,460,500]; #140,180,220,260,300
     commands = []
 
