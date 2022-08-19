@@ -114,6 +114,11 @@ for name_bag in list_of_bags:
     epsilon=1e-7 
     final_time= 0
     num_of_stops=0.0
+
+    goal_reached = False
+    term_goal_x = 75
+    term_goal_y = 0
+    term_goal_z = 1
     for index_agent in range(0, num_of_agents):
         stopped=True; #Every agent starts stopped
         have_started_flying=False;
@@ -123,8 +128,11 @@ for name_bag in list_of_bags:
         smoothness = 0
 
         for topic, msg, t in bag.read_messages(topics='/'+agents_names[index_agent]+'/goal'):
-            if goal_reached
-            final_time=max(final_time, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
+            if not goal_reached:
+                final_time=max(final_time, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
+                pos_diff=np.linalg.norm(np.array([msg.v.x - term_goal_x, msg.v.y - term_goal_y, msg.v.z - term_goal_z])); 
+                if pos_diff < 1e-3:
+                    goal_reached = True 
             vel=np.linalg.norm(np.array([msg.v.x, msg.v.y, msg.v.z]));
             acc=np.linalg.norm(np.array([msg.a.x, msg.a.y, msg.a.z]));
             jerk=np.linalg.norm(np.array([msg.j.x, msg.j.y, msg.j.z]));
