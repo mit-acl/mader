@@ -130,8 +130,8 @@ for name_bag in list_of_bags:
         for topic, msg, t in bag.read_messages(topics='/'+agents_names[index_agent]+'/goal'):
             if not goal_reached:
                 final_time=max(final_time, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
-                pos_diff=np.linalg.norm(np.array([msg.v.x - term_goal_x, msg.v.y - term_goal_y, msg.v.z - term_goal_z])); 
-                if pos_diff < 1e-3:
+                pos_diff=np.linalg.norm(np.array([msg.p.x - term_goal_x, msg.p.y - term_goal_y, msg.p.z - term_goal_z])); 
+                if pos_diff < 0.15:
                     goal_reached = True 
             vel=np.linalg.norm(np.array([msg.v.x, msg.v.y, msg.v.z]));
             acc=np.linalg.norm(np.array([msg.a.x, msg.a.y, msg.a.z]));
