@@ -93,14 +93,15 @@ class TermGoalSender:
         
         # check if we should go home
         duration = rospy.get_rostime() - self.time_init
-        if (duration.to_sec() > self.total_secs and not self.is_home):
-            self.is_home = True
-            self.sendGoal()
-
-        # if you are an obstacle, you will fly self.obs_total_secs
-        if self.mode == 8 and (duration.to_sec() > self.obs_total_secs and not self.is_home):
-            self.is_home = True
-            self.sendGoal()
+        if self.mode == 8:
+            if (duration.to_sec() > self.obs_total_secs and not self.is_home):
+            # if you are an obstacle, you will fly self.obs_total_secs
+                self.is_home = True
+                self.sendGoal()
+        else:
+            if (duration.to_sec() > self.total_secs and not self.is_home):
+                self.is_home = True
+                self.sendGoal()
 
         # term_goal in array form
         self.term_goal_pos=np.array([self.term_goal.pose.position.x,self.term_goal.pose.position.y,self.term_goal.pose.position.z])
@@ -135,31 +136,25 @@ class TermGoalSender:
         else: 
 
             # set random goals (exact position exchange, this could lead to drones going to exact same locations)
-            if self.mode == 6:
-                self.term_goal.pose.position.x = self.sign * -3
-                self.term_goal.pose.position.y = self.sign * 3
-            elif self.mode == 5:
-                self.term_goal.pose.position.x = self.sign * 0
-                self.term_goal.pose.position.y = self.sign * 3
-            elif self.mode == 4:
-                self.term_goal.pose.position.x = self.sign * 3
-                self.term_goal.pose.position.y = self.sign * 3
-            elif self.mode == 3:
-                self.term_goal.pose.position.x = self.sign * -3
-                self.term_goal.pose.position.y = self.sign * -3
-            elif self.mode == 2:
-                self.term_goal.pose.position.x = self.sign * 0
-                self.term_goal.pose.position.y = self.sign * -3
-            elif self.mode == 1:
-                self.term_goal.pose.position.x = self.sign * 3
-                self.term_goal.pose.position.y = self.sign * -3
-            elif self.mode == 8:
-                self.term_goal.pose.position.x = self.obwps[self.obwpidx,0]
-                self.term_goal.pose.position.y = self.obwps[self.obwpidx,1]
-                self.term_goal.pose.position.z = self.obwps[self.obwpidx,2]
-                self.obwpidx = (self.obwpidx + 1) % len(self.obwps)
-            
-            # elif self.mode == 7:
+            # if self.mode == 6:
+            #     self.term_goal.pose.position.x = self.sign * -3
+            #     self.term_goal.pose.position.y = self.sign * 3
+            # elif self.mode == 5:
+            #     self.term_goal.pose.position.x = self.sign * 0
+            #     self.term_goal.pose.position.y = self.sign * 3
+            # elif self.mode == 4:
+            #     self.term_goal.pose.position.x = self.sign * 3
+            #     self.term_goal.pose.position.y = self.sign * 3
+            # elif self.mode == 3:
+            #     self.term_goal.pose.position.x = self.sign * -3
+            #     self.term_goal.pose.position.y = self.sign * -3
+            # elif self.mode == 2:
+            #     self.term_goal.pose.position.x = self.sign * 0
+            #     self.term_goal.pose.position.y = self.sign * -3
+            # elif self.mode == 1:
+            #     self.term_goal.pose.position.x = self.sign * 3
+            #     self.term_goal.pose.position.y = self.sign * -3
+            # # elif self.mode == 7:
             #     self.term_goal.pose.position.x = self.sign * 3
             #     self.term_goal.pose.position.y = self.sign * 0
             # elif self.mode == 8:
@@ -244,6 +239,25 @@ class TermGoalSender:
             #     else:
             #         self.term_goal.pose.position.x = self.wp8[0]
             #         self.term_goal.pose.position.y = self.wp8[1]
+
+            # for obstacle-involved flight
+            if self.mode == 1:
+                self.term_goal.pose.position.x = self.sign * 3
+                self.term_goal.pose.position.y = self.sign * -3
+            elif self.mode == 2:
+                self.term_goal.pose.position.x = self.sign * -3
+                self.term_goal.pose.position.y = self.sign * -3
+            elif self.mode == 3:
+                self.term_goal.pose.position.x = self.sign * 0
+                self.term_goal.pose.position.y = self.sign * -3
+            elif self.mode == 4:
+                self.term_goal.pose.position.x = self.sign * 3
+                self.term_goal.pose.position.y = self.sign * 0
+            elif self.mode == 8:
+                self.term_goal.pose.position.x = self.obwps[self.obwpidx,0]
+                self.term_goal.pose.position.y = self.obwps[self.obwpidx,1]
+                self.term_goal.pose.position.z = self.obwps[self.obwpidx,2]
+                self.obwpidx = (self.obwpidx + 1) % len(self.obwps)
 
             self.term_goal.pose.position.z = 1.1 + 0.9 * random()
             # self.term_goal.pose.position.z = 1.0
