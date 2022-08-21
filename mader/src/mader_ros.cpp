@@ -62,6 +62,37 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
     par_.is_camera_yawing = true;
   }
 
+  // vel, acc, jerk
+  std::vector<double> v_max_tmp;
+  std::vector<double> a_max_tmp;
+  std::vector<double> j_max_tmp;
+
+  // obstacle related
+  std::string obstacle1, obstacle2;
+  mu::safeGetParam(nh1_, "obstacle1", obstacle1);
+  mu::safeGetParam(nh1_, "obstacle2", obstacle2);
+
+  if (id == obstacle1 || id == obstacle2)
+  {
+    mu::safeGetParam(nh1_, "obs_v_max", v_max_tmp);
+    mu::safeGetParam(nh1_, "obs_a_max", a_max_tmp);
+    mu::safeGetParam(nh1_, "obs_j_max", j_max_tmp);
+    mu::safeGetParam(nh1_, "obs_Ra", par_.Ra);
+    par_.is_agent = false;
+  }
+  else
+  {
+    mu::safeGetParam(nh1_, "v_max", v_max_tmp);
+    mu::safeGetParam(nh1_, "a_max", a_max_tmp);
+    mu::safeGetParam(nh1_, "j_max", j_max_tmp);
+    mu::safeGetParam(nh1_, "Ra", par_.Ra);
+    par_.is_agent = true;
+  }
+
+  par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
+  par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
+  par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
+
   mu::safeGetParam(nh1_, "delay_check", par_.delay_check);
   delay_check_ = par_.delay_check;
   mu::safeGetParam(nh1_, "simulated_comm_delay", simulated_comm_delay_);
@@ -95,18 +126,6 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
 
   mu::safeGetParam(nh1_, "z_min", par_.z_min);
   mu::safeGetParam(nh1_, "z_max", par_.z_max);
-
-  std::vector<double> v_max_tmp;
-  std::vector<double> a_max_tmp;
-  std::vector<double> j_max_tmp;
-
-  mu::safeGetParam(nh1_, "v_max", v_max_tmp);
-  mu::safeGetParam(nh1_, "a_max", a_max_tmp);
-  mu::safeGetParam(nh1_, "j_max", j_max_tmp);
-
-  par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
-  par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
-  par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
 
   mu::safeGetParam(nh1_, "factor_alloc", par_.factor_alloc);
   mu::safeGetParam(nh1_, "factor_alloc_close", par_.factor_alloc_close);
@@ -210,49 +229,52 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   // if it's simulation
   // TODO:: make more general/robust
 
-  if (is_centralized)
+  if (par_.is_agent)
   {
-    sub_cent_traj_ = nh1_.subscribe("/trajs", 20, &MaderRos::trajCB, this);  // The number is the queue size
-  }
-  else
-  {
-    if (sim)
+    if (is_centralized)
     {
-      for (int i = 1; i <= max_agent_number; ++i)
-      {
-        std::string agent;
-        if (i <= 9)
-        {
-          agent = "SQ0" + std::to_string(i) + "s";
-        }
-        else
-        {
-          agent = "SQ" + std::to_string(i) + "s";
-        }
-        if (myns != agent)
-        {  // if my namespace is the same as the agent, then it's you
-          sub_traj_.push_back(nh5_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB,
-                                             this));  // The number is the queue size
-        }
-      }
+      sub_cent_traj_ = nh1_.subscribe("/trajs", 20, &MaderRos::trajCB, this);  // The number is the queue size
     }
     else
-    {  // if it's hardware
-      for (int i = 1; i <= max_agent_number; ++i)
+    {
+      if (sim)
       {
-        std::string agent;
-        if (i <= 9)
+        for (int i = 1; i <= max_agent_number; ++i)
         {
-          agent = "NX0" + std::to_string(i);
+          std::string agent;
+          if (i <= 9)
+          {
+            agent = "SQ0" + std::to_string(i) + "s";
+          }
+          else
+          {
+            agent = "SQ" + std::to_string(i) + "s";
+          }
+          if (myns != agent)
+          {  // if my namespace is the same as the agent, then it's you
+            sub_traj_.push_back(nh5_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB,
+                                               this));  // The number is the queue size
+          }
         }
-        else
+      }
+      else
+      {  // if it's hardware
+        for (int i = 1; i <= max_agent_number; ++i)
         {
-          agent = "NX" + std::to_string(i);
-        }
-        if (myns != agent)
-        {  // if my namespace is the same as the agent, then it's you
-          sub_traj_.push_back(nh5_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB,
-                                             this));  // The number is the queue size
+          std::string agent;
+          if (i <= 9)
+          {
+            agent = "NX0" + std::to_string(i);
+          }
+          else
+          {
+            agent = "NX" + std::to_string(i);
+          }
+          if (myns != agent)
+          {  // if my namespace is the same as the agent, then it's you
+            sub_traj_.push_back(nh5_.subscribe("/" + agent + "/mader/trajs", 20, &MaderRos::trajCB,
+                                               this));  // The number is the queue size
+          }
         }
       }
     }
@@ -551,6 +573,15 @@ void MaderRos::publishOwnTraj(const mt::PieceWisePol& pwp, const bool& is_commit
   // std::cout<<"msg.pwp.times[0]= "<<msg.pwp.times[0]
 
   msg.traj_id = traj_id_;
+
+  if (par_.is_agent)
+  {
+    msg.is_agent = true;
+  }
+  else
+  {
+    msg.is_agent = false;
+  }
   // std::cout << "my traj_id is " << traj_id_ << std::endl;
   // traj_id_++;
 

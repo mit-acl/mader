@@ -580,6 +580,8 @@ struct parameters
 
   bool is_camera_yawing;
 
+  bool is_agent;
+
   double dc;
   double goal_radius;
   double drone_radius;
