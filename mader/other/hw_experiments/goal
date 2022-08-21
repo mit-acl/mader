@@ -63,9 +63,9 @@ if [ "$1" == "pos" ]; then
 	# with obstacles
 	tmux send-keys -t $SESSION:$w.0 "roslaunch mader position_exchange.launch mode:=1 quad:=NX01"
 	tmux send-keys -t $SESSION:$w.2 "roslaunch mader position_exchange.launch mode:=3 quad:=NX03"
-	tmux send-keys -t $SESSION:$w.3 "roslaunch mader position_exchange.launch mode:=5 quad:=NX05"
+	tmux send-keys -t $SESSION:$w.3 "roslaunch mader position_exchange.launch mode:=4 quad:=NX05"
 	tmux send-keys -t $SESSION:$w.4 "roslaunch mader position_exchange.launch mode:=8 quad:=NX08" # this is obstacle
-	tmux send-keys -t $SESSION:$w.5 "roslaunch mader position_exchange.launch mode:=6 quad:=NX07"
+	tmux send-keys -t $SESSION:$w.5 "roslaunch mader position_exchange.launch mode:=2 quad:=NX07"
 
 elif [ "$1" == "ran" ]; then
 	tmux send-keys -t $SESSION:$w.0 "roslaunch mader random_goal.launch quad:=NX01"
