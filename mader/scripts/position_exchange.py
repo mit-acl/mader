@@ -56,9 +56,9 @@ class TermGoalSender:
         self.obwpidx = 0
         self.obwps = np.array([
             [-2.5, 0, 2.0],
-            [0, 2.5, 1.0],
-            [2.5, 0, 1.5],
-            [0, -2.5, 2.5]
+            [0, 2.5, 2.0],
+            [2.5, 0, 2.0],
+            [0, -2.5, 2.0]
             ])
         
         # waypoints
@@ -241,6 +241,8 @@ class TermGoalSender:
             #         self.term_goal.pose.position.y = self.wp8[1]
 
             # for obstacle-involved flight
+            self.term_goal.pose.position.z = 1.1 + 0.9 * random()
+
             if self.mode == 1:
                 self.term_goal.pose.position.x = self.sign * 3
                 self.term_goal.pose.position.y = self.sign * -3
@@ -259,7 +261,6 @@ class TermGoalSender:
                 self.term_goal.pose.position.z = self.obwps[self.obwpidx,2]
                 self.obwpidx = (self.obwpidx + 1) % len(self.obwps)
 
-            self.term_goal.pose.position.z = 1.1 + 0.9 * random()
             # self.term_goal.pose.position.z = 1.0
 
             self.if_arrived = not self.if_arrived
