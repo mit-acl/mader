@@ -83,6 +83,7 @@ class TermGoalSender:
         # set initial time and how long the demo is
         self.time_init = rospy.get_rostime()
         self.total_secs = 60.0; # sec
+        self.obs_total_secs = 75.0; # sec
 
     def change_goal(self, tmp):
         self.is_change_goal = True
@@ -93,6 +94,11 @@ class TermGoalSender:
         # check if we should go home
         duration = rospy.get_rostime() - self.time_init
         if (duration.to_sec() > self.total_secs and not self.is_home):
+            self.is_home = True
+            self.sendGoal()
+
+        # if you are an obstacle, you will fly self.obs_total_secs
+        if self.mode == 8 and (duration.to_sec() > self.obs_total_secs and not self.is_home):
             self.is_home = True
             self.sendGoal()
 
