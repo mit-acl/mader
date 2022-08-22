@@ -24,7 +24,7 @@ if __name__ == '__main__':
     num_of_agents = 10
 
     # stop count torelance
-    stop_cnt_tol = 1e-7
+    stop_cnt_tol = 1e-3
 
     is_oldmader = True # change here 
     
