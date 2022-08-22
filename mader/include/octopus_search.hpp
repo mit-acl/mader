@@ -76,7 +76,8 @@ public:
 
   void setBias(double bias);
 
-  bool run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d, bool& is_stuck, bool& is_q0_fail);
+  bool run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d,
+           bool& is_stuck, bool& is_q0_fail);
 
   void recoverPath(Node* node1_ptr);
 
@@ -123,7 +124,7 @@ public:
 
 protected:
 private:
-  bool computeAxisForNextInterval(const int i, const Eigen::Vector3d& viM1, int axis, double& constraint_L,
+  void computeAxisForNextInterval(const int i, const Eigen::Vector3d& viM1, int axis, double& constraint_L,
                                   double& constraint_U);
 
   Eigen::Matrix<double, 3, 4> transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4>& Qbs, int interval);

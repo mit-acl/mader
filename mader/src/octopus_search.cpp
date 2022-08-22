@@ -223,7 +223,6 @@ void OctopusSearch::setMaxValuesAndSamples(Eigen::Vector3d& v_max, Eigen::Vector
   num_samples_y_ = (num_samples_y % 2 == 0) ? ceil(num_samples_y) : num_samples_y;
   num_samples_z_ = (num_samples_z % 2 == 0) ? ceil(num_samples_z) : num_samples_z;
 
-
   for (int i = 0; i < num_samples_x; i++)
   {
     indexes_samples_x_.push_back(i);
@@ -349,7 +348,7 @@ void OctopusSearch::computeLimitsVoxelSize(double& min_voxel_size, double& max_v
 
 // compute constraints so that it satisfies interval i-1
 // axis=0 (x), 1(y) or 2(z)
-bool OctopusSearch::computeAxisForNextInterval(const int i, const Eigen::Vector3d& viM1, int axis, double& constraint_L,
+void OctopusSearch::computeAxisForNextInterval(const int i, const Eigen::Vector3d& viM1, int axis, double& constraint_L,
                                                double& constraint_U)
 {
   Eigen::Matrix<double, 3, 3> M_interv_next = M_vel_bs2basis_[i - 1];
@@ -729,7 +728,7 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
   bool isFeasible = true;
 
   // Check obstacles constraints (and compute n and d)
-  for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++) 
+  for (int index_interv = 0; index_interv < (q.size() - 3); index_interv++)
   {
     last4Cps.col(0) = q[index_interv];
     last4Cps.col(1) = q[index_interv + 1];
@@ -750,7 +749,7 @@ bool OctopusSearch::checkFeasAndFillND(std::vector<Eigen::Vector3d>& q, std::vec
       {
         ////////////////////////////// For debugging
         std::cout << red << "\nThis does NOT satisfy the LP:  obstacle= " << obst_index
-                 << ", last index=" << index_interv + 3 << reset << std::endl;
+                  << ", last index=" << index_interv + 3 << reset << std::endl;
 
         // std::cout << " (in basis_ form)" << std::endl;
 
@@ -888,7 +887,8 @@ bool OctopusSearch::collidesWithObstacles(Node& current, bool& is_q0_fail)
       last4Cps.col(2) = current.previous->qi;
       last4Cps.col(3) = current.qi;
       collides = collidesWithObstaclesGivenVertexes(last4Cps, current.index);
-      if (collides) {
+      if (collides)
+      {
         is_q0_fail = true;
       }
     }
@@ -908,7 +908,6 @@ bool OctopusSearch::collidesWithObstacles(Node& current, bool& is_q0_fail)
       last4Cps.col(3) = current.qi;
       collides = collidesWithObstaclesGivenVertexes(last4Cps, current.index);
     }
-
 
     ////////
     if (current.index == (N_ - 2))
@@ -980,11 +979,11 @@ void OctopusSearch::expandAndAddToQueue(Node& current, double constraint_xL, dou
 
     neighbor.qi = (knots_(i + p_ + 1) - knots_(i + 1)) * vi / (1.0 * p_) + current.qi;
 
-  if (vi.norm() < 1e-5  ||  // Not wanna use v=[0,0,0]
-        neighbor.qi.x() > x_max_ || neighbor.qi.x() < x_min_ ||                 /// Outside the limits
-        neighbor.qi.y() > y_max_ || neighbor.qi.y() < y_min_ ||                 /// Outside the limits
-        neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_ ||                 /// Outside the limits
-        (neighbor.qi - q0_).norm() >= Ra_                                       // ||  /// Outside the limits
+    if (vi.norm() < 1e-5 ||                                      // Not wanna use v=[0,0,0]
+        neighbor.qi.x() > x_max_ || neighbor.qi.x() < x_min_ ||  /// Outside the limits
+        neighbor.qi.y() > y_max_ || neighbor.qi.y() < y_min_ ||  /// Outside the limits
+        neighbor.qi.z() > z_max_ || neighbor.qi.z() < z_min_ ||  /// Outside the limits
+        (neighbor.qi - q0_).norm() >= Ra_                        // ||  /// Outside the limits
         // (ix >= bbox_x_ / voxel_size_ ||                            // Out. the search box
         //  iy >= bbox_y_ / voxel_size_ ||                            // Out. the search box
         //  iz >= bbox_z_ / voxel_size_)                              // Out. the search box
@@ -1041,7 +1040,8 @@ exit:
   return (!satisfies_LP);
 }
 
-bool OctopusSearch::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d, bool& is_stuck, bool& is_q0_fail)
+bool OctopusSearch::run(std::vector<Eigen::Vector3d>& result, std::vector<Eigen::Vector3d>& n, std::vector<double>& d,
+                        bool& is_stuck, bool& is_q0_fail)
 {
   /////////// reset some stuff
   // stores the closest node found
@@ -1292,18 +1292,22 @@ exitloop:
     // std::cout << first_node.qi << std::endl;
     // std::cout << "last node" << std::endl;
     // std::cout << last_node.qi << std::endl;
-    double e = 1e-10; //arbitrary threshold value
+    double e = 1e-10;  // arbitrary threshold value
     Eigen::Vector3d diff = first_node.qi - last_node.qi;
 
-    if (status == EMPTY_OPENLIST && diff.norm() < e){
-        stuck_count_ = stuck_count_ + 1;
-        if (stuck_count_ >= how_many_failure_to_detect_stuck){ 
-          is_stuck = true;
-        }
-        // std::cout << "[A*] drones are stuck, make bbox smaller" << std::endl; 
-      } else {
-        stuck_count_ = 0;
+    if (status == EMPTY_OPENLIST && diff.norm() < e)
+    {
+      stuck_count_ = stuck_count_ + 1;
+      if (stuck_count_ >= how_many_failure_to_detect_stuck)
+      {
+        is_stuck = true;
       }
+      // std::cout << "[A*] drones are stuck, make bbox smaller" << std::endl;
+    }
+    else
+    {
+      stuck_count_ = 0;
+    }
   }
   else
   {
