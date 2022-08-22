@@ -63,14 +63,15 @@ if __name__ == '__main__':
             else:
                 str_dc = str(dc)
 
-            home_dir = "/home/kota/data/bags"
+            # home_dir = "/home/kota/data/bags"
+            home_dir = "/media/kota/T7/data"
 
             # source directory
             if is_oldmader:
-                source_dir = "/home/kota/data/bags/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
+                source_dir = home_dir+"/bags/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
                 is_oldmader = False
             else:
-                source_dir = "/home/kota/data/bags/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
+                source_dir = home_dir+"/bags/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
             
             source_len = len(source_dir)
             source_bags = source_dir + "/*.bag" # change the source dir accordingly
@@ -112,7 +113,6 @@ if __name__ == '__main__':
                     # since the first row is NaN, starts 
                     for i in range(1, len(log.diff())):
                         dist += np.linalg.norm(log.diff().to_numpy()[i,0:2])
-                    dist /= num_of_agents
 
                     ###### stop count
                     for i in range(len(log.to_numpy())):
@@ -121,7 +121,11 @@ if __name__ == '__main__':
                         elif np.linalg.norm(log.to_numpy()[i,3:5]) < stop_cnt_tol and not stopped:
                             stop_cnt = stop_cnt + 1
                             stopped = True
-                    stop_cnt /= num_of_agents
+
+                    stop_cnt = stop_cnt - 1 # for the last stop
+
+                dist /= num_of_agents
+                stop_cnt /= num_of_agents
 
                 total_dist_list.append(dist)
                 stop_cnt_list.append(stop_cnt)
@@ -129,10 +133,10 @@ if __name__ == '__main__':
             ave_total_dist = sum(total_dist_list)/len(total_dist_list)
             ave_stop_cnt = sum(stop_cnt_list)/len(stop_cnt_list)
                             
-            os.system('echo "'+source_dir+'" >> /home/kota/data/total_dist.txt')
-            os.system('echo "ave travel dist '+str(round(ave_total_dist,2))+'m" >> /home/kota/data/total_dist.txt')
-            os.system('echo "------------------------------------------------------------" >> /home/kota/data/total_dist.txt')
+            os.system('echo "'+source_dir+'" >> '+home_dir+'/total_dist.txt')
+            os.system('echo "ave travel dist '+str(round(ave_total_dist,3))+'m" >> '+home_dir+'/total_dist.txt')
+            os.system('echo "------------------------------------------------------------" >> '+home_dir+'/total_dist.txt')
 
-            os.system('echo "'+source_dir+'" >> /home/kota/data/stop_cnt.txt')
-            os.system('echo "ave stop count '+str(round(ave_stop_cnt,2))+'" >> /home/kota/data/stop_cnt.txt')
-            os.system('echo "------------------------------------------------------------" >> /home/kota/data/stop_cnt.txt')
+            os.system('echo "'+source_dir+'" >> '+home_dir+'/stop_cnt.txt')
+            os.system('echo "ave stop count '+str(round(ave_stop_cnt,3))+'" >> '+home_dir+'/stop_cnt.txt')
+            os.system('echo "------------------------------------------------------------" >> '+home_dir+'/stop_cnt.txt')
