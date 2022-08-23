@@ -86,6 +86,9 @@ if __name__ == '__main__':
             total_dist_list = []
             stop_cnt_list = []
             for i in range(len(rosbag)):
+
+                is_skip_bag = False
+
                 print('rosbag ' + str(rosbag[i]))
                 b = bagreader(rosbag[i], verbose=False)
                 sim_id = rosbag[i][source_len+5:source_len+7]
@@ -124,11 +127,19 @@ if __name__ == '__main__':
 
                     stop_cnt = stop_cnt - 1 # for the last stop
 
-                dist /= num_of_agents
-                stop_cnt /= num_of_agents
+                    # in case of collision, stop_cnt won't work, so need to skip the bag
+                    if (stop_cnt < 0):
+                        is_skip_bag = True
+                        print("skip the bag")
+                        break
 
-                total_dist_list.append(dist)
-                stop_cnt_list.append(stop_cnt)
+                if not is_skip_bag:
+                    dist /= num_of_agents
+                    stop_cnt /= num_of_agents
+                    total_dist_list.append(dist)
+                    stop_cnt_list.append(stop_cnt)
+
+                is_skip_bag = False
 
             ave_total_dist = sum(total_dist_list)/len(total_dist_list)
             ave_stop_cnt = sum(stop_cnt_list)/len(stop_cnt_list)
