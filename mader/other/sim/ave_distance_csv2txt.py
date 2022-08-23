@@ -23,6 +23,8 @@ if __name__ == '__main__':
 
     # rosbag name
 
+    home_dir = "/media/kota/T7/data/"
+
     is_oldmader = True # change here
 
     # number of agents
@@ -65,9 +67,9 @@ if __name__ == '__main__':
             dist_matrix_dc = np.zeros([num_of_agents, num_of_agents])
 
             if is_oldmader:
-                source_dir = "/home/kota/data/csv/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
+                source_dir = home_dir+"/csv/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
             else:
-                source_dir = "/home/kota/data/csv/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
+                source_dir = home_dir+"/csv/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
             
             source_len = len(source_dir)
             source_csvs = source_dir + "/*.csv" # change the source dir accordingly
@@ -82,7 +84,6 @@ if __name__ == '__main__':
             # print(csv)
 
             num_of_sims = len(csv)
-            print(num_of_sims)
 
             # going through the csvs (sims)
             for i in range(len(csv)):
@@ -113,7 +114,7 @@ if __name__ == '__main__':
             ave_per_dc = sum_of_rows / ((num_of_agents-1)*np.ones(num_of_agents)) #num_of_agents-1 is becasue you don't calcuate the distance from itself to itself 
             # print(ave_per_dc)
 
-            os.system('echo "'+source_dir+'" >> /home/kota/data/ave_distance.txt')
+            os.system('echo "'+source_dir+'" >> '+home_dir+'/ave_distance.txt')
             for i in range(num_of_agents):
                 if i<=9:
                     sim_id = "0"+str(i)
@@ -122,7 +123,7 @@ if __name__ == '__main__':
                 # os.system('echo "SQ'+sim_id+' '+str(ave_per_dc[i])+'" >> /home/kota/data/ave_distance.txt')
 
             total_ave_dist = sum(ave_per_dc)/len(ave_per_dc)
-            os.system('echo "total distance '+str(round(total_ave_dist,2))+'m" >> /home/kota/data/ave_distance.txt')
-            os.system('echo "------------------------------------------------------------" >> /home/kota/data/ave_distance.txt')
+            os.system('echo "total distance '+str(round(total_ave_dist,2))+'m" >> '+home_dir+'/ave_distance.txt')
+            os.system('echo "------------------------------------------------------------" >> '+home_dir+'/ave_distance.txt')
 
             is_oldmader = False
