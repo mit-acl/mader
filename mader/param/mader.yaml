@@ -1,11 +1,11 @@
 # if simulatin or hex? (if is_centralized: true then this doesn't matter)
-sim: false
+sim: true
 
 # need take off?
 is_take_off: true
 
 # using centralized or decentralized trajs?
-is_centralized: true
+is_centralized: false
 
 # use delay check or not?
 is_delaycheck: true
