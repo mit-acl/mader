@@ -1,5 +1,5 @@
 # if simulatin or hex? (if is_centralized: true then this doesn't matter)
-sim: true
+sim: false
 
 # need take off?
 is_take_off: true
