@@ -61,21 +61,21 @@ done
 
 sleep 5
 
-for i in 0 2 4 6 8 10 
-do
-	tmux send-keys -t $SESSION:$w.$i "./ad_hoc_connection.sh" C-m
-done
+# this is for using Network Manager (which we no loger use)
+# for i in 0 2 4 6 8 10 
+# do
+# 	tmux send-keys -t $SESSION:$w.$i "./ad_hoc_connection.sh" C-m
+# done
 
 sleep 3
 
 # ssh each nuc from voxl 
-tmux send-keys -t $SESSION:$w.1 "ssh nuc1@192.168.100.1" C-m
-tmux send-keys -t $SESSION:$w.3 "ssh nuc2@192.168.100.2" C-m
-tmux send-keys -t $SESSION:$w.5 "ssh nuc3@192.168.100.3" C-m
-tmux send-keys -t $SESSION:$w.7 "ssh nuc4@192.168.100.4" C-m
-tmux send-keys -t $SESSION:$w.9 "ssh nuc5@192.168.100.5" C-m
-tmux send-keys -t $SESSION:$w.11 "ssh nuc6@192.168.100.6" C-m
-
+tmux send-keys -t $SESSION:$w.1 "ssh nuc1@192.168.15.2" C-m
+tmux send-keys -t $SESSION:$w.3 "ssh nuc2@192.168.16.2" C-m
+tmux send-keys -t $SESSION:$w.5 "ssh nuc3@192.168.17.2" C-m
+tmux send-keys -t $SESSION:$w.7 "ssh nuc4@192.168.18.2" C-m
+tmux send-keys -t $SESSION:$w.9 "ssh nuc5@192.168.19.2" C-m
+tmux send-keys -t $SESSION:$w.11 "ssh nuc6@192.168.20.2" C-m
 
 sleep 1
 
@@ -111,6 +111,15 @@ tmux send-keys -t $SESSION:$w.9 "sudo ntpdate time.nist.gov" C-m
 tmux send-keys -t $SESSION:$w.11 "sudo ntpdate time.nist.gov" C-m
 
 sleep 5
+
+# start ad-hoc network
+tmux send-keys -t $SESSION:$w.1 "roscd mader && cd other/hw_experiments && ./mesh.sh 1" C-m
+tmux send-keys -t $SESSION:$w.3 "roscd mader && cd other/hw_experiments && ./mesh.sh 2" C-m
+tmux send-keys -t $SESSION:$w.5 "roscd mader && cd other/hw_experiments && ./mesh.sh 3" C-m
+tmux send-keys -t $SESSION:$w.7 "roscd mader && cd other/hw_experiments && ./mesh.sh 4" C-m
+tmux send-keys -t $SESSION:$w.9 "roscd mader && cd other/hw_experiments && ./mesh.sh 5" C-m
+tmux send-keys -t $SESSION:$w.11 "roscd mader && cd other/hw_experiments && ./mesh.sh 6" C-m
+
 
 tmux send-keys -t $SESSION:$w.1 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc1/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX01) 2>&1 | tee ~/Research/bags/nx01_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m #by using /home/nuc1/ instead of ~/, we can stop record data on sikorsky when we are not using the vehicle.
 tmux send-keys -t $SESSION:$w.3 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc2/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX02) 2>&1 | tee ~/Research/bags/nx02_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
