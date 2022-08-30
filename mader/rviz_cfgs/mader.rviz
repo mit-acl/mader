@@ -73,6 +73,12 @@ Visualization Manager:
         All Enabled: true
         SQ01s:
           Value: true
+        SQ02s:
+          Value: true
+        SQ03s:
+          Value: true
+        SQ04s:
+          Value: true
         SQ08s:
           Value: true
         world:
@@ -86,6 +92,12 @@ Visualization Manager:
       Tree:
         world:
           SQ01s:
+            {}
+          SQ02s:
+            {}
+          SQ03s:
+            {}
+          SQ04s:
             {}
           SQ08s:
             {}
@@ -232,13 +244,13 @@ Visualization Manager:
       VsColor: 0; 255; 0
       VsScale: 1
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /SQ01s/mader/obstacles
       Name: Obstacle
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /SQ02s/mader/obstacles
@@ -1082,7 +1094,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1090,7 +1102,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1098,7 +1110,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/viz_mesh
       Name: Marker
       Namespaces:
-        {}
+        mesh: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1433,7 +1445,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 22.20476531982422
+      Distance: 17.195369720458984
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1449,9 +1461,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.024796962738037
+      Pitch: 0.9547969102859497
       Target Frame: <Fixed Frame>
-      Yaw: 4.704983711242676
+      Yaw: 4.699986934661865
     Saved:
       - Class: rviz/ThirdPersonFollower
         Distance: 16.45623207092285
@@ -1572,4 +1584,4 @@ Window Geometry:
     collapsed: true
   Width: 1884
   X: 72
-  Y: 634
+  Y: 560
