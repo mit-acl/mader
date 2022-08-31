@@ -40,7 +40,9 @@ done
 # for roscore
 tmux send-keys -t $SESSION:$w.12 "ssh root@nx03.local" C-m
 sleep 3
-tmux send-keys -t $SESSION:$w.12 "ssh nuc3@192.168.100.3" C-m
+tmux send-keys -t $SESSION:$w.12 "./nuc_voxl_connection" C-m
+sleep 3
+tmux send-keys -t $SESSION:$w.12 "ssh nuc3@192.168.17.2" C-m
 sleep 3
 tmux send-keys -t $SESSION:$w.12 "roscore" C-m
 
@@ -55,8 +57,10 @@ do
 	tmux send-keys -t $SESSION:$w.$((2+i)) "ssh root@nx02.local" C-m
 	tmux send-keys -t $SESSION:$w.$((4+i)) "ssh root@nx03.local" C-m
 	tmux send-keys -t $SESSION:$w.$((6+i)) "ssh root@nx04.local" C-m
-	tmux send-keys -t $SESSION:$w.$((8+i)) "ssh root@nx05.local" C-m
-	tmux send-keys -t $SESSION:$w.$((10+i)) "ssh root@nx06.local" C-m
+	#tmux send-keys -t $SESSION:$w.$((8+i)) "ssh root@nx05.local" C-m
+	# tmux send-keys -t $SESSION:$w.$((10+i)) "ssh root@nx06.local" C-m
+	tmux send-keys -t $SESSION:$w.$((8+i)) "ssh root@nx07.local" C-m
+  tmux send-keys -t $SESSION:$w.$((10+i)) "ssh root@nx10.local" C-m
 done
 
 sleep 5
@@ -69,15 +73,37 @@ sleep 5
 
 sleep 3
 
+# nuc voxl connection
+tmux send-keys -t $SESSION:$w.1 "./nuc_voxl_connection" C-m
+tmux send-keys -t $SESSION:$w.3 "./nuc_voxl_connection" C-m
+tmux send-keys -t $SESSION:$w.5 "./nuc_voxl_connection" C-m
+tmux send-keys -t $SESSION:$w.7 "./nuc_voxl_connection" C-m
+tmux send-keys -t $SESSION:$w.9 "./nuc_voxl_connection" C-m
+tmux send-keys -t $SESSION:$w.11 "./nuc_voxl_connection" C-m
+
+sleep 3
 # ssh each nuc from voxl 
 tmux send-keys -t $SESSION:$w.1 "ssh nuc1@192.168.15.2" C-m
 tmux send-keys -t $SESSION:$w.3 "ssh nuc2@192.168.16.2" C-m
 tmux send-keys -t $SESSION:$w.5 "ssh nuc3@192.168.17.2" C-m
 tmux send-keys -t $SESSION:$w.7 "ssh nuc4@192.168.18.2" C-m
-tmux send-keys -t $SESSION:$w.9 "ssh nuc5@192.168.19.2" C-m
-tmux send-keys -t $SESSION:$w.11 "ssh nuc6@192.168.20.2" C-m
+#tmux send-keys -t $SESSION:$w.9 "ssh nuc5@192.168.19.2" C-m
+# tmux send-keys -t $SESSION:$w.11 "ssh nuc6@192.168.20.2" C-m
+tmux send-keys -t $SESSION:$w.9 "ssh nuc@192.168.21.2" C-m
+tmux send-keys -t $SESSION:$w.11 "ssh nuc10@192.168.24.2" C-m
+
 
 sleep 1
+
+# run mader hw_onboard and save termial data into txt files
+tmux send-keys -t $SESSION:$w.1 "sudo ntpdate time.nist.gov" C-m
+tmux send-keys -t $SESSION:$w.3 "sudo ntpdate time.nist.gov" C-m
+tmux send-keys -t $SESSION:$w.5 "sudo ntpdate time.nist.gov" C-m
+tmux send-keys -t $SESSION:$w.7 "sudo ntpdate time.nist.gov" C-m
+tmux send-keys -t $SESSION:$w.9 "sudo ntpdate time.nist.gov" C-m
+tmux send-keys -t $SESSION:$w.11 "sudo ntpdate time.nist.gov" C-m
+
+sleep 5
 
 # send commands
 
@@ -98,34 +124,36 @@ if [[ $ifDELETE == 'true' ]]; then
 	tmux send-keys -t $SESSION:$w.3 "cd /home/nuc2/Research/bags && rm *.txt" C-m
 	tmux send-keys -t $SESSION:$w.5 "cd /home/nuc3/Research/bags && rm *.txt" C-m
 	tmux send-keys -t $SESSION:$w.7 "cd /home/nuc4/Research/bags && rm *.txt" C-m
-	tmux send-keys -t $SESSION:$w.9 "cd /home/nuc5/Research/bags && rm *.txt" C-m
-	tmux send-keys -t $SESSION:$w.11 "cd /home/nuc6/Research/bags && rm *.txt" C-m
+	#tmux send-keys -t $SESSION:$w.9 "cd /home/nuc5/Research/bags && rm *.txt" C-m
+	#tmux send-keys -t $SESSION:$w.11 "cd /home/nuc6/Research/bags && rm *.txt" C-m
+	tmux send-keys -t $SESSION:$w.9 "cd /home/nuc/Research/bags && rm *.txt" C-m
+  tmux send-keys -t $SESSION:$w.11 "cd /home/nuc10/Research/bags && rm *.txt" C-m
+
 fi
 
-# run mader hw_onboard and save termial data into txt files
-tmux send-keys -t $SESSION:$w.1 "sudo ntpdate time.nist.gov" C-m
-tmux send-keys -t $SESSION:$w.3 "sudo ntpdate time.nist.gov" C-m
-tmux send-keys -t $SESSION:$w.5 "sudo ntpdate time.nist.gov" C-m
-tmux send-keys -t $SESSION:$w.7 "sudo ntpdate time.nist.gov" C-m
-tmux send-keys -t $SESSION:$w.9 "sudo ntpdate time.nist.gov" C-m
-tmux send-keys -t $SESSION:$w.11 "sudo ntpdate time.nist.gov" C-m
-
-sleep 5
+sleep 10
 
 # start ad-hoc network
 tmux send-keys -t $SESSION:$w.1 "roscd mader && cd other/hw_experiments && ./mesh.sh 1" C-m
 tmux send-keys -t $SESSION:$w.3 "roscd mader && cd other/hw_experiments && ./mesh.sh 2" C-m
 tmux send-keys -t $SESSION:$w.5 "roscd mader && cd other/hw_experiments && ./mesh.sh 3" C-m
 tmux send-keys -t $SESSION:$w.7 "roscd mader && cd other/hw_experiments && ./mesh.sh 4" C-m
-tmux send-keys -t $SESSION:$w.9 "roscd mader && cd other/hw_experiments && ./mesh.sh 5" C-m
-tmux send-keys -t $SESSION:$w.11 "roscd mader && cd other/hw_experiments && ./mesh.sh 6" C-m
+#tmux send-keys -t $SESSION:$w.9 "roscd mader && cd other/hw_experiments && ./mesh.sh 5" C-m
+# tmux send-keys -t $SESSION:$w.11 "roscd mader && cd other/hw_experiments && ./mesh.sh 6" C-m
+tmux send-keys -t $SESSION:$w.9 "roscd mader && cd other/hw_experiments && ./mesh.sh 7" C-m
+tmux send-keys -t $SESSION:$w.11 "roscd mader && cd other/hw_experiments && ./mesh.sh 10" C-m
 
+
+echo "Got here successfully!"
 
 tmux send-keys -t $SESSION:$w.1 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc1/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX01) 2>&1 | tee ~/Research/bags/nx01_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m #by using /home/nuc1/ instead of ~/, we can stop record data on sikorsky when we are not using the vehicle.
 tmux send-keys -t $SESSION:$w.3 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc2/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX02) 2>&1 | tee ~/Research/bags/nx02_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 tmux send-keys -t $SESSION:$w.5 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc3/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX03) 2>&1 | tee ~/Research/bags/nx03_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 tmux send-keys -t $SESSION:$w.7 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc4/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX04) 2>&1 | tee ~/Research/bags/nx04_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
-tmux send-keys -t $SESSION:$w.9 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc5/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX05) 2>&1 | tee ~/Research/bags/nx05_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
-tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc6/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX06) 2>&1 | tee ~/Research/bags/nx06_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+# tmux send-keys -t $SESSION:$w.9 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc5/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX05) 2>&1 | tee ~/Research/bags/nx05_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+# tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc6/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX06) 2>&1 | tee ~/Research/bags/nx06_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+tmux send-keys -t $SESSION:$w.9 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX07) 2>&1 | tee ~/Research/bags/nx07_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc10/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX10) 2>&1 | tee ~/Research/bags/nx10_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+
 
 tmux -2 attach-session -t $SESSION
