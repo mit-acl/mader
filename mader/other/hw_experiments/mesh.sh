@@ -2,9 +2,10 @@
 
 # get NUC's number
 num=$1
-
+cat num
 # get the interface name
 interface=$(iw dev | awk '$1=="Interface"{print $2}')
+cat interface
 
 # bring network manager down
 sudo systemctl stop NetworkManager.service
@@ -14,11 +15,12 @@ sudo iwconfig $interface mode ad-hoc
 sudo iwconfig $interface channel auto
 sudo iwconfig $interface essid “mesh”
 sudo iwconfig $interface key 1234567890
-sudo ip link set $interface up
 
 # if sudo ip link set $interface up gives you an error
 # sudo rfkill list all
-# sudo rfkill unblock wifi
+sudo rfkill unblock wifi
+
+sudo ip link set $interface up
 
 # add address to your self
 sudo ip addr add 192.168.100.$num/24 dev $interface
