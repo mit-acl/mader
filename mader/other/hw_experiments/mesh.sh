@@ -2,10 +2,8 @@
 
 # get NUC's number
 num=$1
-cat num
 # get the interface name
 interface=$(iw dev | awk '$1=="Interface"{print $2}')
-cat interface
 
 # bring network manager down
 sudo systemctl stop NetworkManager.service
