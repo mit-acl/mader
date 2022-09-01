@@ -16,7 +16,7 @@ sudo iwconfig $interface key 1234567890
 
 # if sudo ip link set $interface up gives you an error
 # sudo rfkill list all
-sudo rfkill unblock wifi
+# sudo rfkill unblock wifi
 
 sudo ip link set $interface up
 
