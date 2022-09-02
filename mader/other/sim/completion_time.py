@@ -101,6 +101,7 @@ if __name__ == '__main__':
 
             os.system('echo "'+source_dir+'" >> /home/kota/data/completion_time.txt')
             os.system('echo "max is '+str(round(max(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
+            os.system('echo "min is '+str(round(min(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
             os.system('echo "ave is '+str(round(statistics.mean(completion_time_per_sim_list),2))+'s" >> /home/kota/data/completion_time.txt')
             os.system('echo "------------------------------------------------------------" >> /home/kota/data/completion_time.txt')
 
