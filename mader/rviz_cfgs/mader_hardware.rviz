@@ -20,15 +20,7 @@ Panels:
         - /Safe_Color5
         - /Safe_Color6
         - /Marker1
-        - /Marker2
-        - /Image1
-        - /Pose1
-        - /Pose2
-        - /Pose3
-        - /Pose4
-        - /Pose5
-        - /Pose6
-        - /Pose7
+        - /Marker3
       Splitter Ratio: 0.3382789194583893
     Tree Height: 1874
   - Class: rviz/Selection
@@ -844,7 +836,7 @@ Visualization Manager:
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -854,13 +846,13 @@ Visualization Manager:
       Shape: Axes
       Topic: /NX01/world
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -870,13 +862,13 @@ Visualization Manager:
       Shape: Axes
       Topic: /NX02/world
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -886,7 +878,7 @@ Visualization Manager:
       Shape: Axes
       Topic: /NX03/world
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
@@ -908,7 +900,7 @@ Visualization Manager:
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -918,13 +910,13 @@ Visualization Manager:
       Shape: Axes
       Topic: /NX05/world
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -934,13 +926,13 @@ Visualization Manager:
       Shape: Axes
       Topic: /NX06/world
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -950,10 +942,18 @@ Visualization Manager:
       Shape: Axes
       Topic: /NX07/world
       Unreliable: false
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /NX01/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
-    Background Color: 85; 87; 83
+    Background Color: 238; 238; 236
     Default Light: true
     Fixed Frame: world
     Frame Rate: 30
@@ -979,7 +979,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 31.142196655273438
+      Distance: 26.621549606323242
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -987,17 +987,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 1.545034646987915
-        Y: 0.16784310340881348
-        Z: -0.002410888671875
+        X: -0.2643734812736511
+        Y: 0.35604390501976013
+        Z: 0.26741793751716614
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7347965836524963
+      Pitch: 0.40479668974876404
       Target Frame: <Fixed Frame>
-      Yaw: 4.7431793212890625
+      Yaw: 4.693179607391357
     Saved:
       - Class: rviz/ThirdPersonFollower
         Distance: 16.45623207092285
@@ -1117,5 +1117,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1884
-  X: 1956
+  X: 72
   Y: 27
