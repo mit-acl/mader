@@ -19,16 +19,27 @@ Panels:
         - /Safe_Color4
         - /Safe_Color5
         - /Safe_Color6
+        - /Safe_Color7
+        - /Safe_Color8
+        - /Safe_Color10
         - /Marker1
-        - /Image1
         - /Pose1
         - /Pose2
         - /Pose3
         - /Pose4
         - /Pose5
         - /Pose6
+        - /Pose7
+        - /Pose8
+        - /Marker3
+        - /MarkerArray2
+        - /MarkerArray3
+        - /MarkerArray4
+        - /MarkerArray5
+        - /MarkerArray6
+        - /MarkerArray7
       Splitter Ratio: 0.3382789194583893
-    Tree Height: 1876
+    Tree Height: 1874
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -57,7 +68,7 @@ Panels:
         - /TF1
         - /TF1/Frames1
       Splitter Ratio: 0.652466356754303
-    Tree Height: 434
+    Tree Height: 441
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -89,7 +100,7 @@ Visualization Manager:
       Frames:
         All Enabled: true
       Marker Alpha: 1
-      Marker Scale: 2
+      Marker Scale: 1
       Name: TF
       Show Arrows: false
       Show Axes: true
@@ -185,10 +196,10 @@ Visualization Manager:
       VsScale: 1
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /HX16/mader/obstacles
+      Marker Topic: /NX04/mader/obstacles
       Name: Obstacles
       Namespaces:
-        markertacles: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -299,58 +310,58 @@ Visualization Manager:
       width: 128
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /HX15/mader/traj_safe_colored
+      Marker Topic: /NX01/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        HX15: true
+        NX01: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /HX16/mader/traj_safe_colored
+      Marker Topic: /NX02/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        HX16: true
+        NX02: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /HX17/mader/traj_safe_colored
+      Marker Topic: /NX03/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        HX17: true
+        NX03: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /HX18/mader/traj_safe_colored
-      Name: Safe_Color
-      Namespaces:
-        HX18: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /HX19/mader/traj_safe_colored
-      Name: Safe_Color
-      Namespaces:
-        HX19: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /HX20/mader/traj_safe_colored
-      Name: Safe_Color
-      Namespaces:
-        HX20: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /SQ07s/mader/traj_safe_colored
+      Marker Topic: /NX04/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
         {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX05/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        NX05: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX06/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX07/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        NX07: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -370,13 +381,13 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /SQ010s/mader/traj_safe_colored
+      Enabled: true
+      Marker Topic: /NX09/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        {}
+        NX09: true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /SQ011s/mader/traj_safe_colored
@@ -818,13 +829,13 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: /SQ01s/marker
+      Enabled: true
+      Marker Topic: /NX01/
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Image
       Enabled: false
       Image Topic: /rviz1/camera1/image
@@ -838,7 +849,7 @@ Visualization Manager:
       Unreliable: false
       Value: false
     - Alpha: 1
-      Axes Length: 1
+      Axes Length: 0.5
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
@@ -850,11 +861,11 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Axes
-      Topic: /HX15/world
+      Topic: /NX01/world
       Unreliable: false
       Value: true
     - Alpha: 1
-      Axes Length: 1
+      Axes Length: 0.5
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
@@ -866,11 +877,11 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Axes
-      Topic: /HX16/world
+      Topic: /NX02/world
       Unreliable: false
       Value: true
     - Alpha: 1
-      Axes Length: 1
+      Axes Length: 0.5
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
@@ -882,11 +893,11 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Axes
-      Topic: /HX17/world
+      Topic: /NX03/world
       Unreliable: false
       Value: true
     - Alpha: 1
-      Axes Length: 1
+      Axes Length: 0.5
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
@@ -898,11 +909,11 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Axes
-      Topic: /HX18/world
+      Topic: /NX04/world
       Unreliable: false
       Value: true
     - Alpha: 1
-      Axes Length: 1
+      Axes Length: 0.5
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
@@ -914,15 +925,15 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Axes
-      Topic: /HX19/world
+      Topic: /NX05/world
       Unreliable: false
       Value: true
     - Alpha: 1
-      Axes Length: 1
+      Axes Length: 0.5
       Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: false
+      Enabled: true
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -930,12 +941,116 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Axes
-      Topic: /HX20/world
+      Topic: /NX06/world
       Unreliable: false
-      Value: false
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.5
+      Axes Radius: 0.10000000149011612
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: Pose
+      Queue Size: 10
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Axes
+      Topic: /NX07/world
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.5
+      Axes Radius: 0.10000000149011612
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: Pose
+      Queue Size: 10
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Axes
+      Topic: /NX09/world
+      Unreliable: false
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: ""
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX01/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        NX01: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX02/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        NX02: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX03/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        NX03: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX04/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX05/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        NX05: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX09/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        NX09: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX07/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        NX07: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /NX01/mader/traj_safe_colored_bef_commit
+      Name: MarkerArray
+      Namespaces:
+        NX01: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
-    Background Color: 85; 87; 83
+    Background Color: 238; 238; 236
     Default Light: true
     Fixed Frame: world
     Frame Rate: 30
@@ -960,20 +1075,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
-      Class: rviz/TopDownOrtho
+      Class: rviz/Orbit
+      Distance: 13.294578552246094
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Field of View: 0.7853981852531433
+      Focal Point:
+        X: 0.27378445863723755
+        Y: 0.43518075346946716
+        Z: 1.057843804359436
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 225.98509216308594
+      Pitch: 0.5297966003417969
       Target Frame: <Fixed Frame>
-      X: 1.545034646987915
-      Y: 0.16784310340881348
+      Yaw: 3.906367063522339
     Saved:
       - Class: rviz/ThirdPersonFollower
         Distance: 16.45623207092285
@@ -1078,12 +1199,12 @@ Visualization Manager:
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 2123
+  Height: 2096
   Hide Left Dock: false
   Hide Right Dock: false
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000002700000079bfc0200000010fb000000100044006900730070006c00610079007301000000470000079b000000f100fffffffb0000001200530065006c0065006300740069006f006e000000003d000004c20000006e00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730200000b4b00000293000002b300000152fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000028000003960000000000000000fb000000100044006900730070006c006100790073000000003d000004cb000000f100fffffffb0000000a0049006d00610067006500000003d3000001350000001900fffffffb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000002f4000000ca0000000000000000fb0000000a0049006d00610067006501000001530000012c0000000000000000fb0000000c00430061006d0065007200610100000285000001390000000000000000fb0000000a0049006d00610067006501000002dd0000022b000000000000000000000001000001020000079bfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0056006900650077007301000000470000079b000000c200fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000f0000000041fc0100000002fb0000000800540069006d0065010000000000000f000000037100fffffffb0000000800540069006d0065010000000000000450000000000000000000000b800000079b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000002700000078ffc0200000010fb000000100044006900730070006c006100790073010000003d0000078f000000c900fffffffb0000001200530065006c0065006300740069006f006e000000003d000004c20000005c00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730200000b4b00000293000002b300000152fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000028000003960000000000000000fb000000100044006900730070006c006100790073000000003d000004cb000000c900fffffffb0000000a0049006d0061006700650000000697000001350000001600fffffffb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000002f4000000ca0000000000000000fb0000000a0049006d00610067006501000001530000012c0000000000000000fb0000000c00430061006d0065007200610100000285000001390000000000000000fb0000000a0049006d00610067006501000002dd0000022b000000000000000000000001000001020000078ffc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d0000078f000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000eb800000041fc0100000002fb0000000800540069006d0065010000000000000eb8000002eb00fffffffb0000000800540069006d0065010000000000000450000000000000000000000b3a0000078f00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1092,6 +1213,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 3840
-  X: 3840
-  Y: 0
+  Width: 3768
+  X: 72
+  Y: 27
