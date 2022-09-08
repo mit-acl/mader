@@ -42,6 +42,7 @@ if (len(sys.argv) <=1):
     print("Usage is python this_file.py name_of_bag.bag ")
     print("or")
     print('Usage is python this_file.py "2020_*.bag" (do not forget the "")')
+    print('ex. python statistics.py "/media/kota/T7/data/gurobi_nlopt/nlopt/bags/*.bag"')
     sys.exit(1)
 
 #rospy.init_node('talker', anonymous=True)
@@ -49,16 +50,19 @@ if (len(sys.argv) <=1):
 # get the bags
 list_of_bags=glob.glob(sys.argv[1]);
 
+home_dir = "/media/kota/T7/data/gurobi_nlopt/"
+
 # data we need
 # 1. completion time
 # 2. stop counts
 # 3. total distance
-# 4. smoothness
+# 4. smoothness (for acc and jerk)
 
 ave_completion_time = 0.0
 ave_stop_counts = 0.0
 ave_total_distance = 0.0
-ave_smoothness = 0.0
+ave_smoothness_acc = 0.0
+ave_smoothness_jer = 0.0
 
 for name_bag in list_of_bags:
 
@@ -125,7 +129,8 @@ for name_bag in list_of_bags:
         #print( "==========================")
         #print( "Agent= ", index_agent)
 
-        smoothness = 0
+        smoothness_acc = 0
+        smoothness_jer = 0
 
         for topic, msg, t in bag.read_messages(topics='/'+agents_names[index_agent]+'/goal'):
             if not goal_reached:
@@ -137,7 +142,8 @@ for name_bag in list_of_bags:
             acc=np.linalg.norm(np.array([msg.a.x, msg.a.y, msg.a.z]));
             jerk=np.linalg.norm(np.array([msg.j.x, msg.j.y, msg.j.z]));
 
-            smoothness = smoothness + acc + jerk
+            smoothness_acc = smoothness_acc + acc
+            smoothness_jer = smoothness_jer + jerk
 
             if (vel<epsilon and stopped==False):
                 stopped=True
@@ -317,7 +323,8 @@ for name_bag in list_of_bags:
     # 3. total distance
     # 4. smoothness
 
-    print( "Smoothness: ", smoothness)
+    print( "Smoothness (acc): ", smoothness_acc)
+    print( "Smoothness (jer): ", smoothness_jer)
     print( "Num of agents: ", num_of_agents)
     # print( "Safety Margin Ratio: ", safety_margin_ratio)
     print( "Sum dist all the agents: ", sum(distances))
@@ -334,7 +341,8 @@ for name_bag in list_of_bags:
         ave_completion_time += total_time 
     ave_stop_counts += num_of_stops
     ave_total_distance += sum(distances)
-    ave_smoothness += smoothness
+    ave_smoothness_acc += smoothness_acc
+    ave_smoothness_jer += smoothness_jer
 
     #print("Publishing Array:")
 
@@ -347,11 +355,13 @@ for name_bag in list_of_bags:
 ave_completion_time /= len(list_of_bags)
 ave_stop_counts /= len(list_of_bags)
 ave_total_distance /= len(list_of_bags)
-ave_smoothness /= len(list_of_bags)
+ave_smoothness_acc /= len(list_of_bags)
+ave_smoothness_jer /= len(list_of_bags)
 
-os.system('echo "----------------------------------------------------------------------------------" >> /home/kota/data/gurobi_nlopt/statistics.txt')
+os.system('echo "----------------------------------------------------------------------------------" >> '+home_dir+'statistics.txt')
 os.system('echo "'+sys.argv[1]+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
-os.system('echo " completion time[s] '+str(round(ave_completion_time,2))+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
-os.system('echo " stop counts '+str(ave_stop_counts)+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
-os.system('echo " total travel distance '+str(round(ave_total_distance,2))+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
-os.system('echo " smoothness '+str(round(ave_smoothness,2))+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
+os.system('echo " completion time[s] '+str(round(ave_completion_time,2))+'" >> '+home_dir+'statistics.txt')
+os.system('echo " stop counts '+str(ave_stop_counts)+'" >> '+home_dir+'statistics.txt')
+os.system('echo " total travel distance '+str(round(ave_total_distance,2))+'" >> '+home_dir+'statistics.txt')
+os.system('echo " smoothness (acc)'+str(round(ave_smoothness_acc,2))+'" >> '+home_dir+'statistics.txt')
+os.system('echo " smoothness (jer)'+str(round(ave_smoothness_jer,2))+'" >> '+home_dir+'statistics.txt')
