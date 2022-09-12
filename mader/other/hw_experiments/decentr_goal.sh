@@ -37,17 +37,19 @@ tmux send-keys -t $SESSION:$w.1 "ssh root@nx02.local" C-m
 tmux send-keys -t $SESSION:$w.2 "ssh root@nx03.local" C-m
 tmux send-keys -t $SESSION:$w.3 "ssh root@nx04.local" C-m
 tmux send-keys -t $SESSION:$w.4 "ssh root@nx05.local" C-m
-tmux send-keys -t $SESSION:$w.5 "ssh root@nx06.local" C-m
+# tmux send-keys -t $SESSION:$w.5 "ssh root@nx06.local" C-m
+tmux send-keys -t $SESSION:$w.5 "ssh root@nx07.local" C-m
 
 sleep 5
 
 # ssh each nuc
-tmux send-keys -t $SESSION:$w.0 "ssh nuc1@192.168.100.1" C-m
-tmux send-keys -t $SESSION:$w.1 "ssh nuc2@192.168.100.2" C-m
-tmux send-keys -t $SESSION:$w.2 "ssh nuc3@192.168.100.3" C-m
-tmux send-keys -t $SESSION:$w.3 "ssh nuc4@192.168.100.4" C-m
-tmux send-keys -t $SESSION:$w.4 "ssh nuc5@192.168.100.5" C-m
-tmux send-keys -t $SESSION:$w.5 "ssh nuc6@192.168.100.6" C-m
+tmux send-keys -t $SESSION:$w.0 "ssh nuc1@192.168.15.2" C-m
+tmux send-keys -t $SESSION:$w.1 "ssh nuc2@192.168.16.2" C-m
+tmux send-keys -t $SESSION:$w.2 "ssh nuc3@192.168.17.2" C-m
+tmux send-keys -t $SESSION:$w.3 "ssh nuc4@192.168.18.2" C-m
+tmux send-keys -t $SESSION:$w.4 "ssh nuc5@192.168.19.2" C-m
+# tmux send-keys -t $SESSION:$w.5 "ssh nuc6@192.168.20.2" C-m
+tmux send-keys -t $SESSION:$w.5 "ssh nuc@192.168.21.2" C-m
 
 sleep 5
 

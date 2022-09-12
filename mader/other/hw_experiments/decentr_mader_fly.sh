@@ -92,8 +92,16 @@ tmux send-keys -t $SESSION:$w.7 "ssh nuc4@192.168.18.2" C-m
 tmux send-keys -t $SESSION:$w.9 "ssh nuc@192.168.21.2" C-m
 tmux send-keys -t $SESSION:$w.11 "ssh nuc10@192.168.24.2" C-m
 
-
 sleep 1
+
+# call ad_hoc_connection.sh in NUC
+tmux send-keys -t $SESSION:$w.1 "cd && ./ad_hoc_connection.sh" C-m
+tmux send-keys -t $SESSION:$w.3 "cd && ./ad_hoc_connection.sh" C-m
+tmux send-keys -t $SESSION:$w.5 "cd && ./ad_hoc_connection.sh" C-m
+tmux send-keys -t $SESSION:$w.7 "cd && ./ad_hoc_connection.sh" C-m
+tmux send-keys -t $SESSION:$w.9 "cd && ./ad_hoc_connection.sh" C-m
+tmux send-keys -t $SESSION:$w.11 "cd && ./ad_hoc_connection.sh" C-m
+
 
 # run mader hw_onboard and save termial data into txt files
 tmux send-keys -t $SESSION:$w.1 "sudo ntpdate time.nist.gov" C-m
@@ -102,6 +110,18 @@ tmux send-keys -t $SESSION:$w.5 "sudo ntpdate time.nist.gov" C-m
 tmux send-keys -t $SESSION:$w.7 "sudo ntpdate time.nist.gov" C-m
 tmux send-keys -t $SESSION:$w.9 "sudo ntpdate time.nist.gov" C-m
 tmux send-keys -t $SESSION:$w.11 "sudo ntpdate time.nist.gov" C-m
+
+# sleep 10
+
+# start ad-hoc network
+# tmux send-keys -t $SESSION:$w.1 "roscd mader && cd other/hw_experiments && ./mesh.sh 1" C-m
+# tmux send-keys -t $SESSION:$w.3 "roscd mader && cd other/hw_experiments && ./mesh.sh 2" C-m
+# tmux send-keys -t $SESSION:$w.5 "roscd mader && cd other/hw_experiments && ./mesh.sh 3" C-m
+# tmux send-keys -t $SESSION:$w.7 "roscd mader && cd other/hw_experiments && ./mesh.sh 4" C-m
+# #tmux send-keys -t $SESSION:$w.9 "roscd mader && cd other/hw_experiments && ./mesh.sh 5" C-m
+# # tmux send-keys -t $SESSION:$w.11 "roscd mader && cd other/hw_experiments && ./mesh.sh 6" C-m
+# tmux send-keys -t $SESSION:$w.9 "roscd mader && cd other/hw_experiments && ./mesh.sh 7" C-m
+# tmux send-keys -t $SESSION:$w.11 "roscd mader && cd other/hw_experiments && ./mesh.sh 10" C-m
 
 sleep 5
 
@@ -130,21 +150,6 @@ if [[ $ifDELETE == 'true' ]]; then
   tmux send-keys -t $SESSION:$w.11 "cd /home/nuc10/Research/bags && rm *.txt" C-m
 
 fi
-
-sleep 10
-
-# start ad-hoc network
-tmux send-keys -t $SESSION:$w.1 "roscd mader && cd other/hw_experiments && ./mesh.sh 1" C-m
-tmux send-keys -t $SESSION:$w.3 "roscd mader && cd other/hw_experiments && ./mesh.sh 2" C-m
-tmux send-keys -t $SESSION:$w.5 "roscd mader && cd other/hw_experiments && ./mesh.sh 3" C-m
-tmux send-keys -t $SESSION:$w.7 "roscd mader && cd other/hw_experiments && ./mesh.sh 4" C-m
-#tmux send-keys -t $SESSION:$w.9 "roscd mader && cd other/hw_experiments && ./mesh.sh 5" C-m
-# tmux send-keys -t $SESSION:$w.11 "roscd mader && cd other/hw_experiments && ./mesh.sh 6" C-m
-tmux send-keys -t $SESSION:$w.9 "roscd mader && cd other/hw_experiments && ./mesh.sh 7" C-m
-tmux send-keys -t $SESSION:$w.11 "roscd mader && cd other/hw_experiments && ./mesh.sh 10" C-m
-
-
-echo "Got here successfully!"
 
 tmux send-keys -t $SESSION:$w.1 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc1/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX01) 2>&1 | tee ~/Research/bags/nx01_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m #by using /home/nuc1/ instead of ~/, we can stop record data on sikorsky when we are not using the vehicle.
 tmux send-keys -t $SESSION:$w.3 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc2/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX02) 2>&1 | tee ~/Research/bags/nx02_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
