@@ -5,7 +5,7 @@ sim: false
 is_take_off: true
 
 # using centralized or decentralized trajs?
-is_centralized: false
+is_centralized: true 
 
 # use delay check or not?
 is_delaycheck: true
