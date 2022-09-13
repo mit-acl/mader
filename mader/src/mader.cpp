@@ -327,10 +327,18 @@ void Mader::updateTrajObstacles_with_delaycheck(mt::dynTraj traj)
 
   trajs_ = local_trajs;
 
-  for (auto traj_compiled : trajs_)
-  {
-    std::cout << "agent" << traj_compiled.id << ": is_committed: " << traj_compiled.is_committed << std::endl;
-  }
+  // print out trajs_
+  // std::cout << "---------------------------------------------------------"<<std::endl;
+
+  // for (int jj=1; jj<=10; jj++){
+  //     std::cout << "Agent" << jj<<std::endl;
+  //     for (auto traj_compiled : trajs_)
+  //     {
+  //       if(traj_compiled.id==jj){
+  //       std::cout<< "     is_committed: " << traj_compiled.is_committed << std::endl;
+  //    }
+  //   }
+  // }
 
   // std::cout << "bef mtx_trajs_.unlock() in updateTrajObstacles" << std::endl;
   mtx_trajs_.unlock();
@@ -415,6 +423,8 @@ void Mader::updateTrajObstacles(mt::dynTraj traj)
   }
 
   trajs_ = local_trajs;
+
+  mtx_trajs_.unlock(); 
 
   have_received_trajectories_while_checking_ = false;
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
