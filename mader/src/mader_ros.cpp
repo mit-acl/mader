@@ -645,7 +645,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
           {
             break;
           }
-          ros::Duration(delay_check_ / 5).sleep();
+          ros::Duration(delay_check_ / 5.0).sleep();
         }
         delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
         // end of delay check *******************************************************

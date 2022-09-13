@@ -327,7 +327,7 @@ void Mader::updateTrajObstacles_with_delaycheck(mt::dynTraj traj)
 
   trajs_ = local_trajs;
 
-  for (auto& traj_compiled : trajs_)
+  for (auto traj_compiled : trajs_)
   {
     std::cout << "agent" << traj_compiled.id << ": is_committed: " << traj_compiled.is_committed << std::endl;
   }
