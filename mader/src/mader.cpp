@@ -327,6 +327,11 @@ void Mader::updateTrajObstacles_with_delaycheck(mt::dynTraj traj)
 
   trajs_ = local_trajs;
 
+  for (auto& traj_compiled : trajs_)
+  {
+    std::cout << "agent" << traj_compiled.id << ": is_committed: " << traj_compiled.is_committed << std::endl;
+  }
+
   // std::cout << "bef mtx_trajs_.unlock() in updateTrajObstacles" << std::endl;
   mtx_trajs_.unlock();
   // std::cout << "aft mtx_trajs_.unlock() in updateTrajObstacles" << std::endl;
@@ -411,8 +416,6 @@ void Mader::updateTrajObstacles(mt::dynTraj traj)
 
   trajs_ = local_trajs;
 
-  mtx_trajs_.unlock();
-
   have_received_trajectories_while_checking_ = false;
   // std::cout << bold << blue << "updateTrajObstacles took " << tmp_t << reset << std::endl;
 }
@@ -466,7 +469,7 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
       {
         // points.push_back(Eigen::Vector3d(V(1, j), V(2, j), V(3, j)));  // x,y,z
 
-        if (j == V.cols()-1)
+        if (j == V.cols() - 1)
         {
           points.push_back(Eigen::Vector3d(x + delta.x(), y + delta.y(), z + delta.z()));
           points.push_back(Eigen::Vector3d(x + delta.x(), y - delta.y(), z - delta.z()));
@@ -476,7 +479,9 @@ std::vector<Eigen::Vector3d> Mader::vertexesOfInterval(mt::PieceWisePol& pwp, do
           points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z + delta.z()));
           points.push_back(Eigen::Vector3d(x - delta.x(), y + delta.y(), z - delta.z()));
           points.push_back(Eigen::Vector3d(x - delta.x(), y - delta.y(), z + delta.z()));
-        } else {
+        }
+        else
+        {
           points.push_back(Eigen::Vector3d(x, y, z));
         }
       }
