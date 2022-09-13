@@ -37,37 +37,35 @@ def myhook():
 if __name__ == '__main__':
 
     # parameters
-    is_oldmader=True
-    num_of_sims=110
+    is_oldmader=False
+    num_of_sims=1
     num_of_agents=10
     how_long_to_wait = 20 #[s]
     if is_oldmader:
-        cd_list = [0, 50, 100, 100, 200, 300]
+        cd_list = [0, 50, 100, 200, 300]
     else:
-        cd_list = [50, 100, 100, 200, 300]
+        cd_list = [0, 50, 100]
 
-    cd_list = []
-        
     # folder initialization
     folder_bags_list = []
     folder_txts_list = []
 
     for cd in cd_list:
 
-        is_oldmader=True
+        is_oldmader=False
 
         if cd == 0:
-            dc_list = [0, 100, 20, 8, 1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [100, 20, 8, 1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 50:
-            dc_list = [0, 130, 56, 51, 50.8, 35, 15] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [130, 56, 51, 50.8, 35, 15] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 130] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 200, 105, 101.3, 101, 75, 25] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [200, 105, 101.3, 101, 75, 25] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [0, 200] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 200:
-            dc_list = [0, 300]
+            dc_list = [300]
         elif cd == 300:
-            dc_list = [0, 400]
+            dc_list = [400]
 
         # if cd == 0:
         #     dc_list = [0, 100] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)

@@ -448,10 +448,10 @@ void MaderRos::allTrajsTimerCB(const ros::TimerEvent& e)
   // if (is_in_DC_)
   // {
   //   // MyTimer each_collision_check_t(true);
-  //   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_new_, is_in_DC_, headsup_time_, delay_check_result_);
+  //   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_new_, is_in_DC_, headsup_time_, delay_check_succeeded_);
   //   // std::cout << "each collision check takes " << each_collision_check_t.ElapsedUs() << "us" << std::endl;
   // } else {
-  //   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_new_, is_in_DC_, headsup_time_, delay_check_result_);
+  //   mader_ptr_->updateTrajObstacles(alltrajs_[0], pwp_new_, is_in_DC_, headsup_time_, delay_check_succeeded_);
   // }
   // std::cout << "bef alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
   // std::cout << "aft alltrajs_ and alltrajsTimers_ are locked() in allTrajsTimerCB" << std::endl;
@@ -585,168 +585,59 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
   {
     replanCBTimer_.stop();  // to avoid blockage
 
-    // introduce random wait time in the beginning
-    if (!is_replanCB_called_)
-    {
-      // to avoid initial path search congestions add some random sleep here
-      // std::random_device rd;
-      // std::default_random_engine eng(rd());
-      // std::uniform_real_distribution<float> distr(0, 1);  // sleep between 0 and 1 sec
-      // ros::Duration(distr(eng)).sleep();
-
-      srand(time(NULL));
-      ros::Duration(0.25 * id_).sleep();  // random wait time between 0 to 3
-      is_replanCB_called_ = true;
-    }
-
-    // Check if reached the goal
-    if (mader_ptr_->isGoalSeen())
-    {
-      std::cout << "goal is reached so no need to replan" << std::endl;
-      is_mader_running_ = false;
-      mader_msgs::MissedMsgsCnt msg;
-      msg.missed_msgs_cnt = missed_msgs_cnt_;
-      msg.msgs_cnt = msgs_cnt_;
-      pub_missed_msgs_cnt_.publish(msg);
-      // mtx_mader_ptr_.unlock();
-      return;
-    }
-
-    // initialization
-    mt::Edges edges_obstacles;
-    std::vector<mt::state> traj_plan;
-    std::vector<Hyperplane3D> planes;
-
     // replan
     bool replanned = false;
 
-    if (is_delaycheck_)
+    std::vector<mt::dynTrajCompiled> trajs;
+
+    // O + C
+    replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_,
+                                                   num_of_QCQPs_run_, pwp_now_, headsup_time_);
+
+    if (replanned)
     {
-      std::vector<mt::dynTrajCompiled> trajs;
+      // publish traj_new (i.e,, not committed)
+      publishOwnTraj(pwp_now_, false, trajs);
 
-      // mtx_mader_ptr_.lock();
-      replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_,
-                                                     num_of_QCQPs_run_, pwp_now_, headsup_time_);
-
-      if (replanned)
+      // delay check *******************************************************
+      MyTimer delay_check_t(true);
+      while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
       {
-        // let others know my new trajectory
-        publishOwnTraj(pwp_now_, false, trajs);
-
-        // visualization
-        visual(edges_obstacles, traj_plan, false);
-
-        // delay check *******************************************************
-        MyTimer delay_check_t(true);
-        while (delay_check_t.ElapsedMs() / 1000.0 < delay_check_)
+        delay_check_succeeded_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
+        if (delay_check_succeeded_ == false)
         {
-          delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
-          if (delay_check_result_ == false)
-          {
-            break;
-          }
-          ros::Duration(delay_check_ / 5).sleep();
-        }
-        delay_check_result_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
-        // end of delay check *******************************************************
-
-        if (delay_check_result_)
-        {
-          bool successful_to_add_to_plan = mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now_);
-          if (successful_to_add_to_plan)
-          {
-            // successful
-            publishOwnTraj(pwp_now_, true, trajs);
-            pwp_last_ = pwp_now_;
-
-            // visual
-            visual(edges_obstacles, traj_plan, true);
-            last_traj_plan_ = traj_plan;
-            last_edges_obstacles_ = edges_obstacles;
-            timer_stop_.Reset();
-          }
-          else  // when adding traj to plan_ failed
-          {
-            // int time_ms = int(ros::Time::now().toSec() * 1000);
-            publishOwnTraj(pwp_last_, true, trajs);
-            timer_stop_.Reset();
-            // visualization
-            visual(last_edges_obstacles_, last_traj_plan_, true);
-          }
-        }
-        else  // when DC failed
-        {
-          // int time_ms = int(ros::Time::now().toSec() * 1000);
-          publishOwnTraj(pwp_last_, true, trajs);
-          timer_stop_.Reset();
-          // visualization
-          visual(last_edges_obstacles_, last_traj_plan_, true);
+          break;
         }
       }
-      else  // when O or C failed
-      {
-        // int time_ms = int(ros::Time::now().toSec() * 1000);
 
-        if (timer_stop_.ElapsedMs() > 1000.0)
+      delay_check_succeeded_ = mader_ptr_->delayCheck(pwp_now_, headsup_time_);
+      // end of delay check *******************************************************
+
+      if (delay_check_succeeded_)
+      {
+        bool successful_to_add_to_plan = mader_ptr_->addTrajToPlan_with_delaycheck(pwp_now_);
+
+        if (successful_to_add_to_plan)
         {
-          publishOwnTraj(pwp_last_, true,
-                         trajs);  // This is needed because is drone DRONE1 stops, it needs to keep publishing
-                                  // his last planned trajectory, so that other drones can avoid it (even if
-                                  // DRONE1 was very far from the other drones with it last successfully planned
-                                  // a trajectory). Note that these trajectories are time-indexed, and the last
-                                  // position is taken if t>times.back(). See eval() function in the pwp struct
+          // successful
+          publishOwnTraj(pwp_now_, true, trajs);  // publish traj_A <- traj_A_new
+          pwp_last_ = pwp_now_;
+
           timer_stop_.Reset();
         }
-        // visualization
-        visual(last_edges_obstacles_, last_traj_plan_, true);
+        else
+        {
+          timerStuff();  // Appending fails
+        }
+      }
+      else
+      {
+        timerStuff();  // DC fails
       }
     }
     else
     {
-      // // std::cout << "I'm using old mader!!!!!" << std::endl;
-
-      // mtx_mader_ptr_.lock();
-      replanned = mader_ptr_->replan(edges_obstacles, traj_plan, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp_now_);
-      // mtx_mader_ptr_.unlock();
-
-      if (par_.visual)
-      {
-        // Delete markers to publish stuff
-        visual_tools_->deleteAllMarkers();
-        visual_tools_->enableBatchPublishing();
-
-        // visualization
-        visual(edges_obstacles, traj_plan, true);
-        // publishPlanes(planes);
-        // publishText();
-      }
-
-      if (replanned)
-      {
-        publishOwnTraj(pwp_now_, true);
-        pwp_last_ = pwp_now_;
-      }
-      else
-      {
-        // int time_ms = int(ros::Time::now().toSec() * 1000);
-
-        if (timer_stop_.ElapsedMs() > 1000.0)
-        {
-          publishOwnTraj(pwp_last_,
-                         true);  // This is needed because is drone DRONE1 stops, it needs to keep
-                                 // publishing his
-                                 // last planned trajectory, so that other drones can avoid it (even if DRONE1
-                                 // was
-                                 // very far from the other drones with it last successfully planned a
-                                 // trajectory).
-                                 // Note that these trajectories are time-indexed, and the last position is
-                                 // taken if
-                                 // t>times.back(). See eval() function in the pwp struct
-          timer_stop_.Reset();
-        }
-        // visualization
-        visual(last_edges_obstacles_, last_traj_plan_, true);
-      }
+      timerStuff();  // Either O or C fails
     }
 
     replanCBTimer_.start();  // to avoid blockage
@@ -759,21 +650,15 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
   pubState(G, pub_point_G_);
 }
 
-void MaderRos::visual(mt::Edges& edges_obstacles, std::vector<mt::state>& traj_plan, const bool& is_committed)
+void MaderRos::timerStuff()
 {
-  // visualization
-  if (par_.visual)
+  if (timer_stop_.ElapsedMs() > 1000.0)
   {
-    // Delete markers to publish stuff
-    visual_tools_->deleteAllMarkers();
-    visual_tools_->enableBatchPublishing();
-    if (last_edges_obstacles_.size() > 0)
-    {
-      pubObstacles(edges_obstacles);
-    }
-    pubTraj(traj_plan, is_committed);
+    publishOwnTraj(pwp_last_, true, trajs);
+    timer_stop_.Reset();
   }
 }
+
 void MaderRos::publishText()
 {
   jsk_rviz_plugins::OverlayText text;

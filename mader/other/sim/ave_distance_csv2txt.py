@@ -23,7 +23,8 @@ if __name__ == '__main__':
 
     # rosbag name
 
-    home_dir = "/media/kota/T7/data/"
+    # home_dir = "/media/kota/T7/data/"
+    home_dir = "/home/kota/data/"
 
     is_oldmader = True # change here
 
@@ -67,9 +68,9 @@ if __name__ == '__main__':
             dist_matrix_dc = np.zeros([num_of_agents, num_of_agents])
 
             if is_oldmader:
-                source_dir = home_dir+"/csv/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
+                source_dir = home_dir+"csv/oldmader/cd"+str(cd)+"ms" # change the source dir accordingly #10 agents
             else:
-                source_dir = home_dir+"/csv/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
+                source_dir = home_dir+"csv/rmader/cd"+str(cd)+"ms/dc"+str_dc+"ms" # change the source dir accordingly #10 agents
             
             source_len = len(source_dir)
             source_csvs = source_dir + "/*.csv" # change the source dir accordingly
