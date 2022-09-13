@@ -142,8 +142,8 @@ for name_bag in list_of_bags:
             acc=np.linalg.norm(np.array([msg.a.x, msg.a.y, msg.a.z]));
             jerk=np.linalg.norm(np.array([msg.j.x, msg.j.y, msg.j.z]));
 
-            smoothness_acc = smoothness_acc + acc
-            smoothness_jer = smoothness_jer + jerk
+            smoothness_acc = smoothness_acc + acc**2
+            smoothness_jer = smoothness_jer + jerk**2
 
             if (vel<epsilon and stopped==False):
                 stopped=True
