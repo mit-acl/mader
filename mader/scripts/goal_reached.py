@@ -29,7 +29,7 @@ class GoalReachedCheck:
         self.goal_radius = 0.15
 
         # number of agents
-        self.num_of_agents = 50
+        self.num_of_agents = 25
 
         # is initialized?
         self.initialized = False

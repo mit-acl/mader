@@ -39,8 +39,8 @@ if __name__ == '__main__':
     # parameters
     is_oldmader=False
     num_of_sims=1
-    num_of_agents=50
-    how_long_to_wait=1000 #[s]
+    num_of_agents=25
+    how_long_to_wait=100 #[s]
     if is_oldmader:
         cd_list = [0, 50, 100, 200, 300]
     else:
