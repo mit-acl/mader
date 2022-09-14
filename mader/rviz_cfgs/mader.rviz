@@ -39,14 +39,8 @@ Panels:
         - /Grid1
         - /TF1
         - /TF1/Frames1
-        - /MarkerArray3
-        - /Safe_Color16
-        - /Marker1
-        - /Marker43
-        - /Marker44
-        - /Marker45
       Splitter Ratio: 0.652466356754303
-    Tree Height: 1877
+    Tree Height: 1904
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -418,7 +412,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ01s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -426,7 +420,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ02s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -434,7 +428,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ03s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -442,7 +436,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ04s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -450,7 +444,7 @@ Visualization Manager:
       Marker Topic: /SQ05s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ05s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -458,7 +452,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ06s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -466,7 +460,7 @@ Visualization Manager:
       Marker Topic: /SQ07s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ07s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -474,7 +468,7 @@ Visualization Manager:
       Marker Topic: /SQ08s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ08s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -482,7 +476,7 @@ Visualization Manager:
       Marker Topic: /SQ09s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ09s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -490,7 +484,7 @@ Visualization Manager:
       Marker Topic: /SQ10s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ10s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -498,7 +492,7 @@ Visualization Manager:
       Marker Topic: /SQ11s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ11s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -506,7 +500,7 @@ Visualization Manager:
       Marker Topic: /SQ12s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ12s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -514,7 +508,7 @@ Visualization Manager:
       Marker Topic: /SQ13s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ13s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -522,7 +516,7 @@ Visualization Manager:
       Marker Topic: /SQ14s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ14s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -530,7 +524,7 @@ Visualization Manager:
       Marker Topic: /SQ15s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ15s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -538,7 +532,7 @@ Visualization Manager:
       Marker Topic: /SQ16s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ16s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -546,7 +540,7 @@ Visualization Manager:
       Marker Topic: /SQ17s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ17s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -554,7 +548,7 @@ Visualization Manager:
       Marker Topic: /SQ18s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ18s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -562,7 +556,7 @@ Visualization Manager:
       Marker Topic: /SQ19s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ19s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -570,7 +564,7 @@ Visualization Manager:
       Marker Topic: /SQ20s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ20s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -578,7 +572,7 @@ Visualization Manager:
       Marker Topic: /SQ21s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ21s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -586,7 +580,7 @@ Visualization Manager:
       Marker Topic: /SQ22s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ22s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -594,7 +588,7 @@ Visualization Manager:
       Marker Topic: /SQ23s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ23s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -602,7 +596,7 @@ Visualization Manager:
       Marker Topic: /SQ24s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ24s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -610,7 +604,7 @@ Visualization Manager:
       Marker Topic: /SQ25s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ25s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -618,7 +612,7 @@ Visualization Manager:
       Marker Topic: /SQ26s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ26s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -626,7 +620,7 @@ Visualization Manager:
       Marker Topic: /SQ27s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ27s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -634,7 +628,7 @@ Visualization Manager:
       Marker Topic: /SQ28s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ28s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -642,7 +636,7 @@ Visualization Manager:
       Marker Topic: /SQ29s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ29s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -650,7 +644,7 @@ Visualization Manager:
       Marker Topic: /SQ30s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ30s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -658,7 +652,7 @@ Visualization Manager:
       Marker Topic: /SQ31s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ31s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -666,7 +660,7 @@ Visualization Manager:
       Marker Topic: /SQ32s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ32s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -674,7 +668,7 @@ Visualization Manager:
       Marker Topic: /SQ33s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ33s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -682,7 +676,7 @@ Visualization Manager:
       Marker Topic: /SQ34s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ34s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -690,7 +684,7 @@ Visualization Manager:
       Marker Topic: /SQ35s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ35s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -698,7 +692,7 @@ Visualization Manager:
       Marker Topic: /SQ36s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ36s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -706,7 +700,7 @@ Visualization Manager:
       Marker Topic: /SQ37s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ37s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -714,7 +708,7 @@ Visualization Manager:
       Marker Topic: /SQ38s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ38s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -722,7 +716,7 @@ Visualization Manager:
       Marker Topic: /SQ39s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ39s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -730,7 +724,7 @@ Visualization Manager:
       Marker Topic: /SQ40s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ40s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -738,7 +732,7 @@ Visualization Manager:
       Marker Topic: /SQ41s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ41s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -746,7 +740,7 @@ Visualization Manager:
       Marker Topic: /SQ42s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ42s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -754,7 +748,7 @@ Visualization Manager:
       Marker Topic: /SQ43s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ43s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -762,7 +756,7 @@ Visualization Manager:
       Marker Topic: /SQ44s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ44s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -770,7 +764,7 @@ Visualization Manager:
       Marker Topic: /SQ45s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ45s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -778,7 +772,7 @@ Visualization Manager:
       Marker Topic: /SQ46s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ46s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -786,7 +780,7 @@ Visualization Manager:
       Marker Topic: /SQ47s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ47s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -794,7 +788,7 @@ Visualization Manager:
       Marker Topic: /SQ48s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ48s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -802,7 +796,7 @@ Visualization Manager:
       Marker Topic: /SQ49s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ49s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -810,7 +804,7 @@ Visualization Manager:
       Marker Topic: /SQ50s/mader/traj_safe_colored_bef_commit
       Name: MarkerArray
       Namespaces:
-        SQ50s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -818,7 +812,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ01s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -826,7 +820,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ02s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -834,7 +828,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ03s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -842,7 +836,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ04s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -850,7 +844,7 @@ Visualization Manager:
       Marker Topic: /SQ05s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ05s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -858,7 +852,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ06s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -866,7 +860,7 @@ Visualization Manager:
       Marker Topic: /SQ07s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ07s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -874,7 +868,7 @@ Visualization Manager:
       Marker Topic: /SQ08s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ08s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -882,7 +876,7 @@ Visualization Manager:
       Marker Topic: /SQ09s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ09s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -890,7 +884,7 @@ Visualization Manager:
       Marker Topic: /SQ10s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ10s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -898,7 +892,7 @@ Visualization Manager:
       Marker Topic: /SQ11s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ11s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -906,7 +900,7 @@ Visualization Manager:
       Marker Topic: /SQ12s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ12s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -914,7 +908,7 @@ Visualization Manager:
       Marker Topic: /SQ13s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ13s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -922,7 +916,7 @@ Visualization Manager:
       Marker Topic: /SQ14s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ14s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -930,7 +924,7 @@ Visualization Manager:
       Marker Topic: /SQ15s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ15s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -938,7 +932,287 @@ Visualization Manager:
       Marker Topic: /SQ16s/mader/traj_safe_colored
       Name: Safe_Color
       Namespaces:
-        SQ16s: true
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ17s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ18s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ19s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ20s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ21s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ22s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ23s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ24s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ25s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ26s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ26s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ27s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ28s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ29s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ30s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ31s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ32s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ33s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ34s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ35s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ36s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ37s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ38s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ39s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ40s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ41s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ42s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ43s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ44s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ45s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ46s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ47s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ48s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ49s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SQ50s/mader/traj_safe_colored
+      Name: Safe_Color
+      Namespaces:
+        {}
       Queue Size: 100
       Value: true
     - Class: jsk_rviz_plugin/TFTrajectory
@@ -1010,7 +1284,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ01s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1018,7 +1292,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ02s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1026,7 +1300,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ03s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1034,7 +1308,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ04s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1042,7 +1316,7 @@ Visualization Manager:
       Marker Topic: /SQ05s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ05s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1050,7 +1324,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ06s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1058,7 +1332,7 @@ Visualization Manager:
       Marker Topic: /SQ07s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ07s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1066,257 +1340,369 @@ Visualization Manager:
       Marker Topic: /SQ08s/mader/actual_traj
       Name: ActTraj
       Namespaces:
-        ActualTraj_SQ08s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ06s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ07s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ08s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ09s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ010s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ011s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ012s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ013s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ014s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ015s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ016s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ017s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ018s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ019s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ020s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ021s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ022s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ023s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ024s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ025s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ026s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ027s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ028s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ029s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ030s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ031s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ032s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ033s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ034s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ035s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /SQ036s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ037s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ038s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ039s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ040s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ041s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ042s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ043s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ044s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ045s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ046s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ047s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ048s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ049s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ050s/mader/actual_traj
+      Name: ActTraj
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
     - Class: rviz/Image
       Enabled: false
       Image Topic: /rviz1/camera1/image
@@ -1390,7 +1776,7 @@ Visualization Manager:
       Marker Topic: /SQ01s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ01s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1398,7 +1784,7 @@ Visualization Manager:
       Marker Topic: /SQ02s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ02s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1406,7 +1792,7 @@ Visualization Manager:
       Marker Topic: /SQ03s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ03s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1414,7 +1800,7 @@ Visualization Manager:
       Marker Topic: /SQ04s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ04s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1422,7 +1808,7 @@ Visualization Manager:
       Marker Topic: /SQ05s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ05s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1430,7 +1816,7 @@ Visualization Manager:
       Marker Topic: /SQ06s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ06s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1438,7 +1824,7 @@ Visualization Manager:
       Marker Topic: /SQ07s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ07s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1446,7 +1832,7 @@ Visualization Manager:
       Marker Topic: /SQ08s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ08s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1454,7 +1840,7 @@ Visualization Manager:
       Marker Topic: /SQ09s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ09s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1462,7 +1848,7 @@ Visualization Manager:
       Marker Topic: /SQ10s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ10s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1470,7 +1856,7 @@ Visualization Manager:
       Marker Topic: /SQ11s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ11s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1478,7 +1864,7 @@ Visualization Manager:
       Marker Topic: /SQ12s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ12s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1486,7 +1872,7 @@ Visualization Manager:
       Marker Topic: /SQ13s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ13s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1494,7 +1880,7 @@ Visualization Manager:
       Marker Topic: /SQ14s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ14s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1502,7 +1888,7 @@ Visualization Manager:
       Marker Topic: /SQ15s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ15s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1510,7 +1896,7 @@ Visualization Manager:
       Marker Topic: /SQ16s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ16s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1518,7 +1904,7 @@ Visualization Manager:
       Marker Topic: /SQ17s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ17s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1526,7 +1912,7 @@ Visualization Manager:
       Marker Topic: /SQ18s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ18s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1534,7 +1920,7 @@ Visualization Manager:
       Marker Topic: /SQ19s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ19s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1542,7 +1928,7 @@ Visualization Manager:
       Marker Topic: /SQ20s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ20s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1550,7 +1936,7 @@ Visualization Manager:
       Marker Topic: /SQ21s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ21s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1558,7 +1944,7 @@ Visualization Manager:
       Marker Topic: /SQ22s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ22s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1566,7 +1952,7 @@ Visualization Manager:
       Marker Topic: /SQ23s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ23s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1574,7 +1960,7 @@ Visualization Manager:
       Marker Topic: /SQ24s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ24s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1582,7 +1968,7 @@ Visualization Manager:
       Marker Topic: /SQ25s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ25s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1590,7 +1976,7 @@ Visualization Manager:
       Marker Topic: /SQ26s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ26s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1598,7 +1984,7 @@ Visualization Manager:
       Marker Topic: /SQ27s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ27s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1606,7 +1992,7 @@ Visualization Manager:
       Marker Topic: /SQ28s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ28s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1614,7 +2000,7 @@ Visualization Manager:
       Marker Topic: /SQ29s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ29s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1622,7 +2008,7 @@ Visualization Manager:
       Marker Topic: /SQ30s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ30s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1630,7 +2016,7 @@ Visualization Manager:
       Marker Topic: /SQ31s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ31s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1638,7 +2024,7 @@ Visualization Manager:
       Marker Topic: /SQ32s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ32s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1646,7 +2032,7 @@ Visualization Manager:
       Marker Topic: /SQ33s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ33s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1654,7 +2040,7 @@ Visualization Manager:
       Marker Topic: /SQ34s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ34s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1662,7 +2048,7 @@ Visualization Manager:
       Marker Topic: /SQ35s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ35s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1670,7 +2056,7 @@ Visualization Manager:
       Marker Topic: /SQ36s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ36s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1678,7 +2064,7 @@ Visualization Manager:
       Marker Topic: /SQ37s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ37s: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1686,7 +2072,103 @@ Visualization Manager:
       Marker Topic: /SQ38s/drone_marker
       Name: Marker
       Namespaces:
-        mesh_SQ38s: true
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ39s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ40s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ41s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ42s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ43s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ44s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ45s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ46s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ47s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ48s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ49s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /SQ50s/drone_marker
+      Name: Marker
+      Namespaces:
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -1840,12 +2322,12 @@ Visualization Manager:
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 2096
+  Height: 2123
   Hide Left Dock: false
   Hide Right Dock: true
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000027600000792fc0200000010fb000000100044006900730070006c006100790073000000003e00000332000000c900fffffffb0000001200530065006c0065006300740069006f006e000000003d000004c20000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004cd00000293000002b300000152fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000028000003960000000000000000fb000000100044006900730070006c006100790073010000003d00000792000000c900fffffffb0000000a0049006d00610067006500000003d3000001350000001600fffffffb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000002f4000000ca0000000000000000fb0000000a0049006d00610067006501000001530000012c0000000000000000fb0000000c00430061006d0065007200610100000285000001390000000000000000fb0000000a0049006d00610067006501000002dd0000022b000000000000000000000001000001000000055efc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d0000055e000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000075c0000003efc0100000002fb0000000800540069006d006501000000000000075c000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000004e00000079200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000276000007adfc0200000010fb000000100044006900730070006c006100790073000000003e00000332000000c900fffffffb0000001200530065006c0065006300740069006f006e000000003d000004c20000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004cd00000293000002b300000152fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000028000003960000000000000000fb000000100044006900730070006c006100790073010000003d000007ad000000c900fffffffb0000000a0049006d00610067006500000006b5000001350000001600fffffffb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000002f4000000ca0000000000000000fb0000000a0049006d00610067006501000001530000012c0000000000000000fb0000000c00430061006d0065007200610100000285000001390000000000000000fb0000000a0049006d00610067006501000002dd0000022b000000000000000000000001000001000000055efc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d0000055e000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000f000000003efc0100000002fb0000000800540069006d0065010000000000000f00000002eb00fffffffb0000000800540069006d0065010000000000000450000000000000000000000c84000007ad00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1854,6 +2336,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 1884
-  X: 72
-  Y: 27
+  Width: 3840
+  X: 3840
+  Y: 0
