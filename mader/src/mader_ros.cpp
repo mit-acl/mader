@@ -43,6 +43,9 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   // determine who is the camera man
   mu::safeGetParam(nh1_, "is_camera_yawing", par_.is_camera_yawing);
 
+  // sequencial start
+  mu::safeGetParam(nh1_, "is_sequencial_start", is_sequencial_start_);
+
   // need these lines to get id
   name_drone_ = ros::this_node::getNamespace();  // Return also the slashes (2 in Kinetic, 1 in Melodic)
   name_drone_.erase(std::remove(name_drone_.begin(), name_drone_.end(), '/'), name_drone_.end());  // Remove the slashes
@@ -586,7 +589,7 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     replanCBTimer_.stop();  // to avoid blockage
 
     // introduce random wait time in the beginning
-    if (!is_replanCB_called_)
+    if (!is_replanCB_called_ && is_sequencial_start_)
     {
       // to avoid initial path search congestions add some random sleep here
       // std::random_device rd;

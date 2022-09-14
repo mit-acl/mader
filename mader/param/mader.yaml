@@ -17,6 +17,9 @@ max_agent_number: 10
 # camera yawing?
 is_camera_yawing: false
 
+# introduce roughly sequential start?
+is_sequencial_start: false
+
 # who's the camera man? (if you are camera man is_camera_yawing will be true in mader_ros.cpp)
 camera1: "20"
 camera2: "21"

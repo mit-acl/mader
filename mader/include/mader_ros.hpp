@@ -148,6 +148,8 @@ private:
   visualization_msgs::MarkerArray traj_safe_colored_bef_commit_;
   visualization_msgs::MarkerArray traj_safe_colored_bef_commit_save_;
 
+  bool is_sequencial_start_;
+
   int actual_trajID_ = 0;
 
   int num_of_LPs_run_ = 0;

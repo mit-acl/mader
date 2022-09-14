@@ -39,7 +39,7 @@ if __name__ == '__main__':
     # parameters
     is_oldmader=False
     num_of_sims=1
-    num_of_agents=100
+    num_of_agents=50
     how_long_to_wait=1000 #[s]
     if is_oldmader:
         cd_list = [0, 50, 100, 200, 300]
@@ -143,24 +143,24 @@ if __name__ == '__main__':
                     else:
                         agent_id = str(num)
 
-                    commands.append("sleep 2.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+str(dc_in_ms))
-                    commands.append("sleep 2.0 && rosparam set /SQ"+agent_id+"s/mader/simulated_comm_delay "+str(cd_in_ms))
+                    commands.append("sleep 20.0 && rosparam set /SQ"+agent_id+"s/mader/delay_check "+str(dc_in_ms))
+                    commands.append("sleep 20.0 && rosparam set /SQ"+agent_id+"s/mader/simulated_comm_delay "+str(cd_in_ms))
                     if is_oldmader:
-                        commands.append("sleep 2.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck false")
+                        commands.append("sleep 20.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck false")
                     else:
-                        commands.append("sleep 2.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck true")
+                        commands.append("sleep 20.0 && rosparam set /SQ"+agent_id+"s/mader/is_delaycheck true")
 
-                commands.append("sleep 2.0 && roslaunch mader many_drones.launch action:=controller")
-                commands.append("sleep 2.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts)
-                commands.append("sleep 2.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
-                commands.append("sleep 2.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
-                commands.append("sleep 2.0 && roslaunch mader ave_distance.launch num_of_agents:="+str(num_of_agents)+" folder_loc:="+folder_csv+" sim:="+sim_id)
-                # commands.append("sleep 2.0 && rvmd")
+                commands.append("sleep 20.0 && roslaunch mader many_drones.launch action:=controller")
+                commands.append("sleep 20.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts)
+                commands.append("sleep 20.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
+                commands.append("sleep 20.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
+                commands.append("sleep 20.0 && roslaunch mader ave_distance.launch num_of_agents:="+str(num_of_agents)+" folder_loc:="+folder_csv+" sim:="+sim_id)
+                # commands.append("sleep 20.0 && rvmd")
 
                 #publishing the goal should be the last command
-                commands.append("sleep 5.0 && roslaunch mader many_drones.launch action:=send_goal")
-                commands.append("sleep 5.0 && roslaunch mader goal_reached.launch") #we are calculating completion time here so sleep time needs to be the same as send_goal
-                commands.append("sleep 5.0 && tmux detach")
+                commands.append("sleep 25.0 && roslaunch mader many_drones.launch action:=send_goal")
+                commands.append("sleep 25.0 && roslaunch mader goal_reached.launch") #we are calculating completion time here so sleep time needs to be the same as send_goal
+                commands.append("sleep 25.0 && tmux detach")
 
                 # print("len(commands)= " , len(commands))
                 session_name="run_many_sims_multi_agent_session"
