@@ -4,10 +4,11 @@
 	<arg name="bbox_x" default="0.25"/>
 	<arg name="bbox_y" default="0.25"/>
 	<arg name="bbox_z" default="0.25"/>
-	<arg name="num_of_agents" default="10"/>
+	<arg name="num_of_agents" default="50"/>
 
 
-	<node name="collision_detector" pkg="mader" type="collision_detector.py" output="screen">
+	<!-- <node name="collision_detector" pkg="mader" type="collision_detector.py" output="screen"> -->
+	<node name="collision_detector" pkg="mader" type="collision_detector_using_tf.py" output="screen">
 		<param name="bbox_x" value="$(arg bbox_x)"/>
 		<param name="bbox_y" value="$(arg bbox_y)"/>
 		<param name="bbox_z" value="$(arg bbox_z)"/>

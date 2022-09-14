@@ -39,8 +39,8 @@ if __name__ == '__main__':
     # parameters
     is_oldmader=False
     num_of_sims=1
-    num_of_agents=25
-    how_long_to_wait=100 #[s]
+    num_of_agents=50
+    how_long_to_wait=50 #[s]
     if is_oldmader:
         cd_list = [0, 50, 100, 200, 300]
     else:
@@ -152,7 +152,8 @@ if __name__ == '__main__':
 
                 commands.append("sleep 20.0 && roslaunch mader many_drones.launch action:=controller")
                 commands.append("sleep 20.0 && roslaunch mader many_drones.launch action:=mader sim_id:="+sim_id+" folder:="+folder_txts)
-                commands.append("sleep 20.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
+                # commands.append("sleep 20.0 && cd "+folder_bags+" && rosbag record -a -o sim_" + sim_id + " __name:="+name_node_record)
+                commands.append("sleep 20.0 && cd "+folder_bags+" && rosbag record -e '(.*)drone_marker(.*)' '(.*)actual_traj(.*)' '(.*)traj_safe_colored(.*)' '(.*)traj_safe_colored_bef_commit(.*)' -o sim_" + sim_id + " __name:="+name_node_record)
                 commands.append("sleep 20.0 && roslaunch mader collision_detector.launch num_of_agents:=" + str(num_of_agents))
                 commands.append("sleep 20.0 && roslaunch mader ave_distance.launch num_of_agents:="+str(num_of_agents)+" folder_loc:="+folder_csv+" sim:="+sim_id)
                 # commands.append("sleep 20.0 && rvmd")
