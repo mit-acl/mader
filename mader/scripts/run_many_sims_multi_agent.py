@@ -38,13 +38,14 @@ if __name__ == '__main__':
 
     # parameters
     is_oldmader=False
-    num_of_sims=110
-    num_of_agents=10
-    how_long_to_wait=20 #[s]
+    num_of_sims=1
+    num_of_agents=100
+    how_long_to_wait=1000 #[s]
     if is_oldmader:
         cd_list = [0, 50, 100, 200, 300]
     else:
-        cd_list = [200, 300]
+        # cd_list = [200, 300]
+        cd_list = [100]
 
     # folder initialization
     folder_bags_list = []
@@ -61,8 +62,8 @@ if __name__ == '__main__':
             dc_list = [56, 51, 50.8, 35, 15] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
             # dc_list = [130] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [105, 101.3, 101, 75, 25] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [200] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [105, 101.3, 101, 75, 25] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [200] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 200:
             dc_list = [300]
         elif cd == 300:
