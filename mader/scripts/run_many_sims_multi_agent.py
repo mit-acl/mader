@@ -40,7 +40,7 @@ if __name__ == '__main__':
     is_oldmader=False
     num_of_sims=110
     num_of_agents=10
-    how_long_to_wait = 20 #[s]
+    how_long_to_wait=20 #[s]
     if is_oldmader:
         cd_list = [0, 50, 100, 200, 300]
     else:

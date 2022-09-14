@@ -23,30 +23,30 @@ if __name__ == '__main__':
 
     n_agents = 10
 
-    is_oldmader = True # change here 
+    is_oldmader = False # change here 
     
     if is_oldmader:
         cd_list = [0, 50, 100, 200, 300]
     else:
-        cd_list = [50, 100, 100, 200, 300]
-
+        cd_list = [0, 50, 100, 200, 300]
 
     for cd in cd_list:
 
-        is_oldmader=True
+        is_oldmader=False
 
         if cd == 0:
-            dc_list = [0, 100, 20, 8, 1] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [100, 25, 10, 3] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [100] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 50:
-            dc_list = [0, 130, 56, 51, 50.8, 35, 15] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [0, 130] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [130, 56, 51, 50.8, 35, 15] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [130] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 100:
-            dc_list = [0, 200, 105, 101.3, 101, 75, 25] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
-            # dc_list = [0, 200] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            dc_list = [200, 105, 101.3, 101, 75, 25] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
+            # dc_list = [200] #dc_list[0] will be used for old mader (which doesn't need delay check) so enter some value (default 0)
         elif cd == 200:
-            dc_list = [0, 300]
+            dc_list = [300]
         elif cd == 300:
-            dc_list = [0, 400]
+            dc_list = [400]
 
         # this gives you 2d array, row gives you each sims data in corresponding dc
         box_plot_list = [] 
