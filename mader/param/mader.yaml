@@ -42,7 +42,7 @@ drone_bbox: [0.25, 0.25, 0.25] #(m) Used for collision checking replacing drone_
 Ra: 30.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
 ##############delay_check: 0.05 # seconds
-#######################################################################################################simulated_comm_delay: 0.0 #seconds
+###########################################################################################################simulated_comm_delay: 0.0 #seconds
 comm_delay_param: 1.0
 
 x_min: -1000000000.0  # [m] don't forget the .0
@@ -107,7 +107,7 @@ a_star_bias: 0.0 #Bias (cost=g+bias*h) in the A* search #default is 1.0
 
 basis: "MINVO"  #MINVO OR B_SPLINE or BEZIER.  This is the basis used for collision checking
 
-res_plot_traj: 15.0  #Higher --> More resolution when plotting the trajectory 
+res_plot_traj: 5.0  #Higher --> More resolution when plotting the trajectory 
 
 factor_alloc: 1.0 #>=1. Used to find the total duration of a given trajectory.
 factor_alloc_close: 1.5 #>=1. Used to find the total duration of a given trajectory.
