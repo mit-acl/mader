@@ -44,7 +44,7 @@ if __name__ == '__main__':
     if is_oldmader:
         cd_list = [0, 50, 100, 200, 300]
     else:
-        cd_list = [0, 50, 100]
+        cd_list = [200, 300]
 
     # folder initialization
     folder_bags_list = []
