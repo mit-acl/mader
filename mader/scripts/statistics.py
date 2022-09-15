@@ -78,7 +78,7 @@ for name_bag in list_of_bags:
     num_of_agents=len(res); 
 
     print( "Detected ", num_of_agents, " agents in the bag")
-    drone_radius=0.05;
+    drone_radius=0.25;
 
     topics=[]
     agents_names=[]
@@ -129,9 +129,6 @@ for name_bag in list_of_bags:
         #print( "==========================")
         #print( "Agent= ", index_agent)
 
-        smoothness_acc = 0
-        smoothness_jer = 0
-
         for topic, msg, t in bag.read_messages(topics='/'+agents_names[index_agent]+'/goal'):
             if not goal_reached:
                 final_time=max(final_time, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
@@ -142,8 +139,8 @@ for name_bag in list_of_bags:
             acc=np.linalg.norm(np.array([msg.a.x, msg.a.y, msg.a.z]));
             jerk=np.linalg.norm(np.array([msg.j.x, msg.j.y, msg.j.z]));
 
-            smoothness_acc = smoothness_acc + acc**2
-            smoothness_jer = smoothness_jer + jerk**2
+            ave_smoothness_acc = ave_smoothness_acc + acc**2
+            ave_smoothness_jer = ave_smoothness_jer + jerk**2
 
             if (vel<epsilon and stopped==False):
                 stopped=True
@@ -323,8 +320,8 @@ for name_bag in list_of_bags:
     # 3. total distance
     # 4. smoothness
 
-    print( "Smoothness (acc): ", smoothness_acc)
-    print( "Smoothness (jer): ", smoothness_jer)
+    print( "Smoothness (acc): ", ave_smoothness_acc)
+    print( "Smoothness (jer): ", ave_smoothness_jer)
     print( "Num of agents: ", num_of_agents)
     # print( "Safety Margin Ratio: ", safety_margin_ratio)
     print( "Sum dist all the agents: ", sum(distances))
@@ -341,8 +338,8 @@ for name_bag in list_of_bags:
         ave_completion_time += total_time 
     ave_stop_counts += num_of_stops
     ave_total_distance += sum(distances)
-    ave_smoothness_acc += smoothness_acc
-    ave_smoothness_jer += smoothness_jer
+    ave_smoothness_acc += ave_smoothness_acc
+    ave_smoothness_jer += ave_smoothness_jer
 
     #print("Publishing Array:")
 
@@ -355,6 +352,9 @@ for name_bag in list_of_bags:
 ave_completion_time /= len(list_of_bags)
 ave_stop_counts /= len(list_of_bags)
 ave_total_distance /= len(list_of_bags)
+
+ave_smoothness_acc /= num_of_agents
+ave_smoothness_jer /= num_of_agents
 ave_smoothness_acc /= len(list_of_bags)
 ave_smoothness_jer /= len(list_of_bags)
 
