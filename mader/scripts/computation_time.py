@@ -42,11 +42,11 @@ import glob
 # home_dir = "/media/kota/T7/gurobi_nlopt/gurobi/"
 home_dir = "/home/kota/data/gurobi_nlopt/gurobi/"
 
-num_of_agents=10
-
 source_dir = "/home/kota/data/gurobi_nlopt/gurobi/bags/*.bag"
 # get the bags
 list_of_bags = glob.glob(source_dir)
+
+print(list_of_bags)
 
 ave_computation_time = 0.0
 
