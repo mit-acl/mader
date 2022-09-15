@@ -50,7 +50,7 @@ if (len(sys.argv) <=1):
 # get the bags
 list_of_bags=glob.glob(sys.argv[1]);
 
-home_dir = "/media/kota/T7/data/gurobi_nlopt/"
+home_dir = "/home/kota/data/gurobi_nlopt/"
 
 # data we need
 # 1. completion time
@@ -359,7 +359,6 @@ ave_smoothness_acc /= len(list_of_bags)
 ave_smoothness_jer /= len(list_of_bags)
 
 os.system('echo "----------------------------------------------------------------------------------" >> '+home_dir+'statistics.txt')
-os.system('echo "'+sys.argv[1]+'" >> /home/kota/data/gurobi_nlopt/statistics.txt')
 os.system('echo " completion time[s] '+str(round(ave_completion_time,2))+'" >> '+home_dir+'statistics.txt')
 os.system('echo " stop counts '+str(ave_stop_counts)+'" >> '+home_dir+'statistics.txt')
 os.system('echo " total travel distance '+str(round(ave_total_distance,2))+'" >> '+home_dir+'statistics.txt')
