@@ -39,10 +39,9 @@ Panels:
         - /Grid1
         - /TF1
         - /TF1/Frames1
-        - /ActTraj7
-        - /ActTraj8
-        - /ActTraj9
-        - /ActTraj10
+        - /ActTraj15
+        - /ActTraj16
+        - /ActTraj17
       Splitter Ratio: 0.652466356754303
     Tree Height: 1877
 Preferences:
@@ -1397,7 +1396,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /SQ15s/mader/actual_tra
+      Marker Topic: /SQ15s/mader/actual_traj
       Name: ActTraj
       Namespaces:
         {}
@@ -2178,7 +2177,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0.014999999664723873
+      Angle: 0
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -2188,10 +2187,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 12.036126136779785
+      Scale: 10
       Target Frame: <Fixed Frame>
-      X: 19.189573287963867
-      Y: 0.7809600830078125
+      X: 0
+      Y: 0
     Saved:
       - Class: rviz/ThirdPersonFollower
         Distance: 16.45623207092285
