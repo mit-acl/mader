@@ -109,4 +109,4 @@ if __name__ == '__main__':
     os.system("sed -i '/visual/s/^#//g' $(rospack find mader)/param/mader.yaml") #comment out visual param
     os.system("sed -i '/basis/s/^#//g' $(rospack find mader)/param/mader.yaml") #comment out basis param
 
-    os.system('python $(rospack find mader)/scripts/statistics.py "/home/kota/data/gurobi_nlopt/nlopt/bags/*.bag"')
+    # os.system('python $(rospack find mader)/scripts/statistics.py "/home/kota/data/gurobi_nlopt/nlopt/bags/*.bag"')
