@@ -50,7 +50,7 @@ if (len(sys.argv) <=1):
 # get the bags
 list_of_bags=glob.glob(sys.argv[1]);
 
-home_dir = "/home/kota/data/gurobi_nlopt/"
+home_dir = "/home/kota/data/gurobi_nlopt/gurobi/"
 
 # data we need
 # 1. completion time
@@ -131,7 +131,6 @@ for name_bag in list_of_bags:
 
         smoothness_acc = 0.0
         smoothness_jer = 0.0
-        smoothness_cnt = 0
 
         for topic, msg, t in bag.read_messages(topics='/'+agents_names[index_agent]+'/goal'):
             if not goal_reached:
@@ -145,7 +144,6 @@ for name_bag in list_of_bags:
 
             smoothness_acc = smoothness_acc + acc**2
             smoothness_jer = smoothness_jer + jerk**2
-            smoothness_cnt += 1
 
             if (vel<epsilon and stopped==False):
                 stopped=True
@@ -164,10 +162,8 @@ for name_bag in list_of_bags:
                         
             last_vel=vel;
 
-        smoothness_acc /= smoothness_cnt
         ave_smoothness_acc += smoothness_acc
-        smoothness_jer /= smoothness_cnt
-        ave_smoothness_jer += ave_smoothness_jer
+        ave_smoothness_jer += smoothness_jer
 
         #Out of the inner loop now
         t_1end=min(t_1end, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
