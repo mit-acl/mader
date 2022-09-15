@@ -66,10 +66,10 @@ ave_smoothness_jer = 0.0
 
 for name_bag in list_of_bags:
 
-    print(Fore.BLUE + "=====================================")
-    print(Fore.BLUE + "=====================================")
-    print(Fore.BLUE + "Reading ",name_bag)
-    print(Style.RESET_ALL)
+    # print(Fore.BLUE + "=====================================")
+    # print(Fore.BLUE + "=====================================")
+    # print(Fore.BLUE + "Reading ",name_bag)
+    # print(Style.RESET_ALL)
 
     bag = rosbag.Bag(name_bag)
     all_topics = bag.get_type_and_topic_info()[1].keys()
@@ -77,7 +77,7 @@ for name_bag in list_of_bags:
     res = [i for i in all_topics if re.match(regex, i)] 
     num_of_agents=1 
 
-    print( "Detected ", num_of_agents, " agents in the bag")
+    # print( "Detected ", num_of_agents, " agents in the bag")
     drone_radius=0.25;
 
     topics=[]
@@ -269,9 +269,9 @@ for name_bag in list_of_bags:
     times_discret = np.linspace(t_go, final_time, 2000)
 
 
-    print( "Constructing bag transformer...")
+    # print( "Constructing bag transformer...")
     bag_transformer = BagTfTransformer(bag)
-    print( "Constructed, checking now min distances")
+    # print( "Constructed, checking now min distances")
 
 
     summary_crashes=[]
@@ -292,14 +292,14 @@ for name_bag in list_of_bags:
                 translation1, quaternion = bag_transformer.lookupTransform("vicon", agent_i, rospy.Time.from_sec(time))
                 translation2, quaternion = bag_transformer.lookupTransform("vicon", agent_j, rospy.Time.from_sec(time))
                 dist=np.linalg.norm(np.array(translation1)-np.array(translation2));
-                print("dist "+dist)
+                # print("dist "+dist)
                 min_distance=min(min_distance, dist)
 
                 try:                             
                     translation1, quaternion = bag_transformer.lookupTransform("vicon", agent_i, rospy.Time.from_sec(time))
                     translation2, quaternion = bag_transformer.lookupTransform("vicon", agent_j, rospy.Time.from_sec(time))
                     dist=np.linalg.norm(np.array(translation1)-np.array(translation2));
-                    print("dist "+dist)
+                    # print("dist "+dist)
 
                     min_distance=min(min_distance, dist)
 
@@ -309,7 +309,7 @@ for name_bag in list_of_bags:
             all_min_distances.append(min_distance);
             sentence=agent_i+ '-->'+ agent_j + ' min distance= '+ str(min_distance)
             if(min_distance<2*drone_radius):
-                print( Fore.RED + sentence + Style.RESET_ALL)
+                # print( Fore.RED + sentence + Style.RESET_ALL)
                 summary_crashes.append(sentence)
             else:
                 #print( Fore.GREEN + sentence + Style.RESET_ALL)
@@ -331,8 +331,8 @@ for name_bag in list_of_bags:
     # # 3. total distance
     # # 4. smoothness
 
-    # print( "Smoothness (acc): ", ave_smoothness_acc)
-    # print( "Smoothness (jer): ", ave_smoothness_jer)
+    print( "Smoothness (acc): ", ave_smoothness_acc)
+    print( "Smoothness (jer): ", ave_smoothness_jer)
     # print( "Num of agents: ", num_of_agents)
     # # print( "Safety Margin Ratio: ", safety_margin_ratio)
     # print( "Sum dist all the agents: ", sum(distances))
