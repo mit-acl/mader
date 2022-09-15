@@ -50,7 +50,7 @@ if (len(sys.argv) <=1):
 # get the bags
 list_of_bags=glob.glob(sys.argv[1]);
 
-home_dir = "/home/kota/data/gurobi_nlopt/gurobi/"
+home_dir = "/home/kota/data/gurobi_nlopt/nlopt/"
 
 # data we need
 # 1. completion time
@@ -111,8 +111,8 @@ for name_bag in list_of_bags:
     for index_agent in range(0, num_of_agents):
         for topic, msg, t in bag.read_messages(topics='/'+agents_names[index_agent]+'/term_goal'):
             t_go=min(t_go, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
-            print(t_go)
-            print(msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
+            # print(t_go)
+            # print(msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
 
     #Time when the last UAV reaches the goal terminal goal is sent to the UAVs  
     epsilon=1e-7 
@@ -327,8 +327,8 @@ for name_bag in list_of_bags:
     # # 3. total distance
     # # 4. smoothness
 
-    print( "Smoothness (acc): ", ave_smoothness_acc)
-    print( "Smoothness (jer): ", ave_smoothness_jer)
+    print( "Ave smoothness (acc) (before devided tho): ", ave_smoothness_acc)
+    print( "Ave smoothness (jer) (before devided tho): ", ave_smoothness_jer)
     # print( "Num of agents: ", num_of_agents)
     # # print( "Safety Margin Ratio: ", safety_margin_ratio)
     # print( "Sum dist all the agents: ", sum(distances))
