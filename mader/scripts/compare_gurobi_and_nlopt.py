@@ -25,7 +25,7 @@ if __name__ == '__main__':
     os.system("sed -i '/visual/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment visual param
     os.system("sed -i '/basis/s/^/#/g' $(rospack find mader)/param/mader.yaml") #comment basis param
 
-    num_of_sims=120;
+    num_of_sims=100;
     total_num_of_obs=[250]#[1000]#[50,400,500,600,700]#[150, 200, 250, 300, 350] #[340,380,420,460,500]; #140,180,220,260,300
     commands = []
 
@@ -55,9 +55,9 @@ if __name__ == '__main__':
                 # commands.append("sleep 3.0 && rosrun rviz rviz -d  $(rospack find mader)/rviz_cfgs/mader.rviz")
 
                 commands.append("sleep 5.0 && roslaunch mader mader.launch");
-                commands.append("sleep 5.0 && cd "+folder_bags+" && rosbag record -o "+basis+"_obs_"+str(total_num_of_obs[k])+"_sim_"+str(s)+" /SQ01s/goal /SQ01s/term_goal __name:="+name_node_record);
+                commands.append("sleep 5.0 && cd "+folder_bags+" && rosbag record -o "+basis+"_obs_"+str(total_num_of_obs[k])+"_sim_"+str(s)+" /SQ01s/mader/computation_time /SQ01s/goal /SQ01s/term_goal __name:="+name_node_record);
                 #publishing the goal should be the last command
-                commands.append("sleep 15.0 && rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped \'{header: {stamp: now, frame_id: \"world\"}, pose: {position: {x: 75, y: 0, z: 1}, orientation: {w: 1.0}}}\'");
+                commands.append("sleep 7.0 && rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped \'{header: {stamp: now, frame_id: \"world\"}, pose: {position: {x: 75, y: 0, z: 1}, orientation: {w: 1.0}}}\'");
 
                 print("len(commands)= " , len(commands))
                 session_name="run_many_sims_single_agent_session"
