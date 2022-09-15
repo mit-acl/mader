@@ -47,7 +47,8 @@ class Mader
 public:
   Mader(mt::parameters par);
   bool replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out, std::vector<Hyperplane3D>& planes,
-              int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out);
+              int& num_of_LPs_run, int& num_of_QCQPs_run, mt::PieceWisePol& pwp_out, bool& is_optimization_suceed,
+              double& computation_time);
   void updateState(mt::state data);
 
   bool getNextGoal(mt::state& next_goal);

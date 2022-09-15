@@ -706,7 +706,7 @@ bool Mader::isReplanningNeeded()
 
 bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
                    std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
-                   mt::PieceWisePol& pwp_out)
+                   mt::PieceWisePol& pwp_out, bool& is_optimization_suceed, double& computation_time)
 {
   if (isReplanningNeeded() == false)
   {
@@ -846,6 +846,18 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
     deltaT_ = std::max(par_.factor_alpha * states_last_replan, 1.0);
     deltaT_ = std::min(1.0 * deltaT_, 2.0 / par_.dc);
     return false;
+  }
+
+  // record computation time for Gurobi and Nlopt comparison
+  if (result)
+  {
+    is_optimization_suceed = true;
+    computation_time = replanCB_t.ElapsedMs();
+  }
+  else
+  {
+    is_optimization_suceed = false;
+    computation_time = 0.0;
   }
 
   solver_->getPlanes(planes);

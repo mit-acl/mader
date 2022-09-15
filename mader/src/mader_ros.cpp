@@ -135,6 +135,7 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   pub_text_ = nh1_.advertise<jsk_rviz_plugins::OverlayText>("text", 1);
   pub_fov_ = nh1_.advertise<visualization_msgs::Marker>("fov", 1);
   pub_obstacles_ = nh1_.advertise<visualization_msgs::Marker>("obstacles", 1);
+  pub_computation_time_ = nh1_.advertise<mader_msgs::ComputationTime>("computation_time", 1);
 
   // Subscribers
   sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);
@@ -303,7 +304,17 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     std::vector<Hyperplane3D> planes;
     mt::PieceWisePol pwp;
 
-    bool replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp);
+    bool is_optimization_suceed = false;
+    double computation_time = 0.0;
+    bool replanned = mader_ptr_->replan(edges_obstacles, X_safe, planes, num_of_LPs_run_, num_of_QCQPs_run_, pwp,
+                                        is_optimization_suceed, computation_time);
+
+    if (is_optimization_suceed)
+    {
+      mader_msgs::ComputationTime msg;
+      msg.computation_time = computation_time;
+      pub_computation_time_.publish(msg);
+    }
 
     if (par_.visual)
     {
@@ -490,11 +501,11 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
   {
     snapstack_msgs::Goal quadGoal;
 
-    quadGoal.p = mu::eigen2point(next_goal.pos); //Kota changed it from eigen2rosvector July 26, 2021
+    quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 
-    //printf("terminal goal x %f \n", next_goal.pos.x());
-    //printf("terminal goal y %f \n", next_goal.pos.y());
-    //printf("terminal goal z %f \n", next_goal.pos.z());
+    // printf("terminal goal x %f \n", next_goal.pos.x());
+    // printf("terminal goal y %f \n", next_goal.pos.y());
+    // printf("terminal goal z %f \n", next_goal.pos.z());
 
     quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 
@@ -506,9 +517,8 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
     quadGoal.a = mu::eigen2rosvector(next_goal.accel);
     quadGoal.j = mu::eigen2rosvector(next_goal.jerk);
 
-
-    //quadGoal.dyaw = next_goal.dyaw;
-    //quadGoal.yaw = next_goal.yaw;
+    // quadGoal.dyaw = next_goal.dyaw;
+    // quadGoal.yaw = next_goal.yaw;
 
     // quadGoal.dyaw = next_goal.dyaw;
     // quadGoal.yaw = next_goal.yaw;
