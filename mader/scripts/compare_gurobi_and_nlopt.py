@@ -29,9 +29,9 @@ if __name__ == '__main__':
     total_num_of_obs=[250]#[1000]#[50,400,500,600,700]#[150, 200, 250, 300, 350] #[340,380,420,460,500]; #140,180,220,260,300
     commands = []
 
-    folder_bags="/home/kota/data/gurobi_nlopt/bags" # change folder name if necessary
+    folder_bags="/home/kota/data/gurobi_nlopt/nlopt/bags" # change folder name if necessary
 
-    os.system("mkdir -p /home/kota/data/gurobi_nlopt/bags")
+    os.system("mkdir -p /home/kota/data/gurobi_nlopt/nlopt/bags")
     all_basis=["MINVO"] #or"MINVO", "BEZIER", "B_SPLINE"
     name_node_record="bag_recorder"
     kill_all="tmux kill-server & killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient & killall -9 roscore & killall -9 rosmaster & pkill mader_node & pkill -f dynamic_obstacles & pkill -f rosout & pkill -f behavior_selector_node & pkill -f rviz & pkill -f rqt_gui & pkill -f perfect_tracker & pkill -f mader_commands"
@@ -95,10 +95,10 @@ if __name__ == '__main__':
                 if goal_reached:
                     print("Currently at ",pos_string)
                     print("Goal is reached, killing the bag node")
-                    os.system('echo "sim'+str(s)+' goal reached" >> /home/kota/data/gurobi_nlopt/bags/status.txt')
+                    os.system('echo "sim'+str(s)+' goal reached" >> /home/kota/data/gurobi_nlopt/nlopt/bags/status.txt')
                 else:
                     print("Time out")
-                    os.system('echo "sim'+str(s)+' not goal reached" >> /home/kota/data/gurobi_nlopt/bags/status.txt')
+                    os.system('echo "sim'+str(s)+' not goal reached" >> /home/kota/data/gurobi_nlopt/nlopt/bags/status.txt')
 
                 os.system("rosnode kill "+name_node_record);
                 time.sleep(0.5)
@@ -109,4 +109,4 @@ if __name__ == '__main__':
     os.system("sed -i '/visual/s/^#//g' $(rospack find mader)/param/mader.yaml") #comment out visual param
     os.system("sed -i '/basis/s/^#//g' $(rospack find mader)/param/mader.yaml") #comment out basis param
 
-    os.system('python $(rospack find mader)/scripts/statistics.py "/home/kota/data/gurobi_nlopt/bags/*.bag"')
+    os.system('python $(rospack find mader)/scripts/statistics.py "/home/kota/data/gurobi_nlopt/nlopt/bags/*.bag"')

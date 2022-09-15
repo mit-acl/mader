@@ -129,6 +129,10 @@ for name_bag in list_of_bags:
         #print( "==========================")
         #print( "Agent= ", index_agent)
 
+        smoothness_acc = 0.0
+        smoothness_jer = 0.0
+        smoothness_cnt = 0
+
         for topic, msg, t in bag.read_messages(topics='/'+agents_names[index_agent]+'/goal'):
             if not goal_reached:
                 final_time=max(final_time, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
@@ -139,8 +143,9 @@ for name_bag in list_of_bags:
             acc=np.linalg.norm(np.array([msg.a.x, msg.a.y, msg.a.z]));
             jerk=np.linalg.norm(np.array([msg.j.x, msg.j.y, msg.j.z]));
 
-            ave_smoothness_acc = ave_smoothness_acc + acc**2
-            ave_smoothness_jer = ave_smoothness_jer + jerk**2
+            smoothness_acc = smoothness_acc + acc**2
+            smoothness_jer = smoothness_jer + jerk**2
+            smoothness_cnt += 1
 
             if (vel<epsilon and stopped==False):
                 stopped=True
@@ -158,6 +163,12 @@ for name_bag in list_of_bags:
                 stopped=False
                         
             last_vel=vel;
+
+        smoothness_acc /= smoothness_cnt
+        ave_smoothness_acc += smoothness_acc
+        smoothness_jer /= smoothness_cnt
+        ave_smoothness_jer += ave_smoothness_jer
+        
         #Out of the inner loop now
         t_1end=min(t_1end, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
 

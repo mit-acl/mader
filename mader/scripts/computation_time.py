@@ -39,33 +39,35 @@ import glob
 
 #rospy.init_node('talker', anonymous=True)
 
-# home_dir = "/media/kota/T7/gurobi_nlopt/"
-home_dir = "/home/kota/data/gurobi_nlopt/"
+# home_dir = "/media/kota/T7/gurobi_nlopt/gurobi/"
+home_dir = "/home/kota/data/gurobi_nlopt/gurobi/"
 
 num_of_agents=10
 
-source_dir = "/home/kota/data/gurobi_nlopt/bags/*.bag"
+source_dir = "/home/kota/data/gurobi_nlopt/gurobi/bags/*.bag"
 # get the bags
 list_of_bags = glob.glob(source_dir)
 
-ave_completion_time = 0.0
+ave_computation_time = 0.0
 
 for name_bag in list_of_bags:
     bag = rosbag.Bag(name_bag)
+    computation_time = 0.0
     computation_time_cnt = 0
     for topic, msg, t in bag.read_messages(topics='/SQ01s/mader/computation_time'):
-        ave_completion_time = ave_completion_time + msg.computation_time
+        computation_time = computation_time + msg.computation_time
         computation_time_cnt = computation_time_cnt + 1
 
-    ave_completion_time /= computation_time_cnt
+    computation_time /= computation_time_cnt
+    ave_computation_time += computation_time
 
     rospy.sleep(4.0)
     bag.close()
 
 # output txt file
-ave_completion_time /= len(list_of_bags)
+ave_computation_time /= len(list_of_bags)
 
 os.system('echo "----------------------------------------------------------------------------------" >> '+home_dir+'computation_time.txt')
 os.system('echo "'+str(source_dir)+'" >> '+home_dir+'computation_time.txt')
 os.system('echo "----------------------------------------------------------------------------------" >> '+home_dir+'computation_time.txt')
-os.system('echo " computation time [ms]'+str(round(ave_completion_time,2))+'" >> '+home_dir+'computation_time.txt')
+os.system('echo " computation time [ms]'+str(round(ave_computation_time,2))+'" >> '+home_dir+'computation_time.txt')
