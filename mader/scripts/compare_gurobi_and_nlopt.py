@@ -29,7 +29,7 @@ if __name__ == '__main__':
     total_num_of_obs=[250]#[1000]#[50,400,500,600,700]#[150, 200, 250, 300, 350] #[340,380,420,460,500]; #140,180,220,260,300
     commands = []
 
-    folder_bags="/home/kota/data/gurobi_nlopt/nlopt/bags/" # change folder name if necessary
+    folder_bags="/home/kota/data/gurobi_nlopt/nlopt/bags" # change folder name if necessary
 
     os.system("mkdir -p /home/kota/data/gurobi_nlopt/nlopt/bags")
     all_basis=["MINVO"] #or"MINVO", "BEZIER", "B_SPLINE"
