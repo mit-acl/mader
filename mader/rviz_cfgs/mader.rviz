@@ -39,9 +39,6 @@ Panels:
         - /Grid1
         - /TF1
         - /TF1/Frames1
-        - /ActTraj15
-        - /ActTraj16
-        - /ActTraj17
       Splitter Ratio: 0.652466356754303
     Tree Height: 1877
 Preferences:
@@ -2187,7 +2184,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 10
+      Scale: 20
       Target Frame: <Fixed Frame>
       X: 0
       Y: 0
