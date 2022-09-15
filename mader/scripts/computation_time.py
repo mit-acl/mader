@@ -49,12 +49,14 @@ list_of_bags = glob.glob(source_dir)
 print(list_of_bags)
 
 ave_computation_time = 0.0
+max_computation = 0.0
 
 for name_bag in list_of_bags:
     bag = rosbag.Bag(name_bag)
     computation_time = 0.0
     computation_time_cnt = 0
     for topic, msg, t in bag.read_messages(topics='/SQ01s/mader/computation_time'):
+        max_computation = max(max_computation, msg.computation_time)
         computation_time = computation_time + msg.computation_time
         computation_time_cnt = computation_time_cnt + 1
 
@@ -70,4 +72,5 @@ ave_computation_time /= len(list_of_bags)
 os.system('echo "----------------------------------------------------------------------------------" >> '+home_dir+'computation_time.txt')
 os.system('echo "'+str(source_dir)+'" >> '+home_dir+'computation_time.txt')
 os.system('echo "----------------------------------------------------------------------------------" >> '+home_dir+'computation_time.txt')
-os.system('echo " computation time [ms]'+str(round(ave_computation_time,2))+'" >> '+home_dir+'computation_time.txt')
+os.system('echo " ave computation time [ms]'+str(round(ave_computation_time,2))+'" >> '+home_dir+'computation_time.txt')
+os.system('echo " max computation time [ms]'+str(round(max_computation,2))+'" >> '+home_dir+'computation_time.txt')
