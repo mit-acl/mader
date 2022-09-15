@@ -15,7 +15,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_finders")
 find_package(CGAL REQUIRED)
 
 
-option(USE_GUROBI "Use GUROBI as the solver" ON) #if OFF, then it will use NLOPT as the solver
+option(USE_GUROBI "Use GUROBI as the solver" OFF) #if OFF, then it will use NLOPT as the solver
 
 
 include(${CGAL_USE_FILE})
