@@ -75,7 +75,7 @@ for name_bag in list_of_bags:
     all_topics = bag.get_type_and_topic_info()[1].keys()
     regex = re.compile('/SQ.+s/goal') # .+ is the wildcard
     res = [i for i in all_topics if re.match(regex, i)] 
-    num_of_agents=len(res); 
+    num_of_agents=1 
 
     print( "Detected ", num_of_agents, " agents in the bag")
     drone_radius=0.25;
@@ -168,7 +168,7 @@ for name_bag in list_of_bags:
         ave_smoothness_acc += smoothness_acc
         smoothness_jer /= smoothness_cnt
         ave_smoothness_jer += ave_smoothness_jer
-        
+
         #Out of the inner loop now
         t_1end=min(t_1end, msg.header.stamp.secs + msg.header.stamp.nsecs*1e-9)
 
@@ -315,42 +315,40 @@ for name_bag in list_of_bags:
                 #print( Fore.GREEN + sentence + Style.RESET_ALL)
                 pass
 
-    if len(summary_crashes)==0:
-        print( Fore.GREEN + "NO CRASHES")
-    else:
-        print( Fore.RED + "CRASHES: ")
-        for crash_i in summary_crashes:
-            print( Fore.RED + crash_i)
-    print( Style.RESET_ALL )
+    # if len(summary_crashes)==0:
+    #     print( Fore.GREEN + "NO CRASHES")
+    # else:
+    #     print( Fore.RED + "CRASHES: ")
+    #     for crash_i in summary_crashes:
+    #         print( Fore.RED + crash_i)
+    # print( Style.RESET_ALL )
 
-    # safety_margin_ratio=min(all_min_distances)/(2*drone_radius); #Should be >=1 to ensure safety
+    # # safety_margin_ratio=min(all_min_distances)/(2*drone_radius); #Should be >=1 to ensure safety
 
-    # data we need
-    # 1. completion time
-    # 2. stop counts
-    # 3. total distance
-    # 4. smoothness
+    # # data we need
+    # # 1. completion time
+    # # 2. stop counts
+    # # 3. total distance
+    # # 4. smoothness
 
-    print( "Smoothness (acc): ", ave_smoothness_acc)
-    print( "Smoothness (jer): ", ave_smoothness_jer)
-    print( "Num of agents: ", num_of_agents)
-    # print( "Safety Margin Ratio: ", safety_margin_ratio)
-    print( "Sum dist all the agents: ", sum(distances))
-    print( "Total_time (seconds): ", total_time)
-    print( "Total number of Stops: ",num_of_stops)
-    print( "Total number of stops per agent: ",num_of_stops/float(num_of_agents))
-    print( "t_1start: ", t_1start)
-    print( "t_laststart: ", t_laststart)
-    print( "t_1end: ", t_1end)
-    print( "total_time: ", total_time)
-    print( "(Using radius drone= ", drone_radius, ")")
+    # print( "Smoothness (acc): ", ave_smoothness_acc)
+    # print( "Smoothness (jer): ", ave_smoothness_jer)
+    # print( "Num of agents: ", num_of_agents)
+    # # print( "Safety Margin Ratio: ", safety_margin_ratio)
+    # print( "Sum dist all the agents: ", sum(distances))
+    # print( "Total_time (seconds): ", total_time)
+    # print( "Total number of Stops: ",num_of_stops)
+    # print( "Total number of stops per agent: ",num_of_stops/float(num_of_agents))
+    # print( "t_1start: ", t_1start)
+    # print( "t_laststart: ", t_laststart)
+    # print( "t_1end: ", t_1end)
+    # print( "total_time: ", total_time)
+    # print( "(Using radius drone= ", drone_radius, ")")
 
     if not (total_time == float("inf") or total_time == float("-inf")):
         ave_completion_time += total_time 
     ave_stop_counts += num_of_stops
     ave_total_distance += sum(distances)
-    ave_smoothness_acc += ave_smoothness_acc
-    ave_smoothness_jer += ave_smoothness_jer
 
     #print("Publishing Array:")
 
