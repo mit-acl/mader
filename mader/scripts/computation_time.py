@@ -39,10 +39,11 @@ import glob
 
 #rospy.init_node('talker', anonymous=True)
 
-# home_dir = "/media/kota/T7/gurobi_nlopt/gurobi/"
-home_dir = "/home/kota/data/gurobi_nlopt/nlopt/"
+home_dir = "/media/kota/T7/gurobi_nlopt/gurobi/"
+# home_dir = "/home/kota/data/gurobi_nlopt/nlopt/"
 
-source_dir = "/home/kota/data/gurobi_nlopt/nlopt/bags/*.bag"
+source_dir = "/home/kota/data/gurobi_nlopt/gurobi/bags/*.bag"
+# source_dir = "/home/kota/data/gurobi_nlopt/nlopt/bags/*.bag"
 # get the bags
 list_of_bags = glob.glob(source_dir)
 
