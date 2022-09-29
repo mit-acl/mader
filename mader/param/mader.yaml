@@ -17,8 +17,8 @@ max_agent_number: 10
 is_camera_yawing: false
 
 # who's the camera man? (if you are camera man is_camera_yawing will be true in mader_ros.cpp)
-camera1: "05"
-camera2: "07"
+camera1: "20"
+camera2: "20"
 
 # who's the obstacle?
 obstacle1: "20"
@@ -36,7 +36,7 @@ n_agents: 10
 dc: 0.01            #(seconds) Duration for the interpolation=Value of the timer pubGoal
 goal_radius: 0.05    #(m) Drone has arrived to the goal when distance_to_goal<GOAL_RADIUS
 drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced by drone_bbox
-drone_bbox: [2.0, 2.0, 2.0] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
+drone_bbox: [1.0, 1.0, 1.5] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
 Ra: 10.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 obs_Ra: 20.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
