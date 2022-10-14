@@ -56,6 +56,7 @@ private:
   void whoPlansCB(const mader_msgs::WhoPlans& msg);
   void pubCB(const ros::TimerEvent& e);
   void replanCB(const ros::TimerEvent& e);
+  void visual(mt::Edges& edges_obstacles, std::vector<mt::state>& traj_plan, const bool& is_committed);
   void trajCB(const mader_msgs::DynTraj& msg);
   void allTrajsTimerCB(const ros::TimerEvent& e);
 
