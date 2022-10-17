@@ -18,7 +18,7 @@ is_camera_yawing: false
 
 # who's the camera man? (if you are camera man is_camera_yawing will be true in mader_ros.cpp)
 camera1: "05"
-camera2: "06"
+camera2: "07"
 
 # who's the obstacle?
 obstacle1: "20"
@@ -38,7 +38,7 @@ goal_radius: 0.05    #(m) Drone has arrived to the goal when distance_to_goal<GO
 drone_radius: 0.25  #(m) Used for collision checking # not used anymore replaced by drone_bbox
 drone_bbox: [0.8, 0.8, 1.0] #(m) Used for collision checking replacing drone_radius. The bounding box dimension [x y z]
 
-Ra: 10.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
+Ra: 6.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 obs_Ra: 20.0           # [m] Radius of my planning sphere (planning horizon). Should be < fov_depth
 
 delay_check: 0.05 # seconds
@@ -96,7 +96,7 @@ solver: "LD_MMA"
 # LD_TNEWTON_RESTART, LD_TNEWTON_PRECOND, LD_VAR1, LD_LBFGS_NOCEDAL, COBYLA
 
 # kappa + mu <=1 Ideally kappa + mu<1 (so that there is time for other stuff)
-upper_bound_runtime_snlopt: 3.0 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
+upper_bound_runtime_snlopt: 0.5 #[seconds] snlopt (init guess + solver) will never take longer than this amount of seconds
 lower_bound_runtime_snlopt: 0.05 #[seconds] snlopt (init guess + solver) will never take less than this amount of seconds
 kappa: 0.4 #% of time spent to find initial guess
 mu: 0.4    #% of time spent to solve the optimization
