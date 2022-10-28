@@ -83,31 +83,7 @@ tmux send-keys -t $SESSION:$w.11 "ssh nuc08@192.168.22.2" C-m
 
 sleep 1
 
-
 # run mader hw_onboard and save termial data into txt files
-
-
-if [[ $ifDELETE == 'true' ]]; then 
-	tmux send-keys -t $SESSION:$w.1 "cd /home/nuc2/Research/bags && rm *.txt" C-m
-	tmux send-keys -t $SESSION:$w.3 "cd /home/nuc3/Research/bags && rm *.txt" C-m
-	tmux send-keys -t $SESSION:$w.5 "cd /home/nuc4/Research/bags && rm *.txt" C-m
-	tmux send-keys -t $SESSION:$w.7 "cd /home/nuc5/Research/bags && rm *.txt" C-m
-	tmux send-keys -t $SESSION:$w.9 "cd /home/nuc6/Research/bags && rm *.txt" C-m
-	tmux send-keys -t $SESSION:$w.11 "cd /home/nuc8/Research/bags && rm *.txt" C-m
-	# tmux send-keys -t $SESSION:$w.9 "cd /home/nuc5/Research/bags && rm *.txt" C-m
-	# tmux send-keys -t $SESSION:$w11 "cd /home/nuc6/Research/bags && rm *.txt" C-m
-	# tmux send-keys -t $SESSION:$w.7 "cd /home/nuc/Research/bags && rm *.txt" C-m
-	# tmux send-keys -t $SESSION:$w.9 "cd /home/nuc08/Research/bags && rm *.txt" C-m
-	# tmux send-keys -t $SESSION:$w.11 "cd /home/nuc9/Research/bags && rm *.txt" C-m
-	
-fi
-
-# may need sudo netplan apply to access to internet
-tmux send-keys -t $SESSION:$w.5 "sudo netplan apply" C-m #nuc4
-tmux send-keys -t $SESSION:$w.7 "sudo netplan apply" C-m #nuc5
-tmux send-keys -t $SESSION:$w.11 "sudo netplan apply" C-m #nuc8
-
-sleep 3
 
 # ntp date
 tmux send-keys -t $SESSION:$w.1 "sudo ntpdate time.nist.gov" C-m
@@ -117,12 +93,30 @@ tmux send-keys -t $SESSION:$w.7 "sudo ntpdate time.nist.gov" C-m
 tmux send-keys -t $SESSION:$w.9 "sudo ntpdate time.nist.gov" C-m
 tmux send-keys -t $SESSION:$w.11 "sudo ntpdate time.nist.gov" C-m
 
-sleep 10
+sleep 15
 
-# activate ad-hoc network (this needs to be after ntpdate since it needs internet)
-tmux send-keys -t $SESSION:$w.5 "./ad_hoc_without_NM.sh" C-m #nuc4
-tmux send-keys -t $SESSION:$w.7 "./ad_hoc_without_NM.sh" C-m #nuc5
-tmux send-keys -t $SESSION:$w.11 "./ad_hoc_without_NM.sh" C-m #nuc8
+if [[ $ifDELETE == 'true' ]]; then 
+	tmux send-keys -t $SESSION:$w.1 "cd /home/nuc2/Research/bags && rm *.txt && cd" C-m
+	tmux send-keys -t $SESSION:$w.3 "cd /home/nuc3/Research/bags && rm *.txt && cd" C-m
+	tmux send-keys -t $SESSION:$w.5 "cd /home/nuc4/Research/bags && rm *.txt && cd" C-m
+	tmux send-keys -t $SESSION:$w.7 "cd /home/nuc5/Research/bags && rm *.txt && cd" C-m
+	tmux send-keys -t $SESSION:$w.9 "cd /home/nuc6/Research/bags && rm *.txt && cd" C-m
+	tmux send-keys -t $SESSION:$w.11 "cd /home/nuc8/Research/bags && rm *.txt && cd" C-m
+	# tmux send-keys -t $SESSION:$w.9 "cd /home/nuc5/Research/bags && rm *.txt" C-m
+	# tmux send-keys -t $SESSION:$w11 "cd /home/nuc6/Research/bags && rm *.txt" C-m
+	# tmux send-keys -t $SESSION:$w.7 "cd /home/nuc/Research/bags && rm *.txt" C-m
+	# tmux send-keys -t $SESSION:$w.9 "cd /home/nuc08/Research/bags && rm *.txt" C-m
+	# tmux send-keys -t $SESSION:$w.11 "cd /home/nuc9/Research/bags && rm *.txt" C-m
+	
+fi
+
+
+for i in 5 7 11 # RUNNING MESH WITH NETWORK MANAGER NX04, 05, 08
+do
+	tmux send-keys -t $SESSION:$w.$i "cd && ./ad_hoc_without_NM.sh" C-m
+done
+
+sleep 10
 
 # hw_onboard
 # tmux send-keys -t $SESSION:$w.1 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc1/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX01) 2>&1 | tee ~/Research/bags/nx01_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m #by using /home/nuc1/ instead of ~/, we can stop record data on sikorsky when we are not using the vehicle.
@@ -131,7 +125,7 @@ tmux send-keys -t $SESSION:$w.3 "(roscd mader && git rev-parse HEAD && git diff 
 tmux send-keys -t $SESSION:$w.5 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc4/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX04) 2>&1 | tee ~/Research/bags/nx04_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 tmux send-keys -t $SESSION:$w.7 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc5/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX05) 2>&1 | tee ~/Research/bags/nx05_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 tmux send-keys -t $SESSION:$w.9 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc6/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX06) 2>&1 | tee ~/Research/bags/nx06_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
-tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc8/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX08) 2>&1 | tee ~/Research/bags/nx08_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
+tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc08/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX08) 2>&1 | tee ~/Research/bags/nx08_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 # tmux send-keys -t $SESSION:$w.11 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc6/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX06) 2>&1 | tee ~/Research/bags/nx05_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 # tmux send-keys -t $SESSION:$w.7 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX07) 2>&1 | tee ~/Research/bags/nx07_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m
 # tmux send-keys -t $SESSION:$w.9 "(roscd mader && git rev-parse HEAD && git diff --color && cd /home/nuc08/Research/bags/ && roslaunch mader hw_onboard.launch quad:=NX08) 2>&1 | tee ~/Research/bags/nx08_mader_$(date '+%Y_%m_%d_%H_%M_%S').txt" C-m

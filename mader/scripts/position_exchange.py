@@ -241,7 +241,7 @@ class TermGoalSender:
                     self.term_goal.pose.position.y = self.wp8[1]
 
             # for obstacle-involved flight
-            self.term_goal.pose.position.z = 1.1 + 0.9 * random()
+            self.term_goal.pose.position.z = 1.1 + 2.4 * random()
 
             # if self.mode == 1:
             #     self.term_goal.pose.position.x = self.sign * 3
