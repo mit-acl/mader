@@ -69,6 +69,13 @@ class HwObstacle:
 
         rospy.sleep(0.5)
 
+    # Circle
+    def circle(self, r):
+        x_string=str(r)+'*cos(t)' 
+        y_string=str(r)+'*sin(t)' 
+        z_string='1.0'        
+        return [x_string, y_string, z_string]
+
     def pubTF(self, timer):
         br = tf.TransformBroadcaster()
 
@@ -90,14 +97,12 @@ class HwObstacle:
         marker_array_static_mesh=MarkerArray();
         marker_array_dynamic_mesh=MarkerArray();
 
-
-
         t_ros=rospy.Time.now()
         t=rospy.get_time(); #Same as before, but it's float
 
         dynamic_trajectory_msg=DynTraj(); 
         
-        [x_string, y_string, z_string] = self.cirle(self.r) 
+        [x_string, y_string, z_string] = self.circle(self.r) 
         dynamic_trajectory_msg.bbox = self.bbox;
         marker_dynamic.scale.x=self.bbox[0]
         marker_dynamic.scale.y=self.bbox[1]
@@ -114,7 +119,7 @@ class HwObstacle:
         dynamic_trajectory_msg.pos.y=y #Current position
         dynamic_trajectory_msg.pos.z=z #Current position
 
-        dynamic_trajectory_msg.id = 4000+ i #Current id 4000 to avoid interference with ids from agents #TODO
+        dynamic_trajectory_msg.id = 4000 #Current id 4000 to avoid interference with ids from agents #TODO
 
         self.pubTraj.publish(dynamic_trajectory_msg)
         br.sendTransform((x, y, z), (0,0,0,1), t_ros, self.name+str(dynamic_trajectory_msg.id), "world")
@@ -137,7 +142,7 @@ class HwObstacle:
 
         ##########################
         marker=Marker();
-        marker.id=i;
+        marker.id=1;
         marker.ns="mesh";
         marker.header.frame_id="world"
         marker.type=marker.MESH_RESOURCE;
@@ -152,7 +157,7 @@ class HwObstacle:
         marker.pose.orientation.w=1.0;
         marker.lifetime = rospy.Duration.from_sec(0.0);
         marker.mesh_use_embedded_materials=True
-        marker.mesh_resource=self.meshes[i]
+        # marker.mesh_resource=self.meshes[0]
 
         marker_dynamic.points.append(point);
 
@@ -172,12 +177,6 @@ class HwObstacle:
 
         # self.already_published_static_shapes=True;
 
-    # Trefoil knot, https://en.wikipedia.org/wiki/Trefoil_knot
-    def circle(self,r):
-        x_string=str(r)+'*cos(t)' 
-        y_string=str(r)+'*sin(t)' 
-        z_string='1.0'        
-        return [x_string, y_string, z_string]
 
 def startNode():
     c = HwObstacle()
@@ -189,4 +188,4 @@ if __name__ == '__main__':
     # TODO: Use instead https://docs.python.org/3.3/library/argparse.html
     ns = rospy.get_namespace()
     rospy.init_node('dynamic_obstacles')
-    startNode(total_num_obs)
+    startNode()
