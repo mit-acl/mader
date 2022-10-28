@@ -70,7 +70,7 @@ if(USE_GUROBI)
 
 	include_directories(${GUROBI_INCLUDE_DIRS})
 	file(GLOB GurobiSOFiles $ENV{GUROBI_HOME}/lib/libgurobi*[0-9].so) #files that are start with libgurobi and end with number.so
-	set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;${GurobiSOFiles};$ENV{GUROBI_HOME}/lib/" )
+	set(GUROBI_LIBRARIES "$ENV{GUROBI_HOME}/lib/libgurobi_c++.a;${GurobiSOFiles}" ) #;$ENV{GUROBI_HOME}/lib/
 
 	add_library(solver STATIC src/solver_gurobi.cpp src/bspline_utils.cpp src/solver_gurobi_utils.cpp src/solver_gurobi_guess.cpp)
 	target_compile_definitions(solver PUBLIC USE_GUROBI_FLAG=1) 

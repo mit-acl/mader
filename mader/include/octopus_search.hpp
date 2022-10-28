@@ -124,8 +124,13 @@ public:
 
 protected:
 private:
+<<<<<<< HEAD
   void computeAxisForNextInterval(const int i, const Eigen::Vector3d& viM1, int axis, double& constraint_L,
                                   double& constraint_U);
+=======
+  // bool computeAxisForNextInterval(const int i, const Eigen::Vector3d& viM1, int axis, double& constraint_L,
+  //                                 double& constraint_U);
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
 
   Eigen::Matrix<double, 3, 4> transformBSpline2otherBasis(const Eigen::Matrix<double, 3, 4>& Qbs, int interval);
   Eigen::Matrix<double, 3, 4> transformOtherBasis2BSpline(const Eigen::Matrix<double, 3, 4>& Qmv, int interval);

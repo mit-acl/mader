@@ -132,7 +132,10 @@ private:
   int num_of_obst_;
   int num_of_segments_;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
   std::vector<Hyperplane3D> planes_;
 
   double dc_;

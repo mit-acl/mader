@@ -16,7 +16,11 @@
         <arg name="y" value="$(arg y)"/>
         <arg name="z" value="$(arg z)"/>
         <arg name="yaw" default="$(arg yaw)"/>
+<<<<<<< HEAD
         <arg name="perfect_tracker" default="false"/>
+=======
+        <!-- <arg name="perfect_tracker" default="false"/> -->
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
  	 </include> 
 
 

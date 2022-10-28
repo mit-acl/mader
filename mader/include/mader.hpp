@@ -87,6 +87,8 @@ private:
 
   bool isReplanningNeeded();
 
+  bool isReplanningNeeded();
+
   void dynTraj2dynTrajCompiled(const mt::dynTraj& traj, mt::dynTrajCompiled& traj_compiled);
 
   bool initializedStateAndTermGoal();

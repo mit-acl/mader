@@ -664,8 +664,11 @@ void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, d
   pointsB.push_back(Eigen::Vector3d(A.pos.x() - delta.x(), A.pos.y() + delta.y(), A.pos.z() - delta.z()));
   pointsB.push_back(Eigen::Vector3d(A.pos.x() - delta.x(), A.pos.y() - delta.y(), A.pos.z() + delta.z()));
 
+<<<<<<< HEAD
   std::vector<mt::dynTrajCompiled> local_trajs;
 
+=======
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
   for (auto traj : trajs_)
   {
     bool traj_affects_me = false;
@@ -704,10 +707,17 @@ void Mader::removeTrajsThatWillNotAffectMe(const mt::state& A, double t_start, d
             vertexesOfInterval(traj, t_start + i * deltaT, t_start + (i + 1) * deltaT);
         // Now we check whether the bbox centered in A (and total_sizes=2*Ra) collides with the polyhedron whose
         // vertexes are pointsA
+<<<<<<< HEAD
 
         // To do that, we solve a linear feasibility program to find a plane that separates that box and the
         // polyhedron
 
+=======
+
+        // To do that, we solve a linear feasibility program to find a plane that separates that box and the
+        // polyhedron
+
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
         Eigen::Vector3d n;
         double d;
 
@@ -1143,6 +1153,7 @@ bool Mader::safetyCheckAfterOpt(mt::PieceWisePol pwp_optimized)
   return result;
 }
 
+<<<<<<< HEAD
 /// Delay check
 bool Mader::delayCheck(mt::PieceWisePol pwp_now, const double& headsup_time)
 {
@@ -1287,6 +1298,23 @@ bool Mader::isReplanningNeeded()
   // Check if we have reached the goal
   mtx_plan_.lock();
 
+=======
+bool Mader::isReplanningNeeded()
+{
+  if (initializedStateAndTermGoal() == false)
+  {
+    return false;
+  }
+
+  //////////////////////////////////////////////////////////////////////////
+  mtx_G_term.lock();
+
+  mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
+
+  mtx_G_term.unlock();
+
+  // Check if we have reached the goal
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
   double dist_to_goal = (G_term.pos - plan_.front().pos).norm();
   // std::cout << "dist_to_goal= " << dist_to_goal << std::endl;
   if (dist_to_goal < par_.goal_radius)
@@ -1313,6 +1341,7 @@ bool Mader::isReplanningNeeded()
   {
     // std::cout << "No replanning needed because" << std::endl;
     // printDroneStatus();
+<<<<<<< HEAD
     return false;
   }
   return true;
@@ -1381,6 +1410,22 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   // }
   // std::cout << "par_for_solver.z_max " << solver_->printZmax() << "\n";
 
+=======
+    return false;
+  }
+  return true;
+}
+
+bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_safe_out,
+                   std::vector<Hyperplane3D>& planes, int& num_of_LPs_run, int& num_of_QCQPs_run,
+                   mt::PieceWisePol& pwp_out)
+{
+  if (isReplanningNeeded() == false)
+  {
+    return false;
+  }
+
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
   MyTimer replanCB_t(true);
 
   std::cout << bold << on_white << "**********************IN REPLAN CB*******************" << reset << std::endl;
@@ -1393,6 +1438,7 @@ bool Mader::replan_with_delaycheck(mt::Edges& edges_obstacles_out, std::vector<m
   mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
   mtx_G_term.unlock();
 
+<<<<<<< HEAD
   mt::state A;
   int k_index;
 
@@ -1965,6 +2011,8 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   mt::state G_term = G_term_;  // Local copy of the terminal terminal goal
   mtx_G_term.unlock();
 
+=======
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
   mt::state A;
   int k_index_end, k_index;
 
@@ -2013,6 +2061,7 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   double ra = std::min((distA2TermGoal - 0.001), par_.Ra);  // radius of the sphere S
   mt::state G;
   G.pos = A.pos + ra * (G_term.pos - A.pos).normalized();
+<<<<<<< HEAD
 
   // Eigen::Vector3d dist_prog(1e5, 1e5, 1e5);
   // Eigen::Vector3d dist_to_goal(1e5, 1e5, 1e5);
@@ -2066,6 +2115,8 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
   //   //   std::cout << "dist_prog.norm() is " << dist_prog.norm() << std::endl;
   //   }
   // }
+=======
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
 
   mt::state initial = A;
   mt::state final = G;
@@ -2089,11 +2140,16 @@ bool Mader::replan(mt::Edges& edges_obstacles_out, std::vector<mt::state>& X_saf
 
   double time_allocated = factor_alloc * mu::getMinTimeDoubleIntegrator3D(initial.pos, initial.vel, final.pos,
                                                                           final.vel, par_.v_max, par_.a_max);
+<<<<<<< HEAD
 
   std::cout << "time_allocated= " << time_allocated << std::endl;
 
   // std::cout << "initial is " << initial.pos.transpose() << std::endl;
   // std::cout << "Pos of A is" << A.pos.transpose() << std::endl;
+=======
+
+  std::cout << "time_allocated= " << time_allocated << std::endl;
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
 
   double t_final = t_start + time_allocated;
 

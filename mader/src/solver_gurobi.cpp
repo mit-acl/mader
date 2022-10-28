@@ -55,8 +55,13 @@ SolverGurobi::SolverGurobi(ms::par_solver &par)
   }
   else
   {
+<<<<<<< HEAD
     // std::cout << red << "Basis " << par_.basis << " not implemented yet" << reset << std::endl;
     // std::cout << red << "============================================" << reset << std::endl;
+=======
+    std::cout << red << "Basis " << par_.basis << " not implemented yet" << reset << std::endl;
+    std::cout << red << "============================================" << reset << std::endl;
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
     abort();
   }
 
@@ -92,9 +97,15 @@ void SolverGurobi::addObjective()
   }
 
   terminal_cost_ = getNorm2(q_exp_[N_] - eigenVector2std(final_state_.pos));
+<<<<<<< HEAD
 
   cost_ = control_cost_ + weight_modified_ * terminal_cost_;
 
+=======
+
+  cost_ = control_cost_ + weight_modified_ * terminal_cost_;
+
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
   m_.setObjective(cost_, GRB_MINIMIZE);
 }
 
@@ -608,6 +619,7 @@ bool SolverGurobi::optimize(bool& is_stuck, bool& is_A_star_failed, bool& is_q0_
       q2_.y() > par_.y_max || q2_.y() < par_.y_min ||  /////////////////
       q2_.z() > par_.z_max || q2_.z() < par_.z_min)
   {
+<<<<<<< HEAD
     // std::cout << bold << red << "q2_ is not in [min, max]" << reset << std::endl;
     // std::cout << "q2_= " << q2_.transpose() << std::endl;
     // std::cout << "par_.x_min= " << par_.x_min << ", par_.x_max=" << par_.x_max << std::endl;
@@ -620,6 +632,20 @@ bool SolverGurobi::optimize(bool& is_stuck, bool& is_A_star_failed, bool& is_q0_
   // Note that guess_is_feasible does not take into account jerk constraints
 
   if (guess_is_feasible == false || is_A_star_failed == true)
+=======
+    std::cout << bold << red << "q2_ is not in [min, max]" << reset << std::endl;
+    std::cout << "q2_= " << q2_.transpose() << std::endl;
+    std::cout << "par_.x_min= " << par_.x_min << ", par_.x_max=" << par_.x_max << std::endl;
+    std::cout << "par_.y_min= " << par_.y_min << ", par_.y_max=" << par_.y_max << std::endl;
+    std::cout << "par_.z_min= " << par_.z_min << ", par_.z_max=" << par_.z_max << std::endl;
+    return false;
+  }
+  bool guess_is_feasible = generateAStarGuess();  // I obtain q_quess_, n_guess_, d_guess_
+
+  // Note that guess_is_feasible does not take into account jerk constraints
+
+  if (guess_is_feasible == false)
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
   {
     // std::cout << "Planes haven't been found" << std::endl;
     return false;
@@ -664,9 +690,15 @@ bool SolverGurobi::optimize(bool& is_stuck, bool& is_A_star_failed, bool& is_q0_
       q.push_back(Eigen::Vector3d(tmp[0].getValue(), tmp[1].getValue(), tmp[2].getValue()));
     }
 
+<<<<<<< HEAD
     // std::cout << "Control_cost_=" << control_cost_.getValue() << std::endl;
     // std::cout << "Terminal cost=" << terminal_cost_.getValue() << std::endl;
     // std::cout << "Cost=" << cost_.getValue() << std::endl;
+=======
+    std::cout << "Control_cost_=" << control_cost_.getValue() << std::endl;
+    std::cout << "Terminal cost=" << terminal_cost_.getValue() << std::endl;
+    std::cout << "Cost=" << cost_.getValue() << std::endl;
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
   }
   else
   {

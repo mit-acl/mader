@@ -127,6 +127,21 @@ MaderRos::MaderRos(ros::NodeHandle nh1, ros::NodeHandle nh2, ros::NodeHandle nh3
   mu::safeGetParam(nh1_, "z_min", par_.z_min);
   mu::safeGetParam(nh1_, "z_max", par_.z_max);
 
+<<<<<<< HEAD
+=======
+  std::vector<double> v_max_tmp;
+  std::vector<double> a_max_tmp;
+  std::vector<double> j_max_tmp;
+
+  mu::safeGetParam(nh1_, "v_max", v_max_tmp);
+  mu::safeGetParam(nh1_, "a_max", a_max_tmp);
+  mu::safeGetParam(nh1_, "j_max", j_max_tmp);
+
+  par_.v_max << v_max_tmp[0], v_max_tmp[1], v_max_tmp[2];
+  par_.a_max << a_max_tmp[0], a_max_tmp[1], a_max_tmp[2];
+  par_.j_max << j_max_tmp[0], j_max_tmp[1], j_max_tmp[2];
+
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
   mu::safeGetParam(nh1_, "factor_alloc", par_.factor_alloc);
   mu::safeGetParam(nh1_, "factor_alloc_close", par_.factor_alloc_close);
   mu::safeGetParam(nh1_, "dist_factor_alloc_close", par_.dist_factor_alloc_close);
@@ -661,9 +676,20 @@ void MaderRos::replanCB(const ros::TimerEvent& e)
     {
       std::vector<mt::dynTrajCompiled> trajs;
 
+<<<<<<< HEAD
       // mtx_mader_ptr_.lock();
       replanned = mader_ptr_->replan_with_delaycheck(edges_obstacles, traj_plan, planes, num_of_LPs_run_,
                                                      num_of_QCQPs_run_, pwp_now_, headsup_time_);
+=======
+      if (edges_obstacles.size() > 0)
+      {
+        pubObstacles(edges_obstacles);
+      }
+      pubTraj(X_safe);
+      publishPlanes(planes);
+      publishText();
+    }
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
 
       if (replanned)
       {
@@ -874,16 +900,24 @@ void MaderRos::publishPoly(const vec_E<Polyhedron<3>>& poly)
   poly_safe_pub_.publish(poly_msg);
 }
 
+<<<<<<< HEAD
 // this function won't be called in simulations
 
 void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
 {
   if (msg.value != msg.MADER)
   {  // MADER does nothing
+=======
+void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
+{
+  if (msg.value != msg.MADER)
+  {  // PANTHER does nothing
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
     sub_state_.shutdown();
     sub_term_goal_.shutdown();
     pubCBTimer_.stop();
     replanCBTimer_.stop();
+<<<<<<< HEAD
     // mtx_mader_ptr_.lock();
     mader_ptr_->resetInitialization();
     // mtx_mader_ptr_.unlock();
@@ -892,11 +926,21 @@ void MaderRos::whoPlansCB(const mader_msgs::WhoPlans& msg)
   }
   else
   {  // MADER is the one who plans now (this happens when the take-off is finished)
+=======
+    mader_ptr_->resetInitialization();
+    std::cout << on_blue << "**************MADER STOPPED" << reset << std::endl;
+  }
+  else
+  {  // PANTHER is the one who plans now (this happens when the take-off is finished)
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
     sub_term_goal_ = nh1_.subscribe("term_goal", 1, &MaderRos::terminalGoalCB, this);  // TODO: duplicated from above
     sub_state_ = nh1_.subscribe("state", 1, &MaderRos::stateCB, this);                 // TODO: duplicated from above
     pubCBTimer_.start();
     replanCBTimer_.start();
+<<<<<<< HEAD
     is_mader_running_ = true;
+=======
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
     std::cout << on_blue << "**************MADER STARTED" << reset << std::endl;
   }
 }
@@ -917,9 +961,13 @@ void MaderRos::stateCB(const snapstack_msgs::State& msg)
   // std::cout << "Updating state to" << std::endl;
   // state_tmp.print();
 
+<<<<<<< HEAD
   // mtx_mader_ptr_.lock();
   mader_ptr_->updateState(state_tmp);  // this updates state //mader_ptr_ is a pointer to mader object
   // mtx_mader_ptr_.unlock();
+=======
+  mader_ptr_->updateState(state_tmp);
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
 
   W_T_B_ = Eigen::Translation3d(msg.pos.x, msg.pos.y, msg.pos.z) *
            Eigen::Quaterniond(msg.quat.w, msg.quat.x, msg.quat.y, msg.quat.z);
@@ -969,11 +1017,19 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
   {
     snapstack_msgs::Goal quadGoal;
 
+<<<<<<< HEAD
     quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 
     // printf("terminal goal x %f \n", next_goal.pos.x());
     // printf("terminal goal y %f \n", next_goal.pos.y());
     // printf("terminal goal z %f \n", next_goal.pos.z());
+=======
+    quadGoal.p = mu::eigen2point(next_goal.pos); //Kota changed it from eigen2rosvector July 26, 2021
+
+    //printf("terminal goal x %f \n", next_goal.pos.x());
+    //printf("terminal goal y %f \n", next_goal.pos.y());
+    //printf("terminal goal z %f \n", next_goal.pos.z());
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
 
     quadGoal.p = mu::eigen2point(next_goal.pos);  // Kota changed it from eigen2rosvector July 26, 2021
 
@@ -985,8 +1041,20 @@ void MaderRos::pubCB(const ros::TimerEvent& e)
     quadGoal.a = mu::eigen2rosvector(next_goal.accel);
     quadGoal.j = mu::eigen2rosvector(next_goal.jerk);
 
+<<<<<<< HEAD
     quadGoal.dpsi = next_goal.dyaw;  // no need to control dyaw
     quadGoal.psi = next_goal.yaw;    // no need to contol yaw
+=======
+
+    //quadGoal.dyaw = next_goal.dyaw;
+    //quadGoal.yaw = next_goal.yaw;
+
+    // quadGoal.dyaw = next_goal.dyaw;
+    // quadGoal.yaw = next_goal.yaw;
+
+    quadGoal.dpsi = next_goal.dyaw;
+    quadGoal.psi = next_goal.yaw;
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
 
     quadGoal.header.stamp = ros::Time::now();
     quadGoal.header.frame_id = world_name_;

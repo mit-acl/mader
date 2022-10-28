@@ -81,6 +81,7 @@ private:
 
   void verify(bool cond, std::string info_if_false);
 
+<<<<<<< HEAD
   bool sim_;
   bool is_delaycheck_ = true;
   double headsup_time_ = 0.0;
@@ -88,6 +89,8 @@ private:
   bool delay_check_result_ = false;
 
   mt::PieceWisePol pwp_now_;
+=======
+>>>>>>> a15376be0e2f329ed0164b9a5fc544e57d1391b2
   mt::state state_;
 
   std::string world_name_ = "world";
