@@ -25,6 +25,8 @@ When using MADER, please cite [MADER: Trajectory Planner in Multi-Agent and Dyna
 
 ## General Setup
 
+### Not Using Docker
+
 MADER has been tested with 
 * Ubuntu 16.04/ROS Kinetic
 * Ubuntu 18.04/ROS Melodic
@@ -41,6 +43,15 @@ bash src/mader/install_and_compile.sh
 ```
 
 The script [install_and_compile.sh](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh) will install [CGAL v4.12.4](https://www.cgal.org/), [GLPK](https://www.gnu.org/software/glpk/) and other ROS packages (check the script for details). It will also compile the repo. This bash script assumes that you already have ROS installed in your machine. 
+
+### Using Docker
+
+If you are using Gurobi, you need to download gurobi.lic file from Gurobi Web License Service (https://www.gurobi.com/web-license-service/). gurobi.lic obtained through not WLS will not work on docker.
+
+1. Place your gurobi.lic in [docker](https://github.com/mit-acl/mader/docker) folder.
+2. ```cd ~/ws/src/mader/mader/docker```
+3. ```docker build -t mader .```
+4. Once built, ```docker run --volume=$PWD/gurobi.lic:/opt/gurobi/gurobi.lic:ro -it mader```
 
 ### Running Simulations
 
