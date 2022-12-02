@@ -52,7 +52,7 @@ git clone https://github.com/mit-acl/mader.git
 For Gurobi, you need to download gurobi.lic file from [Gurobi Web License Manager](https://license.gurobi.com/manager/licenses) (more info [here](https://www.gurobi.com/web-license-service/)). A gurobi.lic not obtained through WLS will **not** work on docker. Place your gurobi.lic in [docker](https://github.com/mit-acl/mader/docker) folder and execute these commands:
 
 ```bash
-cd ./mader/docker
+cd ./mader/mader/docker
 docker build -t mader .
 ```
 4. Once built, ```docker run --volume=$PWD/gurobi.lic:/opt/gurobi/gurobi.lic:ro -it mader```
