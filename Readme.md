@@ -80,7 +80,7 @@ Now you can press `G` (or click the option `2D Nav Goal` on the top bar of RVIZ)
 <details>
   <summary> <b>With Docker</b></summary>
   
-In Docker, you can do this by running `docker exec -it [ID of the container] bash` (you can find the ID with `docker container ls -a`), and then running `rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: "world"}, pose: {position: {x: 10, y: 0, z: 1}, orientation: {w: 1.0}}}'`
+In Docker, you can do this by running `docker exec -it [ID of the container] bash` in a new terminal (you can find the ID with `docker container ls -a`), and then running `rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: "world"}, pose: {position: {x: 10, y: 0, z: 1}, orientation: {w: 1.0}}}'`
 
 </details>
 
