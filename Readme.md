@@ -55,7 +55,7 @@ For Gurobi, you need to download gurobi.lic file from [Gurobi Web License Manage
 cd ./mader/mader/docker
 docker build -t mader .
 ```
-4. Once built, ```docker run --volume=$PWD/gurobi.lic:/opt/gurobi/gurobi.lic:ro -it mader```
+Once built, ```docker run --volume=$PWD/gurobi.lic:/opt/gurobi/gurobi.lic:ro -it mader```
 
 ### Running Simulations
 
