@@ -78,7 +78,7 @@ roslaunch mader single_agent_simulation.launch #If you are using docker, you may
 Now you can press `G` (or click the option `2D Nav Goal` on the top bar of RVIZ) and click any goal for the drone. 
 
 <details>
-  <summary> <b>With Docker commands</b></summary>
+  <summary> <b>With Docker</b></summary>
   
 In Docker, you can do this by running `docker exec -it [ID of the container] bash` (you can find the ID with `docker container ls -a`), and then running `rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: "world"}, pose: {position: {x: 10, y: 0, z: 1}, orientation: {w: 1.0}}}'`
 
