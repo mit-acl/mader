@@ -25,9 +25,7 @@ When using MADER, please cite [MADER: Trajectory Planner in Multi-Agent and Dyna
 
 ## General Setup
 
-MADER has been tested with 
-* Ubuntu 16.04/ROS Kinetic
-* Ubuntu 18.04/ROS Melodic
+### Not Using Docker
 
 The backend optimizer is Gurobi. Please install the [Gurobi Optimizer](https://www.gurobi.com/products/gurobi-optimizer/), and test your installation typing `gurobi.sh` in the terminal. Have a look at [this section](#issues-when-installing-gurobi) if you have any issues.
 
@@ -41,6 +39,23 @@ bash src/mader/install_and_compile.sh
 ```
 
 The script [install_and_compile.sh](https://github.com/mit-acl/mader/blob/master/install_and_compile.sh) will install [CGAL v4.12.4](https://www.cgal.org/), [GLPK](https://www.gnu.org/software/glpk/) and other ROS packages (check the script for details). It will also compile the repo. This bash script assumes that you already have ROS installed in your machine. 
+
+### Using Docker
+
+Install Docker using [this steps](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository), and remove the need of `sudo` following [these steps](https://docs.docker.com/engine/install/linux-postinstall/). Then follow these steps:
+
+```bash
+cd ~/ && mkdir ws && cd ws && mkdir src && cd src
+git clone https://github.com/mit-acl/mader.git
+```
+
+For Gurobi, you need to download gurobi.lic file from [Gurobi Web License Manager](https://license.gurobi.com/manager/licenses) (more info [here](https://www.gurobi.com/web-license-service/)). A gurobi.lic not obtained through WLS will **not** work on docker. Place your gurobi.lic in [docker](https://github.com/mit-acl/mader/docker) folder and execute these commands:
+
+```bash
+cd ./mader/docker
+docker build -t mader .
+```
+4. Once built, ```docker run --volume=$PWD/gurobi.lic:/opt/gurobi/gurobi.lic:ro -it mader```
 
 ### Running Simulations
 
