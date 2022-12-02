@@ -72,7 +72,7 @@ docker image rm XXX #remove a specific image
 ### Running Simulations
 
 #### Single-agent
-```
+```bash
 roslaunch mader single_agent_simulation.launch #If you are using docker, you may want to add rviz:=false (to disable the visualization)
 ```
 Now you can press `G` (or click the option `2D Nav Goal` on the top bar of RVIZ) and click any goal for the drone. 
