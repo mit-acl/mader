@@ -59,6 +59,7 @@ Once built, ```docker run --volume=$PWD/gurobi.lic:/opt/gurobi/gurobi.lic:ro -it
 
 <details>
   <summary> <b>Useful Docker commands</b></summary>
+  
 ```bash
 docker container ls -a  #Show a list of the containers
 docker rm $(docker ps -aq) #remove all the containers
