@@ -57,13 +57,24 @@ docker build -t mader . #This will probably take several minutes
 ```
 Once built, ```docker run --volume=$PWD/gurobi.lic:/opt/gurobi/gurobi.lic:ro -it mader```
 
+<details>
+  <summary> <b>Useful Docker commands</b></summary>
+```bash
+docker container ls -a  #Show a list of the containers
+docker rm $(docker ps -aq) #remove all the containers
+docker image ls #Show a lis of the images
+docker image rm XXX #remove a specific image
+```
+
+</details>
+
 ### Running Simulations
 
 #### Single-agent
 ```
-roslaunch mader single_agent_simulation.launch
+roslaunch mader single_agent_simulation.launch #If you are using docker, you may want to add rviz:=false (to disable the visualization)
 ```
-Now you can press `G` (or click the option `2D Nav Goal` on the top bar of RVIZ) and click any goal for the drone. 
+Now you can press `G` (or click the option `2D Nav Goal` on the top bar of RVIZ) and click any goal for the drone. In Docker, you can do this by running `docker exec -it [ID of the container] bash` (you can find the ID with `docker container ls -a`), and then running `rostopic pub /SQ01s/term_goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: "world"}, pose: {position: {x: 10, y: 0, z: 1}, orientation: {w: 1.0}}}'`
 
 To run many single-agent simulations in different random environments, you can go to the `scripts` folder and execute `python run_many_sims_single_agent.py`.
 
